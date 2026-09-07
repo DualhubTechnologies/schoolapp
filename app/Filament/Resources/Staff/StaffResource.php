@@ -2,6 +2,7 @@
 
 namespace App\Filament\Resources\Staff;
 
+use App\Filament\Resources\Staff\RelationManagers;
 use App\Filament\Resources\Staff\Pages\CreateStaff;
 use App\Filament\Resources\Staff\Pages\EditStaff;
 use App\Filament\Resources\Staff\Pages\ListStaff;
@@ -46,12 +47,15 @@ class StaffResource extends Resource
         return $query;
     }
 
-    public static function getRelations(): array
-    {
-        return [
-            //
-        ];
-    }
+public static function getRelations(): array
+{
+    return [
+        RelationManagers\SalariesRelationManager::class,
+        RelationManagers\AllowancesRelationManager::class,
+        RelationManagers\DeductionsRelationManager::class,
+        RelationManagers\BankDetailsRelationManager::class,
+    ];
+}
 
     public static function getPages(): array
     {

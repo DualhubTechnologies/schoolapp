@@ -19,6 +19,12 @@ class StaffForm
                 TextInput::make('email')
                     ->label('Email address')
                     ->email(),
+                TextInput::make('nssf_number')
+                    ->label('NSSF number')
+                    ->placeholder('e.g. NF/12345678'),
+                TextInput::make('tin_number')
+                    ->label('TIN number')
+                    ->placeholder('e.g. 1001234567'),
                 Select::make('school_id')
                     ->relationship('school', 'name')
                     ->default(fn () => auth()->user()->school_id)

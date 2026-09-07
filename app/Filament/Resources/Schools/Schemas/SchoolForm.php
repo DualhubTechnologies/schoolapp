@@ -27,6 +27,14 @@ class SchoolForm
                 TextInput::make('phone')
                     ->tel(),
 
+                TextInput::make('nssf_employer_number')
+                    ->label('NSSF employer number')
+                    ->placeholder('e.g. ER/12345'),
+
+                TextInput::make('tin_number')
+                    ->label('TIN number')
+                    ->placeholder('e.g. 1001234567'),
+
                 TextInput::make('address'),
 
                 TextInput::make('city'),

@@ -10,6 +10,8 @@ class School extends Model
         'name',
         'slug',
         'email',
+        'nssf_employer_number',
+        'tin_number',
         'phone',
         'address',
         'city',

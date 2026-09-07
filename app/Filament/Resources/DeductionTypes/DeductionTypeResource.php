@@ -1,0 +1,69 @@
+<?php
+
+namespace App\Filament\Resources\DeductionTypes;
+
+use App\Filament\Resources\DeductionTypes\Pages\CreateDeductionType;
+use App\Filament\Resources\DeductionTypes\Pages\EditDeductionType;
+use App\Filament\Resources\DeductionTypes\Pages\ListDeductionTypes;
+use App\Filament\Resources\DeductionTypes\Schemas\DeductionTypeForm;
+use App\Filament\Resources\DeductionTypes\Tables\DeductionTypesTable;
+use App\Models\DeductionType;
+use BackedEnum;
+use Filament\Resources\Resource;
+use Filament\Schemas\Schema;
+use Filament\Support\Icons\Heroicon;
+use Filament\Tables\Table;
+use Illuminate\Database\Eloquent\Builder;
+
+class DeductionTypeResource extends Resource
+{
+    protected static ?string $model = DeductionType::class;
+
+    protected static string|BackedEnum|null $navigationIcon = Heroicon::OutlinedRectangleStack;
+
+    protected static ?string $recordTitleAttribute = 'name';
+
+    public static function getNavigationGroup(): ?string
+    {
+        return 'Payroll Settings';
+    }
+
+    public static function form(Schema $schema): Schema
+    {
+        return DeductionTypeForm::configure($schema);
+    }
+
+    public static function table(Table $table): Table
+    {
+        return DeductionTypesTable::configure($table);
+    }
+
+    public static function getEloquentQuery(): Builder
+    {
+        $query = parent::getEloquentQuery();
+
+        $user = auth()->user();
+
+        if ($user && ! $user->hasRole('Super Admin')) {
+            $query->where('school_id', $user->school_id);
+        }
+
+        return $query;
+    }
+
+    public static function getRelations(): array
+    {
+        return [
+            //
+        ];
+    }
+
+    public static function getPages(): array
+    {
+        return [
+            'index' => ListDeductionTypes::route('/'),
+            'create' => CreateDeductionType::route('/create'),
+            'edit' => EditDeductionType::route('/{record}/edit'),
+        ];
+    }
+}

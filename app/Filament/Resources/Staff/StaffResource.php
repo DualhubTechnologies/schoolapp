@@ -1,13 +1,13 @@
 <?php
 
-namespace App\Filament\Resources\Users;
+namespace App\Filament\Resources\Staff;
 
-use App\Filament\Resources\Users\Pages\CreateUser;
-use App\Filament\Resources\Users\Pages\EditUser;
-use App\Filament\Resources\Users\Pages\ListUsers;
-use App\Filament\Resources\Users\Schemas\UserForm;
-use App\Filament\Resources\Users\Tables\UsersTable;
-use App\Models\User;
+use App\Filament\Resources\Staff\Pages\CreateStaff;
+use App\Filament\Resources\Staff\Pages\EditStaff;
+use App\Filament\Resources\Staff\Pages\ListStaff;
+use App\Filament\Resources\Staff\Schemas\StaffForm;
+use App\Filament\Resources\Staff\Tables\StaffTable;
+use App\Models\Staff;
 use BackedEnum;
 use Filament\Resources\Resource;
 use Filament\Schemas\Schema;
@@ -15,22 +15,22 @@ use Filament\Support\Icons\Heroicon;
 use Filament\Tables\Table;
 use Illuminate\Database\Eloquent\Builder;
 
-class UserResource extends Resource
+class StaffResource extends Resource
 {
-    protected static ?string $model = User::class;
+    protected static ?string $model = Staff::class;
 
     protected static string|BackedEnum|null $navigationIcon = Heroicon::OutlinedRectangleStack;
 
-    protected static ?string $recordTitleAttribute = 'name';
+    protected static ?string $recordTitleAttribute = 'staff_no';
 
     public static function form(Schema $schema): Schema
     {
-        return UserForm::configure($schema);
+        return StaffForm::configure($schema);
     }
 
     public static function table(Table $table): Table
     {
-        return UsersTable::configure($table);
+        return StaffTable::configure($table);
     }
 
     public static function getEloquentQuery(): Builder
@@ -46,11 +46,6 @@ class UserResource extends Resource
         return $query;
     }
 
-    public static function canCreate(): bool
-    {
-        return auth()->user()?->hasRole('Super Admin') ?? false;
-    }
-
     public static function getRelations(): array
     {
         return [
@@ -61,9 +56,9 @@ class UserResource extends Resource
     public static function getPages(): array
     {
         return [
-            'index' => ListUsers::route('/'),
-            'create' => CreateUser::route('/create'),
-            'edit' => EditUser::route('/{record}/edit'),
+            'index' => ListStaff::route('/'),
+            'create' => CreateStaff::route('/create'),
+            'edit' => EditStaff::route('/{record}/edit'),
         ];
     }
 }

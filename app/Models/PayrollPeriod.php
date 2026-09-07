@@ -77,6 +77,107 @@ class PayrollPeriod extends Model
     }
 
     /**
+     * Get the previous month and year relative to this period.
+     */
+    protected function getPreviousPeriod(): ?self
+    {
+        $prevMonth = $this->month - 1;
+        $prevYear = $this->year;
+
+        if ($prevMonth < 1) {
+            $prevMonth = 12;
+            $prevYear--;
+        }
+
+        return self::where('school_id', $this->school_id)
+            ->where('month', $prevMonth)
+            ->where('year', $prevYear)
+            ->first();
+    }
+
+    /**
+     * Detect staff members who were NOT paid in the previous month
+     * and auto-create pending salary arrears for them.
+     *
+     * Returns the number of arrears created.
+     */
+    public function detectMissedPayments(): int
+    {
+        $previousPeriod = $this->getPreviousPeriod();
+
+        // No previous payroll period exists — this is the first month, nothing to compare against
+        if (! $previousPeriod) {
+            return 0;
+        }
+
+        // Get IDs of staff who WERE paid in the previous period
+        $paidStaffIds = $previousPeriod->entries()
+            ->where('status', 'included')
+            ->pluck('staff_id')
+            ->toArray();
+
+        // Get all staff who SHOULD have been paid (active, employed before the previous period ended)
+        $previousMonthEnd = \Carbon\Carbon::create($previousPeriod->year, $previousPeriod->month)->endOfMonth();
+
+        $shouldHaveBeenPaid = Staff::where('school_id', $this->school_id)
+            ->where('status', 'active')
+            ->where('employment_date', '<=', $previousMonthEnd)
+            ->whereHas('salaries', function ($query) {
+                $query->whereNull('effective_to'); // has a current salary record
+            })
+            ->whereNotIn('id', $paidStaffIds)
+            ->get();
+
+        $months = [
+            1 => 'January', 2 => 'February', 3 => 'March', 4 => 'April',
+            5 => 'May', 6 => 'June', 7 => 'July', 8 => 'August',
+            9 => 'September', 10 => 'October', 11 => 'November', 12 => 'December',
+        ];
+
+        $previousMonthName = ($months[$previousPeriod->month] ?? 'Unknown') . ' ' . $previousPeriod->year;
+        $count = 0;
+
+        foreach ($shouldHaveBeenPaid as $staff) {
+            // Check if an arrear already exists for this staff for that month (avoid duplicates)
+            $existingArrear = SalaryArrear::where('staff_id', $staff->id)
+                ->where('month', $previousPeriod->month)
+                ->where('year', $previousPeriod->year)
+                ->exists();
+
+            if ($existingArrear) {
+                continue;
+            }
+
+            // Calculate what they should have been paid (base salary + active allowances)
+            $salary = StaffSalary::currentForStaff($staff->id);
+            if (! $salary) {
+                continue;
+            }
+
+            $baseSalary = (float) $salary->base_salary;
+            $totalAllowances = StaffAllowance::where('staff_id', $staff->id)
+                ->where('is_active', true)
+                ->sum('amount');
+
+            $grossAmount = $baseSalary + $totalAllowances;
+
+            SalaryArrear::create([
+                'school_id' => $this->school_id,
+                'staff_id' => $staff->id,
+                'amount' => $grossAmount,
+                'reason' => "Unpaid salary — {$previousMonthName}",
+                'month' => $previousPeriod->month,
+                'year' => $previousPeriod->year,
+                'status' => 'pending',
+            ]);
+
+            $count++;
+        }
+
+        return $count;
+    }
+
+    /**
      * Generate payroll entries for all active staff in this school.
      * This is the core payroll generation logic.
      */
@@ -148,14 +249,14 @@ class PayrollPeriod extends Model
                 }
 
                 $grossPay = $baseSalary + $totalAllowanceAmount;
-                $taxableIncome = $baseSalary + $taxableAllowances; // Only taxable allowances count for PAYE
+                $taxableIncome = $baseSalary + $taxableAllowances;
 
                 // Calculate NSSF (based on gross pay)
-                $nssfEmployee = round($grossPay * 0.05, 2);  // 5% employee contribution
-                $nssfEmployer = round($grossPay * 0.10, 2);  // 10% employer contribution (school's cost)
+                $nssfEmployee = round($grossPay * 0.05, 2);
+                $nssfEmployer = round($grossPay * 0.10, 2);
 
                 // Calculate PAYE (on taxable income minus NSSF employee contribution)
-                $payeTaxableAmount = $taxableIncome - $nssfEmployee; // NSSF is deducted before PAYE
+                $payeTaxableAmount = $taxableIncome - $nssfEmployee;
                 $paye = PayeTaxBracket::calculatePaye($payeTaxableAmount, $countryCode);
 
                 $statutoryTotal = $nssfEmployee + $paye;
@@ -260,7 +361,6 @@ class PayrollPeriod extends Model
                         $amount = $deduction->calculateAmount($grossPay);
                         $deduction->increment('amount_recovered', $amount);
 
-                        // Auto-deactivate fully recovered loans
                         if ($deduction->amount_recovered >= $deduction->total_amount) {
                             $deduction->update(['is_active' => false]);
                         }
@@ -288,6 +388,9 @@ class PayrollPeriod extends Model
                 'staff_count' => $count,
             ]);
         });
+
+        // After generating current month, detect anyone who was missed last month
+        $missedCount = $this->detectMissedPayments();
 
         return $count;
     }

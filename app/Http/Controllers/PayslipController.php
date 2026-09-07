@@ -29,4 +29,21 @@ class PayslipController extends Controller
 
         return $pdf->download($filename);
     }
+    public function downloadAll(\App\Models\PayrollPeriod $period)
+    {
+        $period->load(['school', 'entries.staff.bankDetails', 'entries.items']);
+
+        $school = $period->school;
+        $entries = $period->entries()
+            ->with(['staff.bankDetails', 'items'])
+            ->where('status', 'included')
+            ->get();
+
+        $pdf = Pdf::loadView('payslips.all-payslips', compact('period', 'school', 'entries'))
+            ->setPaper('a4', 'portrait');
+
+        $filename = "All-Payslips-{$period->period_label}.pdf";
+
+        return $pdf->download($filename);
+    }
 }

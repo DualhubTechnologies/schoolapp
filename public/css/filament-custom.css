@@ -1,0 +1,149 @@
+/* ========================================
+   SchoolApp — Dark Navy Theme
+   ======================================== */
+
+/* Sidebar background — deep navy like the template */
+.fi-sidebar {
+    background-color: #1a1c2e !important;
+    background-image: linear-gradient(180deg, #1a1c2e 0%, #151725 100%) !important;
+}
+
+/* Sidebar text */
+.fi-sidebar-item-label,
+.fi-sidebar-item .fi-sidebar-item-label {
+    color: #a0aec0 !important;
+    font-size: 0.85rem !important;
+}
+
+/* Sidebar icons */
+.fi-sidebar-item-icon {
+    color: #718096 !important;
+}
+
+/* Sidebar active item — golden/amber highlight like the template */
+.fi-sidebar-item.fi-active {
+    background-color: rgba(251, 191, 36, 0.12) !important;
+    border-radius: 8px;
+}
+
+.fi-sidebar-item.fi-active .fi-sidebar-item-label {
+    color: #070500 !important;
+    font-weight: 600 !important;
+}
+
+.fi-sidebar-item.fi-active .fi-sidebar-item-icon {
+    color: #070500 !important;
+}
+
+/* Sidebar hover */
+.fi-sidebar-item:hover {
+    background-color: rgba(233, 7, 7, 0.05) !important;
+    border-radius: 8px;
+}
+
+.fi-sidebar-item:hover .fi-sidebar-item-label {
+    color: #000408 !important;
+}
+
+/* Sidebar group labels */
+.fi-sidebar-group-label {
+    color: #fbbf24 !important;
+    text-transform: uppercase;
+    font-size: 0.68rem !important;
+    letter-spacing: 0.08em;
+    font-weight: 700 !important;
+}
+
+/* Sidebar brand/header area */
+.fi-sidebar-header {
+    background-color: #141628 !important;
+    border-bottom: 1px solid rgba(251, 191, 36, 0.15);
+    padding: 1rem !important;
+}
+
+.fi-sidebar-header a,
+.fi-sidebar-header span {
+    color: #ffffff !important;
+    font-weight: 700 !important;
+    font-size: 1.1rem !important;
+}
+
+/* Sidebar scrollbar */
+.fi-sidebar-nav::-webkit-scrollbar {
+    width: 4px;
+}
+
+.fi-sidebar-nav::-webkit-scrollbar-track {
+    background: transparent;
+}
+
+.fi-sidebar-nav::-webkit-scrollbar-thumb {
+    background: rgba(255, 255, 255, 0.1);
+    border-radius: 4px;
+}
+
+/* Top navbar — clean white */
+.fi-topbar {
+    background-color: #ffffff !important;
+    border-bottom: 1px solid #edf2f7;
+    box-shadow: 0 1px 4px rgba(0, 0, 0, 0.04);
+}
+
+/* Navigation badge (arrears count) */
+.fi-sidebar-item .fi-badge {
+    background-color: #ef4444 !important;
+    color: #ffffff !important;
+    font-size: 0.7rem !important;
+    min-width: 18px;
+    height: 18px;
+}
+
+/* Sidebar toggle button */
+.fi-sidebar-close-btn,
+.fi-sidebar-open-btn {
+    color: #718096 !important;
+}
+
+.fi-sidebar-close-btn:hover,
+.fi-sidebar-open-btn:hover {
+    color: #fbbf24 !important;
+}
+
+/* Login page */
+.fi-simple-layout {
+    background: linear-gradient(135deg, #1a1c2e 0%, #2d1b69 50%, #1a1c2e 100%) !important;
+}
+
+.fi-simple-layout .fi-simple-main-ctn {
+    background-color: #ffffff;
+    border-radius: 16px;
+    box-shadow: 0 20px 60px rgba(0, 0, 0, 0.3);
+}
+
+/* Content area — light gray background like the template */
+.fi-main-ctn {
+    background-color: #f4f6fa !important;
+}
+
+/* Cards/widgets in content area */
+.fi-wi-stats-overview-stat {
+    border-radius: 12px !important;
+    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.06) !important;
+}
+
+/* Table styling refinements */
+.fi-ta-table {
+    border-radius: 12px !important;
+    overflow: hidden;
+}
+
+/* Button refinements */
+.fi-btn-primary {
+    border-radius: 8px !important;
+}
+
+/* Badge refinements */
+.fi-badge {
+    border-radius: 6px !important;
+    font-weight: 600 !important;
+}

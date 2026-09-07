@@ -86,13 +86,26 @@ class PayrollPeriodsTable
                     ->visible(fn ($record) => $record->status === 'draft' && $record->staff_count === 0)
                     ->requiresConfirmation()
                     ->modalHeading('Generate payroll')
-                    ->modalDescription(fn ($record) => "This will calculate salary, allowances, deductions, NSSF (5% + 10%), and PAYE for all active staff in {$record->period_label}. Continue?")
+                    ->modalDescription(fn ($record) => "This will calculate salary, allowances, deductions, NSSF (5% + 10%), and PAYE for all active staff in {$record->period_label}. It will also check for any unpaid staff from the previous month. Continue?")
                     ->action(function ($record) {
                         $record->update(['generated_by' => auth()->id()]);
                         $count = $record->generateEntries();
 
+                        // Check if any missed payments were detected
+                        $missedCount = \App\Models\SalaryArrear::where('school_id', $record->school_id)
+                            ->where('status', 'pending')
+                            ->where('reason', 'LIKE', 'Unpaid salary%')
+                            ->where('created_at', '>=', now()->subMinutes(1))
+                            ->count();
+
+                        $message = "Payroll generated for {$count} staff members.";
+                        if ($missedCount > 0) {
+                            $message .= " {$missedCount} missed payment(s) detected from the previous month — review them under Staff → Salary Arrears and approve before the next payroll run.";
+                        }
+
                         Notification::make()
-                            ->title("Payroll generated for {$count} staff members")
+                            ->title($message)
+                            ->duration(10000)
                             ->success()
                             ->send();
                     }),
@@ -147,6 +160,13 @@ class PayrollPeriodsTable
                     ->color('gray')
                     ->visible(fn ($record) => $record->staff_count > 0)
                     ->url(fn ($record) => route('nssf-schedule.excel', $record), shouldOpenInNewTab: true),
+
+                Action::make('printAll')
+                    ->label('All Payslips')
+                    ->icon('heroicon-o-printer')
+                    ->color('info')
+                    ->visible(fn ($record) => $record->staff_count > 0)
+                    ->url(fn ($record) => route('payslips.all', $record), shouldOpenInNewTab: true),
                 EditAction::make(),
             ])
             ->toolbarActions([

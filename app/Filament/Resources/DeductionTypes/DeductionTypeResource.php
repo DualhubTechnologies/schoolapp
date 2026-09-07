@@ -19,14 +19,15 @@ class DeductionTypeResource extends Resource
 {
     protected static ?string $model = DeductionType::class;
 
-    protected static string|BackedEnum|null $navigationIcon = Heroicon::OutlinedRectangleStack;
+
+    protected static string|BackedEnum|null $navigationIcon = Heroicon::OutlinedMinusCircle;
 
     protected static ?string $recordTitleAttribute = 'name';
 
-    public static function getNavigationGroup(): ?string
-    {
-        return 'Payroll Settings';
-    }
+public static function getNavigationGroup(): ?string
+{
+    return 'Human Resources';
+}
 
     public static function form(Schema $schema): Schema
     {
@@ -49,6 +50,10 @@ class DeductionTypeResource extends Resource
         }
 
         return $query;
+    }
+    public static function shouldRegisterNavigation(): bool
+    {
+        return ! auth()->user()?->hasRole('Super Admin');
     }
 
     public static function getRelations(): array

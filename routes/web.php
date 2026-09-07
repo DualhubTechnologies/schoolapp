@@ -16,3 +16,7 @@ Route::get('/nssf-schedule/{period}/pdf', [NssfScheduleController::class, 'downl
 Route::get('/nssf-schedule/{period}/excel', [NssfScheduleController::class, 'downloadExcel'])
     ->name('nssf-schedule.excel')
     ->middleware('auth');
+
+Route::get('/payslips/{period}/all', [PayslipController::class, 'downloadAll'])
+    ->name('payslips.all')
+    ->middleware('auth');

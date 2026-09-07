@@ -20,9 +20,11 @@ class StaffResource extends Resource
 {
     protected static ?string $model = Staff::class;
 
-    protected static string|BackedEnum|null $navigationIcon = Heroicon::OutlinedRectangleStack;
+
+    protected static string|BackedEnum|null $navigationIcon = Heroicon::OutlinedUserGroup;
 
     protected static ?string $recordTitleAttribute = 'staff_no';
+    protected static ?int $navigationSort = 1;
 
     public static function form(Schema $schema): Schema
     {
@@ -32,6 +34,15 @@ class StaffResource extends Resource
     public static function table(Table $table): Table
     {
         return StaffTable::configure($table);
+    }
+    public static function shouldRegisterNavigation(): bool
+    {
+        return ! auth()->user()?->hasRole('Super Admin');
+    }
+
+    public static function getNavigationGroup(): ?string
+    {
+        return 'Human Resources';
     }
 
     public static function getEloquentQuery(): Builder
@@ -54,6 +65,7 @@ public static function getRelations(): array
         RelationManagers\AllowancesRelationManager::class,
         RelationManagers\DeductionsRelationManager::class,
         RelationManagers\BankDetailsRelationManager::class,
+        RelationManagers\ArrearsRelationManager::class,
     ];
 }
 

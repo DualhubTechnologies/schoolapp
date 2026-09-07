@@ -19,14 +19,15 @@ class AllowanceTypeResource extends Resource
 {
     protected static ?string $model = AllowanceType::class;
 
-    protected static string|BackedEnum|null $navigationIcon = Heroicon::OutlinedRectangleStack;
+
+    protected static string|BackedEnum|null $navigationIcon = Heroicon::OutlinedGift;
 
     protected static ?string $recordTitleAttribute = 'name';
 
-    public static function getNavigationGroup(): ?string
-    {
-        return 'Payroll Settings';
-    }
+public static function getNavigationGroup(): ?string
+{
+    return 'Human Resources';
+}
 
     public static function form(Schema $schema): Schema
     {
@@ -65,5 +66,10 @@ class AllowanceTypeResource extends Resource
             'create' => CreateAllowanceType::route('/create'),
             'edit' => EditAllowanceType::route('/{record}/edit'),
         ];
+    }
+
+    public static function shouldRegisterNavigation(): bool
+    {
+        return ! auth()->user()?->hasRole('Super Admin');
     }
 }

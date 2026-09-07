@@ -5,6 +5,7 @@ namespace App\Filament\Resources\PayrollPeriods\RelationManagers;
 use Filament\Actions\Action;
 use Filament\Actions\BulkActionGroup;
 use Filament\Actions\DeleteBulkAction;
+use Filament\Notifications\Notification;
 use Filament\Resources\RelationManagers\RelationManager;
 use Filament\Schemas\Schema;
 use Filament\Tables\Columns\TextColumn;
@@ -79,10 +80,44 @@ class PayrollEntriesRelationManager extends RelationManager
                 //
             ])
             ->recordActions([
+                Action::make('exclude')
+                    ->label('Exclude')
+                    ->icon('heroicon-o-x-circle')
+                    ->color('danger')
+                    ->visible(fn ($record) => $record->status === 'included' && $record->payrollPeriod->status === 'draft')
+                    ->requiresConfirmation()
+                    ->modalHeading('Exclude from payroll')
+                    ->modalDescription(fn ($record) => "{$record->staff->name} will NOT be paid in this payroll run. Their entry will remain on record but excluded from all totals. Continue?")
+                    ->action(function ($record) {
+                        $record->update(['status' => 'excluded']);
+                        self::recalculatePeriodTotals($record->payrollPeriod);
+
+                        Notification::make()
+                            ->title($record->staff->name . ' excluded from payroll')
+                            ->warning()
+                            ->send();
+                    }),
+                Action::make('include')
+                    ->label('Re-include')
+                    ->icon('heroicon-o-check-circle')
+                    ->color('success')
+                    ->visible(fn ($record) => $record->status === 'excluded' && $record->payrollPeriod->status === 'draft')
+                    ->requiresConfirmation()
+                    ->modalDescription(fn ($record) => "Re-include {$record->staff->name} in this payroll run?")
+                    ->action(function ($record) {
+                        $record->update(['status' => 'included']);
+                        self::recalculatePeriodTotals($record->payrollPeriod);
+
+                        Notification::make()
+                            ->title($record->staff->name . ' re-included in payroll')
+                            ->success()
+                            ->send();
+                    }),
                 Action::make('printPayslip')
                     ->label('Payslip')
                     ->icon('heroicon-o-printer')
                     ->color('info')
+                    ->visible(fn ($record) => $record->status === 'included')
                     ->url(fn ($record) => route('payslip.download', $record), shouldOpenInNewTab: true),
             ])
             ->toolbarActions([
@@ -90,5 +125,20 @@ class PayrollEntriesRelationManager extends RelationManager
                     DeleteBulkAction::make(),
                 ]),
             ]);
+    }
+
+    protected static function recalculatePeriodTotals($period): void
+    {
+        $included = $period->entries()->where('status', 'included');
+
+        $period->update([
+            'total_gross' => $included->sum('gross_pay'),
+            'total_allowances' => $included->sum('total_allowances'),
+            'total_deductions' => $included->sum('total_deductions'),
+            'total_statutory' => $included->sum('total_statutory'),
+            'total_net' => $included->sum('net_pay'),
+            'total_employer_nssf' => $included->sum('nssf_employer'),
+            'staff_count' => $included->count(),
+        ]);
     }
 }

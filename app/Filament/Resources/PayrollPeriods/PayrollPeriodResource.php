@@ -49,7 +49,7 @@ class PayrollPeriodResource extends Resource
 
         return $query;
     }
-
+    protected static ?int $navigationSort = 2;
     public static function getRelations(): array
     {
         return [
@@ -64,5 +64,14 @@ class PayrollPeriodResource extends Resource
             'create' => CreatePayrollPeriod::route('/create'),
             'edit' => EditPayrollPeriod::route('/{record}/edit'),
         ];
+    }
+    public static function shouldRegisterNavigation(): bool
+    {
+        return ! auth()->user()?->hasRole('Super Admin');
+    }
+
+    public static function getNavigationGroup(): ?string
+    {
+        return 'Human Resources';
     }
 }

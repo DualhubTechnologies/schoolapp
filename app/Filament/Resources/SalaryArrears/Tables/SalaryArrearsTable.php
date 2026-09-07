@@ -1,66 +1,35 @@
 <?php
 
-namespace App\Filament\Resources\Staff\RelationManagers;
+namespace App\Filament\Resources\SalaryArrears\Tables;
 
 use Filament\Actions\Action;
+use Filament\Actions\BulkAction;
 use Filament\Actions\BulkActionGroup;
-use Filament\Actions\CreateAction;
-use Filament\Actions\DeleteAction;
 use Filament\Actions\DeleteBulkAction;
 use Filament\Actions\EditAction;
-use Filament\Forms\Components\Select;
-use Filament\Forms\Components\TextInput;
-use Filament\Forms\Components\Textarea;
 use Filament\Notifications\Notification;
-use Filament\Resources\RelationManagers\RelationManager;
-use Filament\Schemas\Schema;
 use Filament\Tables\Columns\TextColumn;
 use Filament\Tables\Filters\SelectFilter;
 use Filament\Tables\Table;
+use Illuminate\Database\Eloquent\Collection;
 
-class ArrearsRelationManager extends RelationManager
+class SalaryArrearsTable
 {
-    protected static string $relationship = 'arrears';
-
-    protected static ?string $title = 'Salary Arrears';
-
-    public function form(Schema $schema): Schema
-    {
-        return $schema
-            ->components([
-                TextInput::make('amount')
-                    ->label('Arrears amount')
-                    ->required()
-                    ->numeric()
-                    ->prefix('UGX'),
-                Textarea::make('reason')
-                    ->required()
-                    ->placeholder('e.g. Salary adjustment backdated to July, Missed overtime payment'),
-                Select::make('month')
-                    ->label('Arrears for month')
-                    ->options([
-                        1 => 'January', 2 => 'February', 3 => 'March',
-                        4 => 'April', 5 => 'May', 6 => 'June',
-                        7 => 'July', 8 => 'August', 9 => 'September',
-                        10 => 'October', 11 => 'November', 12 => 'December',
-                    ])
-                    ->required(),
-                TextInput::make('year')
-                    ->label('Arrears for year')
-                    ->required()
-                    ->numeric()
-                    ->default(now()->year)
-                    ->minValue(2020)
-                    ->maxValue(2050),
-            ]);
-    }
-
-    public function table(Table $table): Table
+    public static function configure(Table $table): Table
     {
         return $table
-            ->recordTitleAttribute('amount')
             ->defaultSort('created_at', 'desc')
             ->columns([
+                TextColumn::make('staff.name')
+                    ->label('Staff member')
+                    ->searchable()
+                    ->sortable(),
+                TextColumn::make('staff.staff_no')
+                    ->label('Staff No.')
+                    ->searchable(),
+                TextColumn::make('school.name')
+                    ->label('School')
+                    ->searchable(),
                 TextColumn::make('month')
                     ->label('For period')
                     ->formatStateUsing(function ($record) {
@@ -72,13 +41,13 @@ class ArrearsRelationManager extends RelationManager
                     ->money('UGX')
                     ->sortable(),
                 TextColumn::make('reason')
-                    ->limit(40)
+                    ->limit(50)
                     ->searchable(),
                 TextColumn::make('status')
                     ->badge()
                     ->color(fn (string $state): string => match ($state) {
-                        'pending' => 'gray',
-                        'approved' => 'warning',
+                        'pending' => 'warning',
+                        'approved' => 'info',
                         'paid' => 'success',
                     }),
                 TextColumn::make('appliedInPeriod.month')
@@ -88,7 +57,11 @@ class ArrearsRelationManager extends RelationManager
                         $months = [1 => 'January', 2 => 'February', 3 => 'March', 4 => 'April', 5 => 'May', 6 => 'June', 7 => 'July', 8 => 'August', 9 => 'September', 10 => 'October', 11 => 'November', 12 => 'December'];
                         return ($months[$record->appliedInPeriod->month] ?? '') . ' ' . $record->appliedInPeriod->year;
                     })
-                    ->placeholder('Not yet applied'),
+                    ->placeholder('—'),
+                TextColumn::make('created_at')
+                    ->label('Detected on')
+                    ->date()
+                    ->sortable(),
             ])
             ->filters([
                 SelectFilter::make('status')
@@ -96,39 +69,66 @@ class ArrearsRelationManager extends RelationManager
                         'pending' => 'Pending',
                         'approved' => 'Approved',
                         'paid' => 'Paid',
-                    ]),
-            ])
-            ->headerActions([
-                CreateAction::make()
-                    ->label('Add arrears')
-                    ->mutateFormDataUsing(function (array $data): array {
-                        $data['school_id'] = $this->getOwnerRecord()->school_id;
-                        $data['status'] = 'pending';
-                        return $data;
-                    }),
+                    ])
+                    ->default('pending'),
             ])
             ->recordActions([
                 Action::make('approve')
                     ->label('Approve')
                     ->icon('heroicon-o-check-circle')
-                    ->color('warning')
+                    ->color('success')
                     ->visible(fn ($record) => $record->status === 'pending')
                     ->requiresConfirmation()
                     ->action(function ($record) {
                         $record->update(['status' => 'approved']);
 
                         Notification::make()
-                            ->title('Arrears approved — will be included in next payroll generation')
+                            ->title('Arrears approved for ' . $record->staff->name)
                             ->success()
+                            ->send();
+                    }),
+                Action::make('reject')
+                    ->label('Reject')
+                    ->icon('heroicon-o-x-circle')
+                    ->color('danger')
+                    ->visible(fn ($record) => $record->status === 'pending')
+                    ->requiresConfirmation()
+                    ->modalHeading('Reject arrears')
+                    ->modalDescription(fn ($record) => "This will permanently delete the arrears record for {$record->staff->name}. This person will NOT receive back-pay for this period. Continue?")
+                    ->action(function ($record) {
+                        $name = $record->staff->name;
+                        $record->delete();
+
+                        Notification::make()
+                            ->title("Arrears rejected and removed for {$name}")
+                            ->warning()
                             ->send();
                     }),
                 EditAction::make()
                     ->visible(fn ($record) => $record->status === 'pending'),
-                DeleteAction::make()
-                    ->visible(fn ($record) => $record->status === 'pending'),
             ])
             ->toolbarActions([
                 BulkActionGroup::make([
+                    BulkAction::make('approveSelected')
+                        ->label('Approve selected')
+                        ->icon('heroicon-o-check-circle')
+                        ->color('success')
+                        ->requiresConfirmation()
+                        ->action(function (Collection $records) {
+                            $count = 0;
+                            foreach ($records as $record) {
+                                if ($record->status === 'pending') {
+                                    $record->update(['status' => 'approved']);
+                                    $count++;
+                                }
+                            }
+
+                            Notification::make()
+                                ->title("{$count} arrears approved")
+                                ->success()
+                                ->send();
+                        })
+                        ->deselectRecordsAfterCompletion(),
                     DeleteBulkAction::make(),
                 ]),
             ]);

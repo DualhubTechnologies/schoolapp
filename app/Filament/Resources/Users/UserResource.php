@@ -59,6 +59,7 @@ class UserResource extends Resource
         ];
     }
     protected static ?int $navigationSort = 6;
+    
     public static function getNavigationGroup(): ?string
     {
         if (auth()->user()?->hasRole('Super Admin')) {

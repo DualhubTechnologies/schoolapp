@@ -49,8 +49,10 @@ class StudentImporter extends Importer
                 ->label('Guardian phone')
                 ->example('0775449733'),
 
+
             ImportColumn::make('status')
                 ->rules(['nullable', Rule::in(array_keys(Student::STATUSES))])
+                ->default('active')
                 ->example('active'),
 
             ImportColumn::make('date_of_birth')

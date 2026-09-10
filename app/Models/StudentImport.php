@@ -19,6 +19,7 @@ class StudentImport extends Model
         'failed_rows',
         'duplicate_rows',
         'column_map',
+        'confirm_on_import',
         'validation_errors',
         'import_log',
         'error_message',
@@ -32,6 +33,7 @@ class StudentImport extends Model
             'column_map' => 'array',
             'validation_errors' => 'array',
             'import_log' => 'array',
+            'confirm_on_import' => 'boolean',
             'started_at' => 'datetime',
             'completed_at' => 'datetime',
         ];

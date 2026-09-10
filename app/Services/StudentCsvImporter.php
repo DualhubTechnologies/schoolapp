@@ -28,6 +28,8 @@ class StudentCsvImporter
     public const VALID_COLUMNS = [
         'name',
         'admission_no',
+        'lin',
+        'nin',
         'class',
         'section',
         'gender',
@@ -50,10 +52,21 @@ class StudentCsvImporter
     protected array $sectionCache = [];
     protected array $existingAdmissionNos = [];
 
+    /**
+     * When true, imported students are marked as CONFIRMED full students
+     * (used for the school's existing/continuing student body). When false,
+     * students come in PROVISIONAL — the default for new admissions.
+     */
+    protected bool $confirmOnImport = false;
+
     public function __construct(StudentImport $import)
     {
         $this->import = $import;
         $this->schoolId = $import->school_id;
+
+        // The confirm-existing choice is stored on the import record so it
+        // survives the queued job (which reconstructs the importer fresh).
+        $this->confirmOnImport = (bool) ($import->confirm_on_import ?? false);
     }
 
     /**
@@ -231,7 +244,11 @@ class StudentCsvImporter
             'failed_rows' => 0,
         ]);
 
-        $this->import->appendLog('Starting import...');
+        $this->import->appendLog(
+            $this->confirmOnImport
+                ? 'Starting import (existing students — will be marked confirmed)...'
+                : 'Starting import (new admissions — will be marked provisional)...'
+        );
 
         $path = Storage::disk('local')->path($this->import->file_path);
         $handle = fopen($path, 'r');
@@ -404,9 +421,24 @@ class StudentCsvImporter
                 $guardianId = $guardian->id;
             }
 
-            Student::create([
+            // Enrolment: existing students come in confirmed; new admissions provisional.
+            $enrolment = $this->confirmOnImport
+                ? [
+                    'enrolment_status' => 'confirmed',
+                    'confirmed_at' => now(),
+                    'confirmed_via' => 'manual',
+                ]
+                : [
+                    'enrolment_status' => 'provisional',
+                    'confirmed_at' => null,
+                    'confirmed_via' => null,
+                ];
+
+            Student::create(array_merge([
                 'school_id' => $this->schoolId,
                 'admission_no' => $data['admission_no'],
+                'lin' => ! empty($data['lin']) ? $data['lin'] : null,
+                'nin' => ! empty($data['nin']) ? $data['nin'] : null,
                 'name' => $data['name'],
                 'school_class_id' => $classId,
                 'section_id' => $sectionId,
@@ -419,7 +451,7 @@ class StudentCsvImporter
                 'address' => $data['address'] ?? null,
                 'medical_notes' => $data['medical_notes'] ?? null,
                 'status' => ! empty($data['status']) ? strtolower($data['status']) : 'active',
-            ]);
+            ], $enrolment));
         });
     }
 
@@ -477,22 +509,24 @@ class StudentCsvImporter
         $handle = fopen($path, 'w');
         fputcsv($handle, self::VALID_COLUMNS);
         fputcsv($handle, [
-            'John Mukasa',
-            '001',
-            'Senior 1',
-            'A',
-            'Male',
-            '2010-03-15',
-            '2026-02-01',
-            '0771234567',
-            'john@example.com',
-            'Kampala',
-            '',
-            'David Mukasa',
-            '0701234567',
-            'david@example.com',
-            'father',
-            'active',
+            'John Mukasa',   // name
+            '001',           // admission_no
+            '',              // lin (blank — often not yet issued)
+            '',              // nin
+            'Senior 1',      // class
+            'A',             // section
+            'Male',          // gender
+            '2010-03-15',    // date_of_birth
+            '2026-02-01',    // admission_date
+            '0771234567',    // phone
+            'john@example.com', // email
+            'Kampala',       // address
+            '',              // medical_notes
+            'David Mukasa',  // guardian_name
+            '0701234567',    // guardian_phone
+            'david@example.com', // guardian_email
+            'father',        // guardian_relationship
+            'active',        // status
         ]);
         fclose($handle);
 

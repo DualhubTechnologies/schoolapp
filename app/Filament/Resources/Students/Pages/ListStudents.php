@@ -33,6 +33,13 @@ class ListStudents extends ListRecords
 
     public bool $runInBackground = true;
 
+    /**
+     * When ticked, the uploaded students are the school's existing/continuing
+     * body and are imported as CONFIRMED. Left unticked for new admissions,
+     * which come in PROVISIONAL.
+     */
+    public bool $confirmExisting = false;
+
     public array $validationResult = [];
 
     public array $importProgress = [
@@ -59,12 +66,6 @@ class ListStudents extends ListRecords
     {
         return [
 
-            /*
-            |--------------------------------------------------------------------------
-            | Download CSV template
-            |--------------------------------------------------------------------------
-            */
-
             Action::make('downloadTemplate')
                 ->label('CSV template')
                 ->icon('heroicon-o-arrow-down-tray')
@@ -78,12 +79,6 @@ class ListStudents extends ListRecords
                     );
                 }),
 
-            /*
-            |--------------------------------------------------------------------------
-            | Import students
-            |--------------------------------------------------------------------------
-            */
-
             Action::make('importStudents')
                 ->label('Import students')
                 ->icon('heroicon-o-arrow-up-tray')
@@ -92,24 +87,9 @@ class ListStudents extends ListRecords
                 ->modalWidth('5xl')
                 ->modalSubmitAction(false)
                 ->modalCancelAction(false)
-
-                /*
-                |--------------------------------------------------------------------------
-                | Reset import whenever modal opens
-                |--------------------------------------------------------------------------
-                */
-
                 ->mountUsing(function () {
                     $this->resetImport();
                 })
-
-                /*
-                |--------------------------------------------------------------------------
-                | IMPORTANT:
-                | Explicitly pass Livewire properties to the Blade view.
-                |--------------------------------------------------------------------------
-                */
-
                 ->modalContent(function (): View {
                     return view(
                         'filament.resources.students.pages.import-modal',
@@ -118,17 +98,12 @@ class ListStudents extends ListRecords
                             'csvFile' => $this->csvFile,
                             'importId' => $this->importId,
                             'runInBackground' => $this->runInBackground,
+                            'confirmExisting' => $this->confirmExisting,
                             'validationResult' => $this->validationResult,
                             'importProgress' => $this->importProgress,
                         ]
                     );
                 }),
-
-            /*
-            |--------------------------------------------------------------------------
-            | Create student
-            |--------------------------------------------------------------------------
-            */
 
             CreateAction::make()
                 ->label('New student'),
@@ -143,12 +118,6 @@ class ListStudents extends ListRecords
 
     public function uploadAndValidate(): void
     {
-        /*
-        |--------------------------------------------------------------------------
-        | Validate uploaded file
-        |--------------------------------------------------------------------------
-        */
-
         $this->validate([
             'csvFile' => [
                 'required',
@@ -158,32 +127,10 @@ class ListStudents extends ListRecords
             ],
         ]);
 
-        /*
-        |--------------------------------------------------------------------------
-        | Show validating state
-        |--------------------------------------------------------------------------
-        */
-
         $this->importStep = 'validating';
 
-        /*
-        |--------------------------------------------------------------------------
-        | Store uploaded file
-        |--------------------------------------------------------------------------
-        */
-
-        $path = $this->csvFile->store(
-            'imports',
-            'local'
-        );
-
+        $path = $this->csvFile->store('imports', 'local');
         $fileName = $this->csvFile->getClientOriginalName();
-
-        /*
-        |--------------------------------------------------------------------------
-        | Create import record
-        |--------------------------------------------------------------------------
-        */
 
         $import = StudentImport::create([
             'school_id' => auth()->user()->school_id,
@@ -191,31 +138,13 @@ class ListStudents extends ListRecords
             'file_name' => $fileName,
             'file_path' => $path,
             'status' => 'pending',
+            'confirm_on_import' => $this->confirmExisting,
         ]);
-
-        /*
-        |--------------------------------------------------------------------------
-        | Remember import ID
-        |--------------------------------------------------------------------------
-        */
 
         $this->importId = $import->id;
 
-        /*
-        |--------------------------------------------------------------------------
-        | Validate CSV
-        |--------------------------------------------------------------------------
-        */
-
         $importer = new StudentCsvImporter($import);
-
         $this->validationResult = $importer->validate();
-
-        /*
-        |--------------------------------------------------------------------------
-        | Move to preview
-        |--------------------------------------------------------------------------
-        */
 
         $this->importStep = 'preview';
     }
@@ -228,29 +157,11 @@ class ListStudents extends ListRecords
 
     public function startImport(): void
     {
-        /*
-        |--------------------------------------------------------------------------
-        | Make sure we have an import
-        |--------------------------------------------------------------------------
-        */
-
         if (! $this->importId) {
             return;
         }
 
-        /*
-        |--------------------------------------------------------------------------
-        | Find import
-        |--------------------------------------------------------------------------
-        */
-
         $import = StudentImport::find($this->importId);
-
-        /*
-        |--------------------------------------------------------------------------
-        | Make sure import exists and was validated
-        |--------------------------------------------------------------------------
-        */
 
         if (! $import || $import->status !== 'validated') {
             Notification::make()
@@ -262,36 +173,17 @@ class ListStudents extends ListRecords
             return;
         }
 
-        /*
-        |--------------------------------------------------------------------------
-        | Move to importing state
-        |--------------------------------------------------------------------------
-        */
+        // Persist the confirm-existing choice (in case it was toggled on the
+        // preview step) so the queued job picks it up.
+        $import->update(['confirm_on_import' => $this->confirmExisting]);
 
         $this->importStep = 'importing';
 
-        /*
-        |--------------------------------------------------------------------------
-        | Background import
-        |--------------------------------------------------------------------------
-        */
-
         if ($this->runInBackground) {
-
             ProcessStudentImport::dispatch($import);
-
             $this->importProgress['status'] = 'importing';
-
         } else {
-
-            /*
-            |--------------------------------------------------------------------------
-            | Run immediately
-            |--------------------------------------------------------------------------
-            */
-
             ProcessStudentImport::dispatchSync($import);
-
             $this->refreshProgress();
         }
     }
@@ -308,53 +200,25 @@ class ListStudents extends ListRecords
             return;
         }
 
-        /*
-        |--------------------------------------------------------------------------
-        | Reload import
-        |--------------------------------------------------------------------------
-        */
-
         $import = StudentImport::find($this->importId);
 
         if (! $import) {
             return;
         }
 
-        /*
-        |--------------------------------------------------------------------------
-        | Update progress
-        |--------------------------------------------------------------------------
-        */
-
         $this->importProgress = [
             'status' => $import->status,
-
             'total_rows' => $import->total_rows,
-
             'processed_rows' => $import->processed_rows,
-
             'successful_rows' => $import->successful_rows,
-
             'failed_rows' => $import->failed_rows,
-
             'duplicate_rows' => $import->duplicate_rows,
-
             'progress_percent' => $import->progress_percent,
-
             'elapsed_seconds' => $import->elapsed_seconds ?? 0,
-
             'estimated_remaining' => $import->estimated_remaining,
-
             'log' => $import->import_log ?? [],
-
             'errors' => $import->validation_errors ?? [],
         ];
-
-        /*
-        |--------------------------------------------------------------------------
-        | If finished, show complete screen
-        |--------------------------------------------------------------------------
-        */
 
         if ($import->isComplete()) {
             $this->importStep = 'complete';
@@ -370,15 +234,11 @@ class ListStudents extends ListRecords
     public function resetImport(): void
     {
         $this->csvFile = null;
-
         $this->importId = null;
-
         $this->importStep = 'upload';
-
         $this->runInBackground = true;
-
+        $this->confirmExisting = false;
         $this->validationResult = [];
-
         $this->importProgress = [
             'status' => 'pending',
             'total_rows' => 0,
@@ -407,7 +267,6 @@ class ListStudents extends ListRecords
         }
 
         $minutes = floor($seconds / 60);
-
         $secs = $seconds % 60;
 
         return "{$minutes}m {$secs}s";

@@ -11,6 +11,7 @@ use Filament\Panel;
 use Filament\PanelProvider;
 use Filament\Support\Colors\Color;
 use Filament\Support\Enums\Width;
+use Filament\Support\Icons\Heroicon;
 use Filament\Widgets\AccountWidget;
 use Illuminate\Cookie\Middleware\AddQueuedCookiesToResponse;
 use Illuminate\Cookie\Middleware\EncryptCookies;
@@ -18,6 +19,7 @@ use Illuminate\Foundation\Http\Middleware\PreventRequestForgery;
 use Illuminate\Routing\Middleware\SubstituteBindings;
 use Illuminate\Session\Middleware\StartSession;
 use Illuminate\View\Middleware\ShareErrorsFromSession;
+use Filafly\LogoTools\LogoToolsPlugin;
 
 class AdminPanelProvider extends PanelProvider
 {
@@ -37,8 +39,21 @@ class AdminPanelProvider extends PanelProvider
                 'warning' => Color::Amber,
                 'info' => Color::Sky,
             ])
+            ->brandLogo(fn () => request()->routeIs('filament.admin.auth.login')
+                ? asset('images/schoolhub-logo-light.svg')
+                : asset('images/schoolhub-logo-dark.svg'))
+            ->brandLogoHeight('3.5rem')
+            ->favicon(asset('images/schoolhub-icon-192.png'))
             ->maxContentWidth(Width::Full)
             ->breadcrumbs(false)
+            ->plugin(
+                LogoToolsPlugin::make()
+                    ->iconLogo(asset('images/schoolhub-icon.svg'))
+                    ->darkModeIconLogo(asset('images/schoolhub-icon-dark.svg')) // optional
+                    ->iconLogoHeight('1.5rem')
+                    ->collapseButtonIcon(Heroicon::OutlinedBars3)
+                    ->expandButtonIcon(Heroicon::OutlinedBars3)
+            )
             ->sidebarCollapsibleOnDesktop()
             ->renderHook(
                 \Filament\View\PanelsRenderHook::HEAD_END,

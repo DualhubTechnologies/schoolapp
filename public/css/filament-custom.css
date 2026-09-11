@@ -582,3 +582,8 @@ html .fi-sidebar .fi-sidebar-group-collapse-btn:hover {
     color: #9aa3b8 !important;
     opacity: 1;
 }
+
+button.fi-topbar-open-collapse-sidebar-btn,
+button.fi-topbar-close-collapse-sidebar-btn {
+    background-color: transparent !important;
+}

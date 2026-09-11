@@ -4,7 +4,7 @@
         "Read more about it at https://getcomposer.org/doc/01-basic-usage.md#installing-dependencies",
         "This file is @generated automatically"
     ],
-    "content-hash": "d7a98889b70994f1eb081f45c716a7c8",
+    "content-hash": "0cc7d97ec0306bcfa6a8ecbbbfc47691",
     "packages": [
         {
             "name": "anourvalar/eloquent-serialize",
@@ -1527,6 +1527,69 @@
                 }
             ],
             "time": "2025-03-06T22:45:56+00:00"
+        },
+        {
+            "name": "filafly/filament-logo-tools",
+            "version": "v0.1.0",
+            "source": {
+                "type": "git",
+                "url": "https://github.com/filafly/filament-logo-tools.git",
+                "reference": "00e173ec9bfccaa6bf60124fa6081728601c9079"
+            },
+            "dist": {
+                "type": "zip",
+                "url": "https://api.github.com/repos/filafly/filament-logo-tools/zipball/00e173ec9bfccaa6bf60124fa6081728601c9079",
+                "reference": "00e173ec9bfccaa6bf60124fa6081728601c9079",
+                "shasum": ""
+            },
+            "require": {
+                "filament/filament": "^4.0 || ^5.0",
+                "php": "^8.2",
+                "spatie/laravel-package-tools": "^1.92"
+            },
+            "require-dev": {
+                "laravel/pint": "^1.22",
+                "phpunit/phpunit": "^12.3"
+            },
+            "type": "library",
+            "extra": {
+                "laravel": {
+                    "providers": [
+                        "Filafly\\LogoTools\\LogoToolsServiceProvider"
+                    ]
+                }
+            },
+            "autoload": {
+                "psr-4": {
+                    "Filafly\\LogoTools\\": "src/"
+                }
+            },
+            "notification-url": "https://packagist.org/downloads/",
+            "license": [
+                "MIT"
+            ],
+            "authors": [
+                {
+                    "name": "Nolan Nordlund",
+                    "email": "nolan@filafly.com",
+                    "homepage": "https://www.filafly.com/",
+                    "role": "Developer"
+                }
+            ],
+            "description": "Enhanced logo controls for Filament panel sidebars — icon logos, collapse button positioning, and inverted logo sections.",
+            "homepage": "https://filafly.com/plugins/filament-logo-tools",
+            "keywords": [
+                "filament",
+                "laravel",
+                "logo",
+                "plugin",
+                "sidebar"
+            ],
+            "support": {
+                "issues": "https://github.com/filafly/filament-logo-tools/issues",
+                "source": "https://github.com/filafly/filament-logo-tools/tree/v0.1.0"
+            },
+            "time": "2026-02-26T15:04:01+00:00"
         },
         {
             "name": "filament/actions",

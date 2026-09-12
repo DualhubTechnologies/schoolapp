@@ -6,7 +6,7 @@ use App\Filament\App\Resources\Sections\Pages\CreateSection;
 use App\Filament\App\Resources\Sections\Pages\EditSection;
 use App\Filament\App\Resources\Sections\Pages\ListSections;
 use App\Filament\App\Resources\Sections\Schemas\SectionForm;
-use App\Filament\App\Resources\Sections\Tables\SectionTable;
+use App\Filament\App\Resources\Sections\Tables\SectionsTable;
 use App\Models\Section;
 use BackedEnum;
 use Filament\Resources\Resource;
@@ -34,7 +34,7 @@ class SectionResource extends Resource
 
     public static function table(Table $table): Table
     {
-        return SectionTable::configure($table);
+        return SectionsTable::configure($table);
     }
 
     public static function shouldRegisterNavigation(): bool

@@ -57,6 +57,8 @@ class GuardiansTable
                 BulkActionGroup::make([
                     DeleteBulkAction::make(),
                 ]),
-            ]);
+            ])
+                    ->paginationPageOptions([5, 10, 25, 50])
+        ->defaultPaginationPageOption(5);
     }
 }

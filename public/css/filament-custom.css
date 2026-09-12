@@ -207,6 +207,16 @@ html .fi-sidebar .fi-sidebar-group-collapse-btn {
     display: none !important;
 }
 
+/* Filament reserves vertical space for its topbar via this variable
+   and positions the sidebar against it. Hiding .fi-topbar does NOT
+   release that space — the 4rem (64px) stays reserved, which showed
+   up as a phantom gap above the navy sidebar on any page long enough
+   to scroll. Zero it out, since there is no Filament topbar anymore. */
+.fi-body,
+html .fi-body {
+    --topbar-height: 0rem !important;
+}
+
 /* Avatars elsewhere (table rows, widgets) — one fixed brand color,
    never Filament's random per-name hash. */
 .fi-avatar {
@@ -231,7 +241,7 @@ html .fi-sidebar .fi-sidebar-group-collapse-btn {
     border-bottom: 1px solid var(--sh-border);
     box-shadow: 0 1px 3px rgba(13, 31, 56, 0.05);
     padding: 0.85rem 1.75rem;
-    margin: -1.5rem -1.75rem 1.5rem;
+    margin: -1.5rem -1.75rem 0.9rem;
     min-height: 4.25rem;
 }
 
@@ -484,19 +494,40 @@ html .fi-sidebar .fi-sidebar-group-collapse-btn {
     padding-left: 1.75rem !important;
     padding-right: 1.75rem !important;
     padding-top: 1.5rem !important;
-    padding-bottom: 2rem !important;
+    padding-bottom: 0 !important;
 }
 
+/* Filament adds its own padding on the page wrapper on top of
+   .fi-main's — that stacking is what created the wide dead band
+   between the topbar and the page header. */
+.fi-page {
+    padding-top: 0 !important;
+}
+
+.fi-page-content,
+.fi-resource-list-records-page .fi-page-content {
+    gap: 0.75rem !important;
+}
+
+/* --- Page header band ---
+   PSF wraps the page title in a tinted band with a blue rule under
+   it, rather than letting the title float on the grey background. */
 .fi-header {
-    margin-top: 0.5rem !important;
-    margin-bottom: 1.5rem !important;
+    background: linear-gradient(180deg, #f2f7fd 0%, #eaf2fb 100%) !important;
+    border: 1px solid var(--sh-border) !important;
+    border-bottom: 3px solid var(--sh-blue-600) !important;
+    border-radius: 12px 12px 0 0 !important;
+    padding: 1.05rem 1.35rem !important;
+    margin-top: 0 !important;
+    margin-bottom: 0 !important;
 }
 
 .fi-header-heading {
-    color: var(--sh-navy-800) !important;
+    color: var(--sh-blue-600) !important;
     font-weight: 700 !important;
-    font-size: 1.5rem !important;
-    letter-spacing: -0.01em !important;
+    font-size: 1.3rem !important;
+    text-transform: uppercase !important;
+    letter-spacing: 0.02em !important;
 }
 
 .fi-header-subheading {
@@ -603,32 +634,110 @@ html .fi-sidebar .fi-sidebar-group-collapse-btn {
 }
 
 .fi-ta-header-cell {
-    background: #f7f9fc !important;
-    font-size: 0.72rem !important;
+    background: #eef3fa !important;
+    font-size: 0.74rem !important;
     font-weight: 700 !important;
-    text-transform: uppercase !important;
-    letter-spacing: 0.05em !important;
-    padding-top: 0.8rem !important;
-    padding-bottom: 0.8rem !important;
+    letter-spacing: 0.02em !important;
+    padding-top: 0.75rem !important;
+    padding-bottom: 0.75rem !important;
+    border-right: 1px solid #dde4ee !important;
+    border-bottom: 2px solid #ccd7e6 !important;
 }
 
 .fi-ta-header-cell,
 .fi-ta-header-cell span {
-    color: var(--sh-text-muted) !important;
+    color: var(--sh-navy-800) !important;
 }
 
 .fi-ta-row {
     background: var(--sh-surface) !important;
-    border-bottom: 1px solid #eef1f6 !important;
 }
 
 .fi-ta-row:hover {
-    background: #f9fbfe !important;
+    background: #f5f9fe !important;
 }
 
+/* Bordered grid — PSF's table has visible cell dividers on all
+   sides, not just between rows. */
 .fi-ta-cell {
-    padding-top: 0.8rem !important;
-    padding-bottom: 0.8rem !important;
+    padding-top: 0.6rem !important;
+    padding-bottom: 0.6rem !important;
+    border-right: 1px solid #e8edf5 !important;
+    border-bottom: 1px solid #e8edf5 !important;
+}
+
+/* No dangling border on the last column of either row type */
+.fi-ta-header-cell:last-child,
+.fi-ta-cell:last-child {
+    border-right: none !important;
+}
+
+/* Filament pads the cell's inner wrapper as well as the cell itself,
+   which is what was making single-line rows ~95px tall. */
+.fi-ta-cell > div,
+.fi-ta-col-wrp {
+    padding-top: 0 !important;
+    padding-bottom: 0 !important;
+    min-height: 0 !important;
+}
+
+/* Circular initials/avatars in table rows — keep them modest so they
+   don't drive the row height up on their own. */
+.fi-ta-cell .fi-avatar,
+.fi-ta-cell img[class*="rounded-full"],
+.fi-ta-cell .fi-ta-image-item {
+    width: 2.1rem !important;
+    height: 2.1rem !important;
+}
+
+/* Close the gap between the page header and the table. */
+.fi-page-content,
+.fi-resource-list-records-page .fi-page-content {
+    gap: 1rem !important;
+}
+
+.fi-ta-ctn {
+    margin-top: 0 !important;
+}
+
+/* --- Pagination: numbered buttons like the PSF reference --- */
+
+.fi-pagination-items {
+    gap: 0.25rem !important;
+}
+
+.fi-pagination-item .fi-btn,
+.fi-pagination-item button,
+.fi-pagination-item a {
+    border: 1px solid var(--sh-border) !important;
+    background: var(--sh-surface) !important;
+    color: var(--sh-text) !important;
+    border-radius: 6px !important;
+    min-width: 2.25rem !important;
+    justify-content: center !important;
+    font-weight: 500 !important;
+    box-shadow: none !important;
+}
+
+.fi-pagination-item .fi-btn:hover,
+.fi-pagination-item button:hover,
+.fi-pagination-item a:hover {
+    background: #eef3fa !important;
+    border-color: #c8d5e6 !important;
+}
+
+/* Current page — solid blue */
+.fi-pagination-item .fi-active,
+.fi-pagination-item[aria-current] .fi-btn,
+.fi-pagination-item .fi-btn.fi-active {
+    background: var(--sh-blue-600) !important;
+    border-color: var(--sh-blue-600) !important;
+    color: #ffffff !important;
+}
+
+.fi-pagination-item .fi-active span,
+.fi-pagination-item[aria-current] .fi-btn span {
+    color: #ffffff !important;
 }
 
 .fi-ta-text-item-label {
@@ -685,9 +794,51 @@ html .fi-sidebar .fi-sidebar-group-collapse-btn {
 }
 
 .fi-btn {
-    border-radius: 8px !important;
+    border-radius: 7px !important;
     font-weight: 600 !important;
-    font-size: 0.86rem !important;
+    font-size: 0.84rem !important;
+}
+
+/* Secondary/outlined header actions (CSV template, Import, export
+   buttons) — PSF gives these a solid dark navy fill rather than a
+   pale outline, which reads as deliberate next to the blue primary. */
+.fi-header-actions .fi-btn.fi-color-gray,
+.fi-ta-actions .fi-btn.fi-color-gray {
+    background: var(--sh-navy-800) !important;
+    border-color: var(--sh-navy-800) !important;
+    color: #ffffff !important;
+}
+
+.fi-header-actions .fi-btn.fi-color-gray:hover,
+.fi-ta-actions .fi-btn.fi-color-gray:hover {
+    background: var(--sh-navy-700) !important;
+    border-color: var(--sh-navy-700) !important;
+}
+
+.fi-header-actions .fi-btn.fi-color-gray svg,
+.fi-header-actions .fi-btn.fi-color-gray span,
+.fi-ta-actions .fi-btn.fi-color-gray svg,
+.fi-ta-actions .fi-btn.fi-color-gray span {
+    color: #ffffff !important;
+}
+
+/* Row-level Edit links — outlined button, like the PSF table */
+.fi-ta-cell .fi-link,
+.fi-ta-actions .fi-link {
+    border: 1px solid #c8d5e6 !important;
+    border-radius: 6px !important;
+    padding: 0.28rem 0.6rem !important;
+    color: var(--sh-blue-600) !important;
+    font-size: 0.78rem !important;
+    font-weight: 600 !important;
+    text-decoration: none !important;
+    background: var(--sh-surface) !important;
+}
+
+.fi-ta-cell .fi-link:hover,
+.fi-ta-actions .fi-link:hover {
+    background: var(--sh-blue-100) !important;
+    border-color: var(--sh-blue-500) !important;
 }
 
 .fi-badge {
@@ -711,11 +862,21 @@ html .fi-sidebar .fi-sidebar-group-collapse-btn {
    8. FOOTER (injected via render hook)
    ============================================================ */
 
+/* Sticky, not fixed, on purpose. `position: fixed` would span the
+   whole viewport and sit on top of the navy sidebar — and pinning it
+   with `left: <sidebar width>` breaks the moment the sidebar
+   collapses. Sticky keeps it inside the content column, so it tracks
+   the sidebar's width automatically. */
 .sh-footer {
+    position: sticky;
+    bottom: 0;
+    z-index: 20;
     text-align: center;
-    padding: 1.1rem 1rem;
-    margin-top: 1rem;
+    padding: 0.85rem 1rem;
+    margin: 0.9rem -1.75rem 0;        /* Negative sides match .fi-main padding */
+    background: var(--sh-surface);
     border-top: 1px solid var(--sh-border);
+    box-shadow: 0 -2px 8px rgba(13, 31, 56, 0.04);
     color: var(--sh-text-dim);
     font-size: 0.78rem;
 }
@@ -723,6 +884,13 @@ html .fi-sidebar .fi-sidebar-group-collapse-btn {
 .sh-footer strong {
     color: var(--sh-text-muted);
     font-weight: 600;
+}
+
+@media (max-width: 640px) {
+    .sh-footer {
+        margin-left: -1rem;
+        margin-right: -1rem;
+    }
 }
 
 

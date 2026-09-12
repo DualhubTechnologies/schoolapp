@@ -6,7 +6,7 @@ use App\Filament\App\Resources\SchoolClasses\Pages\CreateSchoolClass;
 use App\Filament\App\Resources\SchoolClasses\Pages\EditSchoolClass;
 use App\Filament\App\Resources\SchoolClasses\Pages\ListSchoolClasses;
 use App\Filament\App\Resources\SchoolClasses\Schemas\SchoolClassForm;
-use App\Filament\App\Resources\SchoolClasses\Tables\SchoolClassTable;
+use App\Filament\App\Resources\SchoolClasses\Tables\SchoolClassesTable;
 use App\Models\SchoolClass;
 use BackedEnum;
 use Filament\Resources\Resource;
@@ -36,7 +36,7 @@ class SchoolClassResource extends Resource
 
     public static function table(Table $table): Table
     {
-        return SchoolClassTable::configure($table);
+        return SchoolClassesTable::configure($table);
     }
 
     public static function shouldRegisterNavigation(): bool

@@ -30,7 +30,8 @@ class AppPanelProvider extends PanelProvider
             ->id('app')
             ->path('/')                       // Serves at http://schoolapp.test
             ->login()
-->passwordReset()
+            ->passwordReset()
+
             // The compiled Tailwind theme. This was MISSING before, which
             // is why modals (e.g. the student import wizard) rendered with
             // no styling on this panel — the classes those views use only
@@ -39,7 +40,7 @@ class AppPanelProvider extends PanelProvider
 
             // --- Branding ---
             ->brandName('SchoolHub')
-            ->brandLogo(fn () => asset('images/schoolhub-logo-light.svg'))
+            ->brandLogo(fn () => asset('images/schoolhub-logo-dark.svg'))
             ->brandLogoHeight('2.5rem')
             ->favicon(asset('images/schoolhub-icon-192.png'))
 

@@ -29,12 +29,13 @@ class AdminPanelProvider extends PanelProvider
             ->id('admin')
             ->path('admin')                   // Super Admin only — gated in User::canAccessPanel()
             ->login()
+
             ->passwordReset()
             ->viteTheme('resources/css/filament/admin/theme.css')
 
             // --- Branding ---
             ->brandName('SchoolHub')
-            ->brandLogo(fn () => asset('images/schoolhub-logo-light.svg'))
+            ->brandLogo(fn () => asset('images/schoolhub-logo-dark.svg'))
             ->brandLogoHeight('3.5rem')
             ->favicon(asset('images/schoolhub-icon-192.png'))
 

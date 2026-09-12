@@ -6,7 +6,7 @@ use App\Filament\App\Resources\Guardians\Pages\CreateGuardian;
 use App\Filament\App\Resources\Guardians\Pages\EditGuardian;
 use App\Filament\App\Resources\Guardians\Pages\ListGuardians;
 use App\Filament\App\Resources\Guardians\Schemas\GuardianForm;
-use App\Filament\App\Resources\Guardians\Tables\GuardianTable;
+use App\Filament\App\Resources\Guardians\Tables\GuardiansTable;
 use App\Models\Guardian;
 use BackedEnum;
 use Filament\Resources\Resource;
@@ -36,7 +36,7 @@ class GuardianResource extends Resource
 
     public static function table(Table $table): Table
     {
-        return GuardianTable::configure($table);
+        return GuardiansTable::configure($table);
     }
 
     public static function shouldRegisterNavigation(): bool

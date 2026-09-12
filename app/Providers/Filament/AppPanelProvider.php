@@ -21,21 +21,26 @@ use Illuminate\Routing\Middleware\SubstituteBindings;
 use Illuminate\Session\Middleware\StartSession;
 use Illuminate\View\Middleware\ShareErrorsFromSession;
 
-class AdminPanelProvider extends PanelProvider
+class AppPanelProvider extends PanelProvider
 {
     public function panel(Panel $panel): Panel
     {
         return $panel
-            ->id('admin')
-            ->path('admin')                   // Super Admin only — gated in User::canAccessPanel()
+            ->default()
+            ->id('app')
+            ->path('/')                       // Serves at http://schoolapp.test
             ->login()
-            ->passwordReset()
+->passwordReset()
+            // The compiled Tailwind theme. This was MISSING before, which
+            // is why modals (e.g. the student import wizard) rendered with
+            // no styling on this panel — the classes those views use only
+            // exist in this compiled stylesheet.
             ->viteTheme('resources/css/filament/admin/theme.css')
 
             // --- Branding ---
             ->brandName('SchoolHub')
             ->brandLogo(fn () => asset('images/schoolhub-logo-light.svg'))
-            ->brandLogoHeight('3.5rem')
+            ->brandLogoHeight('2.5rem')
             ->favicon(asset('images/schoolhub-icon-192.png'))
 
             // --- Colors ---
@@ -54,8 +59,9 @@ class AdminPanelProvider extends PanelProvider
             ->breadcrumbs(false)
 
             // --- Plugins ---
-            // Icon-only logo for the collapsed sidebar rail.
-            // No darkModeIconLogo() — darkMode is off.
+            // Supplies the icon-only logo shown in the collapsed sidebar
+            // rail. Without this the collapsed rail shows an empty block.
+            // No darkModeIconLogo() here on purpose — darkMode is off.
             ->plugin(
                 LogoToolsPlugin::make()
                     ->iconLogo(asset('images/schoolhub-icon.svg'))
@@ -86,12 +92,7 @@ class AdminPanelProvider extends PanelProvider
             )
 
             // --- Resources, pages, widgets ---
-            // Schools lives here (platform-owner only). UserResource is
-            // shared with the app panel — one class, registered on both.
-            ->discoverResources(in: app_path('Filament/Admin/Resources'), for: 'App\Filament\Admin\Resources')
-            ->resources([
-                \App\Filament\App\Resources\Users\UserResource::class,
-            ])
+            ->discoverResources(in: app_path('Filament/App/Resources'), for: 'App\Filament\App\Resources')
             ->discoverPages(in: app_path('Filament/Pages'), for: 'App\Filament\Pages')
             ->pages([
                 Dashboard::class,

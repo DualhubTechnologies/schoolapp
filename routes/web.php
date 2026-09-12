@@ -4,7 +4,7 @@ use Illuminate\Support\Facades\Route;
 use App\Http\Controllers\PayslipController;
 use App\Http\Controllers\NssfScheduleController;
 
-Route::view('/', 'welcome')->name('home');
+
 Route::get('/payslip/{entry}/download', [PayslipController::class, 'download'])
     ->name('payslip.download')
     ->middleware('auth');

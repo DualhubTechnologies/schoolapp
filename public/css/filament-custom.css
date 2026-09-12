@@ -1,436 +1,706 @@
 /* ============================================================
-   SchoolHub — Custom Admin Theme
+   SchoolHub — Admin Theme
    ------------------------------------------------------------
-   DESIGN RULES FOLLOWED HERE:
-   1. Never set `color` on a container element (like .fi-topbar).
-      Color inherits down to every child — that is what caused
-      white-text-on-white-input bugs earlier.
-   2. Every surface that has a background color also has an
-      explicit text color, in BOTH light and dark mode.
-   3. Dark mode overrides use the `.dark` prefix that Filament
-      adds to the <html> element when dark mode is active.
+   Modeled on the PSFIS reference.
+
+   HOW THIS FILE IS ORGANIZED
+   1. Design tokens        — change colors HERE, not further down
+   2. Sidebar
+   3. Topbar (custom replacement)
+   4. Page header & content
+   5. Stat cards
+   6. Tables
+   7. Forms, buttons, badges
+   8. Footer
+   9. Login page
+
+   RULES THAT KEEP THIS MAINTAINABLE
+   - Colors are defined once as variables at the top.
+   - Never set `color` on a container — it cascades into inputs.
+   - Light mode only. Dark mode is off via ->darkMode(false).
    ============================================================ */
+
+:root {
+    /* --- Brand navy (sidebar, headings) --- */
+    --sh-navy-900: #0d1f38;      /* Deepest — sidebar base */
+    --sh-navy-800: #12294a;      /* Sidebar header block */
+    --sh-navy-700: #1b3a63;      /* Hover states on navy */
+
+    /* --- Primary blue (buttons, active states, links) --- */
+    --sh-blue-600: #1a5fa8;      /* Primary action */
+    --sh-blue-500: #2472c4;      /* Lighter — gradients, hover */
+    --sh-blue-100: #e3edf9;      /* Tint backgrounds */
+
+    /* --- Accent (used SPARINGLY) --- */
+    --sh-amber: #d97d0d;
+
+    /* --- Card rail accents (muted, not neon) --- */
+    --sh-rail-1: #1a5fa8;        /* Blue */
+    --sh-rail-2: #b5721a;        /* Bronze */
+    --sh-rail-3: #6b4f9e;        /* Violet */
+    --sh-rail-4: #0f7a68;        /* Teal */
+
+    /* --- Neutrals --- */
+    --sh-bg: #f4f6fa;            /* Page background */
+    --sh-surface: #ffffff;       /* Cards, tables */
+    --sh-border: #e4e8f0;        /* Hairlines */
+    --sh-text: #16233a;          /* Primary text */
+    --sh-text-muted: #64748b;    /* Secondary text */
+    --sh-text-dim: #94a3b8;      /* Placeholders, captions */
+
+    /* --- Sidebar text --- */
+    --sh-nav-text: #a9b6cc;
+    --sh-nav-text-hover: #e8eef7;
+    --sh-nav-group: #6b7d99;
+}
 
 
 /* ============================================================
-   SIDEBAR
-   The sidebar stays dark in both light and dark mode — this is
-   intentional, it anchors the layout and matches the gradient
-   top bar.
+   2. SIDEBAR
    ============================================================ */
 
-/* Sidebar container — solid dark navy */
 .fi-sidebar {
-    background: #171a2e !important;              /* Dark navy base */
-    border-right: none !important;               /* Remove Filament's default divider line */
+    background: var(--sh-navy-900) !important;
+    border-right: none !important;
+    min-height: 100vh !important;
 }
 
-/* Sidebar top section where the "SchoolHub" brand name sits */
+/* Brand block — slightly lighter than the nav below it */
 .fi-sidebar-header {
-    background: #12142a !important;              /* Slightly darker than the sidebar body for separation */
-    border-bottom: 1px solid rgba(255, 255, 255, 0.07) !important;  /* Faint divider under the brand */
+    background: var(--sh-navy-800) !important;
+    border-bottom: 1px solid rgba(255, 255, 255, 0.07) !important;
+    display: flex !important;
+    align-items: center !important;
+    gap: 0.7rem !important;
+    min-height: 4.5rem !important;
+    padding: 0.9rem 1.5rem !important;
+    box-shadow: none !important;
 }
 
-/* Brand name text — targets the text elements only, not the container */
+/* NOTE: deliberately NO img height rule here. The LogoTools plugin
+   and brandLogoHeight() already control the logo size — adding a
+   max-height on top of them made the logo disappear entirely.
+   If the logo looks wrong, change brandLogoHeight() in the panel
+   provider, not this file. */
+
 .fi-sidebar-header .fi-logo,
 .fi-sidebar-header a > span,
 .fi-sidebar-header > a {
-    color: #ffffff !important;                   /* White brand name on dark background */
-    font-weight: 700 !important;                 /* Bold */
+    color: #ffffff !important;
+    font-weight: 700 !important;
+    letter-spacing: 0.01em !important;
 }
 
-/* Every nav item gets breathing room and rounded corners */
+/* --- Nav items --- */
+
 .fi-sidebar-item {
-    margin: 2px 10px !important;                 /* Vertical gap between items, inset from sidebar edges */
-    border-radius: 8px !important;               /* Rounded pill shape */
+    margin: 1px 8px !important;
+    border-radius: 7px !important;
 }
 
-/* Nav item label — INACTIVE state only.
-   The :not(.fi-active) guard prevents this from fighting with
-   the active-state rule further down. */
-.fi-sidebar-item:not(.fi-active) .fi-sidebar-item-label {
-    color: #9aa3b8 !important;                   /* Muted blue-gray — readable but recedes */
-    font-size: 0.85rem !important;
+.fi-sidebar-item-label {
+    font-size: 0.86rem !important;
     font-weight: 500 !important;
 }
 
-/* Nav item icon — INACTIVE state */
+.fi-sidebar-item:not(.fi-active) .fi-sidebar-item-label {
+    color: var(--sh-nav-text) !important;
+}
+
 .fi-sidebar-item:not(.fi-active) .fi-sidebar-item-icon {
-    color: #6b7488 !important;                   /* Dimmer than the label; icons are secondary */
+    color: #7286a3 !important;
 }
 
-/* Nav item hover — INACTIVE items only, so hovering the active
-   item doesn't wash out its blue pill */
 .fi-sidebar-item:not(.fi-active):hover {
-    background: rgba(255, 255, 255, 0.06) !important;  /* Barely-there white overlay */
+    background: rgba(255, 255, 255, 0.055) !important;
 }
 
-/* Hover state brightens both label and icon together */
 .fi-sidebar-item:not(.fi-active):hover .fi-sidebar-item-label,
 .fi-sidebar-item:not(.fi-active):hover .fi-sidebar-item-icon {
-    color: #dbe1ec !important;                   /* Near-white on hover, signals clickability */
+    color: var(--sh-nav-text-hover) !important;
 }
 
-/* Group section headers, e.g. "PLATFORM MANAGEMENT" */
-.fi-sidebar-group-label {
-    color: #5d6579 !important;                   /* Dim gray — these are dividers, not navigation */
+/* --- Active nav item --- */
+
+html .fi-sidebar .fi-sidebar-item.fi-active,
+html .fi-sidebar .fi-sidebar-item.fi-active > a {
+    background: var(--sh-blue-600) !important;
+    background-image: none !important;
+}
+
+html .fi-sidebar .fi-sidebar-item.fi-active .fi-sidebar-item-label,
+html .fi-sidebar .fi-sidebar-item.fi-active .fi-sidebar-item-icon {
+    color: #ffffff !important;
+    opacity: 1 !important;
+}
+
+/* --- Group headings --- */
+
+html .fi-sidebar .fi-sidebar-group-label {
+    color: var(--sh-nav-group) !important;
     text-transform: uppercase;
-    font-size: 0.66rem !important;               /* Small; they label groups, they aren't clickable */
-    letter-spacing: 0.09em;                      /* Spaced out for legibility at small size */
+    font-size: 0.66rem !important;
+    letter-spacing: 0.11em;
     font-weight: 700 !important;
-    padding-left: 0.65rem !important;            /* Aligns with the nav item text below it */
-    margin-top: 1rem !important;                 /* Space above each group */
+    margin-top: 1.1rem !important;
+    margin-bottom: 0.3rem !important;
+    padding-left: 1.1rem !important;
 }
 
-/* The chevron that collapses/expands a group */
-.fi-sidebar-group-collapse-btn {
-    color: #5d6579 !important;                   /* Matches the group label color */
+html .fi-sidebar .fi-sidebar-group:first-of-type .fi-sidebar-group-label {
+    margin-top: 0.4rem !important;
 }
 
-/* Red notification badge (e.g. pending arrears count) */
+html .fi-sidebar .fi-sidebar-group-collapse-btn {
+    color: var(--sh-nav-group) !important;
+}
+
+/* --- Badges on nav items --- */
+
 .fi-sidebar-item .fi-badge {
-    background: #ef4444 !important;              /* Red — signals "needs attention" */
-    border-radius: 9px !important;               /* Fully rounded pill */
+    background: #c0392b !important;
+    border-radius: 20px !important;
+    min-width: 1.35rem !important;
+    justify-content: center !important;
 }
 
-/* Badge number — white text on the red pill */
-.fi-sidebar-item .fi-badge span,
-.fi-sidebar-item .fi-badge {
+.fi-sidebar-item .fi-badge,
+.fi-sidebar-item .fi-badge span {
     color: #ffffff !important;
     font-size: 0.65rem !important;
     font-weight: 700 !important;
 }
 
-/* Sidebar collapse/expand toggle icon */
-.fi-sidebar-close-btn svg,
-.fi-sidebar-open-btn svg {
-    color: #8b93a8 !important;                   /* Muted gray, visible on dark sidebar */
+/* --- Scrollbar: track hidden, faint thumb on hover only --- */
+
+.fi-sidebar-nav {
+    scrollbar-width: thin;
+    scrollbar-color: rgba(255, 255, 255, 0.12) transparent;
+    overflow-y: auto;
 }
 
-/* Thin, unobtrusive sidebar scrollbar */
 .fi-sidebar-nav::-webkit-scrollbar {
-    width: 4px;
+    width: 5px;
 }
 
 .fi-sidebar-nav::-webkit-scrollbar-track {
-    background: transparent;                     /* Invisible track — only the thumb is visible */
+    background: transparent;
 }
 
 .fi-sidebar-nav::-webkit-scrollbar-thumb {
-    background: rgba(255, 255, 255, 0.1);        /* Faint white thumb */
+    background: transparent;
     border-radius: 4px;
 }
 
+.fi-sidebar-nav:hover::-webkit-scrollbar-thumb {
+    background: rgba(255, 255, 255, 0.14);
+}
+
 
 /* ============================================================
-   TOP NAVBAR
-   Blue-to-purple gradient bar.
-   CRITICAL: no `color` rule on .fi-topbar itself — that would
-   cascade into the search input and dropdowns and make their
-   text white on white.
+   3. TOPBAR — CUSTOM REPLACEMENT
+   Filament's own topbar is switched off. Everything below styles
+   resources/views/filament/partials/topbar.blade.php
    ============================================================ */
 
-/* The gradient bar itself */
 .fi-topbar {
-    background: linear-gradient(100deg, #3d5afe 0%, #5a35d4 55%, #7c3aed 100%) !important;  /* Blue → indigo → violet */
-    border-bottom: none !important;              /* The gradient is the visual edge */
-    box-shadow: 0 2px 12px rgba(61, 90, 254, 0.2) !important;  /* Soft blue glow beneath */
+    display: none !important;
 }
 
-/* Brand name shown in the topbar when the sidebar is collapsed */
-.fi-topbar .fi-logo,
-.fi-topbar > div > a > span {
-    color: #ffffff !important;                   /* White on the gradient */
-    font-weight: 700 !important;
+/* Avatars elsewhere (table rows, widgets) — one fixed brand color,
+   never Filament's random per-name hash. */
+.fi-avatar {
+    background-color: var(--sh-navy-800) !important;
 }
 
-/* Icon buttons directly in the topbar (sidebar toggle, theme switch).
-   Scoped narrowly so it doesn't hit the search field's icon. */
-.fi-topbar > div > button > svg,
-.fi-topbar .fi-icon-btn > svg {
-    color: rgba(255, 255, 255, 0.85) !important; /* Near-white, visible on gradient */
+.fi-avatar .fi-avatar-initials,
+.fi-avatar span {
+    color: #ffffff !important;
+    font-weight: 600 !important;
 }
 
-/* Global search input — SOLID WHITE background.
-   A translucent background here caused unreadable white-on-white
-   text; a solid white field with dark text is always legible
-   regardless of what gradient sits behind it. */
-.fi-topbar .fi-global-search-field input,
-.fi-topbar input[type="search"],
-.fi-topbar input[type="text"] {
-    background: #ffffff !important;              /* Solid white field */
-    border: 1px solid rgba(255, 255, 255, 0.4) !important;
-    color: #1f2937 !important;                   /* Dark text — readable on the white field */
-    border-radius: 9px !important;
+/* --- The custom bar ---
+   Injected at the top of page content, pulled out to the edges with
+   negative margins. These MUST match .fi-main's padding below. */
+.sh-topbar {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 1rem;
+    background: var(--sh-surface);
+    border-bottom: 1px solid var(--sh-border);
+    box-shadow: 0 1px 3px rgba(13, 31, 56, 0.05);
+    padding: 0.85rem 1.75rem;
+    margin: -1.5rem -1.75rem 1.5rem;
+    min-height: 4.25rem;
 }
 
-/* Placeholder text in the search field */
-.fi-topbar .fi-global-search-field input::placeholder,
-.fi-topbar input[type="search"]::placeholder,
-.fi-topbar input[type="text"]::placeholder {
-    color: #9ca3af !important;                   /* Mid-gray — visible but clearly a placeholder */
+.sh-topbar-left {
+    display: flex;
+    align-items: center;
+    gap: 0.65rem;
+    flex-wrap: wrap;
+    min-width: 0;
 }
 
-/* Search field container needs relative positioning so the
-   magnifier icon can be layered above the input */
-.fi-topbar .fi-global-search-field {
+.sh-topbar-right {
     position: relative;
+    flex-shrink: 0;
 }
 
-/* Left padding on the input makes room for the magnifier icon
-   so typed text doesn't run underneath it */
-.fi-topbar .fi-global-search-field input {
-    padding-left: 2.4rem !important;
+/* --- Icon button (sidebar toggle) --- */
+
+.sh-icon-btn {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    width: 2.25rem;
+    height: 2.25rem;
+    border-radius: 8px;
+    border: 1px solid transparent;
+    background: transparent;
+    color: var(--sh-text-muted);
+    cursor: pointer;
+    transition: background 0.15s ease, color 0.15s ease;
 }
 
-/* The magnifier icon inside the search field — dark, because it
-   sits on the white input, not on the gradient */
-.fi-topbar .fi-global-search-field svg {
-    color: #6b7280 !important;                   /* Gray icon on white field */
-    z-index: 2;                                  /* Layer above the input background */
-    position: relative;
+.sh-icon-btn:hover {
+    background: #f1f4f9;
+    color: var(--sh-text);
 }
 
-/* White ring around the user avatar in the top-right corner */
-.fi-topbar .fi-avatar {
-    box-shadow: 0 0 0 2px rgba(255, 255, 255, 0.35) !important;
+.sh-icon-btn svg {
+    width: 1.3rem;
+    height: 1.3rem;
+}
+
+/* --- Chips (date, role) --- */
+
+.sh-chip {
+    display: inline-flex;
+    align-items: center;
+    gap: 0.45rem;
+    background: #f7f9fc;
+    border: 1px solid var(--sh-border);
+    border-radius: 8px;
+    padding: 0.42rem 0.75rem;
+    font-size: 0.78rem;
+    color: var(--sh-text-muted);
+    white-space: nowrap;
+}
+
+.sh-chip svg {
+    width: 1rem;
+    height: 1rem;
+    color: var(--sh-blue-600);
+    flex-shrink: 0;
+}
+
+.sh-chip-value {
+    color: var(--sh-text);
+    font-weight: 600;
+}
+
+.sh-chip-clock {
+    font-variant-numeric: tabular-nums;
+    letter-spacing: 0.03em;
+    color: var(--sh-text);
+    font-weight: 600;
+}
+
+.sh-chip-divider {
+    width: 1px;
+    height: 0.9rem;
+    background: var(--sh-border);
+}
+
+.sh-chip-role .sh-chip-value {
+    color: var(--sh-blue-600);
+    text-transform: uppercase;
+    font-size: 0.72rem;
+    letter-spacing: 0.05em;
+}
+
+/* --- User menu --- */
+
+.sh-user-btn {
+    display: flex;
+    align-items: center;
+    gap: 0.6rem;
+    background: transparent;
+    border: 1px solid transparent;
+    border-radius: 10px;
+    padding: 0.35rem 0.6rem 0.35rem 0.4rem;
+    cursor: pointer;
+    transition: background 0.15s ease, border-color 0.15s ease;
+}
+
+.sh-user-btn:hover {
+    background: #f7f9fc;
+    border-color: var(--sh-border);
+}
+
+.sh-user-avatar {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    width: 2.25rem;
+    height: 2.25rem;
+    border-radius: 50%;
+    background: var(--sh-navy-800);
+    color: #ffffff;
+    font-size: 0.78rem;
+    font-weight: 700;
+    text-transform: uppercase;
+    flex-shrink: 0;
+}
+
+.sh-user-meta {
+    display: flex;
+    flex-direction: column;
+    align-items: flex-start;
+    line-height: 1.25;
+    text-align: left;
+}
+
+.sh-user-name {
+    font-size: 0.84rem;
+    font-weight: 600;
+    color: var(--sh-text);
+    white-space: nowrap;
+}
+
+.sh-user-role {
+    font-size: 0.68rem;
+    color: var(--sh-text-dim);
+    text-transform: uppercase;
+    letter-spacing: 0.05em;
+}
+
+.sh-user-chevron {
+    width: 0.9rem;
+    height: 0.9rem;
+    color: var(--sh-text-dim);
+    transition: transform 0.15s ease;
+}
+
+.sh-user-chevron.sh-rotated {
+    transform: rotate(180deg);
+}
+
+/* --- Dropdown panel --- */
+
+.sh-user-menu {
+    position: absolute;
+    top: calc(100% + 0.5rem);
+    right: 0;
+    min-width: 14rem;
+    background: var(--sh-surface);
+    border: 1px solid var(--sh-border);
+    border-radius: 10px;
+    box-shadow: 0 12px 28px rgba(13, 31, 56, 0.14);
+    overflow: hidden;
+    z-index: 50;
+}
+
+.sh-user-menu-head {
+    padding: 0.8rem 0.95rem;
+    border-bottom: 1px solid var(--sh-border);
+    background: #f7f9fc;
+}
+
+.sh-user-menu-name {
+    font-size: 0.85rem;
+    font-weight: 600;
+    color: var(--sh-text);
+}
+
+.sh-user-menu-email {
+    font-size: 0.75rem;
+    color: var(--sh-text-dim);
+    margin-top: 0.1rem;
+    word-break: break-all;
+}
+
+.sh-user-menu-item {
+    display: flex;
+    align-items: center;
+    gap: 0.6rem;
+    width: 100%;
+    padding: 0.7rem 0.95rem;
+    background: transparent;
+    border: none;
+    font-size: 0.84rem;
+    color: var(--sh-text);
+    cursor: pointer;
+    text-align: left;
+    transition: background 0.12s ease;
+}
+
+.sh-user-menu-item:hover {
+    background: #f1f4f9;
+}
+
+.sh-user-menu-item svg {
+    width: 1.05rem;
+    height: 1.05rem;
+    color: var(--sh-text-muted);
+}
+
+/* Alpine needs this so dropdowns don't flash on page load */
+[x-cloak] {
+    display: none !important;
+}
+
+/* --- Responsive --- */
+
+@media (max-width: 1100px) {
+    .sh-topbar-left .sh-chip {
+        display: none;
+    }
+}
+
+@media (max-width: 640px) {
+    .sh-topbar {
+        padding: 0.7rem 1rem;
+        margin: -1.5rem -1rem 1.25rem;
+    }
+
+    .sh-user-meta {
+        display: none;
+    }
 }
 
 
 /* ============================================================
-   DROPDOWN PANELS
-   These render inside the topbar, so without explicit colors
-   they can inherit white text and become invisible.
+   4. PAGE HEADER & CONTENT AREA
    ============================================================ */
 
-/* Dropdown panel background — light mode */
-.fi-dropdown-panel {
-    background: #ffffff !important;
-}
-
-/* Dropdown menu item text — light mode */
-.fi-dropdown-list-item-label {
-    color: #374151 !important;                   /* Dark gray on white */
-}
-
-/* Dropdown section header text — light mode */
-.fi-dropdown-header {
-    color: #6b7280 !important;
-}
-
-/* Dropdown panel — dark mode */
-.dark .fi-dropdown-panel {
-    background: #1f2937 !important;              /* Dark slate */
-}
-
-/* Dropdown item text — dark mode */
-.dark .fi-dropdown-list-item-label {
-    color: #e5e7eb !important;                   /* Light gray on dark */
-}
-
-/* Dropdown header — dark mode */
-.dark .fi-dropdown-header {
-    color: #9ca3af !important;
-}
-
-
-/* ============================================================
-   MAIN CONTENT AREA
-   ============================================================ */
-
-/* Page background — light mode */
 .fi-main-ctn {
-    background: #f2f4f8 !important;              /* Soft blue-gray, easier on eyes than pure white */
+    background: var(--sh-bg) !important;
 }
 
-/* Page background — dark mode */
-.dark .fi-main-ctn {
-    background: #111827 !important;              /* Deep slate */
+.fi-main {
+    padding-left: 1.75rem !important;
+    padding-right: 1.75rem !important;
+    padding-top: 1.5rem !important;
+    padding-bottom: 2rem !important;
 }
 
-/* Page title (e.g. "Dashboard", "Schools") — light mode */
+.fi-header {
+    margin-top: 0.5rem !important;
+    margin-bottom: 1.5rem !important;
+}
+
 .fi-header-heading {
-    color: #111827 !important;                   /* Near-black on light background */
+    color: var(--sh-navy-800) !important;
     font-weight: 700 !important;
+    font-size: 1.5rem !important;
+    letter-spacing: -0.01em !important;
 }
 
-/* Page title — dark mode */
-.dark .fi-header-heading {
-    color: #f9fafb !important;                   /* Near-white on dark background */
+.fi-header-subheading {
+    color: var(--sh-text-muted) !important;
+    font-size: 0.9rem !important;
+    margin-top: 0.2rem !important;
 }
 
-/* Breadcrumb trail (e.g. "Schools > List") — light mode */
 .fi-breadcrumbs-item-label {
-    color: #6b7280 !important;
-}
-
-/* Breadcrumbs — dark mode */
-.dark .fi-breadcrumbs-item-label {
-    color: #9ca3af !important;
+    color: var(--sh-text-muted) !important;
+    font-size: 0.8rem !important;
 }
 
 
 /* ============================================================
-   CARDS, TABLES & SECTIONS
-   All these surfaces share the same visual language, so their
-   base styling is grouped into one rule.
+   5. STAT CARDS
    ============================================================ */
 
-/* Shared card surface — LIGHT mode */
-.fi-wi-stats-overview-stat,      /* Dashboard stat cards */
-.fi-wi-account,                  /* "Welcome / Sign out" widget */
-.fi-ta-ctn,                      /* Table container */
-.fi-section {                    /* Form sections */
-    background: #ffffff !important;
-    border: 1px solid #e5e7eb !important;        /* Light gray hairline border */
-    border-radius: 12px !important;              /* Consistent rounding across all surfaces */
-    box-shadow: 0 1px 3px rgba(0, 0, 0, 0.04) !important;  /* Very soft elevation */
+.fi-wi-stats-overview {
+    gap: 1.15rem !important;
 }
 
-/* Shared card surface — DARK mode */
-.dark .fi-wi-stats-overview-stat,
-.dark .fi-wi-account,
-.dark .fi-ta-ctn,
-.dark .fi-section {
-    background: #1f2937 !important;              /* Dark slate card on darker page background */
-    border-color: #374151 !important;            /* Subtle lighter border for definition */
-}
-
-/* Stat cards animate on hover to feel interactive */
 .fi-wi-stats-overview-stat {
-    transition: transform 0.15s ease, box-shadow 0.15s ease;
+    background: var(--sh-surface) !important;
+    border: 1px solid var(--sh-border) !important;
+    border-radius: 12px !important;
+    box-shadow: 0 1px 2px rgba(13, 31, 56, 0.04) !important;
+    position: relative !important;
+    overflow: hidden !important;
+    padding: 1.35rem 1.25rem 1.25rem !important;
+    transition: transform 0.16s ease, box-shadow 0.16s ease;
 }
+
+.fi-wi-stats-overview-stat::before {
+    content: "";
+    position: absolute;
+    top: 0;
+    left: 0;
+    right: 0;
+    height: 3px;
+    background: var(--sh-rail-1);
+}
+
+.fi-wi-stats-overview-stat:nth-of-type(4n+2)::before { background: var(--sh-rail-2); }
+.fi-wi-stats-overview-stat:nth-of-type(4n+3)::before { background: var(--sh-rail-3); }
+.fi-wi-stats-overview-stat:nth-of-type(4n+4)::before { background: var(--sh-rail-4); }
 
 .fi-wi-stats-overview-stat:hover {
-    transform: translateY(-2px);                 /* Lifts 2px */
-    box-shadow: 0 6px 18px rgba(0, 0, 0, 0.07) !important;  /* Deeper shadow while lifted */
+    transform: translateY(-2px);
+    box-shadow: 0 8px 20px rgba(13, 31, 56, 0.08) !important;
 }
 
-/* Table header row background — light mode */
+.fi-wi-stats-overview-stat-value {
+    color: var(--sh-navy-800) !important;
+    font-size: 1.85rem !important;
+    font-weight: 700 !important;
+    line-height: 1.1 !important;
+}
+
+.fi-wi-stats-overview-stat-label {
+    color: var(--sh-text-muted) !important;
+    font-size: 0.72rem !important;
+    font-weight: 700 !important;
+    text-transform: uppercase !important;
+    letter-spacing: 0.07em !important;
+}
+
+.fi-wi-stats-overview-stat-description {
+    font-size: 0.78rem !important;
+    margin-top: 0.35rem !important;
+}
+
+.fi-wi-stats-overview-stat-icon {
+    background: var(--sh-blue-100) !important;
+    color: var(--sh-blue-600) !important;
+    border-radius: 10px !important;
+    padding: 0.55rem !important;
+    width: 2.5rem !important;
+    height: 2.5rem !important;
+    display: inline-flex !important;
+    align-items: center !important;
+    justify-content: center !important;
+}
+
+.fi-wi-account {
+    background: var(--sh-surface) !important;
+    border: 1px solid var(--sh-border) !important;
+    border-radius: 12px !important;
+    box-shadow: 0 1px 2px rgba(13, 31, 56, 0.04) !important;
+}
+
+
+/* ============================================================
+   6. TABLES
+   ============================================================ */
+
+.fi-ta-ctn,
+.fi-section {
+    background: var(--sh-surface) !important;
+    border: 1px solid var(--sh-border) !important;
+    border-radius: 12px !important;
+    box-shadow: 0 1px 2px rgba(13, 31, 56, 0.04) !important;
+    overflow: hidden !important;
+}
+
 .fi-ta-header-cell {
-    background: #f9fafb !important;              /* Slightly gray, distinguishes header from data rows */
-    font-size: 0.75rem !important;
-    font-weight: 600 !important;
-    letter-spacing: 0.02em;
+    background: #f7f9fc !important;
+    font-size: 0.72rem !important;
+    font-weight: 700 !important;
+    text-transform: uppercase !important;
+    letter-spacing: 0.05em !important;
+    padding-top: 0.8rem !important;
+    padding-bottom: 0.8rem !important;
 }
 
-/* Table header text — light mode */
 .fi-ta-header-cell,
 .fi-ta-header-cell span {
-    color: #6b7280 !important;                   /* Muted gray — headers guide, they don't compete */
+    color: var(--sh-text-muted) !important;
 }
 
-/* Table header — dark mode */
-.dark .fi-ta-header-cell {
-    background: #111827 !important;              /* Darker than the table body */
-}
-
-.dark .fi-ta-header-cell,
-.dark .fi-ta-header-cell span {
-    color: #9ca3af !important;
-}
-
-/* Table data rows — light mode */
 .fi-ta-row {
-    background: #ffffff !important;
+    background: var(--sh-surface) !important;
+    border-bottom: 1px solid #eef1f6 !important;
 }
 
 .fi-ta-row:hover {
-    background: #f9fafb !important;              /* Subtle highlight shows which row you're on */
+    background: #f9fbfe !important;
 }
 
-/* Table data rows — dark mode */
-.dark .fi-ta-row {
-    background: #1f2937 !important;
+.fi-ta-cell {
+    padding-top: 0.8rem !important;
+    padding-bottom: 0.8rem !important;
 }
 
-.dark .fi-ta-row:hover {
-    background: #283446 !important;              /* Slightly lighter than the row for hover feedback */
-}
-
-/* Text inside table cells — light mode */
 .fi-ta-text-item-label {
-    color: #1f2937 !important;                   /* Dark text on white rows */
+    color: var(--sh-text) !important;
+    font-size: 0.875rem !important;
 }
 
-/* Table cell text — dark mode */
-.dark .fi-ta-text-item-label {
-    color: #e5e7eb !important;                   /* Light text on dark rows */
-}
-
-/* Table footer / pagination strip — light mode */
 .fi-ta-footer,
 .fi-pagination {
-    background: #ffffff !important;
+    background: var(--sh-surface) !important;
+    border-top: 1px solid var(--sh-border) !important;
 }
 
-/* Table footer / pagination — dark mode */
-.dark .fi-ta-footer,
-.dark .fi-pagination {
-    background: #1f2937 !important;
-}
-
-/* The search box INSIDE a table (separate from the topbar search) */
 .fi-ta-search-field input {
-    background: #ffffff !important;
-    color: #1f2937 !important;
-    border: 1px solid #d1d5db !important;
+    background: #f7f9fc !important;
+    color: var(--sh-text) !important;
+    border: 1px solid var(--sh-border) !important;
     border-radius: 8px !important;
 }
 
-/* Table search box — dark mode */
-.dark .fi-ta-search-field input {
-    background: #111827 !important;
-    color: #e5e7eb !important;
-    border-color: #374151 !important;
+/* Empty state — the bare grey X read like an error. Softer. */
+.fi-ta-empty-state-icon-ctn {
+    background: var(--sh-blue-100) !important;
+}
+
+.fi-ta-empty-state-icon {
+    color: var(--sh-blue-600) !important;
+}
+
+.fi-ta-empty-state-heading {
+    color: var(--sh-text) !important;
+    font-weight: 600 !important;
+}
+
+.fi-ta-empty-state-description {
+    color: var(--sh-text-muted) !important;
 }
 
 
 /* ============================================================
-   FORMS
+   7. FORMS, BUTTONS, BADGES, MODALS
    ============================================================ */
 
-/* Text inputs, selects, and textareas share the same rounding */
 .fi-input,
 .fi-select-input,
 .fi-textarea {
     border-radius: 8px !important;
 }
 
-/* Field labels above inputs */
 .fi-fo-field-wrp-label {
-    font-weight: 600 !important;                 /* Semi-bold so labels read as headings for their fields */
+    font-weight: 600 !important;
+    color: var(--sh-text) !important;
+    font-size: 0.85rem !important;
 }
 
-
-/* ============================================================
-   BUTTONS & BADGES
-   ============================================================ */
-
-/* All buttons */
 .fi-btn {
     border-radius: 8px !important;
     font-weight: 600 !important;
+    font-size: 0.86rem !important;
 }
 
-/* Status badges (e.g. "Active", "Paid", "School Admin") */
 .fi-badge {
-    border-radius: 6px !important;               /* Less rounded than buttons — badges are labels, not controls */
+    border-radius: 6px !important;
     font-weight: 600 !important;
-    font-size: 0.72rem !important;
+    font-size: 0.7rem !important;
+    letter-spacing: 0.01em !important;
 }
 
-
-/* ============================================================
-   MODALS & TABS
-   ============================================================ */
-
-/* Modal/dialog windows */
 .fi-modal-window {
-    border-radius: 14px !important;              /* Slightly more rounded than cards — modals float above everything */
+    border-radius: 14px !important;
 }
 
-/* Tab buttons (e.g. "Salary History", "Allowances" on staff edit page) */
 .fi-tabs-tab {
     border-radius: 8px !important;
     font-weight: 500 !important;
@@ -438,152 +708,375 @@
 
 
 /* ============================================================
-   LOGIN PAGE
+   8. FOOTER (injected via render hook)
    ============================================================ */
 
-/* Full-page background behind the login card */
+.sh-footer {
+    text-align: center;
+    padding: 1.1rem 1rem;
+    margin-top: 1rem;
+    border-top: 1px solid var(--sh-border);
+    color: var(--sh-text-dim);
+    font-size: 0.78rem;
+}
+
+.sh-footer strong {
+    color: var(--sh-text-muted);
+    font-weight: 600;
+}
+
+
+/* ============================================================
+   9. LOGIN PAGE
+   Split card: navy brand panel left, form right.
+
+   THE DOM, confirmed in devtools:
+       .fi-simple-main
+           └── .fi-simple-page
+                   ├── .sh-login-brand          (our injected panel)
+                   ├── .fi-simple-page-content  (heading + form)
+                   └── <div wire:partial="action-modals">   ← INVISIBLE
+
+   That third child is the reason earlier versions had mystery empty
+   space: a selector of `> *:not(.sh-login-brand)` matched it as well
+   as the form, handing it the form's padding and a share of the flex
+   row. Every rule below names .fi-simple-page-content explicitly
+   instead, and the third child is collapsed to zero.
+   ============================================================ */
+
 .fi-simple-layout {
-    background: linear-gradient(135deg, #171a2e 0%, #3d5afe 55%, #171a2e 100%) !important;  /* Navy → blue → navy, matches the app palette */
+    background: var(--sh-bg) !important;
+    min-height: 100vh;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    padding: 1.5rem;
 }
 
-/* The login card itself — light mode */
 .fi-simple-main {
-    background: #ffffff !important;
-    border-radius: 16px !important;
-    box-shadow: 0 20px 55px rgba(0, 0, 0, 0.35) !important;  /* Deep shadow makes the card float */
+    background: var(--sh-surface) !important;
+    border-radius: 14px !important;
+    box-shadow: 0 20px 50px rgba(13, 31, 56, 0.15) !important;
     border: none !important;
+    padding: 0 !important;
+    overflow: hidden !important;
+    width: 100% !important;
+    max-width: 46rem !important;
 }
 
-/* Login card — dark mode */
-.dark .fi-simple-main {
-    background: #1f2937 !important;
+/* --- Two-column split --- */
+
+@media (min-width: 860px) {
+    .fi-simple-page {
+        display: flex !important;
+        flex-direction: row !important;
+        align-items: stretch !important;
+        width: 100% !important;
+    }
+
+    /* 42/58 split — the brand panel is the narrower side in PSF */
+    .fi-simple-page > .sh-login-brand {
+        flex: 0 0 42% !important;
+        max-width: 42% !important;
+    }
+
+    .fi-simple-page > .fi-simple-page-content {
+        flex: 1 1 58% !important;
+        max-width: 58% !important;
+        min-width: 0 !important;
+    }
 }
 
-
-/* ============================================================
-   ACTIVE SIDEBAR ITEM — OVERRIDE
-   ------------------------------------------------------------
-   This block sits LAST on purpose. Filament ships its own
-   light-mode rule for the active nav item that was overriding
-   the earlier definition, leaving white text on the dark
-   sidebar with no visible pill behind it.
-   These extra selectors raise specificity enough to win in
-   both light and dark mode.
-   ============================================================ */
-
-/* Force the solid blue pill background in every context */
-.fi-sidebar-item.fi-active,
-.dark .fi-sidebar-item.fi-active,
-aside .fi-sidebar-item.fi-active,
-.fi-sidebar-nav .fi-sidebar-item.fi-active {
-    background-color: #4f6ef7 !important;        /* Solid blue — high contrast against the dark sidebar */
-    background-image: none !important;           /* Clears any gradient Filament may apply */
+/* Collapse the invisible action-modals sibling. Two selectors: one
+   matches its wire:partial attribute (the \: escapes the colon so
+   CSS doesn't read it as a pseudo-class), the other catches any
+   other unexpected child. Either alone would do it. */
+.fi-simple-page > [wire\:partial],
+.fi-simple-page > div:not(.sh-login-brand):not(.fi-simple-page-content) {
+    flex: 0 0 0 !important;
+    width: 0 !important;
+    max-width: 0 !important;
+    padding: 0 !important;
+    margin: 0 !important;
 }
 
-/* White label and icon on the blue pill.
-   opacity:1 guards against Filament dimming the icon. */
-.fi-sidebar-item.fi-active .fi-sidebar-item-label,
-.fi-sidebar-item.fi-active .fi-sidebar-item-icon,
-.dark .fi-sidebar-item.fi-active .fi-sidebar-item-label,
-.dark .fi-sidebar-item.fi-active .fi-sidebar-item-icon {
-    color: #ffffff !important;
-    opacity: 1 !important;
+/* --- Left brand panel --- */
+
+.sh-login-brand {
+    background: linear-gradient(160deg, #0f3663 0%, #14457d 45%, #0c2a4d 100%);
+    color: #ffffff;
+    padding: 2.5rem 1.9rem;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    text-align: center;
+    position: relative;
+    overflow: hidden;
 }
 
-/* ============================================================
-   SIDEBAR ITEM STATES — ABSOLUTE FINAL OVERRIDE
-   Covers active AND hover in both light and dark mode.
-   Uses html + nested selectors to beat Filament's defaults.
-   ============================================================ */
-
-/* --- ACTIVE STATE --- */
-html .fi-sidebar .fi-sidebar-item.fi-active,
-html .fi-sidebar .fi-sidebar-item.fi-active > a,
-html .fi-sidebar .fi-sidebar-item.fi-active > a:hover,
-html.dark .fi-sidebar .fi-sidebar-item.fi-active,
-html.dark .fi-sidebar .fi-sidebar-item.fi-active > a {
-    background-color: #4f6ef7 !important;
-    background-image: none !important;
+/* Diagonal light streaks — two bands at different opacities reads
+   closer to the PSF original than a single soft gradient. */
+.sh-login-brand::after {
+    content: "";
+    position: absolute;
+    top: -20%;
+    right: -25%;
+    width: 55%;
+    height: 150%;
+    background:
+        linear-gradient(105deg,
+            transparent 0%,
+            rgba(255, 255, 255, 0.07) 42%,
+            rgba(255, 255, 255, 0.07) 48%,
+            transparent 49%),
+        linear-gradient(105deg,
+            transparent 0%,
+            rgba(255, 255, 255, 0.05) 62%,
+            rgba(255, 255, 255, 0.05) 72%,
+            transparent 73%);
+    transform: rotate(8deg);
+    pointer-events: none;
 }
 
-/* Active item — all text and icons white */
-html .fi-sidebar .fi-sidebar-item.fi-active,
-html .fi-sidebar .fi-sidebar-item.fi-active *,
-html.dark .fi-sidebar .fi-sidebar-item.fi-active,
-html.dark .fi-sidebar .fi-sidebar-item.fi-active * {
-    color: #ffffff !important;
-    opacity: 1 !important;
+.sh-login-brand img {
+    height: 4.25rem;
+    width: auto;
+    margin-bottom: 1.75rem;
+    position: relative;
+    z-index: 1;
 }
 
-/* --- HOVER STATE (inactive items only) --- */
-html .fi-sidebar .fi-sidebar-item:not(.fi-active):hover,
-html .fi-sidebar .fi-sidebar-item:not(.fi-active) > a:hover,
-html.dark .fi-sidebar .fi-sidebar-item:not(.fi-active):hover,
-html.dark .fi-sidebar .fi-sidebar-item:not(.fi-active) > a:hover {
-    background-color: rgba(255, 255, 255, 0.08) !important;
-    background-image: none !important;
+.sh-login-brand h2 {
+    font-size: 1.2rem;
+    font-weight: 700;
+    margin-bottom: 0.55rem;
+    position: relative;
+    z-index: 1;
 }
 
-/* Hover item — light text so it stays readable on the dark sidebar */
-html .fi-sidebar .fi-sidebar-item:not(.fi-active):hover .fi-sidebar-item-label,
-html .fi-sidebar .fi-sidebar-item:not(.fi-active):hover .fi-sidebar-item-icon,
-html .fi-sidebar .fi-sidebar-item:not(.fi-active) > a:hover .fi-sidebar-item-label,
-html .fi-sidebar .fi-sidebar-item:not(.fi-active) > a:hover .fi-sidebar-item-icon,
-html.dark .fi-sidebar .fi-sidebar-item:not(.fi-active):hover .fi-sidebar-item-label,
-html.dark .fi-sidebar .fi-sidebar-item:not(.fi-active):hover .fi-sidebar-item-icon {
-    color: #e5e9f2 !important;
-    opacity: 1 !important;
+.sh-login-brand p {
+    font-size: 0.82rem;
+    line-height: 1.55;
+    color: rgba(255, 255, 255, 0.8);
+    position: relative;
+    z-index: 1;
 }
-/* ============================================================
-   SIDEBAR GROUP LABEL SPACING & STYLING
-   Tightens the gap between the last nav item and the next
-   group heading, and gives the heading a subtle divider.
-   ============================================================ */
 
-/* Group heading — tighter spacing and refined styling */
-html .fi-sidebar .fi-sidebar-group-label {
-    color: #6b7488 !important;                   /* Muted gray-blue */
-    text-transform: uppercase;
-    font-size: 0.68rem !important;
-    letter-spacing: 0.1em;                       /* Spaced letters for small-caps legibility */
+.sh-login-links {
+    display: flex;
+    gap: 0.6rem;
+    margin-top: 1.5rem;
+    flex-wrap: wrap;
+    justify-content: center;
+    position: relative;
+    z-index: 1;
+}
+
+.sh-login-links a {
+    display: inline-flex;
+    align-items: center;
+    gap: 0.4rem;
+    border: 1px solid rgba(255, 255, 255, 0.28);
+    border-radius: 20px;
+    padding: 0.4rem 0.9rem;
+    font-size: 0.78rem;
+    color: #ffffff;
+    text-decoration: none;
+    transition: background 0.15s ease;
+}
+
+.sh-login-links a:hover {
+    background: rgba(255, 255, 255, 0.12);
+}
+
+.sh-login-links svg {
+    width: 0.9rem;
+    height: 0.9rem;
+}
+
+/* Narrow screens — logo only, no copy */
+@media (max-width: 859px) {
+    .sh-login-brand {
+        padding: 2rem 1.5rem;
+    }
+
+    .sh-login-brand p,
+    .sh-login-links {
+        display: none;
+    }
+
+    .sh-login-brand img {
+        height: 3rem;
+        margin-bottom: 0;
+    }
+}
+
+/* --- Right form side --- */
+
+.fi-simple-page > .fi-simple-page-content {
+    padding: 2.25rem 2rem !important;
+    display: flex !important;
+    flex-direction: column !important;
+    justify-content: center !important;
+    align-items: stretch !important;
+    gap: 0.9rem !important;
+}
+
+/* Full-width form fields. Descendant selectors (not child), so every
+   nesting level is caught no matter how deep Filament nests it.
+   Limited to div/form/section/header — buttons, svgs and inputs keep
+   their natural sizing. */
+.fi-simple-page-content div,
+.fi-simple-page-content form,
+.fi-simple-page-content section,
+.fi-simple-page-content header {
+    width: 100% !important;
+    max-width: 100% !important;
+    min-width: 0 !important;
+}
+
+.fi-simple-page input[type="text"],
+.fi-simple-page input[type="email"],
+.fi-simple-page input[type="password"],
+.fi-simple-page .fi-input {
+    width: 100% !important;
+    min-width: 0 !important;
+}
+
+/* Checkbox keeps its own size — the blanket rule above would
+   otherwise flatten it into a sliver. */
+.fi-simple-page input[type="checkbox"] {
+    width: 1rem !important;
+    min-width: 1rem !important;
+    max-width: 1rem !important;
+    height: 1rem !important;
+    flex: 0 0 1rem !important;
+}
+
+.fi-simple-page .fi-fo-checkbox,
+.fi-simple-page label:has(input[type="checkbox"]) {
+    display: flex !important;
+    align-items: center !important;
+    gap: 0.5rem !important;
+}
+
+/* The password eye toggle must not stretch, and stays on the right */
+.fi-simple-page .fi-input-wrp button,
+.fi-simple-page .fi-input-wrp-suffix {
+    width: auto !important;
+    flex: 0 0 auto !important;
+    order: 2 !important;
+}
+
+.fi-simple-page .fi-input-wrp .fi-input {
+    order: 1 !important;
+}
+
+/* --- Heading + subtitle --- */
+
+.fi-simple-header {
+    text-align: center !important;
+    margin-bottom: 0.5rem !important;
+}
+
+.fi-simple-header-heading {
+    color: var(--sh-blue-600) !important;
     font-weight: 700 !important;
-    margin-top: 0.6rem !important;               /* Reduced from 1rem — tighter gap above */
-    margin-bottom: 0.15rem !important;           /* Minimal gap below, before the first item */
-    padding-left: 0.75rem !important;
-    padding-top: 0.5rem !important;
-    border-top: 1px solid rgba(255, 255, 255, 0.06);  /* Faint divider line separates groups visually */
+    font-size: 1.3rem !important;
+    letter-spacing: -0.01em !important;
 }
 
-/* Remove the divider on the very first group (nothing above it to separate from) */
-html .fi-sidebar .fi-sidebar-group:first-of-type .fi-sidebar-group-label {
-    border-top: none;
-    padding-top: 0 !important;
+/* PSF has helper text under the heading. Filament's login page has
+   no subheading by default, so it's added here. To change the
+   wording, edit this string. */
+.fi-simple-header-heading::after {
+    content: "Enter your credentials to continue.";
+    display: block;
+    margin-top: 0.3rem;
+    font-size: 0.84rem;
+    font-weight: 400;
+    color: var(--sh-text-muted);
+    letter-spacing: 0;
 }
 
-/* Tighten the group container spacing */
-html .fi-sidebar .fi-sidebar-group {
-    margin-top: 0.4rem !important;               /* Reduced gap between groups */
-    margin-bottom: 0 !important;
+.fi-simple-header-subheading {
+    display: none !important;
 }
 
-/* Reduce the gap between the group heading and its first nav item */
-html .fi-sidebar .fi-sidebar-group > ul,
-html .fi-sidebar .fi-sidebar-group-items {
-    margin-top: 0.1rem !important;
+/* --- Fields --- */
+
+.fi-simple-page .fi-fo-field-wrp-label {
+    font-size: 0.82rem !important;
+    font-weight: 600 !important;
+    color: var(--sh-text) !important;
+    margin-bottom: 0.3rem !important;
 }
 
-/* Group collapse chevron — align and match the label color */
-html .fi-sidebar .fi-sidebar-group-collapse-btn {
-    color: #6b7488 !important;
-    opacity: 0.7;
+/* The red required asterisk is loud on a login form — PSF has none */
+.fi-simple-page .fi-fo-field-wrp-label sup,
+.fi-simple-page .fi-fo-field-wrp-required-mark,
+.fi-simple-page label sup,
+.fi-simple-page [class*="required-mark"] {
+    display: none !important;
 }
 
-html .fi-sidebar .fi-sidebar-group-collapse-btn:hover {
-    color: #9aa3b8 !important;
-    opacity: 1;
+.fi-simple-page .fi-input-wrp {
+    border-radius: 8px !important;
+    border: 1px solid #d8dfea !important;
+    background: #fbfcfe !important;
+    box-shadow: none !important;
 }
 
-button.fi-topbar-open-collapse-sidebar-btn,
-button.fi-topbar-close-collapse-sidebar-btn {
-    background-color: transparent !important;
+.fi-simple-page .fi-input-wrp:focus-within {
+    border-color: var(--sh-blue-500) !important;
+    box-shadow: 0 0 0 3px rgba(36, 114, 196, 0.12) !important;
+}
+
+.fi-simple-page .fi-input {
+    padding-top: 0.62rem !important;
+    padding-bottom: 0.62rem !important;
+    font-size: 0.9rem !important;
+}
+
+.fi-simple-page .fi-checkbox-input {
+    border-radius: 4px !important;
+}
+
+/* --- Forgot password link (needs ->passwordReset() on the panel) --- */
+
+.fi-simple-page .fi-fo-field-wrp-hint-action,
+.fi-simple-page a[href*="password-reset"] {
+    color: var(--sh-amber) !important;
+    font-size: 0.8rem !important;
+    font-weight: 600 !important;
+    text-decoration: none !important;
+}
+
+.fi-simple-page .fi-fo-field-wrp-hint-action:hover,
+.fi-simple-page a[href*="password-reset"]:hover {
+    text-decoration: underline !important;
+}
+
+/* --- Submit button --- */
+
+.fi-simple-page .fi-btn[type="submit"] {
+    background: linear-gradient(135deg, var(--sh-blue-600) 0%, var(--sh-blue-500) 100%) !important;
+    border: none !important;
+    padding-top: 0.72rem !important;
+    padding-bottom: 0.72rem !important;
+    font-size: 0.92rem !important;
+    font-weight: 600 !important;
+    border-radius: 8px !important;
+    box-shadow: 0 4px 12px rgba(26, 95, 168, 0.28) !important;
+    justify-content: center !important;
+}
+
+.fi-simple-page .fi-btn[type="submit"]:hover {
+    box-shadow: 0 6px 16px rgba(26, 95, 168, 0.36) !important;
+}
+
+/* Hide Filament's own logo here — the brand panel carries it */
+.fi-simple-main .fi-logo {
+    display: none !important;
 }

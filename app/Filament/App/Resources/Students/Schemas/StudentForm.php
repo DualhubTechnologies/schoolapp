@@ -113,6 +113,17 @@ class StudentForm
 
                                 return \App\Models\Guardian::create($data)->getKey();
                             }),
+                            Select::make('house_id')
+                                ->label('House')
+                                ->relationship(
+                                    'house',
+                                    'name',
+                                    modifyQueryUsing: fn ($query) => $query
+                                        ->where('school_id', auth()->user()->school_id)
+                                        ->where('is_active', true)
+                                )
+                                ->searchable()
+                                ->preload(),
                         TextInput::make('phone')
                             ->label('Student phone')
                             ->tel(),

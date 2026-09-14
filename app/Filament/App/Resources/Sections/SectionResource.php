@@ -44,7 +44,7 @@ class SectionResource extends Resource
 
     public static function getNavigationGroup(): ?string
     {
-        return 'Academics';
+        return 'Admin Settings';
     }
 
     public static function getEloquentQuery(): Builder

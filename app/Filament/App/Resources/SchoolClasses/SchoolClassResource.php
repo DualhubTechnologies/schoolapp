@@ -23,7 +23,7 @@ class SchoolClassResource extends Resource
 
     protected static ?string $recordTitleAttribute = 'name';
 
-    protected static ?int $navigationSort = 1;
+    protected static ?int $navigationSort = 2;
 
     protected static ?string $modelLabel = 'Class';
 
@@ -46,7 +46,7 @@ class SchoolClassResource extends Resource
 
     public static function getNavigationGroup(): ?string
     {
-        return 'Academics';
+        return 'Admin Settings';
     }
 
     public static function getEloquentQuery(): Builder

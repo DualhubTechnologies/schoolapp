@@ -1,0 +1,126 @@
+<?php
+
+namespace App\Filament\App\Resources\AuditTrail;
+
+use App\Filament\App\Resources\AuditTrail\Pages\ListActivities;
+use BackedEnum;
+use Filament\Resources\Resource;
+use Filament\Support\Icons\Heroicon;
+use Filament\Tables\Columns\TextColumn;
+use Filament\Tables\Table;
+use Illuminate\Database\Eloquent\Builder;
+use Spatie\Activitylog\Models\Activity;
+
+class AuditTrailResource extends Resource
+{
+    protected static ?string $model = Activity::class;
+
+    protected static string|BackedEnum|null $navigationIcon = Heroicon::OutlinedClipboardDocumentList;
+
+
+    protected static string|\UnitEnum|null $navigationGroup = 'Admin Settings';
+
+    protected static ?int $navigationSort = 5;
+
+    protected static ?string $navigationLabel = 'Audit Trail';
+
+    protected static ?string $modelLabel = 'Activity';
+
+    protected static ?string $pluralModelLabel = 'Audit Trail';
+
+    public static function table(Table $table): Table
+    {
+        return $table
+            ->columns([
+                TextColumn::make('created_at')
+                    ->label('When')
+                    ->dateTime('d M Y H:i')
+                    ->sortable(),
+
+                TextColumn::make('causer.name')
+                    ->label('User')
+                    ->default('System')
+                    ->searchable(),
+
+                TextColumn::make('description')
+                    ->label('Action')
+                    ->badge()
+                    ->color(fn (string $state): string => match ($state) {
+                        'created' => 'success',
+                        'updated' => 'warning',
+                        'deleted' => 'danger',
+                        default => 'gray',
+                    }),
+
+                // subject_type is a full class name (App\Models\Student).
+                // Show just the model name — the namespace is noise.
+                TextColumn::make('subject_type')
+                    ->label('Record type')
+                    ->formatStateUsing(fn (?string $state): string => $state ? class_basename($state) : '—')
+                    ->searchable(),
+
+                TextColumn::make('subject_id')
+                    ->label('Record ID')
+                    ->toggleable(isToggledHiddenByDefault: true),
+
+                TextColumn::make('event')
+                    ->label('Event')
+                    ->toggleable(isToggledHiddenByDefault: true),
+                TextColumn::make('properties.device')
+                        ->label('Device')
+                        ->limit(40)
+                        ->tooltip(fn ($state) => $state)
+
+            ])
+            ->defaultSort('created_at', 'desc')
+            ->paginationPageOptions([10, 25, 50, 100])
+            ->defaultPaginationPageOption(25);
+    }
+
+    /**
+     * Scope the log to the signed-in user's school. Activity rows don't
+     * carry school_id themselves, so this filters by who caused them —
+     * a School Admin sees activity from users in their own school only.
+     * Super Admin sees the whole system.
+     */
+    public static function getEloquentQuery(): Builder
+    {
+        $query = parent::getEloquentQuery();
+
+        $user = auth()->user();
+
+        if ($user && ! $user->hasRole('Super Admin')) {
+            $query->whereHasMorph(
+                'causer',
+                [\App\Models\User::class],
+                fn (Builder $q) => $q->where('school_id', $user->school_id)
+            );
+        }
+
+        return $query;
+    }
+
+    // An audit trail nobody can edit is the entire point. These three
+    // guards keep it read-only even for Super Admin.
+    public static function canCreate(): bool
+    {
+        return false;
+    }
+
+    public static function canEdit($record): bool
+    {
+        return false;
+    }
+
+    public static function canDelete($record): bool
+    {
+        return false;
+    }
+
+    public static function getPages(): array
+    {
+        return [
+            'index' => ListActivities::route('/'),
+        ];
+    }
+}

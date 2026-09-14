@@ -96,6 +96,10 @@ class StudentsTable
                     ->label('School')
                     ->searchable()
                     ->toggleable(isToggledHiddenByDefault: true),
+                TextColumn::make('house.name')
+                    ->label('House')
+                    ->badge()
+                    ->searchable(),
             ])
             ->filters([
                 SelectFilter::make('school_class_id')

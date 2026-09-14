@@ -1,16 +1,19 @@
 <?php
- 
+
 namespace App\Models;
- 
+
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
 use Illuminate\Database\Eloquent\Relations\HasMany;
- 
+use Spatie\Activitylog\Support\LogOptions;
+use Spatie\Activitylog\Models\Concerns\LogsActivity;
+
 class Student extends Model
 {
     use HasFactory;
- 
+    use LogsActivity;
+
     protected $fillable = [
         'school_id',
         'user_id',
@@ -34,7 +37,7 @@ class Student extends Model
         'confirmed_at',
         'confirmed_via',
     ];
- 
+
     protected function casts(): array
     {
         return [
@@ -43,75 +46,92 @@ class Student extends Model
             'confirmed_at' => 'datetime',
         ];
     }
- 
+
+    public function getActivitylogOptions(): LogOptions
+    {
+        return LogOptions::defaults()
+            ->logOnly([
+                'name',
+                'admission_no',
+                'school_class_id',
+                'section_id',
+                'status',
+                'enrolment_status',
+                'confirmed_at',
+                'confirmed_via',
+            ])
+            ->logOnlyDirty()
+            ->dontSubmitEmptyLogs();
+    }
+
     public const STATUSES = [
         'active' => 'Active',
         'graduated' => 'Graduated',
         'withdrawn' => 'Withdrawn',
         'transferred' => 'Transferred',
     ];
- 
+
     public const GENDERS = [
         'male' => 'Male',
         'female' => 'Female',
     ];
- 
+
     public const ENROLMENT_STATUSES = [
         'provisional' => 'Provisional',
         'confirmed' => 'Confirmed',
     ];
- 
+
     // ── Relationships ──
- 
+
     public function school(): BelongsTo
     {
         return $this->belongsTo(School::class);
     }
- 
+
     public function user(): BelongsTo
     {
         return $this->belongsTo(User::class);
     }
- 
+
     public function guardian(): BelongsTo
     {
         return $this->belongsTo(Guardian::class);
     }
- 
+
     public function schoolClass(): BelongsTo
     {
         return $this->belongsTo(SchoolClass::class);
     }
- 
+
     public function section(): BelongsTo
     {
         return $this->belongsTo(Section::class);
     }
- 
+
     public function payments(): HasMany
     {
         return $this->hasMany(StudentPayment::class);
     }
- 
+
     // ── Accessors / helpers ──
- 
+
     public function hasLogin(): bool
     {
         return $this->user_id !== null;
     }
- 
+
     public function getAgeAttribute(): ?int
     {
         return $this->date_of_birth?->age;
     }
- 
+
     public function isConfirmed(): bool
     {
         return $this->enrolment_status === 'confirmed';
     }
- 
+
     // ── Confirmation logic (whichever trigger fires first) ──
- 
+
     /**
      * Confirm the student as a full member of the school.
      * Idempotent: if already confirmed, does nothing (keeps the original trigger).
@@ -123,16 +143,16 @@ class Student extends Model
         if ($this->isConfirmed()) {
             return false; // already confirmed — keep whichever trigger came first
         }
- 
+
         $this->update([
             'enrolment_status' => 'confirmed',
             'confirmed_at' => now(),
             'confirmed_via' => $via,
         ]);
- 
+
         return true;
     }
- 
+
     /**
      * Total paid to date, in the school's currency.
      */
@@ -140,9 +160,9 @@ class Student extends Model
     {
         return (float) $this->payments()->sum('amount');
     }
- 
+
     // ── Fee resolution ──
- 
+
     /**
      * Resolve the fee amount for this student's class for a given term/year.
      * Falls back to the most recent active structure for the class if term/year not given.
@@ -152,19 +172,19 @@ class Student extends Model
         if (! $this->school_class_id) {
             return null;
         }
- 
+
         $query = FeeStructure::where('school_id', $this->school_id)
             ->where('school_class_id', $this->school_class_id)
             ->where('is_active', true);
- 
+
         if ($term) {
             $query->where('term', $term);
         }
- 
+
         if ($academicYear) {
             $query->where('academic_year', $academicYear);
         }
- 
+
         return $query->latest('academic_year')->latest('id')->first();
     }
 }

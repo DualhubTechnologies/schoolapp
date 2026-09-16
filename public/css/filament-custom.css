@@ -1,57 +1,44 @@
 /* ============================================================
    SchoolHub — Admin Theme
-   ------------------------------------------------------------
-   Modeled on the PSFIS reference.
-
-   HOW THIS FILE IS ORGANIZED
-   1. Design tokens        — change colors HERE, not further down
-   2. Sidebar
-   3. Topbar (custom replacement)
-   4. Page header & content
-   5. Stat cards
-   6. Tables
-   7. Forms, buttons, badges
-   8. Footer
-   9. Login page
-
-   RULES THAT KEEP THIS MAINTAINABLE
-   - Colors are defined once as variables at the top.
-   - Never set `color` on a container — it cascades into inputs.
-   - Light mode only. Dark mode is off via ->darkMode(false).
    ============================================================ */
 
 :root {
-    /* --- Brand navy (sidebar, headings) --- */
-    --sh-navy-900: #0d1f38;      /* Deepest — sidebar base */
-    --sh-navy-800: #12294a;      /* Sidebar header block */
-    --sh-navy-700: #1b3a63;      /* Hover states on navy */
+    /* Brand navy */
+    --sh-navy-900: #0d1f38;
+    --sh-navy-800: #12294a;
+    --sh-navy-700: #1b3a63;
 
-    /* --- Primary blue (buttons, active states, links) --- */
-    --sh-blue-600: #1a5fa8;      /* Primary action */
-    --sh-blue-500: #2472c4;      /* Lighter — gradients, hover */
-    --sh-blue-100: #e3edf9;      /* Tint backgrounds */
+    /* Primary blue */
+    --sh-blue-600: #1a5fa8;
+    --sh-blue-500: #2472c4;
+    --sh-blue-100: #e3edf9;
 
-    /* --- Accent (used SPARINGLY) --- */
+    /* Accent */
     --sh-amber: #d97d0d;
 
-    /* --- Card rail accents (muted, not neon) --- */
-    --sh-rail-1: #1a5fa8;        /* Blue */
-    --sh-rail-2: #b5721a;        /* Bronze */
-    --sh-rail-3: #6b4f9e;        /* Violet */
-    --sh-rail-4: #0f7a68;        /* Teal */
+    /* Card accents */
+    --sh-rail-1: #1a5fa8;
+    --sh-rail-2: #b5721a;
+    --sh-rail-3: #6b4f9e;
+    --sh-rail-4: #0f7a68;
 
-    /* --- Neutrals --- */
-    --sh-bg: #f4f6fa;            /* Page background */
-    --sh-surface: #ffffff;       /* Cards, tables */
-    --sh-border: #e4e8f0;        /* Hairlines */
-    --sh-text: #16233a;          /* Primary text */
-    --sh-text-muted: #64748b;    /* Secondary text */
-    --sh-text-dim: #94a3b8;      /* Placeholders, captions */
+    /* Neutrals */
+    --sh-bg: #f4f6fa;
+    --sh-surface: #ffffff;
+    --sh-border: #e4e8f0;
+    --sh-text: #16233a;
+    --sh-text-muted: #64748b;
+    --sh-text-dim: #94a3b8;
 
-    /* --- Sidebar text --- */
+    /* Sidebar */
     --sh-nav-text: #a9b6cc;
     --sh-nav-text-hover: #e8eef7;
     --sh-nav-group: #6b7d99;
+
+    /* Layout */
+    --sh-main-padding-x: 1.75rem;
+    --sh-main-padding-top: 1.5rem;
+    --sh-topbar-height: 4.25rem;
 }
 
 
@@ -65,23 +52,23 @@
     min-height: 100vh !important;
 }
 
-/* Brand block — slightly lighter than the nav below it */
 .fi-sidebar-header {
     background: var(--sh-navy-800) !important;
-    border-bottom: 1px solid rgba(255, 255, 255, 0.07) !important;
+
+    border-bottom:
+        1px solid rgba(255, 255, 255, 0.07) !important;
+
     display: flex !important;
     align-items: center !important;
+
     gap: 0.7rem !important;
+
     min-height: 4.5rem !important;
+
     padding: 0.9rem 1.5rem !important;
+
     box-shadow: none !important;
 }
-
-/* NOTE: deliberately NO img height rule here. The LogoTools plugin
-   and brandLogoHeight() already control the logo size — adding a
-   max-height on top of them made the logo disappear entirely.
-   If the logo looks wrong, change brandLogoHeight() in the panel
-   provider, not this file. */
 
 .fi-sidebar-header .fi-logo,
 .fi-sidebar-header a > span,
@@ -91,7 +78,8 @@
     letter-spacing: 0.01em !important;
 }
 
-/* --- Nav items --- */
+
+/* Sidebar navigation */
 
 .fi-sidebar-item {
     margin: 1px 8px !important;
@@ -120,7 +108,8 @@
     color: var(--sh-nav-text-hover) !important;
 }
 
-/* --- Active nav item --- */
+
+/* Active nav */
 
 html .fi-sidebar .fi-sidebar-item.fi-active,
 html .fi-sidebar .fi-sidebar-item.fi-active > a {
@@ -134,16 +123,21 @@ html .fi-sidebar .fi-sidebar-item.fi-active .fi-sidebar-item-icon {
     opacity: 1 !important;
 }
 
-/* --- Group headings --- */
+
+/* Group headings */
 
 html .fi-sidebar .fi-sidebar-group-label {
     color: var(--sh-nav-group) !important;
+
     text-transform: uppercase;
+
     font-size: 0.66rem !important;
     letter-spacing: 0.11em;
     font-weight: 700 !important;
+
     margin-top: 1.1rem !important;
     margin-bottom: 0.3rem !important;
+
     padding-left: 1.1rem !important;
 }
 
@@ -155,12 +149,16 @@ html .fi-sidebar .fi-sidebar-group-collapse-btn {
     color: var(--sh-nav-group) !important;
 }
 
-/* --- Badges on nav items --- */
+
+/* Sidebar badges */
 
 .fi-sidebar-item .fi-badge {
     background: #c0392b !important;
+
     border-radius: 20px !important;
+
     min-width: 1.35rem !important;
+
     justify-content: center !important;
 }
 
@@ -171,11 +169,15 @@ html .fi-sidebar .fi-sidebar-group-collapse-btn {
     font-weight: 700 !important;
 }
 
-/* --- Scrollbar: track hidden, faint thumb on hover only --- */
+
+/* Sidebar scrollbar */
 
 .fi-sidebar-nav {
     scrollbar-width: thin;
-    scrollbar-color: rgba(255, 255, 255, 0.12) transparent;
+    scrollbar-color:
+        rgba(255, 255, 255, 0.12)
+        transparent;
+
     overflow-y: auto;
 }
 
@@ -199,79 +201,139 @@ html .fi-sidebar .fi-sidebar-group-collapse-btn {
 
 /* ============================================================
    3. TOPBAR — CUSTOM REPLACEMENT
-   Filament's own topbar is switched off. Everything below styles
-   resources/views/filament/partials/topbar.blade.php
    ============================================================ */
 
 .fi-topbar {
     display: none !important;
 }
 
-/* Filament reserves vertical space for its topbar via this variable
-   and positions the sidebar against it. Hiding .fi-topbar does NOT
-   release that space — the 4rem (64px) stays reserved, which showed
-   up as a phantom gap above the navy sidebar on any page long enough
-   to scroll. Zero it out, since there is no Filament topbar anymore. */
+
+/*
+   Filament still reserves space for its built-in topbar even
+   when hidden. Remove that reserved space.
+*/
 .fi-body,
 html .fi-body {
     --topbar-height: 0rem !important;
 }
 
-/* Avatars elsewhere (table rows, widgets) — one fixed brand color,
-   never Filament's random per-name hash. */
-.fi-avatar {
-    background-color: var(--sh-navy-800) !important;
-}
 
-.fi-avatar .fi-avatar-initials,
-.fi-avatar span {
-    color: #ffffff !important;
-    font-weight: 600 !important;
-}
+/* Custom top navigation */
 
-/* --- The custom bar ---
-   Injected at the top of page content, pulled out to the edges with
-   negative margins. These MUST match .fi-main's padding below. */
 .sh-topbar {
+    position: sticky;
+    top: 0;
+
+    z-index: 100;
+
     display: flex;
     align-items: center;
     justify-content: space-between;
+
     gap: 1rem;
+
+    min-height: var(--sh-topbar-height);
+
+    padding:
+        0.85rem
+        var(--sh-main-padding-x);
+
+    /*
+       Pull the custom bar out through .fi-main padding so that
+       the bar runs from the sidebar boundary to the right edge
+       of the Filament content area.
+    */
+    margin-top: calc(-1 * var(--sh-main-padding-top));
+
+    margin-left:
+        calc(-1 * var(--sh-main-padding-x));
+
+    margin-right:
+        calc(-1 * var(--sh-main-padding-x));
+
+    margin-bottom: 0.9rem;
+
     background: var(--sh-surface);
-    border-bottom: 1px solid var(--sh-border);
-    box-shadow: 0 1px 3px rgba(13, 31, 56, 0.05);
-    padding: 0.85rem 1.75rem;
-    margin: -1.5rem -1.75rem 0.9rem;
-    min-height: 4.25rem;
+
+    border-bottom:
+        1px solid var(--sh-border);
+
+    box-shadow:
+        0 1px 3px rgba(13, 31, 56, 0.06),
+        0 4px 12px rgba(13, 31, 56, 0.035);
+
+    isolation: isolate;
 }
+
+
+/*
+   Prevent content from showing through the sticky navbar.
+*/
+.sh-topbar::before {
+    content: "";
+
+    position: absolute;
+    inset: 0;
+
+    z-index: -1;
+
+    background: var(--sh-surface);
+}
+
+
+/* Topbar left */
 
 .sh-topbar-left {
     display: flex;
     align-items: center;
+
     gap: 0.65rem;
+
     flex-wrap: wrap;
+
     min-width: 0;
 }
 
+
+/* Topbar right */
+
 .sh-topbar-right {
     position: relative;
+
+    display: flex;
+    align-items: center;
+
     flex-shrink: 0;
 }
 
-/* --- Icon button (sidebar toggle) --- */
+
+/* Sidebar toggle */
 
 .sh-icon-btn {
     display: inline-flex;
+
     align-items: center;
     justify-content: center;
+
     width: 2.25rem;
     height: 2.25rem;
+
+    flex: 0 0 2.25rem;
+
     border-radius: 8px;
+
     border: 1px solid transparent;
+
     background: transparent;
+
     color: var(--sh-text-muted);
+
     cursor: pointer;
-    transition: background 0.15s ease, color 0.15s ease;
+
+    transition:
+        background 0.15s ease,
+        color 0.15s ease,
+        border-color 0.15s ease;
 }
 
 .sh-icon-btn:hover {
@@ -280,29 +342,48 @@ html .fi-body {
 }
 
 .sh-icon-btn svg {
-    width: 1.3rem;
-    height: 1.3rem;
+    width: 1.3rem !important;
+    height: 1.3rem !important;
+
+    min-width: 1.3rem;
+
+    flex-shrink: 0;
 }
 
-/* --- Chips (date, role) --- */
+
+/* Topbar chips */
 
 .sh-chip {
     display: inline-flex;
+
     align-items: center;
+
     gap: 0.45rem;
+
     background: #f7f9fc;
-    border: 1px solid var(--sh-border);
+
+    border:
+        1px solid var(--sh-border);
+
     border-radius: 8px;
+
     padding: 0.42rem 0.75rem;
+
     font-size: 0.78rem;
+
     color: var(--sh-text-muted);
+
     white-space: nowrap;
 }
 
 .sh-chip svg {
-    width: 1rem;
-    height: 1rem;
+    width: 1rem !important;
+    height: 1rem !important;
+
+    min-width: 1rem;
+
     color: var(--sh-blue-600);
+
     flex-shrink: 0;
 }
 
@@ -313,84 +394,130 @@ html .fi-body {
 
 .sh-chip-clock {
     font-variant-numeric: tabular-nums;
+
     letter-spacing: 0.03em;
+
     color: var(--sh-text);
+
     font-weight: 600;
 }
 
 .sh-chip-divider {
     width: 1px;
     height: 0.9rem;
+
     background: var(--sh-border);
 }
 
 .sh-chip-role .sh-chip-value {
     color: var(--sh-blue-600);
+
     text-transform: uppercase;
+
     font-size: 0.72rem;
+
     letter-spacing: 0.05em;
 }
 
-/* --- User menu --- */
+
+/* ============================================================
+   USER MENU
+   ============================================================ */
 
 .sh-user-btn {
     display: flex;
+
     align-items: center;
+
     gap: 0.6rem;
+
     background: transparent;
+
     border: 1px solid transparent;
+
     border-radius: 10px;
-    padding: 0.35rem 0.6rem 0.35rem 0.4rem;
+
+    padding:
+        0.35rem
+        0.6rem
+        0.35rem
+        0.4rem;
+
     cursor: pointer;
-    transition: background 0.15s ease, border-color 0.15s ease;
+
+    transition:
+        background 0.15s ease,
+        border-color 0.15s ease;
 }
 
 .sh-user-btn:hover {
     background: #f7f9fc;
+
     border-color: var(--sh-border);
 }
 
 .sh-user-avatar {
     display: inline-flex;
+
     align-items: center;
     justify-content: center;
+
     width: 2.25rem;
     height: 2.25rem;
+
     border-radius: 50%;
+
     background: var(--sh-navy-800);
+
     color: #ffffff;
+
     font-size: 0.78rem;
+
     font-weight: 700;
+
     text-transform: uppercase;
+
     flex-shrink: 0;
 }
 
 .sh-user-meta {
     display: flex;
+
     flex-direction: column;
+
     align-items: flex-start;
+
     line-height: 1.25;
+
     text-align: left;
 }
 
 .sh-user-name {
     font-size: 0.84rem;
+
     font-weight: 600;
+
     color: var(--sh-text);
+
     white-space: nowrap;
 }
 
 .sh-user-role {
     font-size: 0.68rem;
+
     color: var(--sh-text-dim);
+
     text-transform: uppercase;
+
     letter-spacing: 0.05em;
 }
 
 .sh-user-chevron {
-    width: 0.9rem;
-    height: 0.9rem;
+    width: 0.9rem !important;
+    height: 0.9rem !important;
+
     color: var(--sh-text-dim);
+
     transition: transform 0.15s ease;
 }
 
@@ -398,52 +525,83 @@ html .fi-body {
     transform: rotate(180deg);
 }
 
-/* --- Dropdown panel --- */
+
+/* User dropdown */
 
 .sh-user-menu {
     position: absolute;
+
     top: calc(100% + 0.5rem);
+
     right: 0;
+
     min-width: 14rem;
+
     background: var(--sh-surface);
-    border: 1px solid var(--sh-border);
+
+    border:
+        1px solid var(--sh-border);
+
     border-radius: 10px;
-    box-shadow: 0 12px 28px rgba(13, 31, 56, 0.14);
+
+    box-shadow:
+        0 12px 28px rgba(13, 31, 56, 0.14);
+
     overflow: hidden;
-    z-index: 50;
+
+    z-index: 150;
 }
 
 .sh-user-menu-head {
     padding: 0.8rem 0.95rem;
-    border-bottom: 1px solid var(--sh-border);
+
+    border-bottom:
+        1px solid var(--sh-border);
+
     background: #f7f9fc;
 }
 
 .sh-user-menu-name {
     font-size: 0.85rem;
+
     font-weight: 600;
+
     color: var(--sh-text);
 }
 
 .sh-user-menu-email {
     font-size: 0.75rem;
+
     color: var(--sh-text-dim);
+
     margin-top: 0.1rem;
+
     word-break: break-all;
 }
 
 .sh-user-menu-item {
     display: flex;
+
     align-items: center;
+
     gap: 0.6rem;
+
     width: 100%;
+
     padding: 0.7rem 0.95rem;
+
     background: transparent;
+
     border: none;
+
     font-size: 0.84rem;
+
     color: var(--sh-text);
+
     cursor: pointer;
+
     text-align: left;
+
     transition: background 0.12s ease;
 }
 
@@ -452,17 +610,38 @@ html .fi-body {
 }
 
 .sh-user-menu-item svg {
-    width: 1.05rem;
-    height: 1.05rem;
+    width: 1.05rem !important;
+    height: 1.05rem !important;
+
     color: var(--sh-text-muted);
 }
 
-/* Alpine needs this so dropdowns don't flash on page load */
+
+/* Prevent Alpine flash */
+
 [x-cloak] {
     display: none !important;
 }
 
-/* --- Responsive --- */
+
+/* Generic avatar */
+
+.fi-avatar {
+    background-color:
+        var(--sh-navy-800) !important;
+}
+
+.fi-avatar .fi-avatar-initials,
+.fi-avatar span {
+    color: #ffffff !important;
+
+    font-weight: 600 !important;
+}
+
+
+/* ============================================================
+   TOPBAR RESPONSIVE
+   ============================================================ */
 
 @media (max-width: 1100px) {
     .sh-topbar-left .sh-chip {
@@ -471,73 +650,121 @@ html .fi-body {
 }
 
 @media (max-width: 640px) {
+    :root {
+        --sh-main-padding-x: 1rem;
+    }
+
     .sh-topbar {
         padding: 0.7rem 1rem;
-        margin: -1.5rem -1rem 1.25rem;
+
+        margin-top:
+            calc(-1 * var(--sh-main-padding-top));
+
+        margin-left: -1rem;
+        margin-right: -1rem;
+
+        margin-bottom: 1rem;
+
+        min-height: 4rem;
     }
 
     .sh-user-meta {
         display: none;
     }
+
+    .sh-user-btn {
+        padding: 0.25rem;
+    }
 }
 
 
 /* ============================================================
-   4. PAGE HEADER & CONTENT AREA
+   4. PAGE / MAIN CONTENT
    ============================================================ */
 
 .fi-main-ctn {
     background: var(--sh-bg) !important;
 }
 
+
+/*
+   Main page padding is also used by the topbar/footer variables.
+*/
 .fi-main {
-    padding-left: 1.75rem !important;
-    padding-right: 1.75rem !important;
-    padding-top: 1.5rem !important;
+    padding-left:
+        var(--sh-main-padding-x) !important;
+
+    padding-right:
+        var(--sh-main-padding-x) !important;
+
+    padding-top:
+        var(--sh-main-padding-top) !important;
+
     padding-bottom: 0 !important;
 }
 
-/* Filament adds its own padding on the page wrapper on top of
-   .fi-main's — that stacking is what created the wide dead band
-   between the topbar and the page header. */
 .fi-page {
     padding-top: 0 !important;
 }
 
 .fi-page-content,
 .fi-resource-list-records-page .fi-page-content {
-    gap: 0.75rem !important;
+    gap: 1rem !important;
 }
 
-/* --- Page header band ---
-   PSF wraps the page title in a tinted band with a blue rule under
-   it, rather than letting the title float on the grey background. */
+
+/* Page heading */
+
 .fi-header {
-    background: linear-gradient(180deg, #f2f7fd 0%, #eaf2fb 100%) !important;
-    border: 1px solid var(--sh-border) !important;
-    border-bottom: 3px solid var(--sh-blue-600) !important;
-    border-radius: 12px 12px 0 0 !important;
-    padding: 1.05rem 1.35rem !important;
+    background:
+        linear-gradient(
+            180deg,
+            #f2f7fd 0%,
+            #eaf2fb 100%
+        ) !important;
+
+    border:
+        1px solid var(--sh-border) !important;
+
+    border-bottom:
+        3px solid var(--sh-blue-600) !important;
+
+    border-radius:
+        12px 12px 0 0 !important;
+
+    padding:
+        1.05rem 1.35rem !important;
+
     margin-top: 0 !important;
     margin-bottom: 0 !important;
 }
 
 .fi-header-heading {
-    color: var(--sh-blue-600) !important;
+    color:
+        var(--sh-blue-600) !important;
+
     font-weight: 700 !important;
+
     font-size: 1.3rem !important;
+
     text-transform: uppercase !important;
+
     letter-spacing: 0.02em !important;
 }
 
 .fi-header-subheading {
-    color: var(--sh-text-muted) !important;
+    color:
+        var(--sh-text-muted) !important;
+
     font-size: 0.9rem !important;
+
     margin-top: 0.2rem !important;
 }
 
 .fi-breadcrumbs-item-label {
-    color: var(--sh-text-muted) !important;
+    color:
+        var(--sh-text-muted) !important;
+
     font-size: 0.8rem !important;
 }
 
@@ -551,72 +778,127 @@ html .fi-body {
 }
 
 .fi-wi-stats-overview-stat {
-    background: var(--sh-surface) !important;
-    border: 1px solid var(--sh-border) !important;
+    background:
+        var(--sh-surface) !important;
+
+    border:
+        1px solid var(--sh-border) !important;
+
     border-radius: 12px !important;
-    box-shadow: 0 1px 2px rgba(13, 31, 56, 0.04) !important;
+
+    box-shadow:
+        0 1px 2px
+        rgba(13, 31, 56, 0.04) !important;
+
     position: relative !important;
+
     overflow: hidden !important;
-    padding: 1.35rem 1.25rem 1.25rem !important;
-    transition: transform 0.16s ease, box-shadow 0.16s ease;
+
+    padding:
+        1.35rem 1.25rem 1.25rem !important;
+
+    transition:
+        transform 0.16s ease,
+        box-shadow 0.16s ease;
 }
 
 .fi-wi-stats-overview-stat::before {
     content: "";
+
     position: absolute;
+
     top: 0;
     left: 0;
     right: 0;
+
     height: 3px;
-    background: var(--sh-rail-1);
+
+    background:
+        var(--sh-rail-1);
 }
 
-.fi-wi-stats-overview-stat:nth-of-type(4n+2)::before { background: var(--sh-rail-2); }
-.fi-wi-stats-overview-stat:nth-of-type(4n+3)::before { background: var(--sh-rail-3); }
-.fi-wi-stats-overview-stat:nth-of-type(4n+4)::before { background: var(--sh-rail-4); }
+.fi-wi-stats-overview-stat:nth-of-type(4n+2)::before {
+    background: var(--sh-rail-2);
+}
+
+.fi-wi-stats-overview-stat:nth-of-type(4n+3)::before {
+    background: var(--sh-rail-3);
+}
+
+.fi-wi-stats-overview-stat:nth-of-type(4n+4)::before {
+    background: var(--sh-rail-4);
+}
 
 .fi-wi-stats-overview-stat:hover {
     transform: translateY(-2px);
-    box-shadow: 0 8px 20px rgba(13, 31, 56, 0.08) !important;
+
+    box-shadow:
+        0 8px 20px
+        rgba(13, 31, 56, 0.08) !important;
 }
 
 .fi-wi-stats-overview-stat-value {
-    color: var(--sh-navy-800) !important;
+    color:
+        var(--sh-navy-800) !important;
+
     font-size: 1.85rem !important;
+
     font-weight: 700 !important;
+
     line-height: 1.1 !important;
 }
 
 .fi-wi-stats-overview-stat-label {
-    color: var(--sh-text-muted) !important;
+    color:
+        var(--sh-text-muted) !important;
+
     font-size: 0.72rem !important;
+
     font-weight: 700 !important;
+
     text-transform: uppercase !important;
+
     letter-spacing: 0.07em !important;
 }
 
 .fi-wi-stats-overview-stat-description {
     font-size: 0.78rem !important;
+
     margin-top: 0.35rem !important;
 }
 
 .fi-wi-stats-overview-stat-icon {
-    background: var(--sh-blue-100) !important;
-    color: var(--sh-blue-600) !important;
+    background:
+        var(--sh-blue-100) !important;
+
+    color:
+        var(--sh-blue-600) !important;
+
     border-radius: 10px !important;
+
     padding: 0.55rem !important;
+
     width: 2.5rem !important;
     height: 2.5rem !important;
+
     display: inline-flex !important;
+
     align-items: center !important;
     justify-content: center !important;
 }
 
 .fi-wi-account {
-    background: var(--sh-surface) !important;
-    border: 1px solid var(--sh-border) !important;
+    background:
+        var(--sh-surface) !important;
+
+    border:
+        1px solid var(--sh-border) !important;
+
     border-radius: 12px !important;
-    box-shadow: 0 1px 2px rgba(13, 31, 56, 0.04) !important;
+
+    box-shadow:
+        0 1px 2px
+        rgba(13, 31, 56, 0.04) !important;
 }
 
 
@@ -626,63 +908,90 @@ html .fi-body {
 
 .fi-ta-ctn,
 .fi-section {
-    background: var(--sh-surface) !important;
-    border: 1px solid var(--sh-border) !important;
+    background:
+        var(--sh-surface) !important;
+
+    border:
+        1px solid var(--sh-border) !important;
+
     border-radius: 12px !important;
-    box-shadow: 0 1px 2px rgba(13, 31, 56, 0.04) !important;
+
+    box-shadow:
+        0 1px 2px
+        rgba(13, 31, 56, 0.04) !important;
+
     overflow: hidden !important;
 }
 
 .fi-ta-header-cell {
-    background: #eef3fa !important;
-    font-size: 0.74rem !important;
-    font-weight: 700 !important;
-    letter-spacing: 0.02em !important;
-    padding-top: 0.75rem !important;
-    padding-bottom: 0.75rem !important;
-    border-right: 1px solid #dde4ee !important;
-    border-bottom: 2px solid #ccd7e6 !important;
+    background:
+        #eef3fa !important;
+
+    font-size:
+        0.74rem !important;
+
+    font-weight:
+        700 !important;
+
+    letter-spacing:
+        0.02em !important;
+
+    padding-top:
+        0.75rem !important;
+
+    padding-bottom:
+        0.75rem !important;
+
+    border-right:
+        1px solid #dde4ee !important;
+
+    border-bottom:
+        2px solid #ccd7e6 !important;
 }
 
 .fi-ta-header-cell,
 .fi-ta-header-cell span {
-    color: var(--sh-navy-800) !important;
+    color:
+        var(--sh-navy-800) !important;
 }
 
 .fi-ta-row {
-    background: var(--sh-surface) !important;
+    background:
+        var(--sh-surface) !important;
 }
 
 .fi-ta-row:hover {
-    background: #f5f9fe !important;
+    background:
+        #f5f9fe !important;
 }
 
-/* Bordered grid — PSF's table has visible cell dividers on all
-   sides, not just between rows. */
 .fi-ta-cell {
-    padding-top: 0.6rem !important;
-    padding-bottom: 0.6rem !important;
-    border-right: 1px solid #e8edf5 !important;
-    border-bottom: 1px solid #e8edf5 !important;
+    padding-top:
+        0.6rem !important;
+
+    padding-bottom:
+        0.6rem !important;
+
+    border-right:
+        1px solid #e8edf5 !important;
+
+    border-bottom:
+        1px solid #e8edf5 !important;
 }
 
-/* No dangling border on the last column of either row type */
 .fi-ta-header-cell:last-child,
 .fi-ta-cell:last-child {
     border-right: none !important;
 }
 
-/* Filament pads the cell's inner wrapper as well as the cell itself,
-   which is what was making single-line rows ~95px tall. */
 .fi-ta-cell > div,
 .fi-ta-col-wrp {
     padding-top: 0 !important;
     padding-bottom: 0 !important;
+
     min-height: 0 !important;
 }
 
-/* Circular initials/avatars in table rows — keep them modest so they
-   don't drive the row height up on their own. */
 .fi-ta-cell .fi-avatar,
 .fi-ta-cell img[class*="rounded-full"],
 .fi-ta-cell .fi-ta-image-item {
@@ -690,17 +999,52 @@ html .fi-body {
     height: 2.1rem !important;
 }
 
-/* Close the gap between the page header and the table. */
-.fi-page-content,
-.fi-resource-list-records-page .fi-page-content {
-    gap: 1rem !important;
-}
-
 .fi-ta-ctn {
     margin-top: 0 !important;
 }
 
-/* --- Pagination: numbered buttons like the PSF reference --- */
+
+/* Table text */
+
+.fi-ta-text-item-label {
+    color:
+        var(--sh-text) !important;
+
+    font-size:
+        0.875rem !important;
+}
+
+
+/* Table footer */
+
+.fi-ta-footer,
+.fi-pagination {
+    background:
+        var(--sh-surface) !important;
+
+    border-top:
+        1px solid var(--sh-border) !important;
+}
+
+
+/* Search */
+
+.fi-ta-search-field input {
+    background:
+        #f7f9fc !important;
+
+    color:
+        var(--sh-text) !important;
+
+    border:
+        1px solid var(--sh-border) !important;
+
+    border-radius:
+        8px !important;
+}
+
+
+/* Pagination */
 
 .fi-pagination-items {
     gap: 0.25rem !important;
@@ -709,76 +1053,88 @@ html .fi-body {
 .fi-pagination-item .fi-btn,
 .fi-pagination-item button,
 .fi-pagination-item a {
-    border: 1px solid var(--sh-border) !important;
-    background: var(--sh-surface) !important;
-    color: var(--sh-text) !important;
-    border-radius: 6px !important;
-    min-width: 2.25rem !important;
-    justify-content: center !important;
-    font-weight: 500 !important;
-    box-shadow: none !important;
+    border:
+        1px solid var(--sh-border) !important;
+
+    background:
+        var(--sh-surface) !important;
+
+    color:
+        var(--sh-text) !important;
+
+    border-radius:
+        6px !important;
+
+    min-width:
+        2.25rem !important;
+
+    justify-content:
+        center !important;
+
+    font-weight:
+        500 !important;
+
+    box-shadow:
+        none !important;
 }
 
 .fi-pagination-item .fi-btn:hover,
 .fi-pagination-item button:hover,
 .fi-pagination-item a:hover {
-    background: #eef3fa !important;
-    border-color: #c8d5e6 !important;
+    background:
+        #eef3fa !important;
+
+    border-color:
+        #c8d5e6 !important;
 }
 
-/* Current page — solid blue */
 .fi-pagination-item .fi-active,
 .fi-pagination-item[aria-current] .fi-btn,
 .fi-pagination-item .fi-btn.fi-active {
-    background: var(--sh-blue-600) !important;
-    border-color: var(--sh-blue-600) !important;
-    color: #ffffff !important;
+    background:
+        var(--sh-blue-600) !important;
+
+    border-color:
+        var(--sh-blue-600) !important;
+
+    color:
+        #ffffff !important;
 }
 
 .fi-pagination-item .fi-active span,
 .fi-pagination-item[aria-current] .fi-btn span {
-    color: #ffffff !important;
+    color:
+        #ffffff !important;
 }
 
-.fi-ta-text-item-label {
-    color: var(--sh-text) !important;
-    font-size: 0.875rem !important;
-}
 
-.fi-ta-footer,
-.fi-pagination {
-    background: var(--sh-surface) !important;
-    border-top: 1px solid var(--sh-border) !important;
-}
+/* Empty state */
 
-.fi-ta-search-field input {
-    background: #f7f9fc !important;
-    color: var(--sh-text) !important;
-    border: 1px solid var(--sh-border) !important;
-    border-radius: 8px !important;
-}
-
-/* Empty state — the bare grey X read like an error. Softer. */
 .fi-ta-empty-state-icon-ctn {
-    background: var(--sh-blue-100) !important;
+    background:
+        var(--sh-blue-100) !important;
 }
 
 .fi-ta-empty-state-icon {
-    color: var(--sh-blue-600) !important;
+    color:
+        var(--sh-blue-600) !important;
 }
 
 .fi-ta-empty-state-heading {
-    color: var(--sh-text) !important;
+    color:
+        var(--sh-text) !important;
+
     font-weight: 600 !important;
 }
 
 .fi-ta-empty-state-description {
-    color: var(--sh-text-muted) !important;
+    color:
+        var(--sh-text-muted) !important;
 }
 
 
 /* ============================================================
-   7. FORMS, BUTTONS, BADGES, MODALS
+   7. FORMS / BUTTONS / BADGES / MODALS
    ============================================================ */
 
 .fi-input,
@@ -789,30 +1145,47 @@ html .fi-body {
 
 .fi-fo-field-wrp-label {
     font-weight: 600 !important;
-    color: var(--sh-text) !important;
-    font-size: 0.85rem !important;
+
+    color:
+        var(--sh-text) !important;
+
+    font-size:
+        0.85rem !important;
 }
 
 .fi-btn {
-    border-radius: 7px !important;
-    font-weight: 600 !important;
-    font-size: 0.84rem !important;
+    border-radius:
+        7px !important;
+
+    font-weight:
+        600 !important;
+
+    font-size:
+        0.84rem !important;
 }
 
-/* Secondary/outlined header actions (CSV template, Import, export
-   buttons) — PSF gives these a solid dark navy fill rather than a
-   pale outline, which reads as deliberate next to the blue primary. */
+
+/* Secondary actions */
+
 .fi-header-actions .fi-btn.fi-color-gray,
 .fi-ta-actions .fi-btn.fi-color-gray {
-    background: var(--sh-navy-800) !important;
-    border-color: var(--sh-navy-800) !important;
-    color: #ffffff !important;
+    background:
+        var(--sh-navy-800) !important;
+
+    border-color:
+        var(--sh-navy-800) !important;
+
+    color:
+        #ffffff !important;
 }
 
 .fi-header-actions .fi-btn.fi-color-gray:hover,
 .fi-ta-actions .fi-btn.fi-color-gray:hover {
-    background: var(--sh-navy-700) !important;
-    border-color: var(--sh-navy-700) !important;
+    background:
+        var(--sh-navy-700) !important;
+
+    border-color:
+        var(--sh-navy-700) !important;
 }
 
 .fi-header-actions .fi-btn.fi-color-gray svg,
@@ -822,429 +1195,907 @@ html .fi-body {
     color: #ffffff !important;
 }
 
-/* Row-level Edit links — outlined button, like the PSF table */
+
+/* Row actions */
+
 .fi-ta-cell .fi-link,
 .fi-ta-actions .fi-link {
-    border: 1px solid #c8d5e6 !important;
-    border-radius: 6px !important;
-    padding: 0.28rem 0.6rem !important;
-    color: var(--sh-blue-600) !important;
-    font-size: 0.78rem !important;
-    font-weight: 600 !important;
-    text-decoration: none !important;
-    background: var(--sh-surface) !important;
+    border:
+        1px solid #c8d5e6 !important;
+
+    border-radius:
+        6px !important;
+
+    padding:
+        0.28rem 0.6rem !important;
+
+    color:
+        var(--sh-blue-600) !important;
+
+    font-size:
+        0.78rem !important;
+
+    font-weight:
+        600 !important;
+
+    text-decoration:
+        none !important;
+
+    background:
+        var(--sh-surface) !important;
 }
 
 .fi-ta-cell .fi-link:hover,
 .fi-ta-actions .fi-link:hover {
-    background: var(--sh-blue-100) !important;
-    border-color: var(--sh-blue-500) !important;
+    background:
+        var(--sh-blue-100) !important;
+
+    border-color:
+        var(--sh-blue-500) !important;
 }
+
+
+/* Badges */
 
 .fi-badge {
-    border-radius: 6px !important;
-    font-weight: 600 !important;
-    font-size: 0.7rem !important;
-    letter-spacing: 0.01em !important;
+    border-radius:
+        6px !important;
+
+    font-weight:
+        600 !important;
+
+    font-size:
+        0.7rem !important;
+
+    letter-spacing:
+        0.01em !important;
 }
+
+
+/* Modal */
 
 .fi-modal-window {
-    border-radius: 14px !important;
+    border-radius:
+        14px !important;
 }
 
+
+/* Tabs */
+
 .fi-tabs-tab {
-    border-radius: 8px !important;
-    font-weight: 500 !important;
+    border-radius:
+        8px !important;
+
+    font-weight:
+        500 !important;
 }
 
 
 /* ============================================================
-   8. FOOTER (injected via render hook)
+   IMAGE EDITOR — CROP RATIO ACTIVE STATE
    ============================================================ */
 
-/* Sticky, not fixed, on purpose. `position: fixed` would span the
-   whole viewport and sit on top of the navy sidebar — and pinning it
-   with `left: <sidebar width>` breaks the moment the sidebar
-   collapses. Sticky keeps it inside the content column, so it tracks
-   the sidebar's width automatically. */
+/*
+   Ratio buttons such as:
+
+   Free
+   1:1
+   3:1
+   4:1
+   16:9
+
+   now clearly show which option is selected.
+*/
+
+.fi-modal button[aria-pressed] {
+    border:
+        1px solid #d1d5db !important;
+
+    border-radius:
+        0.5rem !important;
+
+    background:
+        #ffffff !important;
+
+    color:
+        #374151 !important;
+
+    transition:
+        background-color 0.15s ease,
+        border-color 0.15s ease,
+        color 0.15s ease,
+        box-shadow 0.15s ease;
+}
+
+.fi-modal button[aria-pressed]:hover {
+    border-color:
+        var(--sh-blue-500) !important;
+
+    color:
+        var(--sh-blue-600) !important;
+
+    background:
+        #f5f9fe !important;
+}
+
+
+/* Selected crop ratio */
+
+.fi-modal button[aria-pressed="true"] {
+    background:
+        var(--sh-blue-600) !important;
+
+    border-color:
+        var(--sh-blue-600) !important;
+
+    color:
+        #ffffff !important;
+
+    box-shadow:
+        0 0 0 2px
+        rgba(26, 95, 168, 0.15) !important;
+
+    font-weight:
+        700 !important;
+}
+
+.fi-modal button[aria-pressed="true"] span,
+.fi-modal button[aria-pressed="true"] svg {
+    color:
+        #ffffff !important;
+}
+
+
+/* ============================================================
+   8. FOOTER
+   ============================================================ */
+
+/*
+   IMPORTANT:
+
+   This footer is NOT manually offset using the sidebar width.
+
+   It lives inside .fi-main, which means Filament already positions
+   it correctly when the sidebar expands/collapses.
+
+   Its horizontal margins match .sh-topbar exactly.
+*/
+
 .sh-footer {
     position: sticky;
+
     bottom: 0;
-    z-index: 20;
+
+
+
+    display: flex;
+
+    align-items: center;
+    justify-content: center;
+
+    width: auto;
+
+    min-height: 46px;
+
+    padding:
+        0.85rem
+        var(--sh-main-padding-x);
+
+    margin-top: 0.9rem;
+
+    margin-left:
+        calc(-1 * var(--sh-main-padding-x));
+
+    margin-right:
+        calc(-1 * var(--sh-main-padding-x));
+
+    margin-bottom: 0;
+
+    background:
+        var(--sh-surface);
+
+    border-top:
+        1px solid var(--sh-border);
+
+    box-shadow:
+        0 -1px 3px rgba(13, 31, 56, 0.04),
+        0 -4px 10px rgba(13, 31, 56, 0.025);
+
+    color:
+        var(--sh-text-dim);
+
+    font-size:
+        0.78rem;
+
+    line-height: 1.4;
+
     text-align: center;
-    padding: 0.85rem 1rem;
-    margin: 0.9rem -1.75rem 0;        /* Negative sides match .fi-main padding */
-    background: var(--sh-surface);
-    border-top: 1px solid var(--sh-border);
-    box-shadow: 0 -2px 8px rgba(13, 31, 56, 0.04);
-    color: var(--sh-text-dim);
-    font-size: 0.78rem;
+}
+
+
+/*
+   Keep content directly centered in the available main-content
+   column between the sidebar and right edge.
+*/
+.sh-footer > * {
+    margin: 0;
+}
+
+.sh-footer p {
+    margin: 0;
+
+    width: 100%;
+
+    display: flex;
+
+    align-items: center;
+    justify-content: center;
+
+    flex-wrap: wrap;
+
+    gap: 0.25rem;
 }
 
 .sh-footer strong {
-    color: var(--sh-text-muted);
+    color:
+        var(--sh-text-muted);
+
     font-weight: 600;
 }
 
+
+/* Footer mobile */
+
 @media (max-width: 640px) {
     .sh-footer {
+        min-height: 44px;
+
+        padding:
+            0.75rem 1rem;
+
         margin-left: -1rem;
         margin-right: -1rem;
+
+        font-size: 0.72rem;
+    }
+
+    .sh-footer p {
+        gap: 0.2rem;
     }
 }
 
 
 /* ============================================================
    9. LOGIN PAGE
-   Split card: navy brand panel left, form right.
-
-   THE DOM, confirmed in devtools:
-       .fi-simple-main
-           └── .fi-simple-page
-                   ├── .sh-login-brand          (our injected panel)
-                   ├── .fi-simple-page-content  (heading + form)
-                   └── <div wire:partial="action-modals">   ← INVISIBLE
-
-   That third child is the reason earlier versions had mystery empty
-   space: a selector of `> *:not(.sh-login-brand)` matched it as well
-   as the form, handing it the form's padding and a share of the flex
-   row. Every rule below names .fi-simple-page-content explicitly
-   instead, and the third child is collapsed to zero.
    ============================================================ */
 
 .fi-simple-layout {
-    background: var(--sh-bg) !important;
-    min-height: 100vh;
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    padding: 1.5rem;
+    background:
+        var(--sh-bg) !important;
+
+    min-height:
+        100vh;
+
+    display:
+        flex;
+
+    align-items:
+        center;
+
+    justify-content:
+        center;
+
+    padding:
+        1.5rem;
 }
 
 .fi-simple-main {
-    background: var(--sh-surface) !important;
-    border-radius: 14px !important;
-    box-shadow: 0 20px 50px rgba(13, 31, 56, 0.15) !important;
-    border: none !important;
-    padding: 0 !important;
-    overflow: hidden !important;
-    width: 100% !important;
-    max-width: 46rem !important;
+    background:
+        var(--sh-surface) !important;
+
+    border-radius:
+        14px !important;
+
+    box-shadow:
+        0 20px 50px
+        rgba(13, 31, 56, 0.15) !important;
+
+    border:
+        none !important;
+
+    padding:
+        0 !important;
+
+    overflow:
+        hidden !important;
+
+    width:
+        100% !important;
+
+    max-width:
+        46rem !important;
 }
 
-/* --- Two-column split --- */
+
+/* Login desktop */
 
 @media (min-width: 860px) {
     .fi-simple-page {
         display: flex !important;
-        flex-direction: row !important;
-        align-items: stretch !important;
-        width: 100% !important;
+
+        flex-direction:
+            row !important;
+
+        align-items:
+            stretch !important;
+
+        width:
+            100% !important;
     }
 
-    /* 42/58 split — the brand panel is the narrower side in PSF */
     .fi-simple-page > .sh-login-brand {
-        flex: 0 0 42% !important;
-        max-width: 42% !important;
+        flex:
+            0 0 42% !important;
+
+        max-width:
+            42% !important;
     }
 
     .fi-simple-page > .fi-simple-page-content {
-        flex: 1 1 58% !important;
-        max-width: 58% !important;
-        min-width: 0 !important;
+        flex:
+            1 1 58% !important;
+
+        max-width:
+            58% !important;
+
+        min-width:
+            0 !important;
     }
 }
 
-/* Collapse the invisible action-modals sibling. Two selectors: one
-   matches its wire:partial attribute (the \: escapes the colon so
-   CSS doesn't read it as a pseudo-class), the other catches any
-   other unexpected child. Either alone would do it. */
+
+/* Invisible action modal sibling */
+
 .fi-simple-page > [wire\:partial],
 .fi-simple-page > div:not(.sh-login-brand):not(.fi-simple-page-content) {
-    flex: 0 0 0 !important;
-    width: 0 !important;
-    max-width: 0 !important;
-    padding: 0 !important;
-    margin: 0 !important;
+    flex:
+        0 0 0 !important;
+
+    width:
+        0 !important;
+
+    max-width:
+        0 !important;
+
+    padding:
+        0 !important;
+
+    margin:
+        0 !important;
 }
 
-/* --- Left brand panel --- */
+
+/* Brand panel */
 
 .sh-login-brand {
-    background: linear-gradient(160deg, #0f3663 0%, #14457d 45%, #0c2a4d 100%);
-    color: #ffffff;
-    padding: 2.5rem 1.9rem;
-    display: flex;
-    flex-direction: column;
-    align-items: center;
-    justify-content: center;
-    text-align: center;
-    position: relative;
-    overflow: hidden;
+    background:
+        linear-gradient(
+            160deg,
+            #0f3663 0%,
+            #14457d 45%,
+            #0c2a4d 100%
+        );
+
+    color:
+        #ffffff;
+
+    padding:
+        2.5rem 1.9rem;
+
+    display:
+        flex;
+
+    flex-direction:
+        column;
+
+    align-items:
+        center;
+
+    justify-content:
+        center;
+
+    text-align:
+        center;
+
+    position:
+        relative;
+
+    overflow:
+        hidden;
 }
 
-/* Diagonal light streaks — two bands at different opacities reads
-   closer to the PSF original than a single soft gradient. */
 .sh-login-brand::after {
     content: "";
-    position: absolute;
-    top: -20%;
-    right: -25%;
-    width: 55%;
-    height: 150%;
+
+    position:
+        absolute;
+
+    top:
+        -20%;
+
+    right:
+        -25%;
+
+    width:
+        55%;
+
+    height:
+        150%;
+
     background:
-        linear-gradient(105deg,
+        linear-gradient(
+            105deg,
             transparent 0%,
             rgba(255, 255, 255, 0.07) 42%,
             rgba(255, 255, 255, 0.07) 48%,
-            transparent 49%),
-        linear-gradient(105deg,
+            transparent 49%
+        ),
+        linear-gradient(
+            105deg,
             transparent 0%,
             rgba(255, 255, 255, 0.05) 62%,
             rgba(255, 255, 255, 0.05) 72%,
-            transparent 73%);
-    transform: rotate(8deg);
-    pointer-events: none;
+            transparent 73%
+        );
+
+    transform:
+        rotate(8deg);
+
+    pointer-events:
+        none;
 }
 
 .sh-login-brand img {
-    height: 4.25rem;
-    width: auto;
-    margin-bottom: 1.75rem;
-    position: relative;
-    z-index: 1;
+    height:
+        4.25rem;
+
+    width:
+        auto;
+
+    margin-bottom:
+        1.75rem;
+
+    position:
+        relative;
+
+    z-index:
+        1;
 }
 
 .sh-login-brand h2 {
-    font-size: 1.2rem;
-    font-weight: 700;
-    margin-bottom: 0.55rem;
-    position: relative;
-    z-index: 1;
+    font-size:
+        1.2rem;
+
+    font-weight:
+        700;
+
+    margin-bottom:
+        0.55rem;
+
+    position:
+        relative;
+
+    z-index:
+        1;
 }
 
 .sh-login-brand p {
-    font-size: 0.82rem;
-    line-height: 1.55;
-    color: rgba(255, 255, 255, 0.8);
-    position: relative;
-    z-index: 1;
+    font-size:
+        0.82rem;
+
+    line-height:
+        1.55;
+
+    color:
+        rgba(255, 255, 255, 0.8);
+
+    position:
+        relative;
+
+    z-index:
+        1;
 }
 
+
+/* Login links */
+
 .sh-login-links {
-    display: flex;
-    gap: 0.6rem;
-    margin-top: 1.5rem;
-    flex-wrap: wrap;
-    justify-content: center;
-    position: relative;
-    z-index: 1;
+    display:
+        flex;
+
+    gap:
+        0.6rem;
+
+    margin-top:
+        1.5rem;
+
+    flex-wrap:
+        wrap;
+
+    justify-content:
+        center;
+
+    position:
+        relative;
+
+    z-index:
+        1;
 }
 
 .sh-login-links a {
-    display: inline-flex;
-    align-items: center;
-    gap: 0.4rem;
-    border: 1px solid rgba(255, 255, 255, 0.28);
-    border-radius: 20px;
-    padding: 0.4rem 0.9rem;
-    font-size: 0.78rem;
-    color: #ffffff;
-    text-decoration: none;
-    transition: background 0.15s ease;
+    display:
+        inline-flex;
+
+    align-items:
+        center;
+
+    gap:
+        0.4rem;
+
+    border:
+        1px solid
+        rgba(255, 255, 255, 0.28);
+
+    border-radius:
+        20px;
+
+    padding:
+        0.4rem 0.9rem;
+
+    font-size:
+        0.78rem;
+
+    color:
+        #ffffff;
+
+    text-decoration:
+        none;
+
+    transition:
+        background 0.15s ease;
 }
 
 .sh-login-links a:hover {
-    background: rgba(255, 255, 255, 0.12);
+    background:
+        rgba(255, 255, 255, 0.12);
 }
 
 .sh-login-links svg {
-    width: 0.9rem;
-    height: 0.9rem;
+    width:
+        0.9rem !important;
+
+    height:
+        0.9rem !important;
 }
 
-/* Narrow screens — logo only, no copy */
+
+/* Login mobile */
+
 @media (max-width: 859px) {
     .sh-login-brand {
-        padding: 2rem 1.5rem;
+        padding:
+            2rem 1.5rem;
     }
 
     .sh-login-brand p,
     .sh-login-links {
-        display: none;
+        display:
+            none;
     }
 
     .sh-login-brand img {
-        height: 3rem;
-        margin-bottom: 0;
+        height:
+            3rem;
+
+        margin-bottom:
+            0;
     }
 }
 
-/* --- Right form side --- */
+
+/* Login form area */
 
 .fi-simple-page > .fi-simple-page-content {
-    padding: 2.25rem 2rem !important;
-    display: flex !important;
-    flex-direction: column !important;
-    justify-content: center !important;
-    align-items: stretch !important;
-    gap: 0.9rem !important;
+    padding:
+        2.25rem 2rem !important;
+
+    display:
+        flex !important;
+
+    flex-direction:
+        column !important;
+
+    justify-content:
+        center !important;
+
+    align-items:
+        stretch !important;
+
+    gap:
+        0.9rem !important;
 }
 
-/* Full-width form fields. Descendant selectors (not child), so every
-   nesting level is caught no matter how deep Filament nests it.
-   Limited to div/form/section/header — buttons, svgs and inputs keep
-   their natural sizing. */
 .fi-simple-page-content div,
 .fi-simple-page-content form,
 .fi-simple-page-content section,
 .fi-simple-page-content header {
-    width: 100% !important;
-    max-width: 100% !important;
-    min-width: 0 !important;
+    width:
+        100% !important;
+
+    max-width:
+        100% !important;
+
+    min-width:
+        0 !important;
 }
 
 .fi-simple-page input[type="text"],
 .fi-simple-page input[type="email"],
 .fi-simple-page input[type="password"],
 .fi-simple-page .fi-input {
-    width: 100% !important;
-    min-width: 0 !important;
+    width:
+        100% !important;
+
+    min-width:
+        0 !important;
 }
 
-/* Checkbox keeps its own size — the blanket rule above would
-   otherwise flatten it into a sliver. */
+
+/* Login checkbox */
+
 .fi-simple-page input[type="checkbox"] {
-    width: 1rem !important;
-    min-width: 1rem !important;
-    max-width: 1rem !important;
-    height: 1rem !important;
-    flex: 0 0 1rem !important;
+    width:
+        1rem !important;
+
+    min-width:
+        1rem !important;
+
+    max-width:
+        1rem !important;
+
+    height:
+        1rem !important;
+
+    flex:
+        0 0 1rem !important;
 }
 
 .fi-simple-page .fi-fo-checkbox,
 .fi-simple-page label:has(input[type="checkbox"]) {
-    display: flex !important;
-    align-items: center !important;
-    gap: 0.5rem !important;
+    display:
+        flex !important;
+
+    align-items:
+        center !important;
+
+    gap:
+        0.5rem !important;
 }
 
-/* The password eye toggle must not stretch, and stays on the right */
+
+/* Password eye */
+
 .fi-simple-page .fi-input-wrp button,
 .fi-simple-page .fi-input-wrp-suffix {
-    width: auto !important;
-    flex: 0 0 auto !important;
-    order: 2 !important;
+    width:
+        auto !important;
+
+    flex:
+        0 0 auto !important;
+
+    order:
+        2 !important;
 }
 
 .fi-simple-page .fi-input-wrp .fi-input {
-    order: 1 !important;
+    order:
+        1 !important;
 }
 
-/* --- Heading + subtitle --- */
+
+/* Login heading */
 
 .fi-simple-header {
-    text-align: center !important;
-    margin-bottom: 0.5rem !important;
+    text-align:
+        center !important;
+
+    margin-bottom:
+        0.5rem !important;
 }
 
 .fi-simple-header-heading {
-    color: var(--sh-blue-600) !important;
-    font-weight: 700 !important;
-    font-size: 1.3rem !important;
-    letter-spacing: -0.01em !important;
+    color:
+        var(--sh-blue-600) !important;
+
+    font-weight:
+        700 !important;
+
+    font-size:
+        1.3rem !important;
+
+    letter-spacing:
+        -0.01em !important;
 }
 
-/* PSF has helper text under the heading. Filament's login page has
-   no subheading by default, so it's added here. To change the
-   wording, edit this string. */
 .fi-simple-header-heading::after {
-    content: "Enter your credentials to continue.";
-    display: block;
-    margin-top: 0.3rem;
-    font-size: 0.84rem;
-    font-weight: 400;
-    color: var(--sh-text-muted);
-    letter-spacing: 0;
+    content:
+        "Enter your credentials to continue.";
+
+    display:
+        block;
+
+    margin-top:
+        0.3rem;
+
+    font-size:
+        0.84rem;
+
+    font-weight:
+        400;
+
+    color:
+        var(--sh-text-muted);
+
+    letter-spacing:
+        0;
 }
 
 .fi-simple-header-subheading {
-    display: none !important;
+    display:
+        none !important;
 }
 
-/* --- Fields --- */
+
+/* Login field labels */
 
 .fi-simple-page .fi-fo-field-wrp-label {
-    font-size: 0.82rem !important;
-    font-weight: 600 !important;
-    color: var(--sh-text) !important;
-    margin-bottom: 0.3rem !important;
+    font-size:
+        0.82rem !important;
+
+    font-weight:
+        600 !important;
+
+    color:
+        var(--sh-text) !important;
+
+    margin-bottom:
+        0.3rem !important;
 }
 
-/* The red required asterisk is loud on a login form — PSF has none */
+
+/* Hide required star */
+
 .fi-simple-page .fi-fo-field-wrp-label sup,
 .fi-simple-page .fi-fo-field-wrp-required-mark,
 .fi-simple-page label sup,
 .fi-simple-page [class*="required-mark"] {
-    display: none !important;
+    display:
+        none !important;
 }
 
+
+/* Login input wrapper */
+
 .fi-simple-page .fi-input-wrp {
-    border-radius: 8px !important;
-    border: 1px solid #d8dfea !important;
-    background: #fbfcfe !important;
-    box-shadow: none !important;
+    border-radius:
+        8px !important;
+
+    border:
+        1px solid #d8dfea !important;
+
+    background:
+        #fbfcfe !important;
+
+    box-shadow:
+        none !important;
 }
 
 .fi-simple-page .fi-input-wrp:focus-within {
-    border-color: var(--sh-blue-500) !important;
-    box-shadow: 0 0 0 3px rgba(36, 114, 196, 0.12) !important;
+    border-color:
+        var(--sh-blue-500) !important;
+
+    box-shadow:
+        0 0 0 3px
+        rgba(36, 114, 196, 0.12) !important;
 }
 
 .fi-simple-page .fi-input {
-    padding-top: 0.62rem !important;
-    padding-bottom: 0.62rem !important;
-    font-size: 0.9rem !important;
+    padding-top:
+        0.62rem !important;
+
+    padding-bottom:
+        0.62rem !important;
+
+    font-size:
+        0.9rem !important;
 }
 
 .fi-simple-page .fi-checkbox-input {
-    border-radius: 4px !important;
+    border-radius:
+        4px !important;
 }
 
-/* --- Forgot password link (needs ->passwordReset() on the panel) --- */
+
+/* Password reset */
 
 .fi-simple-page .fi-fo-field-wrp-hint-action,
 .fi-simple-page a[href*="password-reset"] {
-    color: var(--sh-amber) !important;
-    font-size: 0.8rem !important;
-    font-weight: 600 !important;
-    text-decoration: none !important;
+    color:
+        var(--sh-amber) !important;
+
+    font-size:
+        0.8rem !important;
+
+    font-weight:
+        600 !important;
+
+    text-decoration:
+        none !important;
 }
 
 .fi-simple-page .fi-fo-field-wrp-hint-action:hover,
 .fi-simple-page a[href*="password-reset"]:hover {
-    text-decoration: underline !important;
+    text-decoration:
+        underline !important;
 }
 
-/* --- Submit button --- */
+
+/* Login submit */
 
 .fi-simple-page .fi-btn[type="submit"] {
-    background: linear-gradient(135deg, var(--sh-blue-600) 0%, var(--sh-blue-500) 100%) !important;
-    border: none !important;
-    padding-top: 0.72rem !important;
-    padding-bottom: 0.72rem !important;
-    font-size: 0.92rem !important;
-    font-weight: 600 !important;
-    border-radius: 8px !important;
-    box-shadow: 0 4px 12px rgba(26, 95, 168, 0.28) !important;
-    justify-content: center !important;
+    background:
+        linear-gradient(
+            135deg,
+            var(--sh-blue-600) 0%,
+            var(--sh-blue-500) 100%
+        ) !important;
+
+    border:
+        none !important;
+
+    padding-top:
+        0.72rem !important;
+
+    padding-bottom:
+        0.72rem !important;
+
+    font-size:
+        0.92rem !important;
+
+    font-weight:
+        600 !important;
+
+    border-radius:
+        8px !important;
+
+    box-shadow:
+        0 4px 12px
+        rgba(26, 95, 168, 0.28) !important;
+
+    justify-content:
+        center !important;
 }
 
 .fi-simple-page .fi-btn[type="submit"]:hover {
-    box-shadow: 0 6px 16px rgba(26, 95, 168, 0.36) !important;
+    box-shadow:
+        0 6px 16px
+        rgba(26, 95, 168, 0.36) !important;
 }
 
-/* Hide Filament's own logo here — the brand panel carries it */
+
+/* Brand panel already carries logo */
+
 .fi-simple-main .fi-logo {
-    display: none !important;
+    display:
+        none !important;
 }

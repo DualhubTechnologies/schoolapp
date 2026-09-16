@@ -77,7 +77,7 @@ class AppPanelProvider extends PanelProvider
             // the page content instead.
             ->renderHook(
                 \Filament\View\PanelsRenderHook::HEAD_END,
-                fn () => '<link rel="stylesheet" href="' . asset('css/filament-custom.css') . '">'
+                fn () => '<link rel="stylesheet" href="' . asset('css/filament-custom.css') . '?v=' . filemtime(public_path('css/filament-custom.css')) . '">'
             )
             ->renderHook(
                 \Filament\View\PanelsRenderHook::PAGE_START,

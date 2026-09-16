@@ -2,12 +2,15 @@
 
 namespace App\Filament\App\Resources\Students\Schemas;
 
+use App\Models\Guardian;
 use App\Models\Student;
 use Filament\Forms\Components\DatePicker;
 use Filament\Forms\Components\FileUpload;
 use Filament\Forms\Components\Select;
 use Filament\Forms\Components\Textarea;
 use Filament\Forms\Components\TextInput;
+use Filament\Schemas\Components\Grid;
+use Filament\Schemas\Components\Group;
 use Filament\Schemas\Components\Section;
 use Filament\Schemas\Components\Utilities\Get;
 use Filament\Schemas\Components\Utilities\Set;
@@ -19,125 +22,325 @@ class StudentForm
     public static function configure(Schema $schema): Schema
     {
         return $schema
+            ->columns(1)
             ->components([
-                Section::make('Identity')
-                    ->columns(2)
+                Grid::make([
+                    'default' => 1,
+                    'xl' => 12,
+                ])
+                    ->columnSpanFull()
+                    ->extraAttributes([
+                        'class' => 'sh-student-form sh-student-layout',
+                    ])
                     ->schema([
-                        TextInput::make('name')
-                            ->label('Full name')
-                            ->required(),
-                        TextInput::make('admission_no')
-                            ->label('Admission number')
-                            ->required()
-                            ->default(fn () => static::nextAdmissionNumber())
-                            ->helperText('Auto-suggested. Edit if your school uses a different format.')
-                            ->rule(fn ($record) => function ($attribute, $value, $fail) use ($record) {
-                                $schoolId = auth()->user()->school_id;
-
-                                $exists = Student::where('school_id', $schoolId)
-                                    ->where('admission_no', $value)
-                                    ->when($record, fn ($q) => $q->whereKeyNot($record->getKey()))
-                                    ->exists();
-
-                                if ($exists) {
-                                    $fail('This admission number is already used at your school.');
-                                }
-                            }),
-                        Select::make('school_id')
-                            ->relationship('school', 'name')
-                            ->default(fn () => auth()->user()->school_id)
-                            ->disabled(fn () => ! auth()->user()->hasRole('Super Admin'))
-                            ->dehydrated()
-                            ->required(),
-                        Select::make('gender')
-                            ->options(Student::GENDERS),
-                        DatePicker::make('date_of_birth')
-                            ->label('Date of birth')
-                            ->maxDate(now()),
-                        DatePicker::make('admission_date')
-                            ->default(now()),
-                        FileUpload::make('photo')
-                            ->image()
-                            ->imageEditor()
-                            ->directory('students')
-                            ->columnSpanFull(),
-                    ]),
-
-                Section::make('Placement')
-                    ->columns(2)
-                    ->schema([
-                        Select::make('school_class_id')
-                            ->label('Class')
-                            ->relationship('schoolClass', 'name', fn (Builder $query) => static::scopeToSchool($query))
-                            ->searchable()
-                            ->preload()
-                            ->live()
-                            ->afterStateUpdated(fn (Set $set) => $set('section_id', null))
-                            ->required(),
-                        Select::make('section_id')
-                            ->label('Section')
-                            ->relationship(
-                                'section',
-                                'name',
-                                fn (Builder $query, Get $get) => static::scopeToSchool($query)
-                                    ->where('school_class_id', $get('school_class_id') ?? 0),
-                            )
-                            ->searchable()
-                            ->preload()
-                            ->helperText('Pick a class first.'),
-                        Select::make('status')
-                            ->options(Student::STATUSES)
-                            ->default('active')
-                            ->required(),
-                    ]),
-
-                Section::make('Contact & Guardian')
-                    ->columns(2)
-                    ->schema([
-                        Select::make('guardian_id')
-                            ->label('Guardian / Parent')
-                            ->relationship('guardian', 'name', fn (Builder $query) => static::scopeToSchool($query))
-                            ->searchable()
-                            ->preload()
-                            ->createOptionForm([
-                                TextInput::make('name')->required(),
-                                TextInput::make('phone')->tel()->required(),
-                                Select::make('relationship')
-                                    ->options(\App\Models\Guardian::RELATIONSHIPS)
-                                    ->default('guardian')
-                                    ->required(),
-                                TextInput::make('email')->email(),
+                        /*
+                         |----------------------------------------------------------
+                         | LEFT: Student identity
+                         |----------------------------------------------------------
+                         | This intentionally stays tall. The two sections on the
+                         | right stack beside it, so the first row is fully used.
+                         */
+                        Section::make('Student Identity')
+                            ->description('Personal details, identification and student photo.')
+                            ->extraAttributes([
+                                'class' => 'sh-student-card sh-student-card--identity sh-student-identity',
                             ])
-                            ->createOptionUsing(function (array $data) {
-                                $data['school_id'] = auth()->user()->school_id;
+                            ->columnSpan([
+                                'default' => 1,
+                                'xl' => 6,
+                            ])
+                            ->columns([
+                                'default' => 1,
+                                'md' => 6,
+                            ])
+                            ->schema([
+                                FileUpload::make('photo')
+                                    ->label('Student photo')
+                                    ->image()
+                                    ->avatar()
+                                    ->imageEditor()
+                                    ->circleCropper()
+                                    ->directory('students')
+                                    ->alignCenter()
+                                    ->helperText('Upload a clear photo. You can crop it before saving.')
+                                    ->extraFieldWrapperAttributes([
+                                        'class' => 'sh-student-photo',
+                                    ])
+                                    ->columnSpan([
+                                        'default' => 1,
+                                        'md' => 2,
+                                    ]),
 
-                                return \App\Models\Guardian::create($data)->getKey();
-                            }),
-                            Select::make('house_id')
-                                ->label('House')
-                                ->relationship(
-                                    'house',
-                                    'name',
-                                    modifyQueryUsing: fn ($query) => $query
-                                        ->where('school_id', auth()->user()->school_id)
-                                        ->where('is_active', true)
-                                )
-                                ->searchable()
-                                ->preload(),
-                        TextInput::make('phone')
-                            ->label('Student phone')
-                            ->tel(),
-                        TextInput::make('email')
-                            ->label('Student email')
-                            ->email(),
-                        Textarea::make('address')
-                            ->rows(2)
-                            ->columnSpanFull(),
-                        Textarea::make('medical_notes')
-                            ->label('Medical notes')
-                            ->helperText('Allergies, conditions, or anything staff should know in an emergency.')
-                            ->rows(3)
-                            ->columnSpanFull(),
+                                Grid::make([
+                                    'default' => 1,
+                                    'sm' => 2,
+                                ])
+                                    ->columnSpan([
+                                        'default' => 1,
+                                        'md' => 4,
+                                    ])
+                                    ->schema([
+                                        TextInput::make('first_name')
+                                            ->label('First name')
+                                            ->placeholder('Enter first name')
+                                            ->required()
+                                            ->maxLength(100),
+
+                                        TextInput::make('last_name')
+                                            ->label('Last name')
+                                            ->placeholder('Enter last name')
+                                            ->required()
+                                            ->maxLength(100),
+
+                                        TextInput::make('admission_no')
+                                            ->label('Registration No.')
+                                            ->required()
+                                            ->default(fn () => static::nextAdmissionNumber())
+                                            ->helperText('Auto-generated. Change it only if your school uses another format.')
+                                            ->rule(fn (Get $get, ?Student $record) => function ($attribute, $value, $fail) use ($get, $record) {
+                                                $user = auth()->user();
+
+                                                $schoolId = $user?->hasRole('Super Admin')
+                                                    ? $get('school_id')
+                                                    : $user?->school_id;
+
+                                                if (! $schoolId) {
+                                                    return;
+                                                }
+
+                                                $exists = Student::query()
+                                                    ->where('school_id', $schoolId)
+                                                    ->where('admission_no', $value)
+                                                    ->when(
+                                                        $record,
+                                                        fn (Builder $query) => $query->whereKeyNot($record->getKey()),
+                                                    )
+                                                    ->exists();
+
+                                                if ($exists) {
+                                                    $fail('This registration number is already used at this school.');
+                                                }
+                                            }),
+
+                                        Select::make('gender')
+                                            ->label('Sex')
+                                            ->options(Student::GENDERS)
+                                            ->placeholder('Select sex')
+                                            ->native(false),
+
+                                        DatePicker::make('date_of_birth')
+                                            ->label('Birth date')
+                                            ->maxDate(now()),
+
+                                        DatePicker::make('admission_date')
+                                            ->label('Admission date')
+                                            ->default(now()),
+
+                                        TextInput::make('lin')
+                                            ->label('LIN')
+                                            ->helperText('Learner Identification Number')
+                                            ->maxLength(100),
+
+                                        TextInput::make('nin')
+                                            ->label('National ID')
+                                            ->maxLength(100),
+
+                                        Select::make('status')
+                                            ->label('Status')
+                                            ->options(Student::STATUSES)
+                                            ->default('active')
+                                            ->native(false)
+                                            ->required(),
+
+                                        Select::make('school_id')
+                                            ->label('School')
+                                            ->relationship('school', 'name')
+                                            ->default(fn () => auth()->user()?->school_id)
+                                            ->disabled(fn () => ! auth()->user()?->hasRole('Super Admin'))
+                                            ->dehydrated()
+                                            ->required(),
+                                    ]),
+                            ]),
+
+                        /*
+                         |----------------------------------------------------------
+                         | RIGHT: two stacked cards
+                         |----------------------------------------------------------
+                         */
+                        Group::make()
+                            ->columnSpan([
+                                'default' => 1,
+                                'xl' => 6,
+                            ])
+                            ->extraAttributes([
+                                'class' => 'sh-student-right-stack',
+                            ])
+                            ->schema([
+                                Section::make('Class and Enrollment')
+                                    ->description('Academic placement and school grouping.')
+                                    ->extraAttributes([
+                                        'class' => 'sh-student-card sh-student-card--enrollment',
+                                    ])
+                                    ->columns([
+                                        'default' => 1,
+                                        'md' => 2,
+                                    ])
+                                    ->schema([
+                                        Select::make('school_class_id')
+                                            ->label('Class')
+                                            ->relationship(
+                                                'schoolClass',
+                                                'name',
+                                                fn (Builder $query) => static::scopeToSchool($query),
+                                            )
+                                            ->searchable()
+                                            ->preload()
+                                            ->live()
+                                            ->placeholder('Select class')
+                                            ->afterStateUpdated(fn (Set $set) => $set('section_id', null))
+                                            ->required(),
+
+                                        Select::make('section_id')
+                                            ->label('Class stream')
+                                            ->relationship(
+                                                'section',
+                                                'name',
+                                                fn (Builder $query, Get $get) => static::scopeToSchool($query)
+                                                    ->where('school_class_id', $get('school_class_id') ?? 0),
+                                            )
+                                            ->searchable()
+                                            ->preload()
+                                            ->placeholder('Select stream')
+                                            ->disabled(fn (Get $get): bool => blank($get('school_class_id')))
+                                            ->helperText(fn (Get $get): string => blank($get('school_class_id'))
+                                                ? 'Select a class first.'
+                                                : 'Choose the student stream.'),
+
+                                        Select::make('house_id')
+                                            ->label('House')
+                                            ->relationship(
+                                                'house',
+                                                'name',
+                                                modifyQueryUsing: fn (Builder $query, ?Student $record) => $query
+                                                    ->where('school_id', auth()->user()?->school_id)
+                                                    ->where('is_active', true)
+                                                    ->where(function (Builder $query) use ($record) {
+                                                        $query
+                                                            ->whereNull('capacity')
+                                                            ->orWhereRaw(
+                                                                'capacity > (select count(*) from students where students.house_id = houses.id)'
+                                                            )
+                                                            ->when(
+                                                                $record?->house_id,
+                                                                fn (Builder $houseQuery, $houseId) => $houseQuery->orWhere('houses.id', $houseId),
+                                                            );
+                                                    }),
+                                            )
+                                            ->searchable()
+                                            ->preload()
+                                            ->placeholder('Select house')
+                                            ->helperText('Full houses are hidden automatically.')
+                                            ->columnSpanFull(),
+                                    ]),
+
+                                Section::make('Parent and Contact Details')
+                                    ->description('Guardian and direct student contact information.')
+                                    ->extraAttributes([
+                                        'class' => 'sh-student-card sh-student-card--contact',
+                                    ])
+                                    ->columns([
+                                        'default' => 1,
+                                        'md' => 2,
+                                    ])
+                                    ->schema([
+                                        Select::make('guardian_id')
+                                            ->label('Parent / Guardian')
+                                            ->relationship(
+                                                'guardian',
+                                                'name',
+                                                fn (Builder $query) => static::scopeToSchool($query),
+                                            )
+                                            ->searchable()
+                                            ->preload()
+                                            ->placeholder('Select or add a parent / guardian')
+                                            ->columnSpanFull()
+                                            ->createOptionForm([
+                                                Grid::make([
+                                                    'default' => 1,
+                                                    'md' => 2,
+                                                ])
+                                                    ->schema([
+                                                        TextInput::make('name')
+                                                            ->label('Full name')
+                                                            ->required()
+                                                            ->maxLength(150),
+
+                                                        TextInput::make('phone')
+                                                            ->label('Phone number')
+                                                            ->tel()
+                                                            ->required()
+                                                            ->maxLength(30),
+
+                                                        Select::make('relationship')
+                                                            ->label('Relationship')
+                                                            ->options(Guardian::RELATIONSHIPS)
+                                                            ->default('guardian')
+                                                            ->native(false)
+                                                            ->required(),
+
+                                                        TextInput::make('email')
+                                                            ->label('Email address')
+                                                            ->email()
+                                                            ->maxLength(150),
+                                                    ]),
+                                            ])
+                                            ->createOptionUsing(function (array $data) {
+                                                $data['school_id'] = auth()->user()?->school_id;
+
+                                                return Guardian::create($data)->getKey();
+                                            }),
+
+                                        TextInput::make('phone')
+                                            ->label('Student phone')
+                                            ->tel()
+                                            ->placeholder('Optional')
+                                            ->maxLength(30),
+
+                                        TextInput::make('email')
+                                            ->label('Student email')
+                                            ->email()
+                                            ->placeholder('Optional')
+                                            ->maxLength(150),
+                                    ]),
+                            ]),
+
+                        /*
+                         |----------------------------------------------------------
+                         | BOTTOM: full width
+                         |----------------------------------------------------------
+                         */
+                        Section::make('Address and Student Welfare')
+                            ->description('Home address and information staff may need for student safety.')
+                            ->extraAttributes([
+                                'class' => 'sh-student-card sh-student-card--welfare',
+                            ])
+                            ->columnSpanFull()
+                            ->columns([
+                                'default' => 1,
+                                'md' => 2,
+                            ])
+                            ->schema([
+                                Textarea::make('address')
+                                    ->label('Residential address')
+                                    ->placeholder('Enter the student\'s home address')
+                                    ->rows(4),
+
+                                Textarea::make('medical_notes')
+                                    ->label('Medical / emergency notes')
+                                    ->placeholder('Allergies, conditions, medication, emergency information...')
+                                    ->helperText('Only record information staff may need for student safety or emergencies.')
+                                    ->rows(4),
+                            ]),
                     ]),
             ]);
     }
@@ -155,13 +358,14 @@ class StudentForm
 
     protected static function nextAdmissionNumber(): string
     {
-        $schoolId = auth()->user()->school_id;
+        $schoolId = auth()->user()?->school_id;
 
         if (! $schoolId) {
             return '';
         }
 
-        $last = Student::where('school_id', $schoolId)
+        $last = Student::query()
+            ->where('school_id', $schoolId)
             ->orderByDesc('id')
             ->value('admission_no');
 

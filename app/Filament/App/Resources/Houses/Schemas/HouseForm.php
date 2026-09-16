@@ -19,6 +19,13 @@ class HouseForm
                     ->maxLength(100)
                     ->placeholder('e.g. Kabalega'),
 
+                TextInput::make('capacity')
+                    ->label('Student Capacity')
+                    ->numeric()
+                    ->minValue(1)
+                    ->placeholder('Unlimited')
+                    ->helperText('Leave blank for unlimited capacity.'),
+
                 // Same pattern as UserForm: defaulted to the signed-in
                 // user's school and locked unless they're Super Admin.
                 Select::make('school_id')

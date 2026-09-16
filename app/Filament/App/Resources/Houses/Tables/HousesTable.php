@@ -31,6 +31,26 @@ class HousesTable
                     ->counts('students')
                     ->sortable(),
 
+                TextColumn::make('capacity_status')
+                    ->label('Capacity')
+                    ->badge()
+                    ->state(function ($record): string {
+                        if (is_null($record->capacity)) {
+                            return 'Unlimited';
+                        }
+
+                        $count = $record->students()->count();
+
+                        return $count >= $record->capacity
+                            ? "Full ({$count}/{$record->capacity})"
+                            : "Available ({$count}/{$record->capacity})";
+                    })
+                    ->color(fn ($record): string => match (true) {
+                        is_null($record->capacity) => 'gray',
+                        $record->students()->count() >= $record->capacity => 'danger',
+                        default => 'success',
+                    }),
+
                 IconColumn::make('is_active')
                     ->label('Active')
                     ->boolean(),

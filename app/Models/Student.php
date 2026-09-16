@@ -46,6 +46,14 @@ class Student extends Model
             'confirmed_at' => 'datetime',
         ];
     }
+    protected static function booted(): void
+{
+    $sync = function (Student $student): void {
+        $student->name = trim("{$student->first_name} {$student->last_name}");
+    };
+
+    static::saving($sync);
+}
 
     public function getActivitylogOptions(): LogOptions
     {
@@ -61,7 +69,8 @@ class Student extends Model
                 'confirmed_via',
             ])
             ->logOnlyDirty()
-            ->dontSubmitEmptyLogs();
+
+            ->dontLogIfAttributesChangedOnly([]);
     }
 
     public const STATUSES = [
@@ -97,6 +106,10 @@ class Student extends Model
     {
         return $this->belongsTo(Guardian::class);
     }
+    public function house(): BelongsTo
+{
+    return $this->belongsTo(House::class);
+}
 
     public function schoolClass(): BelongsTo
     {

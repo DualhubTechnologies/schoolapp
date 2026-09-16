@@ -6,13 +6,9 @@
     hidden in CSS (.fi-topbar { display: none }) and this is injected
     via the PAGE_START render hook instead.
 
-    Layout (matching the PSF reference):
+    Layout:
       LEFT   sidebar toggle · date + live clock · role badge
       RIGHT  user menu with sign out
-
-    NOTE ON SIGN OUT: the logout route name is built from the current
-    panel's id, so this same partial works on both panels —
-    filament.admin.auth.logout and filament.app.auth.logout.
 --}}
 
 @php
@@ -28,15 +24,13 @@
     {{-- ---------- LEFT ---------- --}}
     <div class="sh-topbar-left">
 
-        {{-- Sidebar collapse toggle.
-             Filament drives the sidebar with an Alpine store. If this
-             button does nothing, see the note in TOPBAR-SETUP.md. --}}
+        {{-- Sidebar collapse toggle. --}}
         <button type="button"
                 class="sh-icon-btn"
                 title="Toggle sidebar"
                 x-data
                 @click="$store.sidebar.isOpen ? $store.sidebar.close() : $store.sidebar.open()">
-            <svg fill="none" stroke="currentColor" stroke-width="1.8" viewBox="0 0 24 24">
+            <svg width="20" height="20" fill="none" stroke="currentColor" stroke-width="1.8" viewBox="0 0 24 24">
                 <path stroke-linecap="round" stroke-linejoin="round"
                       d="M3.75 6.75h16.5M3.75 12h16.5m-16.5 5.25h16.5" />
             </svg>
@@ -48,7 +42,7 @@
                 tick() { this.time = new Date().toLocaleTimeString('en-GB', { hour12: false }); }
              }"
              x-init="tick(); setInterval(() => tick(), 1000)">
-            <svg fill="none" stroke="currentColor" stroke-width="1.8" viewBox="0 0 24 24">
+            <svg width="18" height="18" fill="none" stroke="currentColor" stroke-width="1.8" viewBox="0 0 24 24">
                 <path stroke-linecap="round" stroke-linejoin="round"
                       d="M6.75 3v2.25M17.25 3v2.25M3 18.75V7.5a2.25 2.25 0 012.25-2.25h13.5A2.25 2.25 0 0121 7.5v11.25m-18 0A2.25 2.25 0 005.25 21h13.5A2.25 2.25 0 0021 18.75m-18 0v-7.5A2.25 2.25 0 015.25 9h13.5A2.25 2.25 0 0121 11.25v7.5" />
             </svg>
@@ -60,7 +54,7 @@
         {{-- Role badge --}}
         @if ($role)
             <div class="sh-chip sh-chip-role">
-                <svg fill="none" stroke="currentColor" stroke-width="1.8" viewBox="0 0 24 24">
+                <svg width="18" height="18" fill="none" stroke="currentColor" stroke-width="1.8" viewBox="0 0 24 24">
                     <path stroke-linecap="round" stroke-linejoin="round"
                           d="M9 12.75L11.25 15 15 9.75m-3-7.036A11.959 11.959 0 013.598 6 11.99 11.99 0 003 9.749c0 5.592 3.824 10.29 9 11.622 5.176-1.332 9-6.03 9-11.622 0-1.31-.21-2.571-.598-3.751A11.959 11.959 0 0112 2.714z" />
                 </svg>
@@ -86,7 +80,7 @@
                 @endif
             </span>
             <svg class="sh-user-chevron" :class="open && 'sh-rotated'"
-                 fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
+                 width="16" height="16" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
                 <path stroke-linecap="round" stroke-linejoin="round" d="M19.5 8.25l-7.5 7.5-7.5-7.5" />
             </svg>
         </button>
@@ -101,7 +95,7 @@
             <form method="POST" action="{{ $logout }}">
                 @csrf
                 <button type="submit" class="sh-user-menu-item">
-                    <svg fill="none" stroke="currentColor" stroke-width="1.8" viewBox="0 0 24 24">
+                    <svg width="18" height="18" fill="none" stroke="currentColor" stroke-width="1.8" viewBox="0 0 24 24">
                         <path stroke-linecap="round" stroke-linejoin="round"
                               d="M15.75 9V5.25A2.25 2.25 0 0013.5 3h-6a2.25 2.25 0 00-2.25 2.25v13.5A2.25 2.25 0 007.5 21h6a2.25 2.25 0 002.25-2.25V15M12 9l-3 3m0 0l3 3m-3-3h12.75" />
                     </svg>

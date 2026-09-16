@@ -13,11 +13,12 @@ use Illuminate\Support\Carbon;
  * @property int $id
  * @property int $school_id
  * @property string $name
+ * @property int|null $capacity
  * @property bool $is_active
  * @property Carbon|null $created_at
  * @property Carbon|null $updated_at
  */
-#[Fillable(['school_id', 'name', 'is_active'])]
+#[Fillable(['school_id', 'name', 'capacity', 'is_active'])]
 class House extends Model
 {
     use HasFactory;
@@ -25,6 +26,7 @@ class House extends Model
     protected function casts(): array
     {
         return [
+            'capacity' => 'integer',
             'is_active' => 'boolean',
         ];
     }
@@ -37,5 +39,30 @@ class House extends Model
     public function students(): HasMany
     {
         return $this->hasMany(Student::class);
+    }
+
+    // ── Capacity helpers ──
+
+    public function isUnlimited(): bool
+    {
+        return is_null($this->capacity);
+    }
+
+    public function isFull(): bool
+    {
+        if ($this->isUnlimited()) {
+            return false;
+        }
+
+        return $this->students()->count() >= $this->capacity;
+    }
+
+    public function availableSlots(): ?int
+    {
+        if ($this->isUnlimited()) {
+            return null; // unlimited
+        }
+
+        return max(0, $this->capacity - $this->students()->count());
     }
 }

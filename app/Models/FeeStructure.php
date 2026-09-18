@@ -10,6 +10,7 @@ class FeeStructure extends Model
     protected $fillable = [
         'school_id',
         'school_class_id',
+        'term_id',
         'name',
         'frequency',
         'applies_to',
@@ -48,6 +49,11 @@ class FeeStructure extends Model
     public function schoolClass(): BelongsTo
     {
         return $this->belongsTo(SchoolClass::class);
+    }
+
+    public function term(): BelongsTo
+    {
+        return $this->belongsTo(Term::class);
     }
 
     public function formattedAmount(): string

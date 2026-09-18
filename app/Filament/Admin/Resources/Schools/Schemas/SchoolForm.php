@@ -3,7 +3,6 @@
 namespace App\Filament\Admin\Resources\Schools\Schemas;
 
 use Filament\Forms\Components\FileUpload;
-use Filament\Forms\Components\Placeholder;
 use Filament\Forms\Components\Select;
 use Filament\Forms\Components\Textarea;
 use Filament\Forms\Components\TextInput;
@@ -21,61 +20,41 @@ class SchoolForm
         return $schema
             ->components([
 
-                Grid::make([
-                    'default' => 1,
-                    'xl' => 3,
-                ])
+Grid::make([
+    'default' => 1,
+    'lg' => 4,
+])
                     ->schema([
 
                         /*
                         |--------------------------------------------------------------------------
-                        | LEFT SIDE - SCHOOL INFORMATION
+                        | LEFT - SCHOOL INFORMATION
                         |--------------------------------------------------------------------------
                         */
 
                         Section::make('School Information')
-                            ->description(
-                                'Manage the school’s main profile information.'
-                            )
+                            ->description('Manage the school’s main profile information.')
                             ->icon('heroicon-o-building-library')
-                            ->columnSpan([
-                                'default' => 1,
-                                'xl' => 2,
-                            ])
-                            ->columns([
-                                'default' => 1,
-                                'md' => 2,
-                            ])
+
+
                             ->schema([
 
                                 TextInput::make('name')
                                     ->label('School Name')
                                     ->required()
-                                    ->disabled(
-                                        fn () => ! $isSuperAdmin()
-                                    )
-                                    ->dehydrated(
-                                        fn () => $isSuperAdmin()
-                                    ),
+                                    ->disabled(fn () => ! $isSuperAdmin())
+                                    ->dehydrated(fn () => $isSuperAdmin()),
 
                                 TextInput::make('unique_code')
                                     ->label('Unique Code')
-                                    ->disabled(
-                                        fn () => ! $isSuperAdmin()
-                                    )
-                                    ->dehydrated(
-                                        fn () => $isSuperAdmin()
-                                    ),
+                                    ->disabled(fn () => ! $isSuperAdmin())
+                                    ->dehydrated(fn () => $isSuperAdmin()),
 
                                 TextInput::make('slug')
                                     ->label('Slug')
                                     ->required()
-                                    ->disabled(
-                                        fn () => ! $isSuperAdmin()
-                                    )
-                                    ->dehydrated(
-                                        fn () => $isSuperAdmin()
-                                    ),
+                                    ->disabled(fn () => ! $isSuperAdmin())
+                                    ->dehydrated(fn () => $isSuperAdmin()),
 
                                 Select::make('status')
                                     ->label('Status')
@@ -87,33 +66,26 @@ class SchoolForm
                                     ->default('active')
                                     ->required()
                                     ->native(false)
-                                    ->disabled(
-                                        fn () => ! $isSuperAdmin()
-                                    )
-                                    ->dehydrated(
-                                        fn () => $isSuperAdmin()
-                                    ),
-
-                                Textarea::make('description')
-                                    ->label('Description')
-                                    ->placeholder(
-                                        'e.g., Mixed Day & Boarding School — Secondary, Primary, or Nursery'
-                                    )
-                                    ->rows(3)
-                                    ->columnSpanFull(),
+                                    ->disabled(fn () => ! $isSuperAdmin())
+                                    ->dehydrated(fn () => $isSuperAdmin()),
 
                                 TextInput::make('motto')
                                     ->label('School Motto')
-                                    ->placeholder(
-                                        'e.g. Ora et Labora'
-                                    )
+                                    ->placeholder('e.g. Ora et Labora')
+                                    ->columnSpan([
+                                        'default' => 1,
+                                        'md' => 2,
+                                    ]),
+
+                                Textarea::make('description')
+                                    ->label('Description')
+                                    ->placeholder('e.g., Mixed Day & Boarding School — Secondary, Primary, or Nursery')
+                                    ->rows(3)
                                     ->columnSpanFull(),
 
                                 TextInput::make('address')
                                     ->label('Address')
-                                    ->placeholder(
-                                        'e.g. NYAMITANGA, MBARARA'
-                                    ),
+                                    ->placeholder('e.g. NYAMITANGA, MBARARA'),
 
                                 TextInput::make('city')
                                     ->label('City / District')
@@ -134,11 +106,6 @@ class SchoolForm
                                     ->searchable()
                                     ->native(false),
 
-                                TextInput::make('website')
-                                    ->label('Website')
-                                    ->url()
-                                    ->placeholder('https://...'),
-
                                 TextInput::make('email')
                                     ->label('Email address')
                                     ->email()
@@ -147,11 +114,16 @@ class SchoolForm
                                 TextInput::make('phone')
                                     ->label('Telephone Number')
                                     ->tel(),
+
+                                TextInput::make('website')
+                                    ->label('Website')
+                                    ->url()
+                                    ->placeholder('https://...'),
                             ]),
 
                         /*
                         |--------------------------------------------------------------------------
-                        | RIGHT SIDE
+                        | RIGHT - BRANDING & SETTINGS
                         |--------------------------------------------------------------------------
                         */
 
@@ -162,16 +134,8 @@ class SchoolForm
                             ])
                             ->schema([
 
-                                /*
-                                |--------------------------------------------------------------------------
-                                | SCHOOL SUMMARY
-                                |--------------------------------------------------------------------------
-                                */
-
-                                Section::make('School Summary')
-                                    ->description(
-                                        'Quick school overview.'
-                                    )
+                                Section::make('Branding')
+                                    ->description('Logo and headteacher signature.')
                                     ->icon('heroicon-o-identification')
                                     ->schema([
 
@@ -180,15 +144,9 @@ class SchoolForm
                                             ->image()
                                             ->avatar()
                                             ->imageEditor()
-                                            ->imageEditorAspectRatioOptions([
-                                                    null,
-                                                    '2:1',
-                                                    '3:1',
-
-                                            ])
-                                            ->imageCropAspectRatio('1:1')
-                                            ->imageResizeTargetWidth('400')
-                                            ->imageResizeTargetHeight('400')
+                                            ->imageEditorAspectRatioOptions(['1:1'])
+                                            ->automaticallyResizeImagesToWidth('400')
+                                            ->automaticallyResizeImagesToHeight('400')
                                             ->disk('public')
                                             ->directory('school-logos')
                                             ->visibility('public')
@@ -198,59 +156,28 @@ class SchoolForm
                                                 'image/webp',
                                             ])
                                             ->maxSize(2048)
-                                            ->helperText(
-                                                'Upload the official school logo.'
-                                            ),
+                                            ->helperText('Square crop. Appears on reports and documents.'),
 
-                                        Grid::make([
-                                            'default' => 1,
-                                            'sm' => 2,
-                                        ])
-                                            ->schema([
-
-                                                Placeholder::make(
-                                                    'summary_status'
-                                                )
-                                                    ->label('Status')
-                                                    ->content(
-                                                        fn ($get) =>
-                                                        ucfirst(
-                                                            $get('status') ?? 'N/A'
-                                                        )
-                                                    ),
-
-                                                Placeholder::make(
-                                                    'summary_code'
-                                                )
-                                                    ->label('Unique Code')
-                                                    ->content(
-                                                        fn ($get) =>
-                                                        $get('unique_code')
-                                                            ?: '—'
-                                                    ),
-
-                                                Placeholder::make(
-                                                    'summary_slug'
-                                                )
-                                                    ->label('Slug')
-                                                    ->content(
-                                                        fn ($get) =>
-                                                        $get('slug')
-                                                            ?: '—'
-                                                    ),
-                                            ]),
+                                        FileUpload::make('hm_signature')
+                                            ->label('Headteacher Signature')
+                                            ->image()
+                                            ->imageEditor()
+                                            ->imageEditorAspectRatioOptions([null, '3:1', '4:1'])
+                                            ->automaticallyResizeImagesToWidth('600')
+                                            ->disk('public')
+                                            ->directory('school-signatures')
+                                            ->visibility('public')
+                                            ->acceptedFileTypes([
+                                                'image/jpeg',
+                                                'image/png',
+                                                'image/webp',
+                                            ])
+                                            ->maxSize(2048)
+                                            ->helperText('Crop freely — a signature is wider than it is tall.'),
                                     ]),
 
-                                /*
-                                |--------------------------------------------------------------------------
-                                | BRANDING & SETTINGS
-                                |--------------------------------------------------------------------------
-                                */
-
-                                Section::make('Branding & Settings')
-                                    ->description(
-                                        'Secondary settings and official branding.'
-                                    )
+                                Section::make('Statutory & Settings')
+                                    ->description('Tax registration and regional defaults.')
                                     ->icon('heroicon-o-cog-6-tooth')
                                     ->columns([
                                         'default' => 1,
@@ -259,74 +186,25 @@ class SchoolForm
                                     ])
                                     ->schema([
 
-                                        FileUpload::make('hm_signature')
-                                            ->label(
-                                                'Headteacher Signature'
-                                            )
-                                            ->image()
-                                            ->imageEditor()
-                                            ->imageEditorAspectRatioOptions([
-                                                null,
-                                                    '2:1',
-                                                    '3:1',
-
-
-                                            ])
-                                            ->automaticallyCropImagesToAspectRatio( '3:1'  )
-                                            ->automaticallyResizeImagesToWidth('600')
-                                            ->automaticallyResizeImagesToHeight('200')
-                                            ->disk('public')
-                                            ->directory(
-                                                'school-signatures'
-                                            )
-                                            ->visibility('public')
-                                            ->acceptedFileTypes([
-                                                'image/jpeg',
-                                                'image/png',
-                                                'image/webp',
-                                            ])
-                                            ->maxSize(2048)
-                                            ->helperText(
-                                                'Upload the official school signature.'
-                                            )
-                                            ->columnSpanFull(),
-
-                                        TextInput::make(
-                                            'nssf_employer_number'
-                                        )
-                                            ->label(
-                                                'NSSF employer number'
-                                            )
-                                            ->placeholder(
-                                                'e.g. ER/12345'
-                                            ),
+                                        TextInput::make('nssf_employer_number')
+                                            ->label('NSSF employer number')
+                                            ->placeholder('e.g. ER/12345'),
 
                                         TextInput::make('tin_number')
                                             ->label('TIN number')
-                                            ->placeholder(
-                                                'e.g. 1001234567'
-                                            ),
+                                            ->placeholder('e.g. 1001234567'),
 
                                         Select::make('timezone')
                                             ->label('Timezone')
                                             ->options([
-                                                'Africa/Kampala'
-                                                    => 'Africa/Kampala',
-
-                                                'Africa/Nairobi'
-                                                    => 'Africa/Nairobi',
-
-                                                'Africa/Kigali'
-                                                    => 'Africa/Kigali',
-
-                                                'Africa/Dar_es_Salaam'
-                                                    => 'Africa/Dar es Salaam',
+                                                'Africa/Kampala' => 'Africa/Kampala',
+                                                'Africa/Nairobi' => 'Africa/Nairobi',
+                                                'Africa/Kigali' => 'Africa/Kigali',
+                                                'Africa/Dar_es_Salaam' => 'Africa/Dar es Salaam',
                                             ])
                                             ->searchable()
                                             ->native(false)
-                                            ->default(
-                                                'Africa/Kampala'
-                                            )
+                                            ->default('Africa/Kampala')
                                             ->required(),
 
                                         Select::make('currency')

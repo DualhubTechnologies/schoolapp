@@ -2099,3 +2099,19 @@ html .fi-body {
     display:
         none !important;
 }
+
+
+
+/* ============================================================
+   RESOURCE CREATE / EDIT PAGE WIDTH
+   Filament caps these pages narrower than the panel's full
+   width. Let the form use the space the page has.
+   ============================================================ */
+
+.fi-resource-create-record-page .fi-page-content,
+.fi-resource-edit-record-page .fi-page-content,
+.fi-resource-create-record-page form,
+.fi-resource-edit-record-page form {
+    max-width: 100% !important;
+    width: 100% !important;
+}

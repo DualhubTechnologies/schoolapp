@@ -4,9 +4,12 @@ namespace App\Filament\App\Resources\AuditTrail;
 
 use App\Filament\App\Resources\AuditTrail\Pages\ListActivities;
 use BackedEnum;
+use Filament\Forms\Components\DatePicker;
 use Filament\Resources\Resource;
 use Filament\Support\Icons\Heroicon;
 use Filament\Tables\Columns\TextColumn;
+use Filament\Tables\Filters\Filter;
+use Filament\Tables\Filters\SelectFilter;
 use Filament\Tables\Table;
 use Illuminate\Database\Eloquent\Builder;
 use Spatie\Activitylog\Models\Activity;
@@ -16,7 +19,6 @@ class AuditTrailResource extends Resource
     protected static ?string $model = Activity::class;
 
     protected static string|BackedEnum|null $navigationIcon = Heroicon::OutlinedClipboardDocumentList;
-
 
     protected static string|\UnitEnum|null $navigationGroup = 'Admin Settings';
 
@@ -65,14 +67,53 @@ class AuditTrailResource extends Resource
 
                 TextColumn::make('event')
                     ->label('Event')
-                    ->toggleable(isToggledHiddenByDefault: true),
-                TextColumn::make('properties.device')
-                        ->label('Device')
-                        ->limit(40)
-                        ->tooltip(fn ($state) => $state)
+                    ->badge()
+                    ->color('gray')
+                    ->toggleable(),
 
+                TextColumn::make('properties.ip')
+                    ->label('IP')
+                    ->placeholder('—')
+                    ->toggleable(isToggledHiddenByDefault: true),
+
+                TextColumn::make('properties.device')
+                    ->label('Device')
+                    ->limit(40)
+                    ->tooltip(fn ($state) => $state)
+                    ->placeholder('—')
+                    ->toggleable(isToggledHiddenByDefault: true),
             ])
             ->defaultSort('created_at', 'desc')
+            ->filters([
+                // Built from what is actually in the log, so it grows by
+                // itself as more models get the Auditable trait.
+                SelectFilter::make('subject_type')
+                    ->label('Record type')
+                    ->options(fn (): array => Activity::query()
+                        ->whereNotNull('subject_type')
+                        ->distinct()
+                        ->pluck('subject_type', 'subject_type')
+                        ->map(fn ($class) => class_basename($class))
+                        ->toArray()),
+
+                SelectFilter::make('event')
+                    ->label('Event')
+                    ->options(fn (): array => Activity::query()
+                        ->whereNotNull('event')
+                        ->distinct()
+                        ->pluck('event', 'event')
+                        ->map(fn ($event) => ucfirst(str_replace('_', ' ', (string) $event)))
+                        ->toArray()),
+
+                Filter::make('logged_between')
+                    ->schema([
+                        DatePicker::make('from')->label('From'),
+                        DatePicker::make('until')->label('Until'),
+                    ])
+                    ->query(fn (Builder $query, array $data): Builder => $query
+                        ->when($data['from'] ?? null, fn ($q, $date) => $q->whereDate('created_at', '>=', $date))
+                        ->when($data['until'] ?? null, fn ($q, $date) => $q->whereDate('created_at', '<=', $date))),
+            ])
             ->paginationPageOptions([10, 25, 50, 100])
             ->defaultPaginationPageOption(25);
     }

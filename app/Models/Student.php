@@ -6,6 +6,8 @@ use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
 use Illuminate\Database\Eloquent\Relations\HasMany;
+
+use App\Concerns\HasFeeAccount;
 use Spatie\Activitylog\Support\LogOptions;
 use Spatie\Activitylog\Models\Concerns\LogsActivity;
 
@@ -13,6 +15,7 @@ class Student extends Model
 {
     use HasFactory;
     use LogsActivity;
+    use HasFeeAccount; 
 
     protected $fillable = [
         'school_id',
@@ -21,6 +24,8 @@ class Student extends Model
         'school_class_id',
         'section_id',
         'admission_no',
+        'first_name',
+        'last_name',
         'lin',
         'nin',
         'name',

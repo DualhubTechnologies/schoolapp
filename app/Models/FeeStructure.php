@@ -2,20 +2,24 @@
 
 namespace App\Models;
 
+use App\Concerns\Auditable;
+use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
 
 class FeeStructure extends Model
 {
+    use HasFactory;
+    use Auditable;
+
     protected $fillable = [
         'school_id',
         'school_class_id',
         'term_id',
+        'residency_type_id',
         'name',
         'frequency',
         'applies_to',
-        'term',
-        'academic_year',
         'amount',
         'currency',
         'description',
@@ -56,6 +60,11 @@ class FeeStructure extends Model
         return $this->belongsTo(Term::class);
     }
 
+    public function residencyType(): BelongsTo
+    {
+        return $this->belongsTo(ResidencyType::class);
+    }
+
     public function formattedAmount(): string
     {
         return $this->currency . ' ' . number_format((float) $this->amount, 0);
@@ -79,5 +88,15 @@ class FeeStructure extends Model
     public function frequencyLabel(): string
     {
         return self::FREQUENCIES[$this->frequency] ?? $this->frequency;
+    }
+
+    /**
+     * Does this fee apply to a student of the given residency?
+     * A fee with no residency set applies to everyone.
+     */
+    public function appliesToResidency(?int $residencyTypeId): bool
+    {
+        return $this->residency_type_id === null
+            || (int) $this->residency_type_id === (int) $residencyTypeId;
     }
 }

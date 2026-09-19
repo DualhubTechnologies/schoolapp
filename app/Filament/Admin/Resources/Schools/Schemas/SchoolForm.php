@@ -19,26 +19,23 @@ class SchoolForm
 
         return $schema
             ->components([
-
-Grid::make([
-    'default' => 1,
-    'lg' => 4,
-])
+                Grid::make([
+                    'default' => 1,
+                    'xl' => 12,
+                ])
                     ->schema([
-
-                        /*
-                        |--------------------------------------------------------------------------
-                        | LEFT - SCHOOL INFORMATION
-                        |--------------------------------------------------------------------------
-                        */
-
                         Section::make('School Information')
                             ->description('Manage the school’s main profile information.')
                             ->icon('heroicon-o-building-library')
-
-
+                            ->columnSpan([
+                                'default' => 1,
+                                'xl' => 8,
+                            ])
+                            ->columns([
+                                'default' => 1,
+                                'md' => 2,
+                            ])
                             ->schema([
-
                                 TextInput::make('name')
                                     ->label('School Name')
                                     ->required()
@@ -72,10 +69,7 @@ Grid::make([
                                 TextInput::make('motto')
                                     ->label('School Motto')
                                     ->placeholder('e.g. Ora et Labora')
-                                    ->columnSpan([
-                                        'default' => 1,
-                                        'md' => 2,
-                                    ]),
+                                    ->columnSpanFull(),
 
                                 Textarea::make('description')
                                     ->label('Description')
@@ -118,27 +112,20 @@ Grid::make([
                                 TextInput::make('website')
                                     ->label('Website')
                                     ->url()
-                                    ->placeholder('https://...'),
+                                    ->placeholder('https://...')
+                                    ->columnSpanFull(),
                             ]),
-
-                        /*
-                        |--------------------------------------------------------------------------
-                        | RIGHT - BRANDING & SETTINGS
-                        |--------------------------------------------------------------------------
-                        */
 
                         Grid::make(1)
                             ->columnSpan([
                                 'default' => 1,
-                                'xl' => 1,
+                                'xl' => 4,
                             ])
                             ->schema([
-
                                 Section::make('Branding')
                                     ->description('Logo and headteacher signature.')
                                     ->icon('heroicon-o-identification')
                                     ->schema([
-
                                         FileUpload::make('logo')
                                             ->label('School Logo')
                                             ->image()
@@ -185,7 +172,6 @@ Grid::make([
                                         'xl' => 1,
                                     ])
                                     ->schema([
-
                                         TextInput::make('nssf_employer_number')
                                             ->label('NSSF employer number')
                                             ->placeholder('e.g. ER/12345'),

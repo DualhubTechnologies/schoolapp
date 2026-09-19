@@ -2,20 +2,19 @@
 
 namespace App\Models;
 
+use App\Concerns\HasFeeAccount;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
 use Illuminate\Database\Eloquent\Relations\HasMany;
-
-use App\Concerns\HasFeeAccount;
-use Spatie\Activitylog\Support\LogOptions;
 use Spatie\Activitylog\Models\Concerns\LogsActivity;
+use Spatie\Activitylog\Support\LogOptions;
 
 class Student extends Model
 {
     use HasFactory;
     use LogsActivity;
-    use HasFeeAccount; 
+    use HasFeeAccount;
 
     protected $fillable = [
         'school_id',
@@ -23,6 +22,8 @@ class Student extends Model
         'guardian_id',
         'school_class_id',
         'section_id',
+        'residency_type_id',
+        'house_id',
         'admission_no',
         'first_name',
         'last_name',
@@ -51,14 +52,18 @@ class Student extends Model
             'confirmed_at' => 'datetime',
         ];
     }
-    protected static function booted(): void
-{
-    $sync = function (Student $student): void {
-        $student->name = trim("{$student->first_name} {$student->last_name}");
-    };
 
-    static::saving($sync);
-}
+    /**
+     * Keep `name` in step with the two name parts, so everything that
+     * reads a full name -- tables, PDFs, the activity log -- keeps working
+     * without knowing the name is stored in pieces.
+     */
+    protected static function booted(): void
+    {
+        static::saving(function (Student $student): void {
+            $student->name = trim("{$student->first_name} {$student->last_name}");
+        });
+    }
 
     public function getActivitylogOptions(): LogOptions
     {
@@ -68,13 +73,14 @@ class Student extends Model
                 'admission_no',
                 'school_class_id',
                 'section_id',
+                'residency_type_id',
+                'house_id',
                 'status',
                 'enrolment_status',
                 'confirmed_at',
                 'confirmed_via',
             ])
             ->logOnlyDirty()
-
             ->dontLogIfAttributesChangedOnly([]);
     }
 
@@ -111,10 +117,6 @@ class Student extends Model
     {
         return $this->belongsTo(Guardian::class);
     }
-    public function house(): BelongsTo
-{
-    return $this->belongsTo(House::class);
-}
 
     public function schoolClass(): BelongsTo
     {
@@ -124,6 +126,16 @@ class Student extends Model
     public function section(): BelongsTo
     {
         return $this->belongsTo(Section::class);
+    }
+
+    public function residencyType(): BelongsTo
+    {
+        return $this->belongsTo(ResidencyType::class);
+    }
+
+    public function house(): BelongsTo
+    {
+        return $this->belongsTo(House::class);
     }
 
     public function payments(): HasMany
@@ -148,18 +160,26 @@ class Student extends Model
         return $this->enrolment_status === 'confirmed';
     }
 
+    /**
+     * Total paid to date, in the school's currency.
+     */
+    public function totalPaid(): float
+    {
+        return (float) $this->payments()->sum('amount');
+    }
+
     // ── Confirmation logic (whichever trigger fires first) ──
 
     /**
      * Confirm the student as a full member of the school.
-     * Idempotent: if already confirmed, does nothing (keeps the original trigger).
+     * Idempotent: if already confirmed, does nothing.
      *
      * @param  string  $via  'payment' or 'manual'
      */
     public function confirmEnrolment(string $via = 'manual'): bool
     {
         if ($this->isConfirmed()) {
-            return false; // already confirmed — keep whichever trigger came first
+            return false;
         }
 
         $this->update([
@@ -169,40 +189,5 @@ class Student extends Model
         ]);
 
         return true;
-    }
-
-    /**
-     * Total paid to date, in the school's currency.
-     */
-    public function totalPaid(): float
-    {
-        return (float) $this->payments()->sum('amount');
-    }
-
-    // ── Fee resolution ──
-
-    /**
-     * Resolve the fee amount for this student's class for a given term/year.
-     * Falls back to the most recent active structure for the class if term/year not given.
-     */
-    public function feeStructure(?string $term = null, ?string $academicYear = null): ?FeeStructure
-    {
-        if (! $this->school_class_id) {
-            return null;
-        }
-
-        $query = FeeStructure::where('school_id', $this->school_id)
-            ->where('school_class_id', $this->school_class_id)
-            ->where('is_active', true);
-
-        if ($term) {
-            $query->where('term', $term);
-        }
-
-        if ($academicYear) {
-            $query->where('academic_year', $academicYear);
-        }
-
-        return $query->latest('academic_year')->latest('id')->first();
     }
 }

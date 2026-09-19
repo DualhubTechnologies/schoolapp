@@ -17,7 +17,10 @@ class StudentDiscount extends Model
         'student_id',
         'fee_structure_id',
         'term_id',
+        'scope',
+        'academic_year_id',
         'reason',
+        'award_level',
         'type',
         'value',
         'is_active',
@@ -45,6 +48,32 @@ class StudentDiscount extends Model
         'other' => 'Other',
     ];
 
+    /**
+     * How long the award runs.
+     *
+     * An award that never ends is the dangerous default: it keeps
+     * discounting long after it has lapsed, and nobody notices.
+     */
+    public const SCOPES = [
+        'term' => 'This term only',
+        'year' => 'This academic year',
+        'ongoing' => 'Ongoing until cancelled',
+    ];
+
+    /**
+     * Named award levels, as schools advertise them.
+     *
+     * Full covers everything — all fees, in full. Half is 50%. Partial
+     * means the bursar set the value themselves.
+     */
+    public const AWARD_LEVELS = [
+        'full' => 'Full bursary (100% of all fees)',
+        'half' => 'Half bursary (50%)',
+        'partial' => 'Partial — set the amount myself',
+    ];
+
+    // ── Relationships ──
+
     public function school(): BelongsTo
     {
         return $this->belongsTo(School::class);
@@ -65,36 +94,71 @@ class StudentDiscount extends Model
         return $this->belongsTo(Term::class);
     }
 
+    public function academicYear(): BelongsTo
+    {
+        return $this->belongsTo(AcademicYear::class);
+    }
+
+    // ── Does it apply? ──
+
     /**
-     * Does this discount apply to the given fee in the given term?
+     * Does this discount cover the given fee in the given term?
      *
-     * A discount with no fee_structure_id applies to every fee.
-     * A discount with no term_id applies every term.
+     * No fee_structure_id means it covers the whole bill.
+     * The scope decides how long it runs.
      */
-    public function appliesTo(?int $feeStructureId, ?int $termId): bool
+    public function appliesTo(?int $feeStructureId, ?int $termId, ?Term $term = null): bool
     {
         if (! $this->is_active) {
             return false;
         }
 
-        if ($this->fee_structure_id && $this->fee_structure_id !== $feeStructureId) {
+        // A full bursary covers everything, whatever fee it is.
+        if ($this->fee_structure_id && $this->award_level !== 'full'
+            && $this->fee_structure_id !== $feeStructureId) {
             return false;
         }
 
-        if ($this->term_id && $this->term_id !== $termId) {
-            return false;
-        }
-
-        return true;
+        return $this->coversTerm($termId, $term);
     }
 
     /**
-     * The shilling value of this discount against a given charge.
-     * Never returns more than the charge itself -- a discount cannot
-     * turn a bill into a credit.
+     * Is the given term inside this award's period?
+     */
+    public function coversTerm(?int $termId, ?Term $term = null): bool
+    {
+        return match ($this->scope) {
+            'term' => $this->term_id === null || $this->term_id === $termId,
+
+            // Any term belonging to the award's academic year.
+            'year' => $this->academic_year_id === null
+                || ($term ?? Term::find($termId))?->academic_year_id === $this->academic_year_id,
+
+            default => true,
+        };
+    }
+
+    /**
+     * Is this a fixed amount taken off the TOTAL bill rather than off a
+     * single fee? Those are spent once across the whole bill.
+     */
+    public function isWholeBillPool(): bool
+    {
+        return $this->type === 'fixed' && $this->fee_structure_id === null;
+    }
+
+    /**
+     * The value of this discount against a given charge. Never more than
+     * the charge itself — a discount cannot turn a bill into a credit.
      */
     public function amountFor(float $charge): float
     {
+        // A full bursary waives the charge entirely, regardless of the
+        // value stored against it.
+        if ($this->award_level === 'full') {
+            return $charge;
+        }
+
         $discount = $this->type === 'percentage'
             ? $charge * ((float) $this->value / 100)
             : (float) $this->value;
@@ -102,12 +166,44 @@ class StudentDiscount extends Model
         return (float) min($discount, $charge);
     }
 
+    // ── Display ──
+
     public function label(): string
     {
+        if ($this->award_level === 'full') {
+            return 'Full bursary';
+        }
+
         $value = $this->type === 'percentage'
             ? rtrim(rtrim(number_format((float) $this->value, 2), '0'), '.') . '%'
             : number_format((float) $this->value, 0);
 
-        return (self::REASONS[$this->reason] ?? $this->reason) . " ({$value})";
+        $reason = self::REASONS[$this->reason] ?? $this->reason;
+
+        return "{$reason} ({$value})";
+    }
+
+    public function scopeLabel(): string
+    {
+        return match ($this->scope) {
+            'term' => $this->term?->label() ?? 'This term',
+            'year' => $this->academicYear?->name ?? 'This year',
+            default => 'Ongoing',
+        };
+    }
+
+    /**
+     * Has a year-scoped award run out? Used to flag awards that need
+     * reviewing rather than leaving them to expire silently.
+     */
+    public function hasLapsed(): bool
+    {
+        if ($this->scope !== 'year' || ! $this->academic_year_id) {
+            return false;
+        }
+
+        $current = AcademicYear::current($this->school_id);
+
+        return $current !== null && $current->getKey() !== $this->academic_year_id;
     }
 }

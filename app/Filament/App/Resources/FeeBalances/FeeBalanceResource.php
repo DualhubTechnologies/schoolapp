@@ -14,13 +14,9 @@ use Illuminate\Database\Eloquent\Builder;
 /**
  * "Who has paid, who has not."
  *
- * Reads the Student model but shows only the fee account, so the bursar
- * gets one screen answering: paid in full, part paid, nothing paid, and
- * how much is outstanding.
- *
- * Charged and paid are computed as correlated subqueries so the columns
- * can be sorted and filtered in the database rather than in PHP -- that
- * matters at 700+ students.
+ * Charged and paid are correlated subqueries so the columns can be sorted
+ * and filtered in the database rather than in PHP — which matters once a
+ * school has hundreds of students.
  */
 class FeeBalanceResource extends Resource
 {
@@ -34,7 +30,7 @@ class FeeBalanceResource extends Resource
 
     protected static ?string $navigationLabel = 'Fee Balances';
 
-    protected static ?string $modelLabel = 'Fee balance';
+    protected static ?string $modelLabel = 'fee balance';
 
     protected static ?string $pluralModelLabel = 'Fee Balances';
 
@@ -46,18 +42,17 @@ class FeeBalanceResource extends Resource
     }
 
     /**
-     * SQL for "everything ever charged to this student, after discounts".
+     * Everything ever charged to this student, after discounts.
      */
     public static function chargedSql(): string
     {
-        return '(select coalesce(sum(invoice_items.amount - invoice_items.discount_amount), 0)
-                 from invoice_items
-                 join invoices on invoice_items.invoice_id = invoices.id
-                 where invoices.student_id = students.id)';
+        return '(select coalesce(sum(student_charges.amount - student_charges.discount_amount), 0)
+                 from student_charges
+                 where student_charges.student_id = students.id)';
     }
 
     /**
-     * SQL for "everything ever paid by this student".
+     * Everything ever paid by this student.
      */
     public static function paidSql(): string
     {
@@ -69,7 +64,7 @@ class FeeBalanceResource extends Resource
     public static function getEloquentQuery(): Builder
     {
         $query = parent::getEloquentQuery()
-            ->with(['schoolClass', 'section'])
+            ->with(['schoolClass', 'section', 'residencyType'])
             ->select('students.*')
             ->selectRaw(static::chargedSql() . ' as total_charged')
             ->selectRaw(static::paidSql() . ' as total_paid')

@@ -41,6 +41,13 @@ class FeeBalancesTable
                     ->placeholder('—')
                     ->toggleable(),
 
+                TextColumn::make('residencyType.name')
+                    ->label('Residency')
+                    ->badge()
+                    ->color('warning')
+                    ->placeholder('—')
+                    ->toggleable(),
+
                 TextColumn::make('total_charged')
                     ->label('Charged')
                     ->money('UGX')
@@ -95,6 +102,11 @@ class FeeBalancesTable
                 SelectFilter::make('school_class_id')
                     ->label('Class')
                     ->relationship('schoolClass', 'name')
+                    ->preload(),
+
+                SelectFilter::make('residency_type_id')
+                    ->label('Residency')
+                    ->relationship('residencyType', 'name')
                     ->preload(),
 
                 Filter::make('paid_at_least')

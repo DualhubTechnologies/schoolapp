@@ -20,11 +20,10 @@ class CreateFeeStructure extends CreateRecord
         // from the live form state instead.
         $this->classIds = (array) ($this->form->getRawState()['class_ids'] ?? []);
 
-        // Non-recurring fees have no meaningful term/year — set safe defaults
-        // so the unique key stays valid.
+        // Only recurring fees belong to a term. Admission and one-off
+        // charges are not term-specific, so term_id stays null.
         if (($data['frequency'] ?? 'per_term') !== 'per_term') {
-            $data['term'] = $data['term'] ?? 'N/A';
-            $data['academic_year'] = $data['academic_year'] ?? (string) now()->year;
+            $data['term_id'] = null;
         }
 
         return $data;
@@ -45,15 +44,20 @@ class CreateFeeStructure extends CreateRecord
         foreach ($classIds as $classId) {
             $payload = array_merge($data, ['school_class_id' => $classId]);
 
+            // A fee is a duplicate when the same name already exists for the
+            // same class, term AND residency. Residency matters: "Tuition"
+            // for day students and "Tuition" for boarders are two different
+            // fees, not a duplicate.
             $exists = FeeStructure::where('school_id', $payload['school_id'])
                 ->where('school_class_id', $classId)
                 ->where('name', $payload['name'])
-                ->where('term', $payload['term'])
-                ->where('academic_year', $payload['academic_year'])
+                ->where('term_id', $payload['term_id'] ?? null)
+                ->where('residency_type_id', $payload['residency_type_id'] ?? null)
                 ->exists();
 
             if ($exists) {
                 $skipped++;
+
                 continue;
             }
 

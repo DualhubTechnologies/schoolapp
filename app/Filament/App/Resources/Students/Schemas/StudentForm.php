@@ -3,6 +3,7 @@
 namespace App\Filament\App\Resources\Students\Schemas;
 
 use App\Models\Guardian;
+use App\Models\ResidencyType;
 use App\Models\Student;
 use Filament\Forms\Components\DatePicker;
 use Filament\Forms\Components\FileUpload;
@@ -216,6 +217,24 @@ class StudentForm
                                                 ? 'Select a class first.'
                                                 : 'Choose the student stream.'),
 
+                                        // Day / Boarding. Required on purpose: fees tied
+                                        // to a residency would silently miss a student
+                                        // who has none, and under-billing is discovered
+                                        // late and awkwardly.
+                                        Select::make('residency_type_id')
+                                            ->label('Residency')
+                                            ->relationship(
+                                                'residencyType',
+                                                'name',
+                                                fn (Builder $query) => static::scopeToSchool($query)
+                                                    ->where('is_active', true),
+                                            )
+                                            ->searchable()
+                                            ->preload()
+                                            ->placeholder('Select residency')
+                                            ->required()
+                                            ->helperText('Day, boarding, and so on. Decides which fees this student pays.'),
+
                                         Select::make('house_id')
                                             ->label('House')
                                             ->relationship(
@@ -239,8 +258,7 @@ class StudentForm
                                             ->searchable()
                                             ->preload()
                                             ->placeholder('Select house')
-                                            ->helperText('Full houses are hidden automatically.')
-                                            ->columnSpanFull(),
+                                            ->helperText('Full houses are hidden automatically.'),
                                     ]),
 
                                 Section::make('Parent and Contact Details')

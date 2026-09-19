@@ -1,64 +1,121 @@
-/* ============================================================
-   SchoolHub — Admin Theme
-   ============================================================ */
+/* ==========================================================================
+   SchoolHub Admin Theme
+   --------------------------------------------------------------------------
+   Override layer loaded after Filament's own CSS.
+
+   Architecture:
+   01. Design tokens
+   02. Sidebar
+   03. Custom topbar + user menu
+   04. Main content + page headers
+   05. Dashboard/stat cards
+   06. Tables
+   07. Forms, buttons, badges, modals
+   08. Image editor
+   09. Footer
+   10. Login/auth
+   11. Resource create/edit pages
+   12. Responsive rules (kept close to the components they affect)
+
+   IMPORTANT: Filament remains responsible for component layout and behavior.
+   This file skins/overrides Filament; it does not replace Filament core CSS.
+   ========================================================================== */
+
+/* ==========================================================================
+   01. DESIGN TOKENS
+   ========================================================================== */
 
 :root {
+
     /* Brand navy */
+
     --sh-navy-900: #0d1f38;
+
     --sh-navy-800: #12294a;
+
     --sh-navy-700: #1b3a63;
 
     /* Primary blue */
+
     --sh-blue-600: #1a5fa8;
+
     --sh-blue-500: #2472c4;
+
     --sh-blue-100: #e3edf9;
 
     /* Accent */
+
     --sh-amber: #d97d0d;
 
     /* Card accents */
+
     --sh-rail-1: #1a5fa8;
+
     --sh-rail-2: #b5721a;
+
     --sh-rail-3: #6b4f9e;
+
     --sh-rail-4: #0f7a68;
 
     /* Neutrals */
+
     --sh-bg: #f4f6fa;
+
     --sh-surface: #ffffff;
+
     --sh-border: #e4e8f0;
+
     --sh-text: #16233a;
+
     --sh-text-muted: #64748b;
+
     --sh-text-dim: #94a3b8;
 
     /* Sidebar */
+
     --sh-nav-text: #a9b6cc;
+
     --sh-nav-text-hover: #e8eef7;
+
     --sh-nav-group: #6b7d99;
 
     /* Layout */
+
     --sh-main-padding-x: 1.75rem;
+
     --sh-main-padding-top: 1.5rem;
+
     --sh-topbar-height: 4.25rem;
+
 }
 
 
 /* ============================================================
-   2. SIDEBAR
-   ============================================================ */
+
+ * 02. SIDEBAR
+
+*   ============================================================ */
 
 .fi-sidebar {
+
     background: var(--sh-navy-900) !important;
+
     border-right: none !important;
+
     min-height: 100vh !important;
+
 }
 
 .fi-sidebar-header {
+
     background: var(--sh-navy-800) !important;
 
     border-bottom:
+
         1px solid rgba(255, 255, 255, 0.07) !important;
 
     display: flex !important;
+
     align-items: center !important;
 
     gap: 0.7rem !important;
@@ -68,91 +125,131 @@
     padding: 0.9rem 1.5rem !important;
 
     box-shadow: none !important;
+
 }
 
 .fi-sidebar-header .fi-logo,
+
 .fi-sidebar-header a > span,
+
 .fi-sidebar-header > a {
+
     color: #ffffff !important;
+
     font-weight: 700 !important;
+
     letter-spacing: 0.01em !important;
+
 }
 
 
 /* Sidebar navigation */
 
 .fi-sidebar-item {
+
     margin: 1px 8px !important;
+
     border-radius: 7px !important;
+
 }
 
 .fi-sidebar-item-label {
+
     font-size: 0.86rem !important;
+
     font-weight: 500 !important;
+
 }
 
 .fi-sidebar-item:not(.fi-active) .fi-sidebar-item-label {
+
     color: var(--sh-nav-text) !important;
+
 }
 
 .fi-sidebar-item:not(.fi-active) .fi-sidebar-item-icon {
+
     color: #7286a3 !important;
+
 }
 
 .fi-sidebar-item:not(.fi-active):hover {
+
     background: rgba(255, 255, 255, 0.055) !important;
+
 }
 
 .fi-sidebar-item:not(.fi-active):hover .fi-sidebar-item-label,
+
 .fi-sidebar-item:not(.fi-active):hover .fi-sidebar-item-icon {
+
     color: var(--sh-nav-text-hover) !important;
+
 }
 
 
 /* Active nav */
 
 html .fi-sidebar .fi-sidebar-item.fi-active,
+
 html .fi-sidebar .fi-sidebar-item.fi-active > a {
+
     background: var(--sh-blue-600) !important;
+
     background-image: none !important;
+
 }
 
 html .fi-sidebar .fi-sidebar-item.fi-active .fi-sidebar-item-label,
+
 html .fi-sidebar .fi-sidebar-item.fi-active .fi-sidebar-item-icon {
+
     color: #ffffff !important;
+
     opacity: 1 !important;
+
 }
 
 
 /* Group headings */
 
 html .fi-sidebar .fi-sidebar-group-label {
+
     color: var(--sh-nav-group) !important;
 
     text-transform: uppercase;
 
     font-size: 0.66rem !important;
+
     letter-spacing: 0.11em;
+
     font-weight: 700 !important;
 
     margin-top: 1.1rem !important;
+
     margin-bottom: 0.3rem !important;
 
     padding-left: 1.1rem !important;
+
 }
 
 html .fi-sidebar .fi-sidebar-group:first-of-type .fi-sidebar-group-label {
+
     margin-top: 0.4rem !important;
+
 }
 
 html .fi-sidebar .fi-sidebar-group-collapse-btn {
+
     color: var(--sh-nav-group) !important;
+
 }
 
 
 /* Sidebar badges */
 
 .fi-sidebar-item .fi-badge {
+
     background: #c0392b !important;
 
     border-radius: 20px !important;
@@ -160,74 +257,109 @@ html .fi-sidebar .fi-sidebar-group-collapse-btn {
     min-width: 1.35rem !important;
 
     justify-content: center !important;
+
 }
 
 .fi-sidebar-item .fi-badge,
+
 .fi-sidebar-item .fi-badge span {
+
     color: #ffffff !important;
+
     font-size: 0.65rem !important;
+
     font-weight: 700 !important;
+
 }
 
 
 /* Sidebar scrollbar */
 
 .fi-sidebar-nav {
+
     scrollbar-width: thin;
+
     scrollbar-color:
+
         rgba(255, 255, 255, 0.12)
+
         transparent;
 
     overflow-y: auto;
+
 }
 
 .fi-sidebar-nav::-webkit-scrollbar {
+
     width: 5px;
+
 }
 
 .fi-sidebar-nav::-webkit-scrollbar-track {
+
     background: transparent;
+
 }
 
 .fi-sidebar-nav::-webkit-scrollbar-thumb {
+
     background: transparent;
+
     border-radius: 4px;
+
 }
 
 .fi-sidebar-nav:hover::-webkit-scrollbar-thumb {
+
     background: rgba(255, 255, 255, 0.14);
+
 }
 
 
 /* ============================================================
-   3. TOPBAR — CUSTOM REPLACEMENT
-   ============================================================ */
+
+ * 03. CUSTOM TOPBAR
+
+*   ============================================================ */
 
 .fi-topbar {
+
     display: none !important;
+
 }
 
 
 /*
-   Filament still reserves space for its built-in topbar even
-   when hidden. Remove that reserved space.
+
+ * Filament still reserves space for its built-in topbar even
+
+ * when hidden. Remove that reserved space.
+
 */
+
 .fi-body,
+
 html .fi-body {
+
     --topbar-height: 0rem !important;
+
 }
 
 
 /* Custom top navigation */
 
 .sh-topbar {
+
     position: sticky;
+
     top: 0;
 
     z-index: 100;
 
     display: flex;
+
     align-items: center;
+
     justify-content: space-between;
 
     gap: 1rem;
@@ -235,20 +367,29 @@ html .fi-body {
     min-height: var(--sh-topbar-height);
 
     padding:
+
         0.85rem
+
         var(--sh-main-padding-x);
 
     /*
-       Pull the custom bar out through .fi-main padding so that
-       the bar runs from the sidebar boundary to the right edge
-       of the Filament content area.
-    */
+
+ * Pull the custom bar out through .fi-main padding so that
+
+ * the bar runs from the sidebar boundary to the right edge
+
+ * of the Filament content area.
+
+*    */
+
     margin-top: calc(-1 * var(--sh-main-padding-top));
 
     margin-left:
+
         calc(-1 * var(--sh-main-padding-x));
 
     margin-right:
+
         calc(-1 * var(--sh-main-padding-x));
 
     margin-bottom: 0.9rem;
@@ -256,35 +397,47 @@ html .fi-body {
     background: var(--sh-surface);
 
     border-bottom:
+
         1px solid var(--sh-border);
 
     box-shadow:
+
         0 1px 3px rgba(13, 31, 56, 0.06),
+
         0 4px 12px rgba(13, 31, 56, 0.035);
 
     isolation: isolate;
+
 }
 
 
 /*
-   Prevent content from showing through the sticky navbar.
+
+ * Prevent content from showing through the sticky navbar.
+
 */
+
 .sh-topbar::before {
+
     content: "";
 
     position: absolute;
+
     inset: 0;
 
     z-index: -1;
 
     background: var(--sh-surface);
+
 }
 
 
 /* Topbar left */
 
 .sh-topbar-left {
+
     display: flex;
+
     align-items: center;
 
     gap: 0.65rem;
@@ -292,30 +445,37 @@ html .fi-body {
     flex-wrap: wrap;
 
     min-width: 0;
+
 }
 
 
 /* Topbar right */
 
 .sh-topbar-right {
+
     position: relative;
 
     display: flex;
+
     align-items: center;
 
     flex-shrink: 0;
+
 }
 
 
 /* Sidebar toggle */
 
 .sh-icon-btn {
+
     display: inline-flex;
 
     align-items: center;
+
     justify-content: center;
 
     width: 2.25rem;
+
     height: 2.25rem;
 
     flex: 0 0 2.25rem;
@@ -331,29 +491,40 @@ html .fi-body {
     cursor: pointer;
 
     transition:
+
         background 0.15s ease,
+
         color 0.15s ease,
+
         border-color 0.15s ease;
+
 }
 
 .sh-icon-btn:hover {
+
     background: #f1f4f9;
+
     color: var(--sh-text);
+
 }
 
 .sh-icon-btn svg {
+
     width: 1.3rem !important;
+
     height: 1.3rem !important;
 
     min-width: 1.3rem;
 
     flex-shrink: 0;
+
 }
 
 
 /* Topbar chips */
 
 .sh-chip {
+
     display: inline-flex;
 
     align-items: center;
@@ -363,6 +534,7 @@ html .fi-body {
     background: #f7f9fc;
 
     border:
+
         1px solid var(--sh-border);
 
     border-radius: 8px;
@@ -374,10 +546,13 @@ html .fi-body {
     color: var(--sh-text-muted);
 
     white-space: nowrap;
+
 }
 
 .sh-chip svg {
+
     width: 1rem !important;
+
     height: 1rem !important;
 
     min-width: 1rem;
@@ -385,14 +560,19 @@ html .fi-body {
     color: var(--sh-blue-600);
 
     flex-shrink: 0;
+
 }
 
 .sh-chip-value {
+
     color: var(--sh-text);
+
     font-weight: 600;
+
 }
 
 .sh-chip-clock {
+
     font-variant-numeric: tabular-nums;
 
     letter-spacing: 0.03em;
@@ -400,16 +580,21 @@ html .fi-body {
     color: var(--sh-text);
 
     font-weight: 600;
+
 }
 
 .sh-chip-divider {
+
     width: 1px;
+
     height: 0.9rem;
 
     background: var(--sh-border);
+
 }
 
 .sh-chip-role .sh-chip-value {
+
     color: var(--sh-blue-600);
 
     text-transform: uppercase;
@@ -417,14 +602,18 @@ html .fi-body {
     font-size: 0.72rem;
 
     letter-spacing: 0.05em;
+
 }
 
 
 /* ============================================================
-   USER MENU
-   ============================================================ */
+
+ * 03A. USER MENU
+
+*   ============================================================ */
 
 .sh-user-btn {
+
     display: flex;
 
     align-items: center;
@@ -438,31 +627,43 @@ html .fi-body {
     border-radius: 10px;
 
     padding:
+
         0.35rem
+
         0.6rem
+
         0.35rem
+
         0.4rem;
 
     cursor: pointer;
 
     transition:
+
         background 0.15s ease,
+
         border-color 0.15s ease;
+
 }
 
 .sh-user-btn:hover {
+
     background: #f7f9fc;
 
     border-color: var(--sh-border);
+
 }
 
 .sh-user-avatar {
+
     display: inline-flex;
 
     align-items: center;
+
     justify-content: center;
 
     width: 2.25rem;
+
     height: 2.25rem;
 
     border-radius: 50%;
@@ -478,9 +679,11 @@ html .fi-body {
     text-transform: uppercase;
 
     flex-shrink: 0;
+
 }
 
 .sh-user-meta {
+
     display: flex;
 
     flex-direction: column;
@@ -490,9 +693,11 @@ html .fi-body {
     line-height: 1.25;
 
     text-align: left;
+
 }
 
 .sh-user-name {
+
     font-size: 0.84rem;
 
     font-weight: 600;
@@ -500,9 +705,11 @@ html .fi-body {
     color: var(--sh-text);
 
     white-space: nowrap;
+
 }
 
 .sh-user-role {
+
     font-size: 0.68rem;
 
     color: var(--sh-text-dim);
@@ -510,25 +717,32 @@ html .fi-body {
     text-transform: uppercase;
 
     letter-spacing: 0.05em;
+
 }
 
 .sh-user-chevron {
+
     width: 0.9rem !important;
+
     height: 0.9rem !important;
 
     color: var(--sh-text-dim);
 
     transition: transform 0.15s ease;
+
 }
 
 .sh-user-chevron.sh-rotated {
+
     transform: rotate(180deg);
+
 }
 
 
 /* User dropdown */
 
 .sh-user-menu {
+
     position: absolute;
 
     top: calc(100% + 0.5rem);
@@ -540,36 +754,45 @@ html .fi-body {
     background: var(--sh-surface);
 
     border:
+
         1px solid var(--sh-border);
 
     border-radius: 10px;
 
     box-shadow:
+
         0 12px 28px rgba(13, 31, 56, 0.14);
 
     overflow: hidden;
 
     z-index: 150;
+
 }
 
 .sh-user-menu-head {
+
     padding: 0.8rem 0.95rem;
 
     border-bottom:
+
         1px solid var(--sh-border);
 
     background: #f7f9fc;
+
 }
 
 .sh-user-menu-name {
+
     font-size: 0.85rem;
 
     font-weight: 600;
 
     color: var(--sh-text);
+
 }
 
 .sh-user-menu-email {
+
     font-size: 0.75rem;
 
     color: var(--sh-text-dim);
@@ -577,9 +800,11 @@ html .fi-body {
     margin-top: 0.1rem;
 
     word-break: break-all;
+
 }
 
 .sh-user-menu-item {
+
     display: flex;
 
     align-items: center;
@@ -603,144 +828,207 @@ html .fi-body {
     text-align: left;
 
     transition: background 0.12s ease;
+
 }
 
 .sh-user-menu-item:hover {
+
     background: #f1f4f9;
+
 }
 
 .sh-user-menu-item svg {
+
     width: 1.05rem !important;
+
     height: 1.05rem !important;
 
     color: var(--sh-text-muted);
+
 }
 
 
 /* Prevent Alpine flash */
 
 [x-cloak] {
+
     display: none !important;
+
 }
 
 
 /* Generic avatar */
 
 .fi-avatar {
+
     background-color:
+
         var(--sh-navy-800) !important;
+
 }
 
 .fi-avatar .fi-avatar-initials,
+
 .fi-avatar span {
+
     color: #ffffff !important;
 
     font-weight: 600 !important;
+
 }
 
 
 /* ============================================================
-   TOPBAR RESPONSIVE
-   ============================================================ */
+
+ * 03B. TOPBAR RESPONSIVE
+
+*   ============================================================ */
 
 @media (max-width: 1100px) {
+
     .sh-topbar-left .sh-chip {
+
         display: none;
+
     }
+
 }
 
 @media (max-width: 640px) {
+
     :root {
+
         --sh-main-padding-x: 1rem;
+
     }
 
     .sh-topbar {
+
         padding: 0.7rem 1rem;
 
         margin-top:
+
             calc(-1 * var(--sh-main-padding-top));
 
         margin-left: -1rem;
+
         margin-right: -1rem;
 
         margin-bottom: 1rem;
 
         min-height: 4rem;
+
     }
 
     .sh-user-meta {
+
         display: none;
+
     }
 
     .sh-user-btn {
+
         padding: 0.25rem;
+
     }
+
 }
 
 
 /* ============================================================
-   4. PAGE / MAIN CONTENT
-   ============================================================ */
+
+ * 04. MAIN CONTENT / PAGE HEADER
+
+*   ============================================================ */
 
 .fi-main-ctn {
+
     background: var(--sh-bg) !important;
+
 }
 
 
 /*
-   Main page padding is also used by the topbar/footer variables.
+
+ * Main page padding is also used by the topbar/footer variables.
+
 */
+
 .fi-main {
+
     padding-left:
+
         var(--sh-main-padding-x) !important;
 
     padding-right:
+
         var(--sh-main-padding-x) !important;
 
     padding-top:
+
         var(--sh-main-padding-top) !important;
 
     padding-bottom: 0 !important;
+
 }
 
 .fi-page {
+
     padding-top: 0 !important;
+
 }
 
 .fi-page-content,
+
 .fi-resource-list-records-page .fi-page-content {
+
     gap: 1rem !important;
+
 }
 
 
 /* Page heading */
 
 .fi-header {
+
     background:
+
         linear-gradient(
+
             180deg,
+
             #f2f7fd 0%,
+
             #eaf2fb 100%
+
         ) !important;
 
     border:
+
         1px solid var(--sh-border) !important;
 
     border-bottom:
+
         3px solid var(--sh-blue-600) !important;
 
     border-radius:
+
         12px 12px 0 0 !important;
 
     padding:
+
         1.05rem 1.35rem !important;
 
     margin-top: 0 !important;
+
     margin-bottom: 0 !important;
+
 }
 
 .fi-header-heading {
+
     color:
+
         var(--sh-blue-600) !important;
 
     font-weight: 700 !important;
@@ -750,44 +1038,60 @@ html .fi-body {
     text-transform: uppercase !important;
 
     letter-spacing: 0.02em !important;
+
 }
 
 .fi-header-subheading {
+
     color:
+
         var(--sh-text-muted) !important;
 
     font-size: 0.9rem !important;
 
     margin-top: 0.2rem !important;
+
 }
 
 .fi-breadcrumbs-item-label {
+
     color:
+
         var(--sh-text-muted) !important;
 
     font-size: 0.8rem !important;
+
 }
 
 
 /* ============================================================
-   5. STAT CARDS
-   ============================================================ */
+
+ * 05. DASHBOARD / STAT CARDS
+
+*   ============================================================ */
 
 .fi-wi-stats-overview {
+
     gap: 1.15rem !important;
+
 }
 
 .fi-wi-stats-overview-stat {
+
     background:
+
         var(--sh-surface) !important;
 
     border:
+
         1px solid var(--sh-border) !important;
 
     border-radius: 12px !important;
 
     box-shadow:
+
         0 1px 2px
+
         rgba(13, 31, 56, 0.04) !important;
 
     position: relative !important;
@@ -795,50 +1099,71 @@ html .fi-body {
     overflow: hidden !important;
 
     padding:
+
         1.35rem 1.25rem 1.25rem !important;
 
     transition:
+
         transform 0.16s ease,
+
         box-shadow 0.16s ease;
+
 }
 
 .fi-wi-stats-overview-stat::before {
+
     content: "";
 
     position: absolute;
 
     top: 0;
+
     left: 0;
+
     right: 0;
 
     height: 3px;
 
     background:
+
         var(--sh-rail-1);
+
 }
 
 .fi-wi-stats-overview-stat:nth-of-type(4n+2)::before {
+
     background: var(--sh-rail-2);
+
 }
 
 .fi-wi-stats-overview-stat:nth-of-type(4n+3)::before {
+
     background: var(--sh-rail-3);
+
 }
 
 .fi-wi-stats-overview-stat:nth-of-type(4n+4)::before {
+
     background: var(--sh-rail-4);
+
 }
 
 .fi-wi-stats-overview-stat:hover {
+
     transform: translateY(-2px);
 
     box-shadow:
+
         0 8px 20px
+
         rgba(13, 31, 56, 0.08) !important;
+
 }
 
 .fi-wi-stats-overview-stat-value {
+
     color:
+
         var(--sh-navy-800) !important;
 
     font-size: 1.85rem !important;
@@ -846,10 +1171,13 @@ html .fi-body {
     font-weight: 700 !important;
 
     line-height: 1.1 !important;
+
 }
 
 .fi-wi-stats-overview-stat-label {
+
     color:
+
         var(--sh-text-muted) !important;
 
     font-size: 0.72rem !important;
@@ -859,19 +1187,25 @@ html .fi-body {
     text-transform: uppercase !important;
 
     letter-spacing: 0.07em !important;
+
 }
 
 .fi-wi-stats-overview-stat-description {
+
     font-size: 0.78rem !important;
 
     margin-top: 0.35rem !important;
+
 }
 
 .fi-wi-stats-overview-stat-icon {
+
     background:
+
         var(--sh-blue-100) !important;
 
     color:
+
         var(--sh-blue-600) !important;
 
     border-radius: 10px !important;
@@ -879,498 +1213,715 @@ html .fi-body {
     padding: 0.55rem !important;
 
     width: 2.5rem !important;
+
     height: 2.5rem !important;
 
     display: inline-flex !important;
 
     align-items: center !important;
+
     justify-content: center !important;
+
 }
 
 .fi-wi-account {
+
     background:
+
         var(--sh-surface) !important;
 
     border:
+
         1px solid var(--sh-border) !important;
 
     border-radius: 12px !important;
 
     box-shadow:
+
         0 1px 2px
+
         rgba(13, 31, 56, 0.04) !important;
+
 }
 
 
 /* ============================================================
-   6. TABLES
-   ============================================================ */
+
+ * 06. TABLES
+
+*   ============================================================ */
 
 .fi-ta-ctn,
+
 .fi-section {
+
     background:
+
         var(--sh-surface) !important;
 
     border:
+
         1px solid var(--sh-border) !important;
 
     border-radius: 12px !important;
 
     box-shadow:
+
         0 1px 2px
+
         rgba(13, 31, 56, 0.04) !important;
 
     overflow: hidden !important;
+
 }
 
 .fi-ta-header-cell {
+
     background:
+
         #eef3fa !important;
 
     font-size:
+
         0.74rem !important;
 
     font-weight:
+
         700 !important;
 
     letter-spacing:
+
         0.02em !important;
 
     padding-top:
+
         0.75rem !important;
 
     padding-bottom:
+
         0.75rem !important;
 
     border-right:
+
         1px solid #dde4ee !important;
 
     border-bottom:
+
         2px solid #ccd7e6 !important;
+
 }
 
 .fi-ta-header-cell,
+
 .fi-ta-header-cell span {
+
     color:
+
         var(--sh-navy-800) !important;
+
 }
 
 .fi-ta-row {
+
     background:
+
         var(--sh-surface) !important;
+
 }
 
 .fi-ta-row:hover {
+
     background:
+
         #f5f9fe !important;
+
 }
 
 .fi-ta-cell {
+
     padding-top:
+
         0.6rem !important;
 
     padding-bottom:
+
         0.6rem !important;
 
     border-right:
+
         1px solid #e8edf5 !important;
 
     border-bottom:
+
         1px solid #e8edf5 !important;
+
 }
 
 .fi-ta-header-cell:last-child,
+
 .fi-ta-cell:last-child {
+
     border-right: none !important;
+
 }
 
 .fi-ta-cell > div,
+
 .fi-ta-col-wrp {
+
     padding-top: 0 !important;
+
     padding-bottom: 0 !important;
 
     min-height: 0 !important;
+
 }
 
 .fi-ta-cell .fi-avatar,
+
 .fi-ta-cell img[class*="rounded-full"],
+
 .fi-ta-cell .fi-ta-image-item {
+
     width: 2.1rem !important;
+
     height: 2.1rem !important;
+
 }
 
 .fi-ta-ctn {
+
     margin-top: 0 !important;
+
 }
 
 
 /* Table text */
 
 .fi-ta-text-item-label {
+
     color:
+
         var(--sh-text) !important;
 
     font-size:
+
         0.875rem !important;
+
 }
 
 
 /* Table footer */
 
 .fi-ta-footer,
+
 .fi-pagination {
+
     background:
+
         var(--sh-surface) !important;
 
     border-top:
+
         1px solid var(--sh-border) !important;
+
 }
 
 
 /* Search */
 
 .fi-ta-search-field input {
+
     background:
+
         #f7f9fc !important;
 
     color:
+
         var(--sh-text) !important;
 
     border:
+
         1px solid var(--sh-border) !important;
 
     border-radius:
+
         8px !important;
+
 }
 
 
 /* Pagination */
 
 .fi-pagination-items {
+
     gap: 0.25rem !important;
+
 }
 
 .fi-pagination-item .fi-btn,
+
 .fi-pagination-item button,
+
 .fi-pagination-item a {
+
     border:
+
         1px solid var(--sh-border) !important;
 
     background:
+
         var(--sh-surface) !important;
 
     color:
+
         var(--sh-text) !important;
 
     border-radius:
+
         6px !important;
 
     min-width:
+
         2.25rem !important;
 
     justify-content:
+
         center !important;
 
     font-weight:
+
         500 !important;
 
     box-shadow:
+
         none !important;
+
 }
 
 .fi-pagination-item .fi-btn:hover,
+
 .fi-pagination-item button:hover,
+
 .fi-pagination-item a:hover {
+
     background:
+
         #eef3fa !important;
 
     border-color:
+
         #c8d5e6 !important;
+
 }
 
 .fi-pagination-item .fi-active,
+
 .fi-pagination-item[aria-current] .fi-btn,
+
 .fi-pagination-item .fi-btn.fi-active {
+
     background:
+
         var(--sh-blue-600) !important;
 
     border-color:
+
         var(--sh-blue-600) !important;
 
     color:
+
         #ffffff !important;
+
 }
 
 .fi-pagination-item .fi-active span,
+
 .fi-pagination-item[aria-current] .fi-btn span {
+
     color:
+
         #ffffff !important;
+
 }
 
 
 /* Empty state */
 
 .fi-ta-empty-state-icon-ctn {
+
     background:
+
         var(--sh-blue-100) !important;
+
 }
 
 .fi-ta-empty-state-icon {
+
     color:
+
         var(--sh-blue-600) !important;
+
 }
 
 .fi-ta-empty-state-heading {
+
     color:
+
         var(--sh-text) !important;
 
     font-weight: 600 !important;
+
 }
 
 .fi-ta-empty-state-description {
+
     color:
+
         var(--sh-text-muted) !important;
+
 }
 
 
 /* ============================================================
-   7. FORMS / BUTTONS / BADGES / MODALS
-   ============================================================ */
+
+ * 07. FORMS / BUTTONS / BADGES / MODALS
+
+*   ============================================================ */
 
 .fi-input,
+
 .fi-select-input,
+
 .fi-textarea {
+
     border-radius: 8px !important;
+
 }
 
 .fi-fo-field-wrp-label {
+
     font-weight: 600 !important;
 
     color:
+
         var(--sh-text) !important;
 
     font-size:
+
         0.85rem !important;
+
 }
 
 .fi-btn {
+
     border-radius:
+
         7px !important;
 
     font-weight:
+
         600 !important;
 
     font-size:
+
         0.84rem !important;
+
 }
 
 
 /* Secondary actions */
 
 .fi-header-actions .fi-btn.fi-color-gray,
+
 .fi-ta-actions .fi-btn.fi-color-gray {
+
     background:
+
         var(--sh-navy-800) !important;
 
     border-color:
+
         var(--sh-navy-800) !important;
 
     color:
+
         #ffffff !important;
+
 }
 
 .fi-header-actions .fi-btn.fi-color-gray:hover,
+
 .fi-ta-actions .fi-btn.fi-color-gray:hover {
+
     background:
+
         var(--sh-navy-700) !important;
 
     border-color:
+
         var(--sh-navy-700) !important;
+
 }
 
 .fi-header-actions .fi-btn.fi-color-gray svg,
+
 .fi-header-actions .fi-btn.fi-color-gray span,
+
 .fi-ta-actions .fi-btn.fi-color-gray svg,
+
 .fi-ta-actions .fi-btn.fi-color-gray span {
+
     color: #ffffff !important;
+
 }
 
 
 /* Row actions */
 
 .fi-ta-cell .fi-link,
+
 .fi-ta-actions .fi-link {
+
     border:
+
         1px solid #c8d5e6 !important;
 
     border-radius:
+
         6px !important;
 
     padding:
+
         0.28rem 0.6rem !important;
 
     color:
+
         var(--sh-blue-600) !important;
 
     font-size:
+
         0.78rem !important;
 
     font-weight:
+
         600 !important;
 
     text-decoration:
+
         none !important;
 
     background:
+
         var(--sh-surface) !important;
+
 }
 
 .fi-ta-cell .fi-link:hover,
+
 .fi-ta-actions .fi-link:hover {
+
     background:
+
         var(--sh-blue-100) !important;
 
     border-color:
+
         var(--sh-blue-500) !important;
+
 }
 
 
 /* Badges */
 
 .fi-badge {
+
     border-radius:
+
         6px !important;
 
     font-weight:
+
         600 !important;
 
     font-size:
+
         0.7rem !important;
 
     letter-spacing:
+
         0.01em !important;
+
 }
 
 
 /* Modal */
 
 .fi-modal-window {
+
     border-radius:
+
         14px !important;
+
 }
 
 
 /* Tabs */
 
 .fi-tabs-tab {
+
     border-radius:
+
         8px !important;
 
     font-weight:
+
         500 !important;
+
 }
 
 
 /* ============================================================
-   IMAGE EDITOR — CROP RATIO ACTIVE STATE
-   ============================================================ */
+
+ * 08. IMAGE EDITOR — CROP RATIO ACTIVE STATE
+
+*   ============================================================ */
 
 /*
-   Ratio buttons such as:
 
-   Free
-   1:1
-   3:1
-   4:1
-   16:9
+ * Ratio buttons such as:
 
-   now clearly show which option is selected.
+ * Free
+
+ * 1:1
+
+ * 3:1
+
+ * 4:1
+
+ * 16:9
+
+ * now clearly show which option is selected.
+
 */
 
 .fi-modal button[aria-pressed] {
+
     border:
+
         1px solid #d1d5db !important;
 
     border-radius:
+
         0.5rem !important;
 
     background:
+
         #ffffff !important;
 
     color:
+
         #374151 !important;
 
     transition:
+
         background-color 0.15s ease,
+
         border-color 0.15s ease,
+
         color 0.15s ease,
+
         box-shadow 0.15s ease;
+
 }
 
 .fi-modal button[aria-pressed]:hover {
+
     border-color:
+
         var(--sh-blue-500) !important;
 
     color:
+
         var(--sh-blue-600) !important;
 
     background:
+
         #f5f9fe !important;
+
 }
 
 
 /* Selected crop ratio */
 
 .fi-modal button[aria-pressed="true"] {
+
     background:
+
         var(--sh-blue-600) !important;
 
     border-color:
+
         var(--sh-blue-600) !important;
 
     color:
+
         #ffffff !important;
 
     box-shadow:
+
         0 0 0 2px
+
         rgba(26, 95, 168, 0.15) !important;
 
     font-weight:
+
         700 !important;
+
 }
 
 .fi-modal button[aria-pressed="true"] span,
+
 .fi-modal button[aria-pressed="true"] svg {
+
     color:
+
         #ffffff !important;
+
 }
 
 
 /* ============================================================
-   8. FOOTER
-   ============================================================ */
+
+ * 09. FOOTER
+
+*   ============================================================ */
 
 /*
-   IMPORTANT:
 
-   This footer is NOT manually offset using the sidebar width.
+ * IMPORTANT:
 
-   It lives inside .fi-main, which means Filament already positions
-   it correctly when the sidebar expands/collapses.
+ * This footer is NOT manually offset using the sidebar width.
 
-   Its horizontal margins match .sh-topbar exactly.
+ * It lives inside .fi-main, which means Filament already positions
+
+ * it correctly when the sidebar expands/collapses.
+
+ * Its horizontal margins match .sh-topbar exactly.
+
 */
 
 .sh-footer {
+
     position: sticky;
 
     bottom: 0;
 
 
-
     display: flex;
 
     align-items: center;
+
     justify-content: center;
 
     width: auto;
@@ -1378,50 +1929,68 @@ html .fi-body {
     min-height: 46px;
 
     padding:
+
         0.85rem
+
         var(--sh-main-padding-x);
 
     margin-top: 0.9rem;
 
     margin-left:
+
         calc(-1 * var(--sh-main-padding-x));
 
     margin-right:
+
         calc(-1 * var(--sh-main-padding-x));
 
     margin-bottom: 0;
 
     background:
+
         var(--sh-surface);
 
     border-top:
+
         1px solid var(--sh-border);
 
     box-shadow:
+
         0 -1px 3px rgba(13, 31, 56, 0.04),
+
         0 -4px 10px rgba(13, 31, 56, 0.025);
 
     color:
+
         var(--sh-text-dim);
 
     font-size:
+
         0.78rem;
 
     line-height: 1.4;
 
     text-align: center;
+
 }
 
 
 /*
-   Keep content directly centered in the available main-content
-   column between the sidebar and right edge.
+
+ * Keep content directly centered in the available main-content
+
+ * column between the sidebar and right edge.
+
 */
+
 .sh-footer > * {
+
     margin: 0;
+
 }
 
 .sh-footer p {
+
     margin: 0;
 
     width: 100%;
@@ -1429,689 +1998,1018 @@ html .fi-body {
     display: flex;
 
     align-items: center;
+
     justify-content: center;
 
     flex-wrap: wrap;
 
     gap: 0.25rem;
+
 }
 
 .sh-footer strong {
+
     color:
+
         var(--sh-text-muted);
 
     font-weight: 600;
+
 }
 
 
 /* Footer mobile */
 
 @media (max-width: 640px) {
+
     .sh-footer {
+
         min-height: 44px;
 
         padding:
+
             0.75rem 1rem;
 
         margin-left: -1rem;
+
         margin-right: -1rem;
 
         font-size: 0.72rem;
+
     }
 
     .sh-footer p {
+
         gap: 0.2rem;
+
     }
+
 }
 
 
 /* ============================================================
-   9. LOGIN PAGE
-   ============================================================ */
+
+ * 10. LOGIN / AUTH PAGE
+
+*   ============================================================ */
 
 .fi-simple-layout {
+
     background:
+
         var(--sh-bg) !important;
 
     min-height:
+
         100vh;
 
     display:
+
         flex;
 
     align-items:
+
         center;
 
     justify-content:
+
         center;
 
     padding:
+
         1.5rem;
+
 }
 
 .fi-simple-main {
+
     background:
+
         var(--sh-surface) !important;
 
     border-radius:
+
         14px !important;
 
     box-shadow:
+
         0 20px 50px
+
         rgba(13, 31, 56, 0.15) !important;
 
     border:
+
         none !important;
 
     padding:
+
         0 !important;
 
     overflow:
+
         hidden !important;
 
     width:
+
         100% !important;
 
     max-width:
+
         46rem !important;
+
 }
 
 
 /* Login desktop */
 
 @media (min-width: 860px) {
+
     .fi-simple-page {
+
         display: flex !important;
 
         flex-direction:
+
             row !important;
 
         align-items:
+
             stretch !important;
 
         width:
+
             100% !important;
+
     }
 
     .fi-simple-page > .sh-login-brand {
+
         flex:
+
             0 0 42% !important;
 
         max-width:
+
             42% !important;
+
     }
 
     .fi-simple-page > .fi-simple-page-content {
+
         flex:
+
             1 1 58% !important;
 
         max-width:
+
             58% !important;
 
         min-width:
+
             0 !important;
+
     }
+
 }
 
 
 /* Invisible action modal sibling */
 
-.fi-simple-page > [wire\:partial],
+.fi-simple-page > [wire:partial],
+
 .fi-simple-page > div:not(.sh-login-brand):not(.fi-simple-page-content) {
+
     flex:
+
         0 0 0 !important;
 
     width:
+
         0 !important;
 
     max-width:
+
         0 !important;
 
     padding:
+
         0 !important;
 
     margin:
+
         0 !important;
+
 }
 
 
 /* Brand panel */
 
 .sh-login-brand {
+
     background:
+
         linear-gradient(
+
             160deg,
+
             #0f3663 0%,
+
             #14457d 45%,
+
             #0c2a4d 100%
+
         );
 
     color:
+
         #ffffff;
 
     padding:
+
         2.5rem 1.9rem;
 
     display:
+
         flex;
 
     flex-direction:
+
         column;
 
     align-items:
+
         center;
 
     justify-content:
+
         center;
 
     text-align:
+
         center;
 
     position:
+
         relative;
 
     overflow:
+
         hidden;
+
 }
 
 .sh-login-brand::after {
+
     content: "";
 
     position:
+
         absolute;
 
     top:
+
         -20%;
 
     right:
+
         -25%;
 
     width:
+
         55%;
 
     height:
+
         150%;
 
     background:
+
         linear-gradient(
+
             105deg,
+
             transparent 0%,
+
             rgba(255, 255, 255, 0.07) 42%,
+
             rgba(255, 255, 255, 0.07) 48%,
+
             transparent 49%
+
         ),
+
         linear-gradient(
+
             105deg,
+
             transparent 0%,
+
             rgba(255, 255, 255, 0.05) 62%,
+
             rgba(255, 255, 255, 0.05) 72%,
+
             transparent 73%
+
         );
 
     transform:
+
         rotate(8deg);
 
     pointer-events:
+
         none;
+
 }
 
 .sh-login-brand img {
+
     height:
+
         4.25rem;
 
     width:
+
         auto;
 
     margin-bottom:
+
         1.75rem;
 
     position:
+
         relative;
 
     z-index:
+
         1;
+
 }
 
 .sh-login-brand h2 {
+
     font-size:
+
         1.2rem;
 
     font-weight:
+
         700;
 
     margin-bottom:
+
         0.55rem;
 
     position:
+
         relative;
 
     z-index:
+
         1;
+
 }
 
 .sh-login-brand p {
+
     font-size:
+
         0.82rem;
 
     line-height:
+
         1.55;
 
     color:
+
         rgba(255, 255, 255, 0.8);
 
     position:
+
         relative;
 
     z-index:
+
         1;
+
 }
 
 
 /* Login links */
 
 .sh-login-links {
+
     display:
+
         flex;
 
     gap:
+
         0.6rem;
 
     margin-top:
+
         1.5rem;
 
     flex-wrap:
+
         wrap;
 
     justify-content:
+
         center;
 
     position:
+
         relative;
 
     z-index:
+
         1;
+
 }
 
 .sh-login-links a {
+
     display:
+
         inline-flex;
 
     align-items:
+
         center;
 
     gap:
+
         0.4rem;
 
     border:
+
         1px solid
+
         rgba(255, 255, 255, 0.28);
 
     border-radius:
+
         20px;
 
     padding:
+
         0.4rem 0.9rem;
 
     font-size:
+
         0.78rem;
 
     color:
+
         #ffffff;
 
     text-decoration:
+
         none;
 
     transition:
+
         background 0.15s ease;
+
 }
 
 .sh-login-links a:hover {
+
     background:
+
         rgba(255, 255, 255, 0.12);
+
 }
 
 .sh-login-links svg {
+
     width:
+
         0.9rem !important;
 
     height:
+
         0.9rem !important;
+
 }
 
 
 /* Login mobile */
 
 @media (max-width: 859px) {
+
     .sh-login-brand {
+
         padding:
+
             2rem 1.5rem;
+
     }
 
     .sh-login-brand p,
+
     .sh-login-links {
+
         display:
+
             none;
+
     }
 
     .sh-login-brand img {
+
         height:
+
             3rem;
 
         margin-bottom:
+
             0;
+
     }
+
 }
 
 
 /* Login form area */
 
 .fi-simple-page > .fi-simple-page-content {
+
     padding:
+
         2.25rem 2rem !important;
 
     display:
+
         flex !important;
 
     flex-direction:
+
         column !important;
 
     justify-content:
+
         center !important;
 
     align-items:
+
         stretch !important;
 
     gap:
+
         0.9rem !important;
+
 }
 
 .fi-simple-page-content div,
+
 .fi-simple-page-content form,
+
 .fi-simple-page-content section,
+
 .fi-simple-page-content header {
+
     width:
+
         100% !important;
 
     max-width:
+
         100% !important;
 
     min-width:
+
         0 !important;
+
 }
 
 .fi-simple-page input[type="text"],
+
 .fi-simple-page input[type="email"],
+
 .fi-simple-page input[type="password"],
+
 .fi-simple-page .fi-input {
+
     width:
+
         100% !important;
 
     min-width:
+
         0 !important;
+
 }
 
 
 /* Login checkbox */
 
 .fi-simple-page input[type="checkbox"] {
+
     width:
+
         1rem !important;
 
     min-width:
+
         1rem !important;
 
     max-width:
+
         1rem !important;
 
     height:
+
         1rem !important;
 
     flex:
+
         0 0 1rem !important;
+
 }
 
 .fi-simple-page .fi-fo-checkbox,
+
 .fi-simple-page label:has(input[type="checkbox"]) {
+
     display:
+
         flex !important;
 
     align-items:
+
         center !important;
 
     gap:
+
         0.5rem !important;
+
 }
 
 
 /* Password eye */
 
 .fi-simple-page .fi-input-wrp button,
+
 .fi-simple-page .fi-input-wrp-suffix {
+
     width:
+
         auto !important;
 
     flex:
+
         0 0 auto !important;
 
     order:
+
         2 !important;
+
 }
 
 .fi-simple-page .fi-input-wrp .fi-input {
+
     order:
+
         1 !important;
+
 }
 
 
 /* Login heading */
 
 .fi-simple-header {
+
     text-align:
+
         center !important;
 
     margin-bottom:
+
         0.5rem !important;
+
 }
 
 .fi-simple-header-heading {
+
     color:
+
         var(--sh-blue-600) !important;
 
     font-weight:
+
         700 !important;
 
     font-size:
+
         1.3rem !important;
 
     letter-spacing:
+
         -0.01em !important;
+
 }
 
 .fi-simple-header-heading::after {
+
     content:
+
         "Enter your credentials to continue.";
 
     display:
+
         block;
 
     margin-top:
+
         0.3rem;
 
     font-size:
+
         0.84rem;
 
     font-weight:
+
         400;
 
     color:
+
         var(--sh-text-muted);
 
     letter-spacing:
+
         0;
+
 }
 
 .fi-simple-header-subheading {
+
     display:
+
         none !important;
+
 }
 
 
 /* Login field labels */
 
 .fi-simple-page .fi-fo-field-wrp-label {
+
     font-size:
+
         0.82rem !important;
 
     font-weight:
+
         600 !important;
 
     color:
+
         var(--sh-text) !important;
 
     margin-bottom:
+
         0.3rem !important;
+
 }
 
 
 /* Hide required star */
 
 .fi-simple-page .fi-fo-field-wrp-label sup,
+
 .fi-simple-page .fi-fo-field-wrp-required-mark,
+
 .fi-simple-page label sup,
+
 .fi-simple-page [class*="required-mark"] {
+
     display:
+
         none !important;
+
 }
 
 
 /* Login input wrapper */
 
 .fi-simple-page .fi-input-wrp {
+
     border-radius:
+
         8px !important;
 
     border:
+
         1px solid #d8dfea !important;
 
     background:
+
         #fbfcfe !important;
 
     box-shadow:
+
         none !important;
+
 }
 
 .fi-simple-page .fi-input-wrp:focus-within {
+
     border-color:
+
         var(--sh-blue-500) !important;
 
     box-shadow:
+
         0 0 0 3px
+
         rgba(36, 114, 196, 0.12) !important;
+
 }
 
 .fi-simple-page .fi-input {
+
     padding-top:
+
         0.62rem !important;
 
     padding-bottom:
+
         0.62rem !important;
 
     font-size:
+
         0.9rem !important;
+
 }
 
 .fi-simple-page .fi-checkbox-input {
+
     border-radius:
+
         4px !important;
+
 }
 
 
 /* Password reset */
 
 .fi-simple-page .fi-fo-field-wrp-hint-action,
+
 .fi-simple-page a[href*="password-reset"] {
+
     color:
+
         var(--sh-amber) !important;
 
     font-size:
+
         0.8rem !important;
 
     font-weight:
+
         600 !important;
 
     text-decoration:
+
         none !important;
+
 }
 
 .fi-simple-page .fi-fo-field-wrp-hint-action:hover,
+
 .fi-simple-page a[href*="password-reset"]:hover {
+
     text-decoration:
+
         underline !important;
+
 }
 
 
 /* Login submit */
 
 .fi-simple-page .fi-btn[type="submit"] {
+
     background:
+
         linear-gradient(
+
             135deg,
+
             var(--sh-blue-600) 0%,
+
             var(--sh-blue-500) 100%
+
         ) !important;
 
     border:
+
         none !important;
 
     padding-top:
+
         0.72rem !important;
 
     padding-bottom:
+
         0.72rem !important;
 
     font-size:
+
         0.92rem !important;
 
     font-weight:
+
         600 !important;
 
     border-radius:
+
         8px !important;
 
     box-shadow:
+
         0 4px 12px
+
         rgba(26, 95, 168, 0.28) !important;
 
     justify-content:
+
         center !important;
+
 }
 
 .fi-simple-page .fi-btn[type="submit"]:hover {
+
     box-shadow:
+
         0 6px 16px
+
         rgba(26, 95, 168, 0.36) !important;
+
 }
 
 
 /* Brand panel already carries logo */
 
 .fi-simple-main .fi-logo {
+
     display:
+
         none !important;
+
 }
 
 
-
 /* ============================================================
-   RESOURCE CREATE / EDIT PAGE WIDTH
-   Filament caps these pages narrower than the panel's full
-   width. Let the form use the space the page has.
-   ============================================================ */
+
+ * 11. RESOURCE CREATE / EDIT PAGES
+
+ * Filament caps these pages narrower than the panel's full
+
+ * width. Let the form use the space the page has.
+
+*   ============================================================ */
 
 .fi-resource-create-record-page .fi-page-content,
+
 .fi-resource-edit-record-page .fi-page-content,
+
 .fi-resource-create-record-page form,
+
 .fi-resource-edit-record-page form {
+
     max-width: 100% !important;
+
     width: 100% !important;
+
+}
+
+/* Keep Filament form/grid children from forcing narrow or overflowing columns. */
+.fi-resource-create-record-page form > *,
+.fi-resource-edit-record-page form > *,
+.fi-resource-create-record-page .fi-fo-component-ctn,
+.fi-resource-edit-record-page .fi-fo-component-ctn,
+.fi-resource-create-record-page .fi-section,
+.fi-resource-edit-record-page .fi-section {
+    min-width: 0;
+}
+
+/* Inputs should fill the column Filament assigns to them. */
+.fi-resource-create-record-page .fi-fo-field-wrp,
+.fi-resource-edit-record-page .fi-fo-field-wrp,
+.fi-resource-create-record-page .fi-input-wrp,
+.fi-resource-edit-record-page .fi-input-wrp {
+    width: 100%;
+    min-width: 0;
+}
+
+/* Resource forms stack naturally on smaller screens. */
+@media (max-width: 1024px) {
+    .fi-resource-create-record-page .fi-page-content,
+    .fi-resource-edit-record-page .fi-page-content {
+        width: 100% !important;
+    }
 }

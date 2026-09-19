@@ -1,18 +1,21 @@
 <?php
- 
+
 namespace App\Filament\App\Resources\FeeStructures\Schemas;
- 
+
 use App\Models\FeeStructure;
+use App\Models\ResidencyType;
 use App\Models\SchoolClass;
+use App\Models\Term;
 use Filament\Forms\Components\Select;
 use Filament\Forms\Components\Textarea;
 use Filament\Forms\Components\TextInput;
+use Filament\Forms\Components\Toggle;
 use Filament\Forms\Components\ToggleButtons;
 use Filament\Schemas\Components\Section;
 use Filament\Schemas\Components\Utilities\Get;
 use Filament\Schemas\Schema;
 use Illuminate\Database\Eloquent\Builder;
- 
+
 class FeeStructureForm
 {
     public static function configure(Schema $schema): Schema
@@ -20,7 +23,7 @@ class FeeStructureForm
         return $schema
             ->columns(3)
             ->components([
- 
+
                 // ── Section 1: What & where ──
                 Section::make('Fee details')
                     ->description('Name the fee and choose which classes it applies to.')
@@ -34,7 +37,7 @@ class FeeStructureForm
                             ->dehydrated()
                             ->live()
                             ->required(),
- 
+
                         Select::make('class_ids')
                             ->label('Classes')
                             ->helperText('One record is created per class, at the amount below. Adjust any afterward.')
@@ -45,7 +48,7 @@ class FeeStructureForm
                             ->required()
                             ->dehydrated(false)
                             ->visibleOn('create'),
- 
+
                         Select::make('school_class_id')
                             ->label('Class')
                             ->relationship(
@@ -57,15 +60,15 @@ class FeeStructureForm
                             ->preload()
                             ->required()
                             ->visibleOn('edit'),
- 
+
                         TextInput::make('name')
                             ->label('Fee name')
-                            ->placeholder('e.g. Tuition, Admission, Ski trip')
+                            ->placeholder('e.g. Tuition, Boarding, Admission, Ski trip')
                             ->required()
                             ->maxLength(100)
                             ->columnSpanFull(),
                     ]),
- 
+
                 // ── Section 2: How it's charged ──
                 Section::make('Charging rules')
                     ->description('How often the fee is charged and who it applies to.')
@@ -90,7 +93,7 @@ class FeeStructureForm
                             ->inline()
                             ->required()
                             ->columnSpanFull(),
- 
+
                         ToggleButtons::make('applies_to')
                             ->label('Applies to')
                             ->options(FeeStructure::APPLIES_TO)
@@ -106,26 +109,30 @@ class FeeStructureForm
                             ->inline()
                             ->required()
                             ->columnSpanFull(),
- 
-                        // Term & year only apply to recurring per-term fees.
-                        Select::make('term')
-                            ->options([
-                                'Term 1' => 'Term 1',
-                                'Term 2' => 'Term 2',
-                                'Term 3' => 'Term 3',
-                            ])
-                            ->default('Term 1')
+
+                        // Replaces the old free-text term / academic_year pair.
+                        Select::make('term_id')
+                            ->label('Term')
+                            ->options(fn (Get $get) => static::termOptions($get('school_id')))
+                            ->searchable()
+                            ->native(false)
                             ->required(fn (Get $get) => $get('frequency') === 'per_term')
-                            ->visible(fn (Get $get) => $get('frequency') === 'per_term'),
- 
-                        TextInput::make('academic_year')
-                            ->label('Academic year')
-                            ->default(fn () => (string) now()->year)
-                            ->maxLength(9)
-                            ->required(fn (Get $get) => $get('frequency') === 'per_term')
-                            ->visible(fn (Get $get) => $get('frequency') === 'per_term'),
+                            ->visible(fn (Get $get) => $get('frequency') === 'per_term')
+                            ->helperText('Which term this fee is charged in.'),
+
+                        // The day / boarding split. Null means everyone pays it,
+                        // so a school can either price tuition separately per
+                        // residency, or keep one tuition and add a
+                        // boarding-only charge on top. Their choice, not ours.
+                        Select::make('residency_type_id')
+                            ->label('Residency')
+                            ->options(fn (Get $get) => static::residencyOptions($get('school_id')))
+                            ->placeholder('All students')
+                            ->native(false)
+                            ->helperText('Leave blank if every student in the class pays this. Set it for fees only boarders or only day students pay.')
+                            ->columnSpanFull(),
                     ]),
- 
+
                 // ── Section 3: Amount ──
                 Section::make('Amount')
                     ->icon('heroicon-o-currency-dollar')
@@ -137,12 +144,12 @@ class FeeStructureForm
                             ->prefix('UGX')
                             ->required()
                             ->minValue(0),
- 
-                        \Filament\Forms\Components\Toggle::make('is_active')
+
+                        Toggle::make('is_active')
                             ->label('Active')
-                            ->helperText('Inactive fees are ignored when generating invoices.')
+                            ->helperText('Inactive fees are ignored when billing.')
                             ->default(true),
- 
+
                         Textarea::make('description')
                             ->placeholder('Optional notes — what the fee covers')
                             ->rows(2)
@@ -150,30 +157,60 @@ class FeeStructureForm
                     ]),
             ]);
     }
- 
+
     protected static function classOptions($schoolId): array
     {
         $schoolId = $schoolId ?: auth()->user()?->school_id;
- 
+
         if (! $schoolId) {
             return [];
         }
- 
+
         return SchoolClass::where('school_id', $schoolId)
             ->orderBy('level')
             ->orderBy('name')
             ->pluck('name', 'id')
             ->toArray();
     }
- 
+
+    protected static function termOptions($schoolId): array
+    {
+        $schoolId = $schoolId ?: auth()->user()?->school_id;
+
+        if (! $schoolId) {
+            return [];
+        }
+
+        return Term::where('school_id', $schoolId)
+            ->with('academicYear')
+            ->get()
+            ->mapWithKeys(fn (Term $t) => [$t->id => $t->label()])
+            ->toArray();
+    }
+
+    protected static function residencyOptions($schoolId): array
+    {
+        $schoolId = $schoolId ?: auth()->user()?->school_id;
+
+        if (! $schoolId) {
+            return [];
+        }
+
+        return ResidencyType::where('school_id', $schoolId)
+            ->where('is_active', true)
+            ->orderBy('name')
+            ->pluck('name', 'id')
+            ->toArray();
+    }
+
     protected static function scopeClasses(Builder $query, $schoolId): Builder
     {
         $schoolId = $schoolId ?: auth()->user()?->school_id;
- 
+
         if ($schoolId) {
             $query->where('school_id', $schoolId);
         }
- 
+
         return $query->orderBy('level')->orderBy('name');
     }
 }

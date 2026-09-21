@@ -3,9 +3,16 @@
 namespace App\Filament\App\Resources\FeeBalances\Tables;
 
 use App\Filament\App\Resources\FeeBalances\FeeBalanceResource;
+use App\Filament\Pages\ReceivePayment;
+use App\Filament\Pages\StudentAccount;
+use App\Filament\Support\FeeReminderActions;
 use App\Models\Student;
+use Filament\Actions\Action;
+use Filament\Actions\ActionGroup;
+use Filament\Actions\BulkActionGroup;
 use Filament\Forms\Components\Select;
 use Filament\Forms\Components\TextInput;
+use Filament\Support\Enums\FontWeight;
 use Filament\Tables\Columns\TextColumn;
 use Filament\Tables\Filters\Filter;
 use Filament\Tables\Filters\SelectFilter;
@@ -19,63 +26,98 @@ class FeeBalancesTable
         $charged = FeeBalanceResource::chargedSql();
         $paid = FeeBalanceResource::paidSql();
 
+        // % paid from the totals already selected -- no extra queries per row.
+        $percent = fn (Student $record): ?float => (float) $record->total_charged > 0
+            ? round(min((float) $record->total_paid / (float) $record->total_charged * 100, 100))
+            : null;
+
         return $table
+            ->recordUrl(fn (Student $record) => StudentAccount::getUrl(['student' => $record->getKey()]))
+            ->modifyQueryUsing(fn (Builder $query) => $query->with('guardian'))
             ->columns([
                 TextColumn::make('name')
                     ->label('Student')
-                    ->searchable()
-                    ->sortable(),
-
-                TextColumn::make('admission_no')
-                    ->label('Adm. No.')
-                    ->searchable()
+                    ->weight(FontWeight::SemiBold)
+                    ->description(fn (Student $record) => $record->admission_no)
+                    ->searchable(['name', 'admission_no'])
                     ->sortable(),
 
                 TextColumn::make('schoolClass.name')
                     ->label('Class')
                     ->badge()
-                    ->searchable(),
-
-                TextColumn::make('section.name')
-                    ->label('Stream')
-                    ->placeholder('—')
-                    ->toggleable(),
+                    ->formatStateUsing(fn (?string $state, Student $record) => $record->section
+                        ? "{$state} · {$record->section->name}"
+                        : (string) $state),
 
                 TextColumn::make('residencyType.name')
                     ->label('Residency')
                     ->badge()
-                    ->color('warning')
+                    ->color(fn ($record) => $record->residencyType?->badgeColor() ?? 'gray')
                     ->placeholder('—')
+                    ->toggleable(),
+
+                TextColumn::make('guardian.name')
+                    ->label('Guardian')
+                    ->placeholder('Not linked')
+                    ->description(fn (Student $record) => $record->guardian?->phone)
                     ->toggleable(),
 
                 TextColumn::make('total_charged')
                     ->label('Charged')
-                    ->money('UGX')
+                    ->numeric()
+                    ->alignEnd()
                     ->sortable(),
 
                 TextColumn::make('total_paid')
                     ->label('Paid')
-                    ->money('UGX')
+                    ->numeric()
+                    ->alignEnd()
                     ->color('success')
                     ->sortable(),
 
                 TextColumn::make('balance_owing')
-                    ->label('Balance')
-                    ->money('UGX')
-                    ->weight('bold')
+                    ->label('Balance (UGX)')
+                    ->numeric()
+                    ->alignEnd()
+                    ->weight(FontWeight::Bold)
                     ->color(fn ($state): string => (float) $state > 0 ? 'danger' : 'success')
+                    ->formatStateUsing(fn ($state) => (float) $state < 0
+                        ? number_format(abs((float) $state)) . ' CR'
+                        : number_format((float) $state))
                     ->sortable(),
 
                 TextColumn::make('percent_paid')
-                    ->label('% paid')
-                    ->state(fn (Student $record): string => $record->percentagePaid() . '%')
+                    ->label('Paid')
+                    ->state(fn (Student $record) => $percent($record) === null ? '—' : $percent($record) . '%')
                     ->badge()
+                    ->alignEnd()
                     ->color(fn (Student $record): string => match (true) {
-                        $record->percentagePaid() >= 100 => 'success',
-                        $record->percentagePaid() >= 50 => 'warning',
-                        $record->percentagePaid() > 0 => 'danger',
-                        default => 'gray',
+                        $percent($record) === null => 'gray',
+                        $percent($record) >= 100 => 'success',
+                        $percent($record) >= 50 => 'warning',
+                        default => 'danger',
                     }),
+            ])
+            ->recordActions([
+                Action::make('receive')
+                    ->label('Receive')
+                    ->icon('heroicon-o-banknotes')
+                    ->color('success')
+                    ->url(fn (Student $record) => ReceivePayment::getUrl(['student' => $record->getKey()])),
+
+                ActionGroup::make([
+                    Action::make('account')
+                        ->label('Open account')
+                        ->icon('heroicon-o-book-open')
+                        ->url(fn (Student $record) => StudentAccount::getUrl(['student' => $record->getKey()])),
+                    FeeReminderActions::smsSingle(),
+                ]),
+            ])
+            ->toolbarActions([
+                BulkActionGroup::make([
+                    FeeReminderActions::smsBulk(),
+                    FeeReminderActions::lettersBulk(),
+                ])->label('Reminders'),
             ])
             ->defaultSort('balance_owing', 'desc')
             ->filters([

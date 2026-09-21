@@ -97,8 +97,10 @@ class StudentLedger
         return DB::table('student_payments')
             ->leftJoin('terms', 'student_payments.term_id', '=', 'terms.id')
             ->where('student_payments.student_id', $student->getKey())
+            ->whereNull('student_payments.voided_at')
             ->select([
                 'student_payments.id',
+                'student_payments.receipt_no',
                 'student_payments.amount',
                 'student_payments.paid_on',
                 'student_payments.method',
@@ -112,7 +114,7 @@ class StudentLedger
                 'type' => 'payment',
                 'description' => 'Payment received'
                     . (($label = StudentPayment::METHODS[$row->method] ?? null) ? " — {$label}" : ''),
-                'reference' => $row->reference,
+                'reference' => $row->receipt_no . ($row->reference ? " · {$row->reference}" : ''),
                 'term_id' => $row->term_id,
                 'term_name' => $row->term_name,
                 'debit' => 0.0,

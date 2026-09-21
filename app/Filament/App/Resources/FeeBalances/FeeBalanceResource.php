@@ -22,17 +22,17 @@ class FeeBalanceResource extends Resource
 {
     protected static ?string $model = Student::class;
 
-    protected static string|BackedEnum|null $navigationIcon = Heroicon::OutlinedBanknotes;
+    protected static string|BackedEnum|null $navigationIcon = Heroicon::OutlinedWallet;
 
     protected static string|\UnitEnum|null $navigationGroup = 'Fees';
 
-    protected static ?int $navigationSort = 2;
+    protected static ?int $navigationSort = 3;
 
-    protected static ?string $navigationLabel = 'Fee Balances';
+    protected static ?string $navigationLabel = 'Student Accounts';
 
-    protected static ?string $modelLabel = 'fee balance';
+    protected static ?string $modelLabel = 'student account';
 
-    protected static ?string $pluralModelLabel = 'Fee Balances';
+    protected static ?string $pluralModelLabel = 'Student Accounts';
 
     protected static ?string $recordTitleAttribute = 'name';
 
@@ -58,7 +58,8 @@ class FeeBalanceResource extends Resource
     {
         return '(select coalesce(sum(student_payments.amount), 0)
                  from student_payments
-                 where student_payments.student_id = students.id)';
+                 where student_payments.student_id = students.id
+                   and student_payments.voided_at is null)';
     }
 
     public static function getEloquentQuery(): Builder

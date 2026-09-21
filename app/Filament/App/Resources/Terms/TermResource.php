@@ -21,9 +21,9 @@ class TermResource extends Resource
 
     protected static string|BackedEnum|null $navigationIcon = Heroicon::OutlinedCalendar;
 
-    protected static string|\UnitEnum|null $navigationGroup = 'Admin Settings';
+    protected static string|\UnitEnum|null $navigationGroup = 'Academics';
 
-    protected static ?int $navigationSort = 7;
+    protected static ?int $navigationSort = 2;
 
     protected static ?string $navigationLabel = 'Terms';
 

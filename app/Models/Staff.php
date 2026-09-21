@@ -22,12 +22,34 @@ class Staff extends Model
         'phone',
         'employment_date',
         'status',
+        'gender',
+        'nin',
+        'employment_type',
+        'pays_nssf',
+        'pays_lst',
+    ];
+
+    public const GENDERS = ['male' => 'Male', 'female' => 'Female'];
+
+    public const EMPLOYMENT_TYPES = [
+        'permanent' => 'Permanent',
+        'contract' => 'Contract',
+        'part_time' => 'Part-time',
+        'volunteer' => 'Volunteer',
+    ];
+
+    public const STATUSES = [
+        'active' => 'Active',
+        'on_leave' => 'On leave',
+        'terminated' => 'Left the school',
     ];
 
     protected function casts(): array
     {
         return [
             'employment_date' => 'date',
+            'pays_nssf' => 'boolean',
+            'pays_lst' => 'boolean',
         ];
     }
 

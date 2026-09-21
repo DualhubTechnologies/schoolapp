@@ -7,13 +7,13 @@ use Filament\Http\Middleware\Authenticate;
 use Filament\Http\Middleware\AuthenticateSession;
 use Filament\Http\Middleware\DisableBladeIconComponents;
 use Filament\Http\Middleware\DispatchServingFilamentEvent;
+use Filament\Navigation\NavigationGroup;
 use Filament\Pages\Dashboard;
 use Filament\Panel;
 use Filament\PanelProvider;
 use Filament\Support\Colors\Color;
 use Filament\Support\Enums\Width;
 use Filament\Support\Icons\Heroicon;
-use Filament\Widgets\AccountWidget;
 use Illuminate\Cookie\Middleware\AddQueuedCookiesToResponse;
 use Illuminate\Cookie\Middleware\EncryptCookies;
 use Illuminate\Foundation\Http\Middleware\PreventRequestForgery;
@@ -40,8 +40,8 @@ class AppPanelProvider extends PanelProvider
 
             // --- Branding ---
             ->brandName('SchoolHub')
-            ->brandLogo(fn () => asset('images/schoolhub-logo-dark.svg'))
-            ->brandLogoHeight('2.5rem')
+            ->brandLogo(fn () => asset('images/schoolhub-logo-sidebar.svg'))  // tightly cropped, so the height below is all logo
+            ->brandLogoHeight('2.25rem')
             ->favicon(asset('images/schoolhub-icon-192.png'))
 
             // --- Colors ---
@@ -58,6 +58,39 @@ class AppPanelProvider extends PanelProvider
             ->sidebarCollapsibleOnDesktop()
             ->darkMode(false)
             ->breadcrumbs(false)
+
+            // After saving a new or edited record, go back to its table.
+            ->resourceCreatePageRedirect('index')
+            ->resourceEditPageRedirect('index')
+
+            // Printable fee documents, behind the panel's login. Full route
+            // names: filament.app.fees.receipt / filament.app.fees.letters.
+            ->authenticatedRoutes(function () {
+                \Illuminate\Support\Facades\Route::get('/fees/receipts/{payment}', [\App\Http\Controllers\FeeDocumentController::class, 'receipt'])
+                    ->whereNumber('payment')
+                    ->name('fees.receipt');
+                \Illuminate\Support\Facades\Route::get('/fees/reminder-letters', [\App\Http\Controllers\FeeDocumentController::class, 'letters'])
+                    ->name('fees.letters');
+                \Illuminate\Support\Facades\Route::get('/payroll-documents/{period}/{type}', [\App\Http\Controllers\PayrollDocumentController::class, 'schedule'])
+                    ->whereNumber('period')
+                    ->name('payroll.schedule');
+                \Illuminate\Support\Facades\Route::get('/academics/report-cards', \App\Http\Controllers\ReportCardController::class)
+                    ->name('academics.report-cards');
+            })
+
+            // --- Navigation ---
+            // Groups in order of daily use: front-office work first,
+            // one-time setup last. Settings starts collapsed because it
+            // is rarely opened once the school is configured.
+            ->navigationGroups([
+                NavigationGroup::make('Students'),
+                NavigationGroup::make('Fees'),
+                NavigationGroup::make('Exams & Results'),
+                NavigationGroup::make('Human Resources'),
+                NavigationGroup::make('Academics'),
+                NavigationGroup::make('Settings')->collapsed(),
+                NavigationGroup::make('Platform Management'),
+            ])
 
             // --- Plugins ---
             // Supplies the icon-only logo shown in the collapsed sidebar
@@ -99,8 +132,9 @@ class AppPanelProvider extends PanelProvider
                 Dashboard::class,
             ])
             ->discoverWidgets(in: app_path('Filament/Widgets'), for: 'App\Filament\Widgets')
+            // Everything in app/Filament/Widgets is discovered; the old
+            // welcome card is left out -- the topbar already has the user menu.
             ->widgets([
-                AccountWidget::class,
                 \App\Filament\Widgets\StatsOverview::class,
             ])
 

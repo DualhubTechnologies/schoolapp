@@ -19,14 +19,14 @@ class HouseResource extends Resource
 {
     protected static ?string $model = House::class;
 
-    protected static string|BackedEnum|null $navigationIcon = Heroicon::OutlinedHome;
+    protected static string|BackedEnum|null $navigationIcon = Heroicon::OutlinedFlag;
 
     protected static ?string $recordTitleAttribute = 'name';
 
   
-    protected static string|\UnitEnum|null $navigationGroup = 'Admin Settings';
+    protected static string|\UnitEnum|null $navigationGroup = 'Academics';
 
-    protected static ?int $navigationSort = 4;
+    protected static ?int $navigationSort = 6;
 
     public static function form(Schema $schema): Schema
     {

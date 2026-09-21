@@ -3,9 +3,11 @@
 namespace App\Models;
 
 use App\Concerns\Auditable;
+use Illuminate\Database\Eloquent\Collection as EloquentCollection;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
+use Illuminate\Support\Collection;
 
 class FeeStructure extends Model
 {
@@ -35,7 +37,7 @@ class FeeStructure extends Model
     }
 
     public const FREQUENCIES = [
-        'per_term' => 'Per term (recurring)',
+        'per_term' => 'Every term (recurring)',
         'once' => 'Once per student (e.g. admission)',
         'on_demand' => 'On demand (e.g. trip, uniform)',
     ];
@@ -88,6 +90,53 @@ class FeeStructure extends Model
     public function frequencyLabel(): string
     {
         return self::FREQUENCIES[$this->frequency] ?? $this->frequency;
+    }
+
+    /**
+     * The termly fees in force in a term.
+     *
+     * A per-term fee's term is the term it STARTS in: it is charged then
+     * and in every later term, until a newer version of the same fee --
+     * same class, name and residency -- starts in a later term. So:
+     *
+     *   Tuition S1, from Term 1 2026, 800,000  -> charged every term...
+     *   Tuition S1, from Term 1 2027, 850,000  -> ...until this takes over.
+     *
+     * Switching the newest version off stops the fee from that term on;
+     * it does not bring back the older price.
+     *
+     * @return EloquentCollection<int, FeeStructure>
+     */
+    public static function termlyFor(Term $term): EloquentCollection
+    {
+        $target = $term->sortKey();
+
+        $fees = static::query()
+            ->where('school_id', $term->school_id)
+            ->where('frequency', 'per_term')
+            ->with('term.academicYear')
+            ->orderBy('id')
+            ->get()
+            ->filter(fn (FeeStructure $fee) => $fee->startKey() <= $target)
+            ->groupBy(fn (FeeStructure $fee) => implode('|', [
+                $fee->school_class_id,
+                mb_strtolower(trim($fee->name)),
+                $fee->residency_type_id ?? 'all',
+            ]))
+            ->map(fn (Collection $versions) => $versions->sortBy(fn (FeeStructure $fee) => $fee->startKey())->last())
+            ->filter(fn (FeeStructure $fee) => $fee->is_active)
+            ->values();
+
+        return new EloquentCollection($fees->all());
+    }
+
+    /**
+     * Sort key of the term this fee starts in. A termly fee with no term
+     * (older records) counts as having always applied.
+     */
+    public function startKey(): string
+    {
+        return $this->term?->sortKey() ?? '';
     }
 
     /**

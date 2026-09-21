@@ -19,11 +19,11 @@ class SchoolClassResource extends Resource
 {
     protected static ?string $model = SchoolClass::class;
 
-    protected static string|BackedEnum|null $navigationIcon = Heroicon::OutlinedRectangleStack;
+    protected static string|BackedEnum|null $navigationIcon = Heroicon::OutlinedBuildingLibrary;
 
     protected static ?string $recordTitleAttribute = 'name';
 
-    protected static ?int $navigationSort = 2;
+    protected static ?int $navigationSort = 4;
 
     protected static ?string $modelLabel = 'Class';
 
@@ -46,7 +46,7 @@ class SchoolClassResource extends Resource
 
     public static function getNavigationGroup(): ?string
     {
-        return 'Admin Settings';
+        return 'Academics';
     }
 
     public static function getEloquentQuery(): Builder
@@ -60,6 +60,13 @@ class SchoolClassResource extends Resource
         }
 
         return $query;
+    }
+
+    public static function getRelations(): array
+    {
+        return [
+            RelationManagers\SubjectsRelationManager::class,
+        ];
     }
 
     public static function getPages(): array

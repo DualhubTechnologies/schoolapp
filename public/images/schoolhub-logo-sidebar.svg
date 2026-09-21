@@ -1,0 +1,12 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 11 244 58" width="488" height="116">
+  <g transform="translate(4,15)">
+    <rect width="50" height="50" rx="11" fill="#1E3A8A"/>
+    <polygon points="25,13 9,21 25,29 41,21" fill="#F59E0B"/>
+    <circle cx="25" cy="21" r="1.5" fill="#1E3A8A"/>
+    <path d="M 15 27.5 Q 15 36 25 36 Q 35 36 35 27.5 L 32.5 26 Q 32.5 32.5 25 32.5 Q 17.5 32.5 17.5 26 Z" fill="#FFFFFF"/>
+    <line x1="39" y1="21.5" x2="41" y2="30" stroke="#F59E0B" stroke-width="1.25" stroke-linecap="round"/>
+    <circle cx="41" cy="31.5" r="1.75" fill="#F59E0B"/>
+  </g>
+  <text x="68" y="55" font-family="Segoe UI, Roboto, system-ui, sans-serif" font-weight="600" font-size="34" letter-spacing="-0.8" fill="#FFFFFF">School<tspan font-weight="400" fill="#F59E0B">Hub</tspan></text>
+</svg>

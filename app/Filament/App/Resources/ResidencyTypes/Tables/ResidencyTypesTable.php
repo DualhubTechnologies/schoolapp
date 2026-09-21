@@ -17,6 +17,8 @@ class ResidencyTypesTable
             ->columns([
                 TextColumn::make('name')
                     ->label('Type')
+                    ->badge()
+                    ->color(fn ($record) => $record->badgeColor())
                     ->searchable()
                     ->sortable(),
 

@@ -67,6 +67,35 @@ class StaffDeduction extends Model
     }
 
     /**
+     * Is this deduction taken in the payroll month running $start–$end?
+     * Judged against the payroll month, not today, so a past month can be
+     * recalculated correctly and a deduction starting next month is not
+     * taken early.
+     */
+    public function appliesInMonth(\DateTimeInterface $start, \DateTimeInterface $end): bool
+    {
+        if (! $this->is_active) {
+            return false;
+        }
+
+        if ($this->start_date && $this->start_date->gt($end)) {
+            return false;
+        }
+
+        if ($this->end_date && $this->end_date->lt($start)) {
+            return false;
+        }
+
+        // A one-off deduction is taken in the month it starts only.
+        if (! $this->is_recurring && $this->start_date && $this->start_date->lt($start)) {
+            return false;
+        }
+
+        // Loans stop once fully recovered.
+        return ! ($this->total_amount && (float) $this->amount_recovered >= (float) $this->total_amount);
+    }
+
+    /**
      * Calculate the actual deduction amount for a given gross salary.
      */
     public function calculateAmount(float $grossSalary): float

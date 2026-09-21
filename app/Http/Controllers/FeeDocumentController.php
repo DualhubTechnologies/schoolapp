@@ -1,0 +1,61 @@
+<?php
+
+namespace App\Http\Controllers;
+
+use App\Models\Student;
+use App\Models\StudentPayment;
+use App\Services\FeeReminderService;
+use Illuminate\Http\Request;
+use Illuminate\View\View;
+
+/**
+ * Printable fee documents: payment receipts and reminder letters. Each is
+ * a plain page sized for paper that opens the print dialog by itself.
+ */
+class FeeDocumentController extends Controller
+{
+    public function receipt(int $payment): View
+    {
+        // Voided receipts can still be viewed (and are stamped VOID).
+        $payment = StudentPayment::withVoided()
+            ->with(['student.schoolClass', 'student.section', 'student.guardian', 'school', 'term.academicYear'])
+            ->findOrFail($payment);
+
+        $this->authorizeSchool($payment->school_id);
+
+        return view('fees.receipt', [
+            'payment' => $payment,
+            'student' => $payment->student,
+            'school' => $payment->school,
+            'balanceAfter' => $payment->student?->balance() ?? 0,
+        ]);
+    }
+
+    public function letters(Request $request, FeeReminderService $reminders): View
+    {
+        $ids = collect(explode(',', (string) $request->query('students')))
+            ->map(fn ($id) => (int) $id)
+            ->filter()
+            ->unique();
+
+        $students = Student::query()
+            ->whereKey($ids)
+            ->where('school_id', auth()->user()->school_id)
+            ->orderBy('name')
+            ->get();
+
+        abort_if($students->isEmpty(), 404);
+
+        return view('fees.reminder-letters', [
+            'letters' => $reminders->letters($students, $request->query('deadline')),
+            'school' => auth()->user()->school,
+        ]);
+    }
+
+    protected function authorizeSchool(int $schoolId): void
+    {
+        $user = auth()->user();
+
+        abort_unless($user && ($user->hasRole('Super Admin') || $user->school_id === $schoolId), 403);
+    }
+}

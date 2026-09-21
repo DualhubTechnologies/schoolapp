@@ -2,10 +2,9 @@
 
 namespace App\Filament\App\Resources\Staff\Tables;
 
+use App\Models\Staff;
 use App\Models\User;
 use Filament\Actions\Action;
-use Filament\Actions\BulkActionGroup;
-use Filament\Actions\DeleteBulkAction;
 use Filament\Actions\EditAction;
 use Filament\Forms\Components\Select;
 use Filament\Forms\Components\TextInput;
@@ -22,51 +21,82 @@ class StaffTable
     public static function configure(Table $table): Table
     {
         return $table
+            ->modifyQueryUsing(fn ($query) => $query->with('currentSalary'))
+            ->defaultSort('name')
             ->columns([
                 TextColumn::make('name')
-                    ->searchable(),
-                TextColumn::make('staff_no')
-                    ->label('Staff No.')
-                    ->searchable(),
+                    ->label('Staff member')
+                    ->weight('semibold')
+                    ->description(fn (Staff $record) => collect([$record->staff_no, $record->position])->filter()->implode(' · '))
+                    ->searchable(['name', 'staff_no', 'position'])
+                    ->sortable(),
                 TextColumn::make('school.name')
                     ->label('School')
-                    ->searchable(),
-                TextColumn::make('position')
-                    ->searchable(),
+                    ->visible(fn () => auth()->user()?->hasRole('Super Admin')),
                 TextColumn::make('department')
-                    ->searchable(),
+                    ->placeholder('—')
+                    ->searchable()
+                    ->toggleable(),
+                TextColumn::make('employment_type')
+                    ->label('Type')
+                    ->badge()
+                    ->color('gray')
+                    ->formatStateUsing(fn (?string $state) => Staff::EMPLOYMENT_TYPES[$state] ?? $state)
+                    ->toggleable(),
+                TextColumn::make('currentSalary.base_salary')
+                    ->label('Basic salary')
+                    ->numeric()
+                    ->alignEnd()
+                    ->placeholder('Not set')
+                    ->color(fn (Staff $record) => $record->currentSalary ? null : 'danger'),
+                TextColumn::make('statutory')
+                    ->label('TIN / NSSF')
+                    ->state(fn (Staff $record) => match (true) {
+                        ! $record->tin_number && ! $record->nssf_number => 'Both missing',
+                        ! $record->tin_number => 'No TIN',
+                        $record->pays_nssf && ! $record->nssf_number => 'No NSSF no.',
+                        default => 'Complete',
+                    })
+                    ->badge()
+                    ->color(fn (string $state) => $state === 'Complete' ? 'success' : 'warning'),
                 TextColumn::make('phone')
-                    ->searchable(),
+                    ->placeholder('—')
+                    ->searchable()
+                    ->toggleable(),
                 IconColumn::make('user_id')
-                    ->label('Has login')
+                    ->label('Login')
                     ->boolean()
-                    ->getStateUsing(fn ($record) => $record->user_id !== null),
+                    ->getStateUsing(fn ($record) => $record->user_id !== null)
+                    ->toggleable(),
                 TextColumn::make('employment_date')
-                    ->date()
-                    ->sortable(),
+                    ->label('Employed')
+                    ->date('j M Y')
+                    ->sortable()
+                    ->toggleable(isToggledHiddenByDefault: true),
                 TextColumn::make('status')
                     ->badge()
+                    ->formatStateUsing(fn (string $state) => Staff::STATUSES[$state] ?? $state)
                     ->color(fn (string $state): string => match ($state) {
                         'active' => 'success',
                         'on_leave' => 'warning',
-                        'terminated' => 'danger',
+                        default => 'danger',
                     }),
-                TextColumn::make('created_at')
-                    ->dateTime()
-                    ->sortable()
-                    ->toggleable(isToggledHiddenByDefault: true),
-                TextColumn::make('updated_at')
-                    ->dateTime()
-                    ->sortable()
-                    ->toggleable(isToggledHiddenByDefault: true),
             ])
             ->filters([
                 SelectFilter::make('status')
-                    ->options([
-                        'active' => 'Active',
-                        'on_leave' => 'On leave',
-                        'terminated' => 'Terminated',
-                    ]),
+                    ->options(Staff::STATUSES)
+                    ->default('active'),
+                SelectFilter::make('employment_type')
+                    ->label('Type')
+                    ->options(Staff::EMPLOYMENT_TYPES),
+                SelectFilter::make('department')
+                    ->options(fn () => Staff::query()
+                        ->where('school_id', auth()->user()?->school_id)
+                        ->whereNotNull('department')
+                        ->distinct()
+                        ->orderBy('department')
+                        ->pluck('department', 'department')
+                        ->all()),
             ])
             ->recordActions([
                 Action::make('createLogin')
@@ -88,7 +118,9 @@ class StaffTable
                         Select::make('roles')
                             ->multiple()
                             ->required()
-                            ->options(fn () => Role::pluck('name', 'name')),
+                            ->options(fn () => Role::whereIn('name', ['Teacher', 'Staff', 'Accountant', 'School Admin'])
+                                ->pluck('name', 'name')
+                                ->when(! auth()->user()?->hasRole(['School Admin', 'Super Admin']), fn ($roles) => $roles->except(['School Admin']))),
                     ])
                     ->action(function (array $data, $record) {
                         $user = User::create([
@@ -109,10 +141,8 @@ class StaffTable
                     }),
                 EditAction::make(),
             ])
-            ->toolbarActions([
-                BulkActionGroup::make([
-                    DeleteBulkAction::make(),
-                ]),
-            ]);
+            ->emptyStateHeading('No staff yet')
+            ->emptyStateDescription('Add staff, then set each person\'s salary in their record.')
+            ->emptyStateIcon('heroicon-o-user-group');
     }
 }

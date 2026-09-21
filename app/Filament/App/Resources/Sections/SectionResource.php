@@ -23,7 +23,7 @@ class SectionResource extends Resource
 
     protected static ?string $recordTitleAttribute = 'name';
 
-    protected static ?int $navigationSort = 2;
+    protected static ?int $navigationSort = 5;
 
     protected static ?string $pluralModelLabel = 'Sections / Streams';
 
@@ -44,7 +44,7 @@ class SectionResource extends Resource
 
     public static function getNavigationGroup(): ?string
     {
-        return 'Admin Settings';
+        return 'Academics';
     }
 
     public static function getEloquentQuery(): Builder

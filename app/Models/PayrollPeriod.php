@@ -22,6 +22,12 @@ class PayrollPeriod extends Model
         'total_allowances',
         'total_deductions',
         'total_statutory',
+        'total_paye',
+        'total_nssf_employee',
+        'total_lst',
+        'payment_date',
+        'payment_method',
+        'payment_reference',
         'total_net',
         'total_employer_nssf',
         'staff_count',
@@ -39,6 +45,10 @@ class PayrollPeriod extends Model
             'total_employer_nssf' => 'decimal:2',
             'approved_at' => 'datetime',
             'paid_at' => 'datetime',
+            'payment_date' => 'date',
+            'total_paye' => 'decimal:2',
+            'total_nssf_employee' => 'decimal:2',
+            'total_lst' => 'decimal:2',
         ];
     }
 
@@ -178,220 +188,34 @@ class PayrollPeriod extends Model
     }
 
     /**
-     * Generate payroll entries for all active staff in this school.
-     * This is the core payroll generation logic.
+     * Calculate this run's payslips. Kept for older callers; the logic
+     * lives in PayrollService.
      */
     public function generateEntries(): int
     {
-        $school = $this->school;
-        $country = $school->country ?? 'Uganda';
+        return app(\App\Services\Payroll\PayrollService::class)->generate($this)['staff'];
+    }
 
-        // Map country names to codes for PAYE
-        $countryCode = match (strtolower($country)) {
-            'uganda' => 'UG',
-            'kenya' => 'KE',
-            'tanzania' => 'TZ',
-            'rwanda' => 'RW',
-            'south sudan' => 'SS',
-            'burundi' => 'BI',
-            default => 'UG',
-        };
+    public const STATUSES = [
+        'draft' => 'Draft',
+        'approved' => 'Approved',
+        'paid' => 'Paid',
+    ];
 
-        // Get all active staff for this school
-        $activeStaff = Staff::where('school_id', $this->school_id)
-            ->where('status', 'active')
-            ->get();
+    public const PAYMENT_METHODS = [
+        'bank' => 'Bank transfer',
+        'mobile_money' => 'Mobile money',
+        'cash' => 'Cash',
+        'cheque' => 'Cheque',
+    ];
 
-        $count = 0;
+    public function isDraft(): bool
+    {
+        return $this->status === 'draft';
+    }
 
-        DB::transaction(function () use ($activeStaff, $countryCode, &$count) {
-            $totalGross = 0;
-            $totalAllowances = 0;
-            $totalDeductions = 0;
-            $totalStatutory = 0;
-            $totalNet = 0;
-            $totalEmployerNssf = 0;
-
-            foreach ($activeStaff as $staff) {
-                // Get current salary
-                $salary = StaffSalary::currentForStaff($staff->id);
-                if (! $salary) {
-                    continue; // Skip staff with no salary record
-                }
-
-                $baseSalary = (float) $salary->base_salary;
-
-                // Calculate allowances
-                $allowances = StaffAllowance::where('staff_id', $staff->id)
-                    ->where('is_active', true)
-                    ->with('allowanceType')
-                    ->get();
-
-                $totalAllowanceAmount = 0;
-                $allowanceItems = [];
-                $taxableAllowances = 0;
-
-                foreach ($allowances as $allowance) {
-                    $amount = (float) $allowance->amount;
-                    $totalAllowanceAmount += $amount;
-
-                    if ($allowance->allowanceType->is_taxable) {
-                        $taxableAllowances += $amount;
-                    }
-
-                    $allowanceItems[] = [
-                        'category' => 'allowance',
-                        'name' => $allowance->allowanceType->name,
-                        'amount' => $amount,
-                        'reference_type' => 'allowance_type',
-                        'reference_id' => $allowance->allowance_type_id,
-                    ];
-                }
-
-                $grossPay = $baseSalary + $totalAllowanceAmount;
-                $taxableIncome = $baseSalary + $taxableAllowances;
-
-                // Calculate NSSF (based on gross pay)
-                $nssfEmployee = round($grossPay * 0.05, 2);
-                $nssfEmployer = round($grossPay * 0.10, 2);
-
-                // Calculate PAYE (on taxable income minus NSSF employee contribution)
-                $payeTaxableAmount = $taxableIncome - $nssfEmployee;
-                $paye = PayeTaxBracket::calculatePaye($payeTaxableAmount, $countryCode);
-
-                $statutoryTotal = $nssfEmployee + $paye;
-
-                $statutoryItems = [
-                    [
-                        'category' => 'statutory',
-                        'name' => 'NSSF Employee (5%)',
-                        'amount' => $nssfEmployee,
-                        'reference_type' => null,
-                        'reference_id' => null,
-                    ],
-                    [
-                        'category' => 'statutory',
-                        'name' => 'PAYE',
-                        'amount' => $paye,
-                        'reference_type' => null,
-                        'reference_id' => null,
-                    ],
-                ];
-
-                // Calculate non-statutory deductions
-                $deductions = StaffDeduction::where('staff_id', $staff->id)
-                    ->where('is_active', true)
-                    ->with('deductionType')
-                    ->get()
-                    ->filter(fn ($d) => $d->isApplicable() && ! $d->deductionType->is_statutory);
-
-                $totalDeductionAmount = 0;
-                $deductionItems = [];
-
-                foreach ($deductions as $deduction) {
-                    $amount = $deduction->calculateAmount($grossPay);
-                    $totalDeductionAmount += $amount;
-
-                    $deductionItems[] = [
-                        'category' => 'deduction',
-                        'name' => $deduction->deductionType->name,
-                        'amount' => $amount,
-                        'reference_type' => 'deduction_type',
-                        'reference_id' => $deduction->deduction_type_id,
-                    ];
-                }
-
-                // Calculate arrears
-                $arrears = SalaryArrear::where('staff_id', $staff->id)
-                    ->where('status', 'approved')
-                    ->whereNull('applied_in_period_id')
-                    ->get();
-
-                $arrearsAmount = 0;
-                $arrearItems = [];
-
-                foreach ($arrears as $arrear) {
-                    $arrearsAmount += (float) $arrear->amount;
-
-                    $arrearItems[] = [
-                        'category' => 'arrears',
-                        'name' => "Arrears: {$arrear->reason} ({$arrear->month}/{$arrear->year})",
-                        'amount' => (float) $arrear->amount,
-                        'reference_type' => 'salary_arrear',
-                        'reference_id' => $arrear->id,
-                    ];
-                }
-
-                // Net pay = gross - statutory - deductions + arrears
-                $netPay = $grossPay - $statutoryTotal - $totalDeductionAmount + $arrearsAmount;
-
-                // Create the payroll entry
-                $entry = PayrollEntry::create([
-                    'payroll_period_id' => $this->id,
-                    'staff_id' => $staff->id,
-                    'base_salary' => $baseSalary,
-                    'total_allowances' => $totalAllowanceAmount,
-                    'gross_pay' => $grossPay,
-                    'total_deductions' => $totalDeductionAmount,
-                    'nssf_employee' => $nssfEmployee,
-                    'nssf_employer' => $nssfEmployer,
-                    'paye' => $paye,
-                    'total_statutory' => $statutoryTotal,
-                    'arrears_amount' => $arrearsAmount,
-                    'net_pay' => $netPay,
-                ]);
-
-                // Create all line items
-                $allItems = array_merge($allowanceItems, $statutoryItems, $deductionItems, $arrearItems);
-                foreach ($allItems as $item) {
-                    $entry->items()->create($item);
-                }
-
-                // Mark arrears as applied
-                foreach ($arrears as $arrear) {
-                    $arrear->update([
-                        'status' => 'paid',
-                        'applied_in_period_id' => $this->id,
-                    ]);
-                }
-
-                // Update loan recovery amounts
-                foreach ($deductions as $deduction) {
-                    if ($deduction->total_amount) {
-                        $amount = $deduction->calculateAmount($grossPay);
-                        $deduction->increment('amount_recovered', $amount);
-
-                        if ($deduction->amount_recovered >= $deduction->total_amount) {
-                            $deduction->update(['is_active' => false]);
-                        }
-                    }
-                }
-
-                // Accumulate totals
-                $totalGross += $grossPay;
-                $totalAllowances += $totalAllowanceAmount;
-                $totalDeductions += $totalDeductionAmount;
-                $totalStatutory += $statutoryTotal;
-                $totalNet += $netPay;
-                $totalEmployerNssf += $nssfEmployer;
-                $count++;
-            }
-
-            // Update period totals
-            $this->update([
-                'total_gross' => $totalGross,
-                'total_allowances' => $totalAllowances,
-                'total_deductions' => $totalDeductions,
-                'total_statutory' => $totalStatutory,
-                'total_net' => $totalNet,
-                'total_employer_nssf' => $totalEmployerNssf,
-                'staff_count' => $count,
-            ]);
-        });
-
-        // After generating current month, detect anyone who was missed last month
-        $missedCount = $this->detectMissedPayments();
-
-        return $count;
+    public function monthStart(): \Illuminate\Support\Carbon
+    {
+        return \Illuminate\Support\Carbon::create($this->year, $this->month, 1);
     }
 }

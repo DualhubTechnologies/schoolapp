@@ -2,177 +2,82 @@
 
 namespace App\Filament\App\Resources\PayrollPeriods\Tables;
 
-use Filament\Actions\Action;
-use Filament\Actions\BulkActionGroup;
-use Filament\Actions\DeleteBulkAction;
-use Filament\Actions\EditAction;
-use Filament\Notifications\Notification;
+use App\Filament\App\Resources\PayrollPeriods\PayrollPeriodResource;
+use App\Models\PayrollPeriod;
+use Filament\Actions\ViewAction;
+use Filament\Support\Enums\FontWeight;
 use Filament\Tables\Columns\TextColumn;
 use Filament\Tables\Filters\SelectFilter;
 use Filament\Tables\Table;
+use Illuminate\Database\Eloquent\Builder;
 
+/**
+ * One row per month's payroll. Everything else happens on the run's own
+ * page -- click a row to open it.
+ */
 class PayrollPeriodsTable
 {
-    private const MONTHS = [
-        1 => 'January', 2 => 'February', 3 => 'March',
-        4 => 'April', 5 => 'May', 6 => 'June',
-        7 => 'July', 8 => 'August', 9 => 'September',
-        10 => 'October', 11 => 'November', 12 => 'December',
-    ];
-
     public static function configure(Table $table): Table
     {
         return $table
-            ->defaultSort('year', 'desc')
+            ->defaultSort(fn (Builder $query) => $query->orderByDesc('year')->orderByDesc('month'))
+            ->recordUrl(fn (PayrollPeriod $record) => PayrollPeriodResource::getUrl('view', ['record' => $record]))
             ->columns([
                 TextColumn::make('month')
-                    ->label('Period')
-                    ->formatStateUsing(fn ($record) => (self::MONTHS[$record->month] ?? 'Unknown') . ' ' . $record->year)
-                    ->sortable(),
+                    ->label('Month')
+                    ->formatStateUsing(fn (PayrollPeriod $record) => $record->period_label)
+                    ->weight(FontWeight::SemiBold)
+                    ->sortable(query: fn (Builder $q, string $direction) => $q->orderBy('year', $direction)->orderBy('month', $direction)),
                 TextColumn::make('school.name')
                     ->label('School')
-                    ->searchable(),
+                    ->visible(fn () => auth()->user()?->hasRole('Super Admin')),
                 TextColumn::make('staff_count')
                     ->label('Staff')
-                    ->sortable(),
+                    ->alignCenter(),
                 TextColumn::make('total_gross')
                     ->label('Gross')
-                    ->money('UGX')
-                    ->sortable(),
-                TextColumn::make('total_deductions')
-                    ->label('Deductions')
-                    ->money('UGX')
-                    ->sortable(),
-                TextColumn::make('total_statutory')
-                    ->label('Statutory')
-                    ->money('UGX')
-                    ->sortable(),
+                    ->numeric()
+                    ->alignEnd(),
+                TextColumn::make('total_paye')
+                    ->label('PAYE')
+                    ->numeric()
+                    ->alignEnd()
+                    ->toggleable(),
+                TextColumn::make('nssf')
+                    ->label('NSSF (15%)')
+                    ->state(fn (PayrollPeriod $record) => (float) $record->total_nssf_employee + (float) $record->total_employer_nssf)
+                    ->numeric()
+                    ->alignEnd()
+                    ->toggleable(),
                 TextColumn::make('total_net')
-                    ->label('Net pay')
-                    ->money('UGX')
-                    ->weight('bold')
-                    ->sortable(),
-                TextColumn::make('total_employer_nssf')
-                    ->label('Employer NSSF')
-                    ->money('UGX')
-                    ->sortable()
-                    ->toggleable(isToggledHiddenByDefault: true),
+                    ->label('Net pay (UGX)')
+                    ->numeric()
+                    ->alignEnd()
+                    ->weight(FontWeight::Bold),
                 TextColumn::make('status')
                     ->badge()
+                    ->formatStateUsing(fn (string $state) => PayrollPeriod::STATUSES[$state] ?? $state)
                     ->color(fn (string $state): string => match ($state) {
                         'draft' => 'gray',
                         'approved' => 'warning',
                         'paid' => 'success',
+                        default => 'gray',
                     }),
-                TextColumn::make('paid_at')
+                TextColumn::make('payment_date')
                     ->label('Paid on')
-                    ->date()
-                    ->placeholder('—')
-                    ->sortable(),
+                    ->date('j M Y')
+                    ->placeholder('—'),
             ])
             ->filters([
-                SelectFilter::make('status')
-                    ->options([
-                        'draft' => 'Draft',
-                        'approved' => 'Approved',
-                        'paid' => 'Paid',
-                    ]),
+                SelectFilter::make('status')->options(PayrollPeriod::STATUSES),
+                SelectFilter::make('year')
+                    ->options(fn () => PayrollPeriod::query()->distinct()->orderByDesc('year')->pluck('year', 'year')->all()),
             ])
             ->recordActions([
-                Action::make('generate')
-                    ->label('Generate')
-                    ->icon('heroicon-o-calculator')
-                    ->color('info')
-                    ->visible(fn ($record) => $record->status === 'draft' && $record->staff_count === 0)
-                    ->requiresConfirmation()
-                    ->modalHeading('Generate payroll')
-                    ->modalDescription(fn ($record) => "This will calculate salary, allowances, deductions, NSSF (5% + 10%), and PAYE for all active staff in {$record->period_label}. It will also check for any unpaid staff from the previous month. Continue?")
-                    ->action(function ($record) {
-                        $record->update(['generated_by' => auth()->id()]);
-                        $count = $record->generateEntries();
-
-                        // Check if any missed payments were detected
-                        $missedCount = \App\Models\SalaryArrear::where('school_id', $record->school_id)
-                            ->where('status', 'pending')
-                            ->where('reason', 'LIKE', 'Unpaid salary%')
-                            ->where('created_at', '>=', now()->subMinutes(1))
-                            ->count();
-
-                        $message = "Payroll generated for {$count} staff members.";
-                        if ($missedCount > 0) {
-                            $message .= " {$missedCount} missed payment(s) detected from the previous month — review them under Staff → Salary Arrears and approve before the next payroll run.";
-                        }
-
-                        Notification::make()
-                            ->title($message)
-                            ->duration(10000)
-                            ->success()
-                            ->send();
-                    }),
-                Action::make('approve')
-                    ->label('Approve')
-                    ->icon('heroicon-o-check-badge')
-                    ->color('warning')
-                    ->visible(fn ($record) => $record->status === 'draft' && $record->staff_count > 0)
-                    ->requiresConfirmation()
-                    ->modalHeading('Approve payroll')
-                    ->modalDescription(fn ($record) => "Approve {$record->period_label} payroll? Total net pay: UGX " . number_format($record->total_net, 0))
-                    ->action(function ($record) {
-                        $record->update([
-                            'status' => 'approved',
-                            'approved_by' => auth()->id(),
-                            'approved_at' => now(),
-                        ]);
-
-                        Notification::make()
-                            ->title('Payroll approved')
-                            ->success()
-                            ->send();
-                    }),
-                Action::make('markPaid')
-                    ->label('Mark paid')
-                    ->icon('heroicon-o-banknotes')
-                    ->color('success')
-                    ->visible(fn ($record) => $record->status === 'approved')
-                    ->requiresConfirmation()
-                    ->modalHeading('Mark payroll as paid')
-                    ->modalDescription(fn ($record) => "Confirm that {$record->period_label} payroll (UGX " . number_format($record->total_net, 0) . " net) has been disbursed to all {$record->staff_count} staff members?")
-                    ->action(function ($record) {
-                        $record->update([
-                            'status' => 'paid',
-                            'paid_at' => now(),
-                        ]);
-
-                        Notification::make()
-                            ->title('Payroll marked as paid')
-                            ->success()
-                            ->send();
-                    }),
-                Action::make('nssfPdf')
-                    ->label('NSSF Schedule')
-                    ->icon('heroicon-o-document-text')
-                    ->color('gray')
-                    ->visible(fn ($record) => $record->staff_count > 0)
-                    ->url(fn ($record) => route('nssf-schedule.pdf', $record), shouldOpenInNewTab: true),
-                Action::make('nssfExcel')
-                    ->label('NSSF Excel')
-                    ->icon('heroicon-o-table-cells')
-                    ->color('gray')
-                    ->visible(fn ($record) => $record->staff_count > 0)
-                    ->url(fn ($record) => route('nssf-schedule.excel', $record), shouldOpenInNewTab: true),
-
-                Action::make('printAll')
-                    ->label('All Payslips')
-                    ->icon('heroicon-o-printer')
-                    ->color('info')
-                    ->visible(fn ($record) => $record->staff_count > 0)
-                    ->url(fn ($record) => route('payslips.all', $record), shouldOpenInNewTab: true),
-                EditAction::make(),
+                ViewAction::make()->label('Open'),
             ])
-            ->toolbarActions([
-                BulkActionGroup::make([
-                    DeleteBulkAction::make(),
-                ]),
-            ]);
+            ->emptyStateHeading('No payroll yet')
+            ->emptyStateDescription('Set up staff salaries under Staff, then start this month\'s payroll.')
+            ->emptyStateIcon('heroicon-o-wallet');
     }
 }

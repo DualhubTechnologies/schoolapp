@@ -2,8 +2,9 @@
 
 namespace App\Filament\App\Resources\Students\Tables;
 
+use App\Filament\Pages\ReceivePayment;
+use App\Filament\Pages\StudentAccount;
 use App\Models\Student;
-use App\Models\StudentPayment;
 use App\Services\StudentDocumentService;
 use Filament\Actions\Action;
 use Filament\Actions\ActionGroup;
@@ -12,14 +13,14 @@ use Filament\Actions\DeleteBulkAction;
 use Filament\Actions\EditAction;
 use Filament\Forms\Components\DatePicker;
 use Filament\Forms\Components\Select;
-use Filament\Forms\Components\Textarea;
 use Filament\Forms\Components\TextInput;
 use Filament\Notifications\Notification;
-use Filament\Tables\Columns\IconColumn;
+use Filament\Support\Enums\FontWeight;
 use Filament\Tables\Columns\ImageColumn;
 use Filament\Tables\Columns\TextColumn;
 use Filament\Tables\Filters\SelectFilter;
 use Filament\Tables\Table;
+use Illuminate\Database\Eloquent\Builder;
 use Symfony\Component\HttpFoundation\StreamedResponse;
 
 class StudentsTable
@@ -27,42 +28,65 @@ class StudentsTable
     public static function configure(Table $table): Table
     {
         return $table
+            // Eager-load what the combined cells read, so a page of
+            // students is a handful of queries, not one per row.
+            ->modifyQueryUsing(fn (Builder $query) => $query->with(['section', 'guardian']))
+            ->defaultSort('name')
             ->columns([
                 ImageColumn::make('photo')
                     ->label('')
                     ->circular()
-                    ->defaultImageUrl(fn ($record) => 'https://ui-avatars.com/api/?name=' . urlencode($record->name) . '&background=random'),
-                TextColumn::make('name')
-                    ->searchable()
-                    ->sortable(),
+                    // Local placeholder: works offline and doesn't send
+                    // student names to a third-party avatar service.
+                    ->defaultImageUrl(asset('images/student-avatar.svg')),
+
                 TextColumn::make('admission_no')
                     ->label('Adm. No.')
                     ->searchable()
-                    ->sortable(),
-                TextColumn::make('lin')
-                    ->label('LIN')
-                    ->placeholder('—')
-                    ->searchable()
-                    ->toggleable(isToggledHiddenByDefault: true),
+                    ->sortable()
+                    ->copyable()
+                    ->copyMessage('Admission number copied'),
+
+                // Name, with gender and age underneath.
+                TextColumn::make('name')
+                    ->label('Student')
+                    ->weight(FontWeight::SemiBold)
+                    ->searchable(['name', 'first_name', 'last_name'])
+                    ->sortable()
+                    ->description(fn (Student $record): ?string => collect([
+                        Student::GENDERS[$record->gender] ?? null,
+                        $record->age !== null ? "{$record->age} yrs" : null,
+                    ])->filter()->implode(' · ') ?: null),
+
+                // Class and stream in one badge: "S1 · A".
                 TextColumn::make('schoolClass.name')
                     ->label('Class')
                     ->badge()
+                    ->formatStateUsing(fn (?string $state, Student $record): string => $record->section
+                        ? "{$state} · {$record->section->name}"
+                        : (string) $state)
                     ->searchable()
                     ->sortable(),
-                TextColumn::make('section.name')
-                    ->label('Section')
-                    ->placeholder('—'),
-                TextColumn::make('gender')
-                    ->formatStateUsing(fn (?string $state) => Student::GENDERS[$state] ?? '—')
+
+                TextColumn::make('residencyType.name')
+                    ->label('Residency')
+                    ->badge()
+                    ->color(fn (Student $record) => $record->residencyType?->badgeColor() ?? 'gray')
+                    ->placeholder('—')
                     ->toggleable(),
+
+                // Guardian, with their phone underneath. Search matches either.
                 TextColumn::make('guardian.name')
                     ->label('Guardian')
                     ->placeholder('Not linked')
-                    ->searchable(),
-                TextColumn::make('guardian.phone')
-                    ->label('Guardian phone')
-                    ->searchable()
-                    ->toggleable(),
+                    ->description(fn (Student $record): ?string => $record->guardian?->phone)
+                    ->searchable(query: fn (Builder $query, string $search): Builder => $query->whereHas(
+                        'guardian',
+                        fn (Builder $guardian) => $guardian
+                            ->where('name', 'like', "%{$search}%")
+                            ->orWhere('phone', 'like', "%{$search}%"),
+                    )),
+
                 TextColumn::make('enrolment_status')
                     ->label('Enrolment')
                     ->badge()
@@ -72,6 +96,9 @@ class StudentsTable
                         'provisional' => 'warning',
                         default => 'gray',
                     }),
+
+                // Hidden by default: the list is already filtered to active
+                // students. Shown when the filter is changed via the toggle.
                 TextColumn::make('status')
                     ->badge()
                     ->formatStateUsing(fn (?string $state) => Student::STATUSES[$state] ?? $state)
@@ -82,24 +109,32 @@ class StudentsTable
                         'transferred' => 'warning',
                         default => 'gray',
                     })
-                    ->toggleable(),
+                    ->toggleable(isToggledHiddenByDefault: true),
+
+                // ── Available from the column picker ──
+                TextColumn::make('house.name')
+                    ->label('House')
+                    ->badge()
+                    ->placeholder('—')
+                    ->toggleable(isToggledHiddenByDefault: true),
+                TextColumn::make('lin')
+                    ->label('LIN')
+                    ->placeholder('—')
+                    ->searchable()
+                    ->toggleable(isToggledHiddenByDefault: true),
                 TextColumn::make('date_of_birth')
                     ->label('D.O.B.')
                     ->date()
                     ->sortable()
                     ->toggleable(isToggledHiddenByDefault: true),
                 TextColumn::make('admission_date')
+                    ->label('Admitted')
                     ->date()
                     ->sortable()
                     ->toggleable(isToggledHiddenByDefault: true),
                 TextColumn::make('school.name')
                     ->label('School')
-                    ->searchable()
                     ->toggleable(isToggledHiddenByDefault: true),
-                TextColumn::make('house.name')
-                    ->label('House')
-                    ->badge()
-                    ->searchable(),
             ])
             ->filters([
                 SelectFilter::make('school_class_id')
@@ -170,50 +205,18 @@ class StudentsTable
                             );
                         }),
 
-                    // ── Record payment (auto-confirms enrolment) ──
+                    // ── Payments go through Receive Payment, which issues a
+                    //    numbered receipt (and auto-confirms enrolment) ──
                     Action::make('recordPayment')
-                        ->label('Record payment')
+                        ->label('Receive payment')
                         ->icon('heroicon-o-banknotes')
                         ->color('success')
-                        ->form([
-                            TextInput::make('amount')
-                                ->numeric()
-                                ->prefix('UGX')
-                                ->required()
-                                ->minValue(0),
-                            DatePicker::make('paid_on')
-                                ->default(now())
-                                ->required(),
-                            Select::make('method')
-                                ->options(StudentPayment::METHODS)
-                                ->default('cash')
-                                ->required(),
-                            TextInput::make('reference')
-                                ->label('Receipt / reference'),
-                            Textarea::make('notes')
-                                ->rows(2),
-                        ])
-                        ->action(function ($record, array $data): void {
-                            StudentPayment::create([
-                                'school_id' => $record->school_id,
-                                'student_id' => $record->id,
-                                'amount' => $data['amount'],
-                                'paid_on' => $data['paid_on'],
-                                'method' => $data['method'],
-                                'reference' => $data['reference'] ?? null,
-                                'notes' => $data['notes'] ?? null,
-                                'recorded_by' => auth()->user()?->name,
-                            ]);
-                            // StudentPayment::created hook confirms enrolment if not already.
+                        ->url(fn ($record) => ReceivePayment::getUrl(['student' => $record->getKey()])),
 
-                            Notification::make()
-                                ->title('Payment recorded')
-                                ->body($record->fresh()->isConfirmed()
-                                    ? 'Student is now a confirmed full student.'
-                                    : 'Payment saved.')
-                                ->success()
-                                ->send();
-                        }),
+                    Action::make('feeAccount')
+                        ->label('Fee account')
+                        ->icon('heroicon-o-book-open')
+                        ->url(fn ($record) => StudentAccount::getUrl(['student' => $record->getKey()])),
 
                     // ── Manual confirm (registrar) — hidden once confirmed ──
                     Action::make('confirmEnrolment')
@@ -243,8 +246,7 @@ class StudentsTable
                     DeleteBulkAction::make(),
                 ]),
             ])
-                    ->paginationPageOptions([5, 10, 25, 50])
-        ->defaultPaginationPageOption(5);
-            
+            ->paginationPageOptions([10, 25, 50, 100])
+            ->defaultPaginationPageOption(25);
     }
 }

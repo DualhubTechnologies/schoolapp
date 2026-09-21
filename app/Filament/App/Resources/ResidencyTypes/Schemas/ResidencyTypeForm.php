@@ -7,7 +7,9 @@ use Filament\Forms\Components\Textarea;
 use Filament\Forms\Components\TextInput;
 use Filament\Forms\Components\Toggle;
 use Filament\Schemas\Components\Section;
+use Filament\Schemas\Components\Utilities\Get;
 use Filament\Schemas\Schema;
+use Illuminate\Validation\Rules\Unique;
 
 class ResidencyTypeForm
 {
@@ -23,6 +25,8 @@ class ResidencyTypeForm
                             ->label('Name')
                             ->placeholder('e.g. Day, Boarding, Half-boarder')
                             ->required()
+                            ->unique(ignoreRecord: true, modifyRuleUsing: fn (Unique $rule, Get $get) => $rule->where('school_id', $get('school_id') ?? auth()->user()?->school_id))
+                            ->validationMessages(['unique' => 'A residency type with this name already exists.'])
                             ->maxLength(50),
 
                         Select::make('school_id')

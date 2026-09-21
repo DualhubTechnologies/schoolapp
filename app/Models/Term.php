@@ -157,6 +157,17 @@ class Term extends Model
     }
 
     /**
+     * A string that sorts terms in calendar order: by academic year, then
+     * by the term's number within it. Compare two terms with <, <=, etc.
+     */
+    public function sortKey(): string
+    {
+        $yearStart = $this->academicYear?->start_date ?? $this->start_date;
+
+        return ($yearStart?->format('Ymd') ?? '00000000') . '-' . str_pad((string) $this->sequence, 3, '0', STR_PAD_LEFT);
+    }
+
+    /**
      * "Term 1 — 2026", for dropdowns and statement headings.
      */
     public function label(): string

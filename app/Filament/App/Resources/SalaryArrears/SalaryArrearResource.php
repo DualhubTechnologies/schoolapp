@@ -80,7 +80,7 @@ class SalaryArrearResource extends Resource
 
     public static function shouldRegisterNavigation(): bool
     {
-        return ! auth()->user()?->hasRole('Super Admin');
+        return \App\Support\PayrollAccess::allowed();
     }
     protected static ?int $navigationSort = 3;
     public static function getNavigationGroup(): ?string
@@ -94,5 +94,13 @@ class SalaryArrearResource extends Resource
             'create' => CreateSalaryArrear::route('/create'),
             'edit' => EditSalaryArrear::route('/{record}/edit'),
         ];
+    }
+
+    /**
+     * Staff pay is confidential: School Admin and Accountant only.
+     */
+    public static function canViewAny(): bool
+    {
+        return \App\Support\PayrollAccess::allowed();
     }
 }

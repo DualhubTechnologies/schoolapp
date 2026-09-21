@@ -9,6 +9,8 @@ class PayslipController extends Controller
 {
     public function download(PayrollEntry $entry)
     {
+        \App\Support\PayrollAccess::authorize($entry->payrollPeriod?->school_id);
+
         $entry->load(['staff', 'payrollPeriod.school', 'items']);
 
         $school = $entry->payrollPeriod->school;
@@ -31,6 +33,8 @@ class PayslipController extends Controller
     }
     public function downloadAll(\App\Models\PayrollPeriod $period)
     {
+        \App\Support\PayrollAccess::authorize($period->school_id);
+
         $period->load(['school', 'entries.staff.bankDetails', 'entries.items']);
 
         $school = $period->school;

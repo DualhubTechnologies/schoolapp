@@ -71,7 +71,7 @@ class ListStudents extends ListRecords
                 ->icon('heroicon-o-arrow-down-tray')
                 ->color('gray')
                 ->action(function () {
-                    $path = StudentCsvImporter::generateTemplate();
+                    $path = StudentCsvImporter::generateTemplate(auth()->user()?->school_id);
 
                     return response()->download(
                         $path,

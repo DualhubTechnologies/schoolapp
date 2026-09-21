@@ -22,6 +22,8 @@ class DeductionTypeResource extends Resource
 
     protected static string|BackedEnum|null $navigationIcon = Heroicon::OutlinedMinusCircle;
 
+    protected static ?int $navigationSort = 5;
+
     protected static ?string $recordTitleAttribute = 'name';
 
 public static function getNavigationGroup(): ?string
@@ -53,7 +55,7 @@ public static function getNavigationGroup(): ?string
     }
     public static function shouldRegisterNavigation(): bool
     {
-        return ! auth()->user()?->hasRole('Super Admin');
+        return \App\Support\PayrollAccess::allowed();
     }
 
     public static function getRelations(): array
@@ -70,5 +72,13 @@ public static function getNavigationGroup(): ?string
             'create' => CreateDeductionType::route('/create'),
             'edit' => EditDeductionType::route('/{record}/edit'),
         ];
+    }
+
+    /**
+     * Staff pay is confidential: School Admin and Accountant only.
+     */
+    public static function canViewAny(): bool
+    {
+        return \App\Support\PayrollAccess::allowed();
     }
 }

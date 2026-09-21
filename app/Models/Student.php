@@ -22,6 +22,7 @@ class Student extends Model
         'guardian_id',
         'school_class_id',
         'section_id',
+        'combination_id',
         'residency_type_id',
         'house_id',
         'admission_no',
@@ -61,7 +62,21 @@ class Student extends Model
     protected static function booted(): void
     {
         static::saving(function (Student $student): void {
-            $student->name = trim("{$student->first_name} {$student->last_name}");
+            $full = trim("{$student->first_name} {$student->last_name}");
+
+            if ($full !== '') {
+                $student->name = $full;
+
+                return;
+            }
+
+            // Only `name` was given (older code paths): split it into the
+            // parts rather than wiping it out.
+            if (filled($student->name)) {
+                [$first, $last] = array_pad(preg_split('/\s+/', trim($student->name), 2), 2, null);
+                $student->first_name = $first;
+                $student->last_name = $last;
+            }
         });
     }
 
@@ -126,6 +141,25 @@ class Student extends Model
     public function section(): BelongsTo
     {
         return $this->belongsTo(Section::class);
+    }
+
+    public function combination(): BelongsTo
+    {
+        return $this->belongsTo(Combination::class);
+    }
+
+    /**
+     * Subjects the student has chosen: O-Level electives, and the A-Level
+     * subsidiary when it differs from the combination's.
+     */
+    public function electives(): \Illuminate\Database\Eloquent\Relations\BelongsToMany
+    {
+        return $this->belongsToMany(Subject::class, 'student_subject')->withTimestamps();
+    }
+
+    public function marks(): HasMany
+    {
+        return $this->hasMany(Mark::class);
     }
 
     public function residencyType(): BelongsTo

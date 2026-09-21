@@ -8,15 +8,36 @@ use Filament\Actions\Action;
 use Filament\Actions\BulkActionGroup;
 use Filament\Actions\DeleteAction;
 use Filament\Actions\DeleteBulkAction;
+use Filament\Tables\Columns\Summarizers\Sum;
+use Filament\Tables\Columns\Summarizers\Summarizer;
 use Filament\Tables\Columns\TextColumn;
 use Filament\Tables\Filters\SelectFilter;
+use Filament\Tables\Grouping\Group;
 use Filament\Tables\Table;
+use Illuminate\Database\Query\Builder as QueryBuilder;
+use Illuminate\Support\Facades\DB;
 
 class BillingTable
 {
     public static function configure(Table $table): Table
     {
         return $table
+            // One block per student -- their charges underneath, with a
+            // subtotal -- instead of a flat list of fee lines.
+            ->groups([
+                Group::make('student_id')
+                    ->label('Student')
+                    ->getTitleFromRecordUsing(fn ($record) => collect([
+                        $record->student?->name ?: 'No name',
+                        $record->student?->admission_no,
+                        $record->student?->schoolClass?->name,
+                    ])->filter()->implode('  ·  '))
+                    ->collapsible(),
+                Group::make('description')
+                    ->label('Charge')
+                    ->collapsible(),
+            ])
+            ->defaultGroup('student_id')
             ->columns([
                 TextColumn::make('charged_on')
                     ->label('Date')
@@ -25,25 +46,25 @@ class BillingTable
 
                 TextColumn::make('student.name')
                     ->label('Student')
-                    ->searchable()
-                    ->sortable(),
+                    ->searchable(['name', 'admission_no'])
+                    ->sortable()
+                    ->toggleable(isToggledHiddenByDefault: true),
 
                 TextColumn::make('student.admission_no')
                     ->label('Adm. No.')
-                    ->searchable()
-                    ->toggleable(),
+                    ->toggleable(isToggledHiddenByDefault: true),
 
                 TextColumn::make('student.schoolClass.name')
                     ->label('Class')
                     ->badge()
-                    ->toggleable(),
+                    ->toggleable(isToggledHiddenByDefault: true),
 
                 TextColumn::make('student.residencyType.name')
                     ->label('Residency')
                     ->badge()
-                    ->color('warning')
+                    ->color(fn ($record) => $record->student?->residencyType?->badgeColor() ?? 'gray')
                     ->placeholder('—')
-                    ->toggleable(),
+                    ->toggleable(isToggledHiddenByDefault: true),
 
                 TextColumn::make('description')
                     ->label('Charge')
@@ -56,22 +77,33 @@ class BillingTable
                     ->toggleable(),
 
                 TextColumn::make('amount')
-                    ->money('UGX')
-                    ->sortable(),
+                    ->numeric()
+                    ->alignEnd()
+                    ->sortable()
+                    ->summarize(Sum::make()->label('Charged')->numeric()),
 
                 TextColumn::make('discount_amount')
                     ->label('Discount')
-                    ->money('UGX')
+                    ->numeric()
+                    ->alignEnd()
                     ->color('success')
+                    ->summarize(Sum::make()->label('Discounts')->numeric())
                     ->placeholder('—')
                     ->description(fn ($record) => $record->discount_reason)
                     ->toggleable(),
 
                 TextColumn::make('net')
-                    ->label('Net')
+                    ->label('Net (UGX)')
                     ->state(fn ($record) => $record->netAmount())
-                    ->money('UGX')
-                    ->weight('bold'),
+                    ->numeric()
+                    ->alignEnd()
+                    ->weight('bold')
+                    ->summarize(
+                        Summarizer::make()
+                            ->label('Net')
+                            ->numeric()
+                            ->using(fn (QueryBuilder $query) => $query->sum(DB::raw('amount - discount_amount'))),
+                    ),
             ])
             ->defaultSort('charged_on', 'desc')
             ->filters([
@@ -99,13 +131,17 @@ class BillingTable
                 Action::make('account')
                     ->label('Account')
                     ->icon('heroicon-o-book-open')
-                    ->color('primary')
-                    ->url(fn ($record): string => StudentAccount::getUrl() . '?student=' . $record->student_id),
+                    ->color('gray')
+                    ->iconButton()
+                    ->tooltip('Open student account')
+                    ->url(fn ($record): string => StudentAccount::getUrl(['student' => $record->student_id])),
 
                 // Deleting a charge reduces what the student was charged.
                 // That is how a mistaken billing run is corrected, so it is
                 // available -- but it moves the balance, hence the warning.
                 DeleteAction::make()
+                    ->iconButton()
+                    ->tooltip('Remove this charge')
                     ->requiresConfirmation()
                     ->modalDescription('This removes the charge from the student\'s account and reduces their balance.'),
             ])
@@ -116,7 +152,10 @@ class BillingTable
                         ->modalDescription('This removes the charges and reduces those students\' balances.'),
                 ]),
             ])
-            ->paginationPageOptions([10, 25, 50, 100])
-            ->defaultPaginationPageOption(25);
+            ->emptyStateHeading('Nothing billed for this term yet')
+            ->emptyStateDescription('Use "Bill a term" to charge every student the fees set up for the term.')
+            ->emptyStateIcon('heroicon-o-document-text')
+            ->paginationPageOptions([25, 50, 100])
+            ->defaultPaginationPageOption(50);
     }
 }

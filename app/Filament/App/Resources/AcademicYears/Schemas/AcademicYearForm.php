@@ -7,7 +7,9 @@ use Filament\Forms\Components\Select;
 use Filament\Forms\Components\TextInput;
 use Filament\Forms\Components\Toggle;
 use Filament\Schemas\Components\Section;
+use Filament\Schemas\Components\Utilities\Get;
 use Filament\Schemas\Schema;
+use Illuminate\Validation\Rules\Unique;
 
 class AcademicYearForm
 {
@@ -22,6 +24,8 @@ class AcademicYearForm
                         TextInput::make('name')
                             ->label('Year name')
                             ->required()
+                            ->unique(ignoreRecord: true, modifyRuleUsing: fn (Unique $rule, Get $get) => $rule->where('school_id', $get('school_id') ?? auth()->user()?->school_id))
+                            ->validationMessages(['unique' => 'An academic year with this name already exists.'])
                             ->maxLength(50)
                             ->placeholder('e.g. 2026 or 2026/2027')
                             ->helperText('Use whatever format your school uses.'),

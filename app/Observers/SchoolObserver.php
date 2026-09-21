@@ -45,6 +45,7 @@ class SchoolObserver
             ClassLevel::create([
                 'school_id' => $school->getKey(),
                 'name' => $name,
+                'curriculum' => ClassLevel::DEFAULT_CURRICULA[$name] ?? null,
                 'sort_order' => $index + 1,
             ]);
         }

@@ -22,6 +22,7 @@ class ClassLevelsTable
                 TextColumn::make('name')
                     ->label('Level')
                     ->weight('bold')
+                    ->description(fn ($record) => config('academics.curricula')[$record->curriculum] ?? 'Curriculum not set')
                     ->searchable()
                     ->sortable(),
 

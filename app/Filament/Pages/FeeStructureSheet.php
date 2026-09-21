@@ -21,15 +21,15 @@ use Illuminate\Support\Collection;
  */
 class FeeStructureSheet extends Page
 {
-    protected static string|BackedEnum|null $navigationIcon = Heroicon::OutlinedDocumentChartBar;
+    protected static string|BackedEnum|null $navigationIcon = Heroicon::OutlinedPrinter;
 
     protected static string|\UnitEnum|null $navigationGroup = 'Fees';
 
-    protected static ?int $navigationSort = 5;
+    protected static ?int $navigationSort = 8;
 
     protected static ?string $title = 'Fees Structure';
 
-    protected static ?string $navigationLabel = 'Fees Structure';
+    protected static ?string $navigationLabel = 'Fees Sheet';
 
     protected string $view = 'filament.pages.fee-structure-sheet';
 
@@ -90,13 +90,10 @@ class FeeStructureSheet extends Page
 
         $residencies = $this->getResidenciesProperty();
 
-        $fees = FeeStructure::query()
-            ->where('school_id', $term->school_id)
-            ->where('is_active', true)
-            ->where('frequency', 'per_term')
-            ->where('term_id', $term->getKey())
-            ->with(['schoolClass.classLevel', 'residencyType'])
-            ->get();
+        // Everything in force this term, including fees that started in
+        // an earlier term and carry forward.
+        $fees = FeeStructure::termlyFor($term)
+            ->load(['schoolClass.classLevel', 'residencyType']);
 
         return $this->group($fees, $residencies);
     }
@@ -156,6 +153,9 @@ class FeeStructureSheet extends Page
                             'amounts' => $amounts,
                         ];
                     })
+                    // Biggest items first (tuition before smaller levies),
+                    // so every level's table reads in the same order.
+                    ->sortByDesc(fn (array $row) => max([0, ...array_filter($row['amounts'])]))
                     ->values();
 
                 $totals = [];

@@ -4,8 +4,10 @@ namespace App\Filament\App\Resources\Sections\Schemas;
 
 use Filament\Forms\Components\Select;
 use Filament\Forms\Components\TextInput;
+use Filament\Schemas\Components\Utilities\Get;
 use Filament\Schemas\Schema;
 use Illuminate\Database\Eloquent\Builder;
+use Illuminate\Validation\Rules\Unique;
 
 class SectionForm
 {
@@ -28,7 +30,9 @@ class SectionForm
                 TextInput::make('name')
                     ->label('Section name')
                     ->placeholder('e.g. A, East, Blue')
-                    ->required(),
+                    ->required()
+                    ->unique(ignoreRecord: true, modifyRuleUsing: fn (Unique $rule, Get $get) => $rule->where('school_class_id', $get('school_class_id')))
+                    ->validationMessages(['unique' => 'This class already has a section with this name.']),
                 Select::make('class_teacher_id')
                     ->label('Class teacher')
                     ->relationship('classTeacher', 'name', fn (Builder $query) => static::scopeToSchool($query)->where('status', 'active'))

@@ -26,13 +26,13 @@ class BillingResource extends Resource
 
     protected static string|\UnitEnum|null $navigationGroup = 'Fees';
 
-    protected static ?int $navigationSort = 1;
+    protected static ?int $navigationSort = 4;
 
-    protected static ?string $navigationLabel = 'Bill Students';
+    protected static ?string $navigationLabel = 'Billing';
 
     protected static ?string $modelLabel = 'charge';
 
-    protected static ?string $pluralModelLabel = 'Bill Students';
+    protected static ?string $pluralModelLabel = 'Billing';
 
     protected static ?string $recordTitleAttribute = 'description';
 

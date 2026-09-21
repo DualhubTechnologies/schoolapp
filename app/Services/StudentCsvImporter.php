@@ -11,30 +11,40 @@ use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Log;
 use Illuminate\Support\Facades\Storage;
 
+/**
+ * Two-phase CSV import of students: validate() previews the file, import()
+ * writes it.
+ *
+ * Both phases run the same per-row checks, so what the preview calls valid
+ * is exactly what gets imported. A row with any problem -- missing name,
+ * unknown class or section, bad date, an admission number already in the
+ * system or repeated in the file -- is skipped whole, never half-imported.
+ */
 class StudentCsvImporter
 {
     /**
-     * Required CSV columns (header must contain these).
+     * Columns the header must contain. A name is also required, as either
+     * first_name (preferred) or the older single `name` column.
      */
     public const REQUIRED_COLUMNS = [
-        'name',
         'admission_no',
         'class',
     ];
 
     /**
-     * All recognised columns.
+     * Columns written to the downloadable template, in order.
      */
-    public const VALID_COLUMNS = [
-        'name',
+    public const TEMPLATE_COLUMNS = [
+        'first_name',
+        'last_name',
         'admission_no',
-        'lin',
-        'nin',
         'class',
         'section',
         'gender',
         'date_of_birth',
         'admission_date',
+        'lin',
+        'nin',
         'phone',
         'email',
         'address',
@@ -46,10 +56,28 @@ class StudentCsvImporter
         'status',
     ];
 
+    /**
+     * All recognised columns. `name` is still accepted from older files and
+     * split into first and last name.
+     */
+    public const VALID_COLUMNS = [
+        ...self::TEMPLATE_COLUMNS,
+        'name',
+    ];
+
+    /** How many issues are sent back to the preview screen. */
+    protected const ERROR_DISPLAY_LIMIT = 100;
+
     protected StudentImport $import;
     protected int $schoolId;
+
+    /** @var array<string, int> upper-cased class name => id */
     protected array $classCache = [];
+
+    /** @var array<string, int> "classId:UPPER SECTION" => id */
     protected array $sectionCache = [];
+
+    /** @var array<string, string> upper-cased admission number => "Name, Class" of the student who has it */
     protected array $existingAdmissionNos = [];
 
     /**
@@ -75,11 +103,19 @@ class StudentCsvImporter
      */
     protected function failValidation(string $message, string $field = 'file'): array
     {
+        $this->import->update([
+            'status' => 'failed',
+            'error_message' => $message,
+        ]);
+
         return [
             'valid' => false,
             'total_rows' => 0,
+            'valid_rows' => 0,
+            'invalid_rows' => 0,
+            'existing_rows' => 0,
             'error_count' => 1,
-            'duplicate_count' => 0,
+            'existing' => [],
             'errors' => [['row' => 0, 'field' => $field, 'message' => $message]],
             'preview' => [],
             'unknown_columns' => [],
@@ -88,7 +124,6 @@ class StudentCsvImporter
 
     /**
      * Phase 1: Validate the CSV file without importing anything.
-     * Returns ['valid' => bool, 'errors' => [...], 'preview' => [...]]
      */
     public function validate(): array
     {
@@ -98,141 +133,87 @@ class StudentCsvImporter
         $path = Storage::disk('local')->path($this->import->file_path);
 
         if (! file_exists($path)) {
-            $this->import->update([
-                'status' => 'failed',
-                'error_message' => 'CSV file not found on disk.',
-            ]);
             return $this->failValidation('File not found.');
         }
 
-        $handle = fopen($path, 'r');
-        if (! $handle) {
-            $this->import->update([
-                'status' => 'failed',
-                'error_message' => 'Could not open CSV file.',
-            ]);
-            return $this->failValidation('Cannot open file.');
-        }
+        $headers = $this->readHeaders($path);
 
-        // Read header row
-        $rawHeader = fgetcsv($handle);
-        if (! $rawHeader) {
-            fclose($handle);
-            $this->import->update([
-                'status' => 'failed',
-                'error_message' => 'CSV file is empty or has no header row.',
-            ]);
-            return $this->failValidation('Empty file or missing header.', 'header');
+        if ($headers === null) {
+            return $this->failValidation('The file is empty or has no header row.', 'header');
         }
-
-        // Normalise headers: lowercase, trim, underscores. Strip UTF-8 BOM if present.
-        $headers = array_map(function ($h) {
-            $h = preg_replace('/^\xEF\xBB\xBF/', '', $h);
-            return str_replace([' ', '-'], '_', strtolower(trim($h)));
-        }, $rawHeader);
 
         $this->import->appendLog('Checking required columns...');
 
-        // Check required columns
         $missing = array_diff(self::REQUIRED_COLUMNS, $headers);
-        if (! empty($missing)) {
-            $msg = 'Missing required columns: ' . implode(', ', $missing);
-            $this->import->update([
-                'status' => 'failed',
-                'error_message' => $msg,
-            ]);
-            fclose($handle);
-            return $this->failValidation($msg, 'header');
+
+        if (! in_array('first_name', $headers, true) && ! in_array('name', $headers, true)) {
+            $missing[] = 'first_name';
         }
 
-        // Check for unrecognised columns (warn, don't fail)
-        $unknown = array_diff($headers, self::VALID_COLUMNS);
+        if (! empty($missing)) {
+            return $this->failValidation('Missing required columns: ' . implode(', ', $missing), 'header');
+        }
 
-        // Pre-load caches
+        // Unrecognised columns are ignored, not fatal.
+        $unknown = array_values(array_diff($headers, self::VALID_COLUMNS));
+
         $this->loadCaches();
+        $fileCounts = $this->countAdmissionNos($path);
 
         $this->import->appendLog('Validating records...');
 
         $errors = [];
+        $existing = [];
         $preview = [];
-        $rowNum = 1; // header was row 0
         $totalRows = 0;
-        $seenAdmissionNos = [];
+        $invalidRows = 0;
 
-        while (($row = fgetcsv($handle)) !== false) {
-            $rowNum++;
+        foreach ($this->rows($path) as $rowNum => $data) {
             $totalRows++;
 
-            // Skip completely empty rows
-            if (count(array_filter($row, fn ($v) => trim($v ?? '') !== '')) === 0) {
-                $totalRows--;
-                continue;
+            $rowErrors = $this->validateRow($data, $rowNum, $fileCounts);
+
+            if ($rowErrors && $rowErrors[0]['type'] === 'exists') {
+                $existing[] = $rowErrors[0];
+            } elseif ($rowErrors) {
+                $invalidRows++;
+                array_push($errors, ...$rowErrors);
             }
 
-            // Map columns to values
-            $data = [];
-            foreach ($headers as $i => $col) {
-                $data[$col] = trim($row[$i] ?? '');
-            }
-
-            $rowErrors = $this->validateRow($data, $rowNum, $seenAdmissionNos);
-
-            if (! empty($rowErrors)) {
-                foreach ($rowErrors as $err) {
-                    $errors[] = $err;
-                }
-            }
-
-            // Track admission numbers for in-file duplicate detection
-            $admNo = $data['admission_no'] ?? '';
-            if ($admNo !== '') {
-                $seenAdmissionNos[$admNo] = ($seenAdmissionNos[$admNo] ?? 0) + 1;
-            }
-
-            // Keep first 5 rows for preview
             if (count($preview) < 5) {
                 $preview[] = $data;
             }
         }
 
-        fclose($handle);
-
-        // Detect in-file duplicates
-        $duplicateCount = 0;
-        foreach ($seenAdmissionNos as $admNo => $count) {
-            if ($count > 1) {
-                $duplicateCount += $count - 1;
-                $errors[] = [
-                    'row' => 0,
-                    'field' => 'admission_no',
-                    'message' => "Admission number '{$admNo}' appears {$count} times in the file.",
-                ];
-            }
-        }
+        $existingRows = count($existing);
+        $validRows = $totalRows - $invalidRows - $existingRows;
 
         $this->import->update([
             'status' => 'validated',
             'total_rows' => $totalRows,
-            'failed_rows' => count(array_unique(array_column($errors, 'row'))),
-            'duplicate_rows' => $duplicateCount,
-            'validation_errors' => $errors,
+            'failed_rows' => $invalidRows + $existingRows,
+            'duplicate_rows' => $existingRows,
+            'validation_errors' => [...$errors, ...$existing],
         ]);
 
-        $this->import->appendLog("Validation complete. {$totalRows} rows scanned, " . count($errors) . " issues found.");
+        $this->import->appendLog("Validation complete. {$totalRows} rows scanned: {$validRows} new, {$existingRows} already registered, {$invalidRows} with errors.");
 
         return [
-            'valid' => empty($errors),
+            'valid' => $invalidRows === 0,
             'total_rows' => $totalRows,
+            'valid_rows' => $validRows,
+            'invalid_rows' => $invalidRows,
+            'existing_rows' => $existingRows,
             'error_count' => count($errors),
-            'duplicate_count' => $duplicateCount,
-            'errors' => array_slice($errors, 0, 100), // Cap at 100 for display
+            'errors' => array_slice($errors, 0, self::ERROR_DISPLAY_LIMIT),
+            'existing' => array_slice($existing, 0, self::ERROR_DISPLAY_LIMIT),
             'preview' => $preview,
             'unknown_columns' => $unknown,
         ];
     }
 
     /**
-     * Phase 2: Actually import the validated rows.
+     * Phase 2: Import every row that passes validation; skip the rest.
      */
     public function import(): void
     {
@@ -251,135 +232,141 @@ class StudentCsvImporter
         );
 
         $path = Storage::disk('local')->path($this->import->file_path);
-        $handle = fopen($path, 'r');
 
-        // Read and normalise headers
-        $rawHeader = fgetcsv($handle);
-        $headers = array_map(function ($h) {
-            $h = preg_replace('/^\xEF\xBB\xBF/', '', $h);
-            return str_replace([' ', '-'], '_', strtolower(trim($h)));
-        }, $rawHeader);
-
+        // Re-check against the database as it is now, not as it was at
+        // preview time -- someone may have added students in between.
         $this->loadCaches();
+        $fileCounts = $this->countAdmissionNos($path);
 
-        $rowNum = 0;
+        $processed = 0;
         $successCount = 0;
-        $failCount = 0;
-        $errors = [];
+        $skipCount = 0;
+        $skipped = [];
 
-        while (($row = fgetcsv($handle)) !== false) {
-            $rowNum++;
+        foreach ($this->rows($path) as $rowNum => $data) {
+            $processed++;
 
-            // Skip empty rows
-            if (count(array_filter($row, fn ($v) => trim($v ?? '') !== '')) === 0) {
-                continue;
-            }
+            $rowErrors = $this->validateRow($data, $rowNum, $fileCounts);
 
-            $data = [];
-            foreach ($headers as $i => $col) {
-                $data[$col] = trim($row[$i] ?? '');
-            }
-
-            try {
-                $this->importRow($data);
-                $successCount++;
-            } catch (\Throwable $e) {
-                $failCount++;
-                $errors[] = [
-                    'row' => $rowNum + 1, // +1 for header
-                    'field' => 'import',
-                    'message' => $e->getMessage(),
-                ];
-                Log::warning("Student import row {$rowNum} failed", [
-                    'import_id' => $this->import->id,
-                    'data' => $data,
-                    'error' => $e->getMessage(),
-                ]);
+            if ($rowErrors) {
+                $skipCount++;
+                // One line per skipped row is enough to explain it.
+                $skipped[] = $rowErrors[0];
+            } else {
+                try {
+                    $this->importRow($data);
+                    $this->existingAdmissionNos[$this->key($data['admission_no'])] = trim("{$data['first_name']} {$data['last_name']}") . ", {$data['class']}";
+                    $successCount++;
+                } catch (\Throwable $e) {
+                    $skipCount++;
+                    $skipped[] = [
+                        'row' => $rowNum,
+                        'field' => 'import',
+                        'type' => 'error',
+                        'message' => $e->getMessage(),
+                    ];
+                    Log::warning("Student import row {$rowNum} failed", [
+                        'import_id' => $this->import->id,
+                        'data' => $data,
+                        'error' => $e->getMessage(),
+                    ]);
+                }
             }
 
             // Update progress every 10 rows to avoid hammering the DB
-            if ($rowNum % 10 === 0) {
+            if ($processed % 10 === 0) {
                 $this->import->update([
-                    'processed_rows' => $rowNum,
+                    'processed_rows' => $processed,
                     'successful_rows' => $successCount,
-                    'failed_rows' => $failCount,
+                    'failed_rows' => $skipCount,
                 ]);
             }
         }
 
-        fclose($handle);
-
         $this->import->update([
             'status' => 'completed',
-            'processed_rows' => $rowNum,
+            'total_rows' => $processed,
+            'processed_rows' => $processed,
             'successful_rows' => $successCount,
-            'failed_rows' => $failCount,
-            'validation_errors' => $errors ?: null,
+            'failed_rows' => $skipCount,
+            'validation_errors' => $skipped ?: null,
             'completed_at' => now(),
         ]);
 
         $duration = $this->import->started_at->diffInSeconds($this->import->completed_at);
-        $this->import->appendLog("Import completed. {$successCount} students imported, {$failCount} failed. Duration: {$duration}s.");
+        $this->import->appendLog("Import completed. {$successCount} students imported, {$skipCount} skipped. Duration: {$duration}s.");
     }
 
     /**
-     * Validate a single CSV row.
+     * Validate a single CSV row. An empty result means the row will import.
+     *
+     * @param  array<string, int>  $fileCounts  admission number => occurrences in the file
      */
-    protected function validateRow(array $data, int $rowNum, array $seenAdmissionNos): array
+    protected function validateRow(array $data, int $rowNum, array $fileCounts): array
     {
+        $admNo = $data['admission_no'] ?? '';
+
+        // Already registered: nothing else about the row matters, it is
+        // simply skipped. Reported apart from errors -- it needs no fixing.
+        if ($admNo !== '' && isset($this->existingAdmissionNos[$this->key($admNo)])) {
+            return [[
+                'row' => $rowNum,
+                'field' => 'admission_no',
+                'type' => 'exists',
+                'message' => "{$admNo} is already registered ({$this->existingAdmissionNos[$this->key($admNo)]}).",
+            ]];
+        }
+
         $errors = [];
+        $fail = function (string $field, string $message) use (&$errors, $rowNum) {
+            $errors[] = ['row' => $rowNum, 'field' => $field, 'type' => 'error', 'message' => $message];
+        };
 
-        // Required fields
-        if (empty($data['name'])) {
-            $errors[] = ['row' => $rowNum, 'field' => 'name', 'message' => "Row {$rowNum}: Name is required."];
+        if ($data['first_name'] === '') {
+            $fail('first_name', 'First name is required.');
         }
 
-        if (empty($data['admission_no'])) {
-            $errors[] = ['row' => $rowNum, 'field' => 'admission_no', 'message' => "Row {$rowNum}: Admission number is required."];
-        } elseif (isset($this->existingAdmissionNos[$data['admission_no']])) {
-            $errors[] = ['row' => $rowNum, 'field' => 'admission_no', 'message' => "Row {$rowNum}: Admission number '{$data['admission_no']}' already exists in the database."];
+        if ($admNo === '') {
+            $fail('admission_no', 'Admission number is required.');
+        } elseif (($fileCounts[$this->key($admNo)] ?? 0) > 1) {
+            $fail('admission_no', "Admission number '{$admNo}' appears {$fileCounts[$this->key($admNo)]} times in the file.");
         }
 
-        // Class must exist
-        if (empty($data['class'])) {
-            $errors[] = ['row' => $rowNum, 'field' => 'class', 'message' => "Row {$rowNum}: Class is required."];
-        } elseif (! isset($this->classCache[$data['class']])) {
-            $errors[] = ['row' => $rowNum, 'field' => 'class', 'message' => "Row {$rowNum}: Class '{$data['class']}' not found. Create it first."];
+        $class = $data['class'] ?? '';
+        $classId = $this->classCache[$this->key($class)] ?? null;
+
+        if ($class === '') {
+            $fail('class', 'Class is required.');
+        } elseif (! $classId) {
+            $fail('class', "Class '{$class}' not found. Create it first.");
         }
 
-        // Section must exist under the class (if provided)
-        if (! empty($data['section']) && ! empty($data['class'])) {
-            $classId = $this->classCache[$data['class']] ?? null;
-            $key = $classId . ':' . $data['section'];
-            if ($classId && ! isset($this->sectionCache[$key])) {
-                $errors[] = ['row' => $rowNum, 'field' => 'section', 'message' => "Row {$rowNum}: Section '{$data['section']}' not found under class '{$data['class']}'."];
-            }
+        $section = $data['section'] ?? '';
+
+        if ($section !== '' && $classId && ! isset($this->sectionCache[$classId . ':' . $this->key($section)])) {
+            $fail('section', "Section '{$section}' not found under class '{$class}'.");
         }
 
-        // Gender
-        if (! empty($data['gender']) && ! in_array(strtolower($data['gender']), ['male', 'female'])) {
-            $errors[] = ['row' => $rowNum, 'field' => 'gender', 'message' => "Row {$rowNum}: Gender must be 'Male' or 'Female'."];
+        if (($data['gender'] ?? '') !== '' && ! in_array(strtolower($data['gender']), ['male', 'female'], true)) {
+            $fail('gender', "Gender must be 'Male' or 'Female'.");
         }
 
-        // Date of birth
-        if (! empty($data['date_of_birth']) && ! $this->isValidDate($data['date_of_birth'])) {
-            $errors[] = ['row' => $rowNum, 'field' => 'date_of_birth', 'message' => "Row {$rowNum}: Invalid date of birth format. Use YYYY-MM-DD."];
+        if (($data['date_of_birth'] ?? '') !== '' && ! $this->parseDate($data['date_of_birth'])) {
+            $fail('date_of_birth', 'Invalid date of birth. Use YYYY-MM-DD.');
         }
 
-        // Admission date
-        if (! empty($data['admission_date']) && ! $this->isValidDate($data['admission_date'])) {
-            $errors[] = ['row' => $rowNum, 'field' => 'admission_date', 'message' => "Row {$rowNum}: Invalid admission date format. Use YYYY-MM-DD."];
+        if (($data['admission_date'] ?? '') !== '' && ! $this->parseDate($data['admission_date'])) {
+            $fail('admission_date', 'Invalid admission date. Use YYYY-MM-DD.');
         }
 
-        // Guardian phone
-        if (! empty($data['guardian_phone']) && ! preg_match('/^[\d\s\+\-\(\)]{7,20}$/', $data['guardian_phone'])) {
-            $errors[] = ['row' => $rowNum, 'field' => 'guardian_phone', 'message' => "Row {$rowNum}: Invalid guardian phone format."];
+        if (($data['guardian_phone'] ?? '') !== '' && ! preg_match('/^[\d\s\+\-\(\)]{7,20}$/', $data['guardian_phone'])) {
+            $fail('guardian_phone', 'Invalid guardian phone format.');
         }
 
-        // Status
         $validStatuses = array_keys(Student::STATUSES);
-        if (! empty($data['status']) && ! in_array(strtolower($data['status']), $validStatuses)) {
-            $errors[] = ['row' => $rowNum, 'field' => 'status', 'message' => "Row {$rowNum}: Status must be one of: " . implode(', ', $validStatuses) . '.'];
+
+        if (($data['status'] ?? '') !== '' && ! in_array(strtolower($data['status']), $validStatuses, true)) {
+            $fail('status', 'Status must be one of: ' . implode(', ', $validStatuses) . '.');
         }
 
         return $errors;
@@ -391,18 +378,11 @@ class StudentCsvImporter
     protected function importRow(array $data): void
     {
         DB::transaction(function () use ($data) {
-            // Resolve class
-            $classId = $this->classCache[$data['class']] ?? null;
-            if (! $classId) {
-                throw new \RuntimeException("Class '{$data['class']}' not found.");
-            }
+            $classId = $this->classCache[$this->key($data['class'])];
 
-            // Resolve section
-            $sectionId = null;
-            if (! empty($data['section']) && $classId) {
-                $key = $classId . ':' . $data['section'];
-                $sectionId = $this->sectionCache[$key] ?? null;
-            }
+            $sectionId = ($data['section'] ?? '') !== ''
+                ? $this->sectionCache[$classId . ':' . $this->key($data['section'])]
+                : null;
 
             // Resolve or create guardian
             $guardianId = null;
@@ -414,8 +394,8 @@ class StudentCsvImporter
                     ],
                     [
                         'name' => $data['guardian_name'],
-                        'email' => $data['guardian_email'] ?? null,
-                        'relationship' => $data['guardian_relationship'] ?? 'guardian',
+                        'email' => $data['guardian_email'] ?: null,
+                        'relationship' => $data['guardian_relationship'] ?: 'guardian',
                     ]
                 );
                 $guardianId = $guardian->id;
@@ -434,25 +414,142 @@ class StudentCsvImporter
                     'confirmed_via' => null,
                 ];
 
+            // `name` is derived from first_name + last_name by the model.
             Student::create(array_merge([
                 'school_id' => $this->schoolId,
                 'admission_no' => $data['admission_no'],
-                'lin' => ! empty($data['lin']) ? $data['lin'] : null,
-                'nin' => ! empty($data['nin']) ? $data['nin'] : null,
-                'name' => $data['name'],
+                'lin' => ($data['lin'] ?? '') ?: null,
+                'nin' => ($data['nin'] ?? '') ?: null,
+                'first_name' => $data['first_name'],
+                'last_name' => $data['last_name'] ?: null,
                 'school_class_id' => $classId,
                 'section_id' => $sectionId,
                 'guardian_id' => $guardianId,
-                'gender' => ! empty($data['gender']) ? strtolower($data['gender']) : null,
-                'date_of_birth' => ! empty($data['date_of_birth']) ? $data['date_of_birth'] : null,
-                'admission_date' => ! empty($data['admission_date']) ? $data['admission_date'] : now()->toDateString(),
-                'phone' => $data['phone'] ?? null,
-                'email' => $data['email'] ?? null,
-                'address' => $data['address'] ?? null,
-                'medical_notes' => $data['medical_notes'] ?? null,
-                'status' => ! empty($data['status']) ? strtolower($data['status']) : 'active',
+                'gender' => ($data['gender'] ?? '') !== '' ? strtolower($data['gender']) : null,
+                'date_of_birth' => $this->parseDate($data['date_of_birth'] ?? ''),
+                'admission_date' => $this->parseDate($data['admission_date'] ?? '') ?? now()->toDateString(),
+                'phone' => ($data['phone'] ?? '') ?: null,
+                'email' => ($data['email'] ?? '') ?: null,
+                'address' => ($data['address'] ?? '') ?: null,
+                'medical_notes' => ($data['medical_notes'] ?? '') ?: null,
+                'status' => ($data['status'] ?? '') !== '' ? strtolower($data['status']) : 'active',
             ], $enrolment));
         });
+    }
+
+    /**
+     * Read and normalise the header row: lowercase, trimmed, spaces and
+     * dashes to underscores, UTF-8 BOM stripped.
+     *
+     * @return list<string>|null
+     */
+    protected function readHeaders(string $path): ?array
+    {
+        $handle = fopen($path, 'r');
+        $raw = $handle ? fgetcsv($handle) : false;
+
+        if ($handle) {
+            fclose($handle);
+        }
+
+        if (! $raw || count(array_filter($raw, fn ($h) => trim((string) $h) !== '')) === 0) {
+            return null;
+        }
+
+        return array_map(function ($h) {
+            $h = preg_replace('/^\xEF\xBB\xBF/', '', (string) $h);
+
+            return str_replace([' ', '-'], '_', strtolower(trim($h)));
+        }, $raw);
+    }
+
+    /**
+     * Yield each non-empty data row, keyed by its line in the spreadsheet
+     * (the header is line 1, so the first student is line 2).
+     *
+     * @return \Generator<int, array<string, string>>
+     */
+    protected function rows(string $path): \Generator
+    {
+        $headers = $this->readHeaders($path) ?? [];
+        $handle = fopen($path, 'r');
+        fgetcsv($handle); // header
+
+        $line = 1;
+
+        try {
+            while (($row = fgetcsv($handle)) !== false) {
+                $line++;
+
+                if (count(array_filter($row, fn ($v) => trim((string) $v) !== '')) === 0) {
+                    continue;
+                }
+
+                $data = [];
+                foreach ($headers as $i => $col) {
+                    $data[$col] = trim((string) ($row[$i] ?? ''));
+                }
+
+                yield $line => $this->normalise($data);
+            }
+        } finally {
+            fclose($handle);
+        }
+    }
+
+    /**
+     * Fill in first/last name from an old-style `name` column, and put back
+     * the leading zero spreadsheets strip from phone numbers.
+     */
+    protected function normalise(array $data): array
+    {
+        // Columns the file leaves out read as blank.
+        $data += array_fill_keys(self::VALID_COLUMNS, '');
+
+        $first = $data['first_name'] ?? '';
+        $last = $data['last_name'] ?? '';
+
+        if ($first === '' && $last === '' && ($data['name'] ?? '') !== '') {
+            [$first, $last] = array_pad(preg_split('/\s+/', $data['name'], 2), 2, '');
+        }
+
+        $data['first_name'] = $first;
+        $data['last_name'] = $last;
+
+        foreach (['phone', 'guardian_phone'] as $field) {
+            // 771234567 -> 0771234567 (Excel drops the zero on numbers).
+            if (preg_match('/^7\d{8}$/', $data[$field] ?? '')) {
+                $data[$field] = '0' . $data[$field];
+            }
+        }
+
+        return $data;
+    }
+
+    /**
+     * @return array<string, int> upper-cased admission number => occurrences
+     */
+    protected function countAdmissionNos(string $path): array
+    {
+        $counts = [];
+
+        foreach ($this->rows($path) as $data) {
+            if (($data['admission_no'] ?? '') !== '') {
+                $key = $this->key($data['admission_no']);
+                $counts[$key] = ($counts[$key] ?? 0) + 1;
+            }
+        }
+
+        return $counts;
+    }
+
+    /**
+     * Lookup key: matching is case- and space-insensitive, so "s1" finds
+     * class "S1" and "a" finds section "A".
+     */
+    protected function key(string $value): string
+    {
+        return mb_strtoupper(trim($value));
     }
 
     /**
@@ -460,73 +557,92 @@ class StudentCsvImporter
      */
     protected function loadCaches(): void
     {
-        // Class name → ID
-        $this->classCache = SchoolClass::where('school_id', $this->schoolId)
-            ->pluck('id', 'name')
-            ->toArray();
+        $this->classCache = [];
+        SchoolClass::where('school_id', $this->schoolId)
+            ->get(['id', 'name'])
+            ->each(function ($class) {
+                $this->classCache[$this->key($class->name)] = $class->id;
+            });
 
-        // "classId:sectionName" → section ID
         $this->sectionCache = [];
         Section::where('school_id', $this->schoolId)
             ->get(['id', 'school_class_id', 'name'])
             ->each(function ($section) {
-                $key = $section->school_class_id . ':' . $section->name;
-                $this->sectionCache[$key] = $section->id;
+                $this->sectionCache[$section->school_class_id . ':' . $this->key($section->name)] = $section->id;
             });
 
-        // Existing admission numbers for duplicate detection
-        $this->existingAdmissionNos = Student::where('school_id', $this->schoolId)
-            ->pluck('admission_no')
-            ->flip()
-            ->toArray();
+        $this->existingAdmissionNos = [];
+        Student::where('school_id', $this->schoolId)
+            ->with('schoolClass:id,name')
+            ->get(['id', 'admission_no', 'name', 'school_class_id'])
+            ->each(function (Student $student) {
+                $this->existingAdmissionNos[$this->key((string) $student->admission_no)] = collect([
+                    $student->name ?: 'no name on record',
+                    $student->schoolClass?->name,
+                ])->filter()->implode(', ');
+            });
     }
 
     /**
-     * Check if a string is a valid date.
+     * Parse a date in any accepted format to Y-m-d, or null if invalid.
+     * Day-first formats are tried before month-first.
      */
-    protected function isValidDate(string $date): bool
+    protected function parseDate(string $date): ?string
     {
-        // Accept YYYY-MM-DD, DD/MM/YYYY, DD-MM-YYYY
-        $formats = ['Y-m-d', 'd/m/Y', 'd-m-Y', 'Y/m/d', 'm/d/Y'];
+        if ($date === '') {
+            return null;
+        }
 
-        foreach ($formats as $format) {
-            $d = \DateTime::createFromFormat($format, $date);
+        foreach (['Y-m-d', 'd/m/Y', 'd-m-Y', 'Y/m/d', 'm/d/Y'] as $format) {
+            $d = \DateTime::createFromFormat('!' . $format, $date);
+
             if ($d && $d->format($format) === $date) {
-                return true;
+                return $d->format('Y-m-d');
             }
         }
 
-        return false;
+        return null;
     }
 
     /**
-     * Generate a CSV template file and return its path.
+     * Generate a CSV template file and return its path. The example row
+     * uses one of the school's real classes so it validates as-is.
      */
-    public static function generateTemplate(): string
+    public static function generateTemplate(?int $schoolId = null): string
     {
-        $path = Storage::disk('local')->path('student-import-template.csv');
+        $class = $schoolId
+            ? SchoolClass::where('school_id', $schoolId)->orderBy('name')->first()
+            : null;
+
+        $section = $class
+            ? Section::where('school_class_id', $class->id)->orderBy('name')->value('name')
+            : null;
+
+        $file = 'student-import-template' . ($schoolId ? "-{$schoolId}" : '') . '.csv';
+        $path = Storage::disk('local')->path($file);
 
         $handle = fopen($path, 'w');
-        fputcsv($handle, self::VALID_COLUMNS);
+        fputcsv($handle, self::TEMPLATE_COLUMNS);
         fputcsv($handle, [
-            'John Mukasa',   // name
-            '001',           // admission_no
-            '',              // lin (blank — often not yet issued)
-            '',              // nin
-            'Senior 1',      // class
-            'A',             // section
-            'Male',          // gender
-            '2010-03-15',    // date_of_birth
-            '2026-02-01',    // admission_date
-            '0771234567',    // phone
-            'john@example.com', // email
-            'Kampala',       // address
-            '',              // medical_notes
-            'David Mukasa',  // guardian_name
-            '0701234567',    // guardian_phone
-            'david@example.com', // guardian_email
-            'father',        // guardian_relationship
-            'active',        // status
+            'John',                 // first_name
+            'Mukasa',               // last_name
+            'ADM-0001',             // admission_no (must be new)
+            $class?->name ?? 'S1',  // class (must already exist)
+            $section ?? '',         // section (optional; must exist under the class)
+            'Male',                 // gender: Male / Female
+            '2010-03-15',           // date_of_birth: YYYY-MM-DD
+            '2026-02-01',           // admission_date: YYYY-MM-DD (blank = today)
+            '',                     // lin
+            '',                     // nin
+            '0771234567',           // phone
+            'john@example.com',     // email
+            'Kampala',              // address
+            '',                     // medical_notes
+            'David Mukasa',         // guardian_name
+            '0701234567',           // guardian_phone
+            'david@example.com',    // guardian_email
+            'father',               // guardian_relationship
+            'active',               // status: active / graduated / withdrawn / transferred
         ]);
         fclose($handle);
 

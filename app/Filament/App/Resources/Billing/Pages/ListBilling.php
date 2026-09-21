@@ -23,7 +23,12 @@ class ListBilling extends ListRecords
 
     public function getTitle(): string
     {
-        return 'Bill Students';
+        return 'Billing';
+    }
+
+    public function getSubheading(): ?string
+    {
+        return "Charges on each student's account. Bill the whole term at the start of term; bill a class or one student for extras. Billing twice never double-charges.";
     }
 
     protected function getHeaderActions(): array

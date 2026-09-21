@@ -35,8 +35,8 @@ class AdminPanelProvider extends PanelProvider
 
             // --- Branding ---
             ->brandName('SchoolHub')
-            ->brandLogo(fn () => asset('images/schoolhub-logo-dark.svg'))
-            ->brandLogoHeight('3.5rem')
+            ->brandLogo(fn () => asset('images/schoolhub-logo-sidebar.svg'))  // tightly cropped, so the height below is all logo
+            ->brandLogoHeight('2.25rem')
             ->favicon(asset('images/schoolhub-icon-192.png'))
 
             // --- Colors ---
@@ -53,6 +53,10 @@ class AdminPanelProvider extends PanelProvider
             ->sidebarCollapsibleOnDesktop()
             ->darkMode(false)
             ->breadcrumbs(false)
+
+            // After saving a new or edited record, go back to its table.
+            ->resourceCreatePageRedirect('index')
+            ->resourceEditPageRedirect('index')
 
             // --- Plugins ---
             // Icon-only logo for the collapsed sidebar rail.

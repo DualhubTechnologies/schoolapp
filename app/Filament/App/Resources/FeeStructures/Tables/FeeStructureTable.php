@@ -36,7 +36,7 @@ class FeeStructureTable
                 TextColumn::make('residencyType.name')
                     ->label('Residency')
                     ->badge()
-                    ->color('warning')
+                    ->color(fn ($record) => $record->residencyType?->badgeColor() ?? 'gray')
                     ->placeholder('All students'),
 
                 TextColumn::make('frequency')
@@ -60,8 +60,9 @@ class FeeStructureTable
                     ->weight('bold')
                     ->sortable(),
 
+                // A termly fee starts in this term and carries forward.
                 TextColumn::make('term.name')
-                    ->label('Term')
+                    ->label('From term')
                     ->badge()
                     ->placeholder('Not term-specific'),
 
@@ -81,7 +82,7 @@ class FeeStructureTable
                     ->preload(),
 
                 SelectFilter::make('term_id')
-                    ->label('Term')
+                    ->label('Starting term')
                     ->options(fn (): array => Term::query()
                         ->where('school_id', auth()->user()?->school_id)
                         ->with('academicYear')

@@ -241,10 +241,13 @@
     @php
         $totalRows = (int) ($validationResult['total_rows'] ?? 0);
         $errors = $validationResult['errors'] ?? [];
-        $errorRows = array_unique(array_filter(array_column($errors, 'row')));
-        $validRows = max(0, $totalRows - count($errorRows));
+        // Row counts come from the whole file; $errors is only the first
+        // 100 messages, so it can't be used to count rows.
+        $invalidRows = (int) ($validationResult['invalid_rows'] ?? 0);
+        $validRows = (int) ($validationResult['valid_rows'] ?? max(0, $totalRows - $invalidRows));
         $errorCount = (int) ($validationResult['error_count'] ?? count($errors));
-        $duplicateCount = (int) ($validationResult['duplicate_count'] ?? 0);
+        $existingRows = (int) ($validationResult['existing_rows'] ?? 0);
+        $existing = $validationResult['existing'] ?? [];
         $preview = $validationResult['preview'] ?? [];
     @endphp
 
@@ -272,33 +275,54 @@
 
         <div class="rounded-lg bg-green-50 dark:bg-green-500/10 p-3 text-center">
             <div class="text-xl font-bold text-green-600 dark:text-green-400">{{ number_format($validRows) }}</div>
-            <div class="text-xs text-gray-500 dark:text-gray-400 mt-0.5">Valid</div>
+            <div class="text-xs text-gray-500 dark:text-gray-400 mt-0.5">New (will import)</div>
         </div>
 
-        <div class="rounded-lg {{ $errorCount > 0 ? 'bg-red-50 dark:bg-red-500/10' : 'bg-gray-50 dark:bg-gray-800' }} p-3 text-center">
-            <div class="text-xl font-bold {{ $errorCount > 0 ? 'text-red-600 dark:text-red-400' : 'text-gray-950 dark:text-white' }}">{{ number_format($errorCount) }}</div>
-            <div class="text-xs text-gray-500 dark:text-gray-400 mt-0.5">Errors</div>
+        <div class="rounded-lg {{ $existingRows > 0 ? 'bg-amber-50 dark:bg-amber-500/10' : 'bg-gray-50 dark:bg-gray-800' }} p-3 text-center">
+            <div class="text-xl font-bold {{ $existingRows > 0 ? 'text-amber-600 dark:text-amber-400' : 'text-gray-950 dark:text-white' }}">{{ number_format($existingRows) }}</div>
+            <div class="text-xs text-gray-500 dark:text-gray-400 mt-0.5">Already registered</div>
         </div>
 
-        <div class="rounded-lg {{ $duplicateCount > 0 ? 'bg-amber-50 dark:bg-amber-500/10' : 'bg-gray-50 dark:bg-gray-800' }} p-3 text-center">
-            <div class="text-xl font-bold {{ $duplicateCount > 0 ? 'text-amber-600 dark:text-amber-400' : 'text-gray-950 dark:text-white' }}">{{ number_format($duplicateCount) }}</div>
-            <div class="text-xs text-gray-500 dark:text-gray-400 mt-0.5">Duplicates</div>
+        <div class="rounded-lg {{ $invalidRows > 0 ? 'bg-red-50 dark:bg-red-500/10' : 'bg-gray-50 dark:bg-gray-800' }} p-3 text-center">
+            <div class="text-xl font-bold {{ $invalidRows > 0 ? 'text-red-600 dark:text-red-400' : 'text-gray-950 dark:text-white' }}">{{ number_format($invalidRows) }}</div>
+            <div class="text-xs text-gray-500 dark:text-gray-400 mt-0.5">Need fixing</div>
         </div>
 
     </div>
 
 
-    {{-- Validation errors --}}
-    @if (! empty($errors))
+    {{-- Rows to fix, then rows already in the system --}}
+    @foreach ([
+        [
+            'items' => $errors,
+            'total' => $errorCount,
+            'title' => \Illuminate\Support\Str::plural('problem', $errorCount) . ' to fix in ' . number_format($invalidRows) . ' ' . \Illuminate\Support\Str::plural('row', $invalidRows),
+            'hint' => 'Correct these rows in your file and import it again. Only these rows need re-importing.',
+            'tone' => 'text-red-500',
+        ],
+        [
+            'items' => $existing,
+            'total' => $existingRows,
+            'title' => \Illuminate\Support\Str::plural('student', $existingRows) . ' already registered',
+            'hint' => 'These admission numbers already belong to students in the system, so the rows are left out. Nothing needs fixing.',
+            'tone' => 'text-amber-500',
+        ],
+    ] as $list)
+        @continue (empty($list['items']))
 
         <div class="rounded-lg ring-1 ring-gray-200 dark:ring-white/10 overflow-hidden mb-4" x-data="{ open: false }">
 
             <button type="button" @click="open = !open" class="w-full flex items-center justify-between px-4 py-2.5 text-left hover:bg-gray-50 dark:hover:bg-white/5 transition-colors">
                 <div class="flex items-center gap-2">
-                    <svg class="h-4 w-4 text-red-500 shrink-0" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor">
+                    <svg class="h-4 w-4 {{ $list['tone'] }} shrink-0" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor">
                         <path stroke-linecap="round" stroke-linejoin="round" d="M12 9v3.75m-9.303 3.376c-.866 1.5.217 3.374 1.948 3.374h14.71c1.73 0 2.813-1.874 1.948-3.374L13.949 3.378c-.866-1.5-3.032-1.5-3.898 0L2.697 16.126zM12 15.75h.007v.008H12v-.008z" />
                     </svg>
-                    <span class="text-sm font-medium text-gray-950 dark:text-white">{{ count($errors) }} issues found</span>
+                    <span class="text-sm font-medium text-gray-950 dark:text-white">
+                        {{ number_format($list['total']) }} {{ $list['title'] }}
+                        @if ($list['total'] > count($list['items']))
+                            <span class="font-normal text-gray-500">(showing first {{ count($list['items']) }})</span>
+                        @endif
+                    </span>
                 </div>
                 <svg class="h-4 w-4 text-gray-400 transition-transform" :class="{ 'rotate-180': open }" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor">
                     <path stroke-linecap="round" stroke-linejoin="round" d="M19.5 8.25l-7.5 7.5-7.5-7.5" />
@@ -306,8 +330,9 @@
             </button>
 
             <div x-show="open" x-collapse class="border-t border-gray-200 dark:border-white/10">
+                <p class="px-4 pt-3 text-xs text-gray-500 dark:text-gray-400">{{ $list['hint'] }}</p>
                 <div class="px-4 py-3 max-h-48 overflow-y-auto space-y-1">
-                    @foreach ($errors as $error)
+                    @foreach ($list['items'] as $error)
                         <div class="flex items-start gap-2 text-xs">
                             @if (($error['row'] ?? 0) > 0)
                                 <span class="inline-flex items-center rounded px-1.5 py-0.5 font-mono bg-gray-100 text-gray-600 dark:bg-gray-800 dark:text-gray-400 shrink-0">Row {{ $error['row'] }}</span>
@@ -319,8 +344,7 @@
             </div>
 
         </div>
-
-    @endif
+    @endforeach
 
 
     {{-- Preview table --}}
@@ -373,11 +397,11 @@
             <button type="button" wire:click="resetImport" class="inline-flex items-center justify-center rounded-lg px-3 py-2 text-xs font-semibold text-gray-700 bg-white ring-1 ring-gray-300 shadow-sm hover:bg-gray-50 transition-colors dark:text-gray-200 dark:bg-gray-800 dark:ring-gray-600 dark:hover:bg-gray-700">
                 Cancel
             </button>
-            <button type="button" wire:click="startImport" wire:loading.attr="disabled" class="inline-flex items-center justify-center gap-1.5 rounded-lg px-4 py-2 text-xs font-semibold bg-blue-600 text-white shadow-sm hover:bg-blue-500 transition-colors disabled:opacity-50 disabled:cursor-not-allowed dark:bg-blue-500 dark:hover:bg-blue-400">
-                @if (! empty($errors))
-                    Import valid records (skip {{ count($errorRows) }})
+            <button type="button" wire:click="startImport" wire:loading.attr="disabled" @disabled($validRows === 0) class="inline-flex items-center justify-center gap-1.5 rounded-lg px-4 py-2 text-xs font-semibold bg-blue-600 text-white shadow-sm hover:bg-blue-500 transition-colors disabled:opacity-50 disabled:cursor-not-allowed dark:bg-blue-500 dark:hover:bg-blue-400">
+                @if ($validRows === 0)
+                    Nothing new to import
                 @else
-                    Import {{ number_format($totalRows) }} students
+                    Import {{ number_format($validRows) }} new {{ \Illuminate\Support\Str::plural('student', $validRows) }}
                 @endif
             </button>
         </div>
@@ -422,7 +446,7 @@
             </div>
             <div class="rounded-lg bg-red-50 dark:bg-red-500/10 p-3 text-center">
                 <div class="text-lg font-bold text-red-600 dark:text-red-400">{{ number_format($importProgress['failed_rows']) }}</div>
-                <div class="text-xs text-gray-500 mt-0.5">Failed</div>
+                <div class="text-xs text-gray-500 mt-0.5">Skipped</div>
             </div>
             <div class="rounded-lg bg-gray-50 dark:bg-gray-800 p-3 text-center">
                 <div class="text-lg font-bold text-gray-950 dark:text-white">

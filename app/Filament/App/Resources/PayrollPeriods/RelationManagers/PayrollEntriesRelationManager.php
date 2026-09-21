@@ -3,11 +3,10 @@
 namespace App\Filament\App\Resources\PayrollPeriods\RelationManagers;
 
 use Filament\Actions\Action;
-use Filament\Actions\BulkActionGroup;
-use Filament\Actions\DeleteBulkAction;
 use Filament\Notifications\Notification;
 use Filament\Resources\RelationManagers\RelationManager;
 use Filament\Schemas\Schema;
+use Filament\Tables\Columns\Summarizers\Sum;
 use Filament\Tables\Columns\TextColumn;
 use Filament\Tables\Table;
 
@@ -15,65 +14,75 @@ class PayrollEntriesRelationManager extends RelationManager
 {
     protected static string $relationship = 'entries';
 
-    protected static ?string $title = 'Staff Payroll Entries';
+    protected static ?string $title = 'Payslips';
 
     public function table(Table $table): Table
     {
         return $table
-            ->recordTitleAttribute('staff_id')
+            ->recordTitle(fn ($record): string => $record->staff?->name ?? 'Payroll entry')
             ->columns([
                 TextColumn::make('staff.name')
                     ->label('Staff member')
-                    ->searchable()
+                    ->description(fn ($record) => collect([$record->staff?->staff_no, $record->staff?->position])->filter()->implode(' · '))
+                    ->searchable(['name', 'staff_no'])
                     ->sortable(),
-                TextColumn::make('staff.staff_no')
-                    ->label('Staff No.')
-                    ->searchable(),
                 TextColumn::make('base_salary')
-                    ->label('Base')
-                    ->money('UGX')
-                    ->sortable(),
+                    ->label('Basic')
+                    ->numeric()
+                    ->alignEnd()
+                    ->toggleable(),
                 TextColumn::make('total_allowances')
                     ->label('Allowances')
-                    ->money('UGX')
-                    ->sortable(),
+                    ->numeric()
+                    ->alignEnd()
+                    ->toggleable(),
                 TextColumn::make('gross_pay')
                     ->label('Gross')
-                    ->money('UGX')
-                    ->sortable(),
-                TextColumn::make('nssf_employee')
-                    ->label('NSSF (5%)')
-                    ->money('UGX')
-                    ->sortable(),
+                    ->numeric()
+                    ->alignEnd()
+                    ->summarize(Sum::make()->label('')->numeric()),
                 TextColumn::make('paye')
                     ->label('PAYE')
-                    ->money('UGX')
-                    ->sortable(),
+                    ->numeric()
+                    ->alignEnd()
+                    ->summarize(Sum::make()->label('')->numeric()),
+                TextColumn::make('nssf_employee')
+                    ->label('NSSF 5%')
+                    ->numeric()
+                    ->alignEnd()
+                    ->summarize(Sum::make()->label('')->numeric()),
+                TextColumn::make('lst')
+                    ->label('LST')
+                    ->numeric()
+                    ->alignEnd()
+                    ->toggleable(),
                 TextColumn::make('total_deductions')
                     ->label('Other ded.')
-                    ->money('UGX')
-                    ->sortable(),
+                    ->numeric()
+                    ->alignEnd(),
                 TextColumn::make('arrears_amount')
                     ->label('Arrears')
-                    ->money('UGX')
-                    ->placeholder('—')
-                    ->sortable(),
+                    ->numeric()
+                    ->alignEnd()
+                    ->toggleable(isToggledHiddenByDefault: true),
                 TextColumn::make('net_pay')
                     ->label('Net pay')
-                    ->money('UGX')
+                    ->numeric()
+                    ->alignEnd()
                     ->weight('bold')
-                    ->sortable(),
+                    ->color('success')
+                    ->summarize(Sum::make()->label('')->numeric()),
                 TextColumn::make('nssf_employer')
-                    ->label('Employer NSSF')
-                    ->money('UGX')
-                    ->sortable()
+                    ->label('Employer NSSF 10%')
+                    ->numeric()
+                    ->alignEnd()
                     ->toggleable(isToggledHiddenByDefault: true),
                 TextColumn::make('status')
                     ->badge()
                     ->color(fn (string $state): string => match ($state) {
                         'included' => 'success',
                         'excluded' => 'danger',
-                        'adjusted' => 'warning',
+                        default => 'warning',
                     }),
             ])
             ->filters([
@@ -120,25 +129,12 @@ class PayrollEntriesRelationManager extends RelationManager
                     ->visible(fn ($record) => $record->status === 'included')
                     ->url(fn ($record) => route('payslip.download', $record), shouldOpenInNewTab: true),
             ])
-            ->toolbarActions([
-                BulkActionGroup::make([
-                    DeleteBulkAction::make(),
-                ]),
-            ]);
+            ->paginated([25, 50, 100])
+            ->defaultPaginationPageOption(50);
     }
 
     protected static function recalculatePeriodTotals($period): void
     {
-        $included = $period->entries()->where('status', 'included');
-
-        $period->update([
-            'total_gross' => $included->sum('gross_pay'),
-            'total_allowances' => $included->sum('total_allowances'),
-            'total_deductions' => $included->sum('total_deductions'),
-            'total_statutory' => $included->sum('total_statutory'),
-            'total_net' => $included->sum('net_pay'),
-            'total_employer_nssf' => $included->sum('nssf_employer'),
-            'staff_count' => $included->count(),
-        ]);
+        app(\App\Services\Payroll\PayrollService::class)->refreshTotals($period);
     }
 }

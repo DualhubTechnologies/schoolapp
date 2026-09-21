@@ -11,6 +11,8 @@ class NssfScheduleController extends Controller
 {
     public function downloadPdf(PayrollPeriod $period)
     {
+        \App\Support\PayrollAccess::authorize($period->school_id);
+
         $period->load(['school', 'entries.staff']);
 
         $school = $period->school;
@@ -29,6 +31,8 @@ class NssfScheduleController extends Controller
 
     public function downloadExcel(PayrollPeriod $period)
     {
+        \App\Support\PayrollAccess::authorize($period->school_id);
+
         $filename = "NSSF-Schedule-{$period->period_label}.xlsx";
 
         return Excel::download(new NssfScheduleExport($period), $filename);

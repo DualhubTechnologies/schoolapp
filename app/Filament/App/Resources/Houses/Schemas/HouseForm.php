@@ -5,7 +5,9 @@ namespace App\Filament\App\Resources\Houses\Schemas;
 use Filament\Forms\Components\Select;
 use Filament\Forms\Components\TextInput;
 use Filament\Forms\Components\Toggle;
+use Filament\Schemas\Components\Utilities\Get;
 use Filament\Schemas\Schema;
+use Illuminate\Validation\Rules\Unique;
 
 class HouseForm
 {
@@ -16,6 +18,8 @@ class HouseForm
                 TextInput::make('name')
                     ->label('House name')
                     ->required()
+                    ->unique(ignoreRecord: true, modifyRuleUsing: fn (Unique $rule, Get $get) => $rule->where('school_id', $get('school_id') ?? auth()->user()?->school_id))
+                    ->validationMessages(['unique' => 'A house with this name already exists.'])
                     ->maxLength(100)
                     ->placeholder('e.g. Kabalega'),
 

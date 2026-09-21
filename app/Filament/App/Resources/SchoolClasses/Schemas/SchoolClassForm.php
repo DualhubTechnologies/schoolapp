@@ -5,8 +5,10 @@ namespace App\Filament\App\Resources\SchoolClasses\Schemas;
 use Filament\Forms\Components\Select;
 use Filament\Forms\Components\TextInput;
 use Filament\Schemas\Components\Section;
+use Filament\Schemas\Components\Utilities\Get;
 use Filament\Schemas\Schema;
 use Illuminate\Database\Eloquent\Builder;
+use Illuminate\Validation\Rules\Unique;
 
 class SchoolClassForm
 {
@@ -20,7 +22,9 @@ class SchoolClassForm
                         TextInput::make('name')
                             ->label('Class name')
                             ->placeholder('e.g. Senior 1, P.4')
-                            ->required(),
+                            ->required()
+                            ->unique(ignoreRecord: true, modifyRuleUsing: fn (Unique $rule, Get $get) => $rule->where('school_id', $get('school_id') ?? auth()->user()?->school_id))
+                            ->validationMessages(['unique' => 'A class with this name already exists.']),
 
                         // Which level this class belongs to. A class sits in
                         // exactly one -- S1 is O-Level, S5 is A-Level -- and
@@ -38,7 +42,7 @@ class SchoolClassForm
                             ->searchable()
                             ->preload()
                             ->required()
-                            ->helperText('Manage these under Admin Settings → Class Levels.'),
+                            ->helperText('Manage these under Academics → Class Levels.'),
 
                         Select::make('school_id')
                             ->label('School')

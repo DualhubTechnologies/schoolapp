@@ -235,7 +235,7 @@ html .fi-sidebar .fi-sidebar-group-label {
 
 html .fi-sidebar .fi-sidebar-group:first-of-type .fi-sidebar-group-label {
 
-    margin-top: 0.4rem !important;
+    margin-top: 0 !important;
 
 }
 
@@ -316,6 +316,133 @@ html .fi-sidebar .fi-sidebar-group-collapse-btn {
 }
 
 
+/* Compact rhythm
+ *
+ * Filament's defaults (2rem around the nav, 1.75rem between groups,
+ * 0.5rem inside each item) suit a short menu. With five groups they push
+ * half the menu below the fold. These keep it scannable: tight items, a
+ * clear but small break between groups.
+ */
+
+.fi-sidebar-header {
+
+    min-height: 4rem !important;
+
+    padding: 0.75rem 1.25rem !important;
+
+}
+
+.fi-sidebar-header .fi-logo {
+
+    margin: 0 !important;
+
+}
+
+.fi-sidebar-nav {
+
+    padding: 0.75rem 0.5rem 1.25rem !important;
+
+    row-gap: 0.25rem !important;
+
+}
+
+.fi-sidebar-nav-groups {
+
+    margin-inline: 0 !important;
+
+    row-gap: 0.25rem !important;
+
+}
+
+.fi-sidebar-group,
+.fi-sidebar-group-items {
+
+    row-gap: 1px !important;
+
+}
+
+.fi-sidebar-item {
+
+    margin: 0 !important;
+
+}
+
+.fi-sidebar-item-btn {
+
+    padding: 0.45rem 0.7rem !important;
+
+    column-gap: 0.7rem !important;
+
+}
+
+/*
+ * Filament paints the LINK inside each item light grey (gray-100) on
+ * hover, focus and when active -- designed for a white sidebar. On this
+ * navy one it covered the pale text. The link stays transparent; the item
+ * behind it shows the hover and active colours set above.
+ */
+html .fi-sidebar .fi-sidebar-item > .fi-sidebar-item-btn,
+html .fi-sidebar .fi-sidebar-item > .fi-sidebar-item-btn:hover,
+html .fi-sidebar .fi-sidebar-item > .fi-sidebar-item-btn:focus-visible {
+
+    background-color: transparent !important;
+
+}
+
+html .fi-sidebar .fi-sidebar-item > .fi-sidebar-item-btn:focus-visible {
+
+    outline: 2px solid rgba(255, 255, 255, 0.35) !important;
+
+    outline-offset: -2px;
+
+}
+
+html .fi-sidebar .fi-sidebar-item.fi-active > .fi-sidebar-item-btn {
+
+    background-color: var(--sh-blue-600) !important;
+
+}
+
+.fi-sidebar-item-icon {
+
+    width: 1.15rem !important;
+
+    height: 1.15rem !important;
+
+}
+
+.fi-sidebar-group-btn {
+
+    padding: 0.35rem 0.7rem 0.25rem !important;
+
+}
+
+/* Overrides the group-heading margins set above. */
+html .fi-sidebar .fi-sidebar-group-label {
+
+    margin: 0 !important;
+
+    padding-left: 0 !important;
+
+}
+
+html .fi-sidebar .fi-sidebar-group {
+
+    padding-top: 0.6rem;
+
+    border-top: 1px solid rgba(255, 255, 255, 0.06);
+
+}
+
+html .fi-sidebar .fi-sidebar-nav-groups > .fi-sidebar-group:first-child {
+
+    padding-top: 0.35rem;
+
+    border-top: none;
+
+}
+
+
 /* ============================================================
 
  * 03. CUSTOM TOPBAR
@@ -354,7 +481,12 @@ html .fi-body {
 
     top: 0;
 
-    z-index: 100;
+    /*
+     * Same layer as Filament's own topbar (.fi-topbar-ctn = 30): above
+     * page content and dropdowns (20), but below modals (40/50) and
+     * notifications (50), which must be able to cover it.
+     */
+    z-index: 30;
 
     display: flex;
 
@@ -1271,7 +1403,32 @@ html .fi-body {
 
         rgba(13, 31, 56, 0.04) !important;
 
+}
+
+/*
+ * Only tables clip to the rounded card. A form section must NOT, or its
+ * dropdowns, date pickers and select menus get cut off at the card edge.
+ * Sections round their header and footer to match the card instead.
+ */
+.fi-ta-ctn {
+
     overflow: hidden !important;
+
+}
+
+.fi-section > :first-child {
+
+    border-top-left-radius: 12px;
+
+    border-top-right-radius: 12px;
+
+}
+
+.fi-section > :last-child {
+
+    border-bottom-left-radius: 12px;
+
+    border-bottom-right-radius: 12px;
 
 }
 

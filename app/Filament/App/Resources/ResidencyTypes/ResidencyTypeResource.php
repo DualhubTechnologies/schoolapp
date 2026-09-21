@@ -21,9 +21,9 @@ class ResidencyTypeResource extends Resource
 
     protected static string|BackedEnum|null $navigationIcon = Heroicon::OutlinedHomeModern;
 
-    protected static string|\UnitEnum|null $navigationGroup = 'Admin Settings';
+    protected static string|\UnitEnum|null $navigationGroup = 'Academics';
 
-    protected static ?int $navigationSort = 8;
+    protected static ?int $navigationSort = 7;
 
     protected static ?string $navigationLabel = 'Residency Types';
 

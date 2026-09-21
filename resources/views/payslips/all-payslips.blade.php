@@ -125,7 +125,7 @@
                     @endforeach
                     <tr class="total-row">
                         <td>Gross Pay</td>
-                        <td class="amount">{{ number_format($entry->gross_pay + $entry->arrears_amount, 0) }}</td>
+                        <td class="amount">{{ number_format($entry->gross_pay, 0) }}</td>
                     </tr>
                 </table>
             </td>

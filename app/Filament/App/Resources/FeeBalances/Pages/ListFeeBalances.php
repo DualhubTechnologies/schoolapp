@@ -11,11 +11,11 @@ class ListFeeBalances extends ListRecords
 
     public function getTitle(): string
     {
-        return 'Fee Balances';
+        return 'Student Accounts';
     }
 
     public function getSubheading(): ?string
     {
-        return 'Who has paid, who is still owing. Percentages are of the total owed, arrears included.';
+        return "Every student's fee account. Click a student to open their statement; select several to send reminders.";
     }
 }

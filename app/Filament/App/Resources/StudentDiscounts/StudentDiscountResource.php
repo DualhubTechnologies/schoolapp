@@ -23,7 +23,7 @@ class StudentDiscountResource extends Resource
 
     protected static string|\UnitEnum|null $navigationGroup = 'Fees';
 
-    protected static ?int $navigationSort = 3;
+    protected static ?int $navigationSort = 6;
 
     protected static ?string $navigationLabel = 'Discounts & Bursaries';
 

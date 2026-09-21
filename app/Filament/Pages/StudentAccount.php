@@ -2,15 +2,18 @@
 
 namespace App\Filament\Pages;
 
+use App\Filament\Support\FeeReminderActions;
 use App\Models\Student;
 use App\Models\Term;
 use App\Services\StudentLedger;
 use BackedEnum;
-use Filament\Forms\Concerns\InteractsWithForms;
-use Filament\Forms\Contracts\HasForms;
+use Filament\Actions\Action;
+use Filament\Forms\Components\Select;
 use Filament\Pages\Page;
+use Filament\Schemas\Components\Grid;
+use Filament\Schemas\Schema;
 use Filament\Support\Icons\Heroicon;
-use Illuminate\Database\Eloquent\Builder;
+use Illuminate\Contracts\Support\Htmlable;
 use Illuminate\Support\Collection;
 
 /**
@@ -20,22 +23,16 @@ use Illuminate\Support\Collection;
  *   Statement  one term, summarised — what a parent receives
  *   Invoice    what is owed right now — printed on demand, never stored
  *
- * All three read the same derived ledger, so they can never disagree
- * with each other.
+ * All three read the same derived ledger, so they can never disagree with
+ * each other. Reached from Student Accounts (not listed in the menu).
  */
-class StudentAccount extends Page implements HasForms
+class StudentAccount extends Page
 {
-    use InteractsWithForms;
-
     protected static string|BackedEnum|null $navigationIcon = Heroicon::OutlinedBookOpen;
-
-    protected static string|\UnitEnum|null $navigationGroup = 'Fees';
-
-    protected static ?int $navigationSort = 4;
 
     protected static ?string $title = 'Student Account';
 
-    protected static ?string $navigationLabel = 'Student Account';
+    protected static ?string $slug = 'student-account';
 
     protected string $view = 'filament.pages.student-account';
 
@@ -46,12 +43,91 @@ class StudentAccount extends Page implements HasForms
 
     public ?int $termId = null;
 
+    /** @var array<string, mixed> */
+    public ?array $picker = [];
+
     public function mount(): void
     {
-        // Allows linking straight here from the Bill Students or Fee
-        // Balances tables: ?student=123
+        // ?student=123 links here from Student Accounts, Payments, etc.
         $this->studentId = request()->integer('student') ?: null;
         $this->termId = Term::current()?->getKey();
+
+        $this->form->fill([
+            'student_id' => $this->studentId,
+            'term_id' => $this->termId,
+        ]);
+    }
+
+    public function form(Schema $schema): Schema
+    {
+        return $schema
+            ->statePath('picker')
+            ->components([
+                Grid::make(['default' => 1, 'md' => 3])->schema([
+                    Select::make('student_id')
+                        ->label('Student')
+                        ->placeholder('Search by name or admission number…')
+                        ->searchable()
+                        ->getSearchResultsUsing(fn (string $search) => Student::query()
+                            ->with('schoolClass')
+                            ->where('school_id', auth()->user()?->school_id)
+                            ->where(fn ($q) => $q->where('name', 'like', "%{$search}%")->orWhere('admission_no', 'like', "%{$search}%"))
+                            ->orderBy('name')
+                            ->limit(25)
+                            ->get()
+                            ->mapWithKeys(fn (Student $s) => [$s->id => static::label($s)])
+                            ->all())
+                        ->getOptionLabelUsing(fn ($value) => static::label(Student::with('schoolClass')->find($value)))
+                        ->live()
+                        ->afterStateUpdated(fn ($state) => $this->studentId = $state ? (int) $state : null)
+                        ->columnSpan(['default' => 1, 'md' => 2]),
+
+                    Select::make('term_id')
+                        ->label('Statement term')
+                        ->options(fn () => Term::where('school_id', auth()->user()?->school_id)
+                            ->with('academicYear')
+                            ->get()
+                            ->sortByDesc(fn (Term $t) => $t->sortKey())
+                            ->mapWithKeys(fn (Term $t) => [$t->id => $t->label()])
+                            ->all())
+                        ->native(false)
+                        ->live()
+                        ->afterStateUpdated(fn ($state) => $this->termId = $state ? (int) $state : null),
+                ]),
+            ]);
+    }
+
+    protected static function label(?Student $student): ?string
+    {
+        return $student
+            ? trim(($student->name ?: 'No name') . " — {$student->admission_no}" . ($student->schoolClass ? " ({$student->schoolClass->name})" : ''))
+            : null;
+    }
+
+    public function getTitle(): string|Htmlable
+    {
+        return $this->getStudentProperty()?->name ?: 'Student Account';
+    }
+
+    protected function getHeaderActions(): array
+    {
+        return [
+            Action::make('receive')
+                ->label('Receive payment')
+                ->icon('heroicon-o-banknotes')
+                ->visible(fn () => $this->studentId !== null)
+                ->url(fn () => ReceivePayment::getUrl(['student' => $this->studentId])),
+
+            FeeReminderActions::smsFor(fn () => $this->getStudentProperty())
+                ->visible(fn () => ($this->getStudentProperty()?->balance() ?? 0) > 0),
+
+            Action::make('print')
+                ->label('Print')
+                ->icon('heroicon-o-printer')
+                ->color('gray')
+                ->visible(fn () => $this->studentId !== null)
+                ->action(fn () => $this->js('window.print()')),
+        ];
     }
 
     // ── What the view needs ──
@@ -59,7 +135,9 @@ class StudentAccount extends Page implements HasForms
     public function getStudentProperty(): ?Student
     {
         return $this->studentId
-            ? Student::with(['schoolClass', 'section', 'school'])->find($this->studentId)
+            ? Student::with(['schoolClass', 'section', 'school', 'guardian', 'residencyType'])
+                ->where('school_id', auth()->user()?->school_id)
+                ->find($this->studentId)
             : null;
     }
 
@@ -103,33 +181,6 @@ class StudentAccount extends Page implements HasForms
             : ['opening' => 0, 'charged' => 0, 'paid' => 0, 'closing' => 0];
     }
 
-    /**
-     * Students the signed-in user may look at, for the picker.
-     */
-    public function getStudentOptionsProperty(): array
-    {
-        return Student::query()
-            ->when(
-                ! auth()->user()?->hasRole('Super Admin'),
-                fn (Builder $q) => $q->where('school_id', auth()->user()?->school_id),
-            )
-            ->orderBy('name')
-            ->limit(500)
-            ->get()
-            ->mapWithKeys(fn (Student $s) => [$s->id => "{$s->name} ({$s->admission_no})"])
-            ->toArray();
-    }
-
-    public function getTermOptionsProperty(): array
-    {
-        return Term::query()
-            ->where('school_id', auth()->user()?->school_id)
-            ->with('academicYear')
-            ->get()
-            ->mapWithKeys(fn (Term $t) => [$t->id => $t->label()])
-            ->toArray();
-    }
-
     public function setMode(string $mode): void
     {
         $this->mode = in_array($mode, ['ledger', 'statement', 'invoice'], true) ? $mode : 'ledger';
@@ -137,11 +188,11 @@ class StudentAccount extends Page implements HasForms
 
     public static function shouldRegisterNavigation(): bool
     {
-        return auth()->user()?->hasRole(['Super Admin', 'School Admin', 'Accountant', 'Bursar']) ?? false;
+        return false;
     }
 
     public static function canAccess(): bool
     {
-        return static::shouldRegisterNavigation();
+        return auth()->user()?->hasRole(['Super Admin', 'School Admin', 'Accountant', 'Bursar']) ?? false;
     }
 }

@@ -2,10 +2,10 @@
 
 namespace App\Filament\App\Resources\Staff;
 
-use App\Filament\App\Resources\Staff\RelationManagers;
 use App\Filament\App\Resources\Staff\Pages\CreateStaff;
 use App\Filament\App\Resources\Staff\Pages\EditStaff;
 use App\Filament\App\Resources\Staff\Pages\ListStaff;
+use App\Filament\App\Resources\Staff\RelationManagers;
 use App\Filament\App\Resources\Staff\Schemas\StaffForm;
 use App\Filament\App\Resources\Staff\Tables\StaffTable;
 use App\Models\Staff;
@@ -14,7 +14,9 @@ use Filament\Resources\Resource;
 use Filament\Schemas\Schema;
 use Filament\Support\Icons\Heroicon;
 use Filament\Tables\Table;
+use Illuminate\Contracts\Support\Htmlable;
 use Illuminate\Database\Eloquent\Builder;
+use Illuminate\Database\Eloquent\Model;
 
 class StaffResource extends Resource
 {
@@ -23,8 +25,20 @@ class StaffResource extends Resource
 
     protected static string|BackedEnum|null $navigationIcon = Heroicon::OutlinedUserGroup;
 
-    protected static ?string $recordTitleAttribute = 'staff_no';
+    protected static ?string $recordTitleAttribute = 'name';
     protected static ?int $navigationSort = 1;
+
+    /**
+     * "Jane Akello (STF-004)".
+     */
+    public static function getRecordTitle(?Model $record): string|Htmlable|null
+    {
+        if (! $record) {
+            return null;
+        }
+
+        return $record->staff_no ? "{$record->name} ({$record->staff_no})" : $record->name;
+    }
 
     public static function form(Schema $schema): Schema
     {
@@ -37,7 +51,7 @@ class StaffResource extends Resource
     }
     public static function shouldRegisterNavigation(): bool
     {
-        return ! auth()->user()?->hasRole('Super Admin');
+        return \App\Support\PayrollAccess::allowed();
     }
 
     public static function getNavigationGroup(): ?string
@@ -76,5 +90,13 @@ public static function getRelations(): array
             'create' => CreateStaff::route('/create'),
             'edit' => EditStaff::route('/{record}/edit'),
         ];
+    }
+
+    /**
+     * Staff pay is confidential: School Admin and Accountant only.
+     */
+    public static function canViewAny(): bool
+    {
+        return \App\Support\PayrollAccess::allowed();
     }
 }

@@ -217,6 +217,34 @@ class StudentForm
                                                 ? 'Select a class first.'
                                                 : 'Choose the student stream.'),
 
+                                        // A-Level: the combination decides which three
+                                        // principal subjects count towards points.
+                                        Select::make('combination_id')
+                                            ->label('A-Level combination')
+                                            ->relationship('combination', 'name', fn (Builder $query) => static::scopeToSchool($query)->where('is_active', true))
+                                            ->getOptionLabelFromRecordUsing(fn ($record) => $record->name . ($record->description ? ' — ' . $record->description : ''))
+                                            ->searchable()
+                                            ->preload()
+                                            ->visible(fn (Get $get): bool => static::classCurriculum($get('school_class_id')) === 'a_level')
+                                            ->helperText('The subsidiary (Sub-Maths / Sub-ICT) comes with the combination unless changed below.'),
+
+                                        // Electives (O-Level) or a different subsidiary
+                                        // (A-Level): subjects this student takes that are
+                                        // not compulsory in the class.
+                                        Select::make('electives')
+                                            ->label(fn (Get $get): string => static::classCurriculum($get('school_class_id')) === 'a_level' ? 'Subsidiary (if not the combination\'s)' : 'Elective subjects')
+                                            ->relationship(
+                                                'electives',
+                                                'name',
+                                                fn (Builder $query, Get $get) => $query
+                                                    ->whereIn('subjects.id', \App\Models\SchoolClass::find($get('school_class_id'))?->subjects()->wherePivot('is_compulsory', false)->pluck('subjects.id') ?? [])
+                                                    ->when(static::classCurriculum($get('school_class_id')) === 'a_level', fn ($q) => $q->where('subjects.category', 'subsidiary')),
+                                            )
+                                            ->multiple()
+                                            ->preload()
+                                            ->visible(fn (Get $get): bool => in_array(static::classCurriculum($get('school_class_id')), ['o_level', 'a_level', 'primary'], true))
+                                            ->helperText('Only these students appear on the mark sheet for an elective.'),
+
                                         // Day / Boarding. Required on purpose: fees tied
                                         // to a residency would silently miss a student
                                         // who has none, and under-billing is discovered
@@ -390,5 +418,13 @@ class StudentForm
         $next = ((int) preg_replace('/\D/', '', (string) $last)) + 1;
 
         return str_pad((string) $next, 3, '0', STR_PAD_LEFT);
+    }
+
+    /**
+     * The curriculum of the chosen class (primary, o_level, a_level...).
+     */
+    protected static function classCurriculum($classId): ?string
+    {
+        return $classId ? \App\Models\SchoolClass::with('classLevel')->find($classId)?->curriculum() : null;
     }
 }

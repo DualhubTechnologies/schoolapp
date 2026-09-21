@@ -13,19 +13,37 @@ use Filament\Resources\Resource;
 use Filament\Schemas\Schema;
 use Filament\Support\Icons\Heroicon;
 use Filament\Tables\Table;
+use Illuminate\Contracts\Support\Htmlable;
 use Illuminate\Database\Eloquent\Builder;
+use Illuminate\Database\Eloquent\Model;
 
 class FeeStructureResource extends Resource
 {
     protected static ?string $model = FeeStructure::class;
 
-    protected static string|BackedEnum|null $navigationIcon = Heroicon::OutlinedBanknotes;
+    protected static string|BackedEnum|null $navigationIcon = Heroicon::OutlinedTableCells;
 
-    protected static ?string $recordTitleAttribute = 'term';
+    protected static ?string $navigationLabel = 'Fee Setup';
 
-    protected static ?int $navigationSort = 4;
+    protected static ?string $recordTitleAttribute = 'name';
+
+    protected static ?int $navigationSort = 7;
 
     protected static ?string $modelLabel = 'Fee Structure';
+
+    /**
+     * "Tuition — S1 (Boarding)", for page headings and breadcrumbs.
+     */
+    public static function getRecordTitle(?Model $record): string|Htmlable|null
+    {
+        if (! $record) {
+            return null;
+        }
+
+        $title = collect([$record->name, $record->schoolClass?->name])->filter()->implode(' — ');
+
+        return $record->residencyType ? "{$title} ({$record->residencyType->name})" : $title;
+    }
 
     public static function form(Schema $schema): Schema
     {
@@ -44,7 +62,7 @@ class FeeStructureResource extends Resource
 
     public static function getNavigationGroup(): ?string
     {
-        return 'Students';
+        return 'Fees';
     }
 
     public static function getEloquentQuery(): Builder

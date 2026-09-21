@@ -27,6 +27,7 @@ class ClassLevel extends Model
     protected $fillable = [
         'school_id',
         'name',
+        'curriculum',
         'sort_order',
         'description',
         'is_active',
@@ -52,6 +53,14 @@ class ClassLevel extends Model
             'O-Level',
             'A-Level',
         ],
+    ];
+
+    /** The curriculum each default level follows. */
+    public const DEFAULT_CURRICULA = [
+        'Nursery' => 'nursery',
+        'Primary' => 'primary',
+        'O-Level' => 'o_level',
+        'A-Level' => 'a_level',
     ];
 
     public function school(): BelongsTo

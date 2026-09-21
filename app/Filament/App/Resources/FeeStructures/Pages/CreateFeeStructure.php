@@ -20,6 +20,9 @@ class CreateFeeStructure extends CreateRecord
         // from the live form state instead.
         $this->classIds = (array) ($this->form->getRawState()['class_ids'] ?? []);
 
+        // The school picker is only shown to a Super Admin.
+        $data['school_id'] ??= auth()->user()->school_id;
+
         // Only recurring fees belong to a term. Admission and one-off
         // charges are not term-specific, so term_id stays null.
         if (($data['frequency'] ?? 'per_term') !== 'per_term') {
@@ -27,6 +30,15 @@ class CreateFeeStructure extends CreateRecord
         }
 
         return $data;
+    }
+
+    /**
+     * handleRecordCreation() sends its own "Created N fee records"
+     * message, which says more than the standard one.
+     */
+    protected function getCreatedNotification(): ?Notification
+    {
+        return null;
     }
 
     protected function handleRecordCreation(array $data): Model

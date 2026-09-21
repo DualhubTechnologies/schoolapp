@@ -5,8 +5,9 @@ namespace App\Filament\App\Resources\DeductionTypes\Schemas;
 use Filament\Forms\Components\Select;
 use Filament\Forms\Components\TextInput;
 use Filament\Forms\Components\Toggle;
-use Filament\Schemas\Schema;
 use Filament\Schemas\Components\Utilities\Get;
+use Filament\Schemas\Schema;
+use Illuminate\Validation\Rules\Unique;
 
 class DeductionTypeForm
 {
@@ -16,7 +17,10 @@ class DeductionTypeForm
             ->components([
                 TextInput::make('name')
                     ->required()
-                    ->placeholder('e.g. NSSF Employee, PAYE, Staff Loan, Welfare'),
+                    ->unique(ignoreRecord: true, modifyRuleUsing: fn (Unique $rule, Get $get) => $rule->where('school_id', $get('school_id') ?? auth()->user()?->school_id))
+                    ->validationMessages(['unique' => 'A deduction type with this name already exists.'])
+                    ->placeholder('e.g. Staff loan, SACCO, Welfare')
+                    ->helperText('NSSF, PAYE and Local Service Tax are worked out automatically. Do not add them here.'),
                 Select::make('school_id')
                     ->relationship('school', 'name')
                     ->default(fn () => auth()->user()->school_id)
@@ -24,7 +28,8 @@ class DeductionTypeForm
                     ->dehydrated()
                     ->required(),
                 Toggle::make('is_statutory')
-                    ->helperText('Statutory deductions (NSSF, PAYE) are calculated automatically during payroll generation.'),
+                    ->label('Statutory (ignored by payroll)')
+                    ->helperText('Payroll already calculates NSSF, PAYE and LST. A type marked statutory is never deducted, so it cannot be charged twice.'),
                 Select::make('calculation_method')
                     ->options(['fixed' => 'Fixed Amount', 'percentage' => 'Percentage of Gross'])
                     ->default('fixed')

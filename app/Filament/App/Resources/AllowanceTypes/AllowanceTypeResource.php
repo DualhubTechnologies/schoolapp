@@ -22,6 +22,8 @@ class AllowanceTypeResource extends Resource
 
     protected static string|BackedEnum|null $navigationIcon = Heroicon::OutlinedGift;
 
+    protected static ?int $navigationSort = 4;
+
     protected static ?string $recordTitleAttribute = 'name';
 
 public static function getNavigationGroup(): ?string
@@ -70,6 +72,14 @@ public static function getNavigationGroup(): ?string
 
     public static function shouldRegisterNavigation(): bool
     {
-        return ! auth()->user()?->hasRole('Super Admin');
+        return \App\Support\PayrollAccess::allowed();
+    }
+
+    /**
+     * Staff pay is confidential: School Admin and Accountant only.
+     */
+    public static function canViewAny(): bool
+    {
+        return \App\Support\PayrollAccess::allowed();
     }
 }

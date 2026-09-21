@@ -21,9 +21,9 @@ class ClassLevelResource extends Resource
 
     protected static string|BackedEnum|null $navigationIcon = Heroicon::OutlinedRectangleStack;
 
-    protected static string|\UnitEnum|null $navigationGroup = 'Admin Settings';
+    protected static string|\UnitEnum|null $navigationGroup = 'Academics';
 
-    protected static ?int $navigationSort = 2;
+    protected static ?int $navigationSort = 3;
 
     protected static ?string $navigationLabel = 'Class Levels';
 

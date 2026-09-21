@@ -21,7 +21,8 @@ use Illuminate\Support\Facades\DB;
  *
  * Which fees apply:
  *
- *   per_term    the fee is tied to the term being billed
+ *   per_term    the fee started in this term or an earlier one, and no
+ *               newer version has replaced it (FeeStructure::termlyFor)
  *   once        the student has never been charged it
  *   on_demand   never automatic — billed deliberately to a class or student
  *
@@ -54,6 +55,9 @@ use Illuminate\Support\Facades\DB;
  */
 class BillingService
 {
+    /** @var array<int, Collection<int, FeeStructure>> term id => termly fees in force */
+    protected array $termlyCache = [];
+
     /**
      * Bill a term: charge every applicable fee to every active student.
      *
@@ -320,18 +324,21 @@ class BillingService
      */
     public function applicableFees(Student $student, Term $term): Collection
     {
-        return FeeStructure::query()
+        // Termly fees carry forward from the term they start in -- see
+        // FeeStructure::termlyFor(). Resolved once per term, not per student.
+        $termly = ($this->termlyCache[$term->getKey()] ??= FeeStructure::termlyFor($term))
+            ->where('school_class_id', $student->school_class_id);
+
+        $once = FeeStructure::query()
             ->where('school_id', $student->school_id)
             ->where('school_class_id', $student->school_class_id)
             ->where('is_active', true)
-            ->whereIn('frequency', ['per_term', 'once'])
-            ->orderBy('id')
-            ->get()
-            ->filter(function (FeeStructure $fee) use ($student, $term) {
-                if ($fee->frequency === 'per_term' && (int) $fee->term_id !== (int) $term->getKey()) {
-                    return false;
-                }
+            ->where('frequency', 'once')
+            ->get();
 
+        return $termly->concat($once)
+            ->sortBy('id')
+            ->filter(function (FeeStructure $fee) use ($student, $term) {
                 if ($fee->frequency === 'once' && $this->alreadyChargedEver($student, $fee)) {
                     return false;
                 }

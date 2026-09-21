@@ -2,6 +2,7 @@
 
 namespace App\Filament\Admin\Resources\Schools\Schemas;
 
+use App\Models\School;
 use Filament\Forms\Components\FileUpload;
 use Filament\Forms\Components\Select;
 use Filament\Forms\Components\Textarea;
@@ -19,23 +20,33 @@ class SchoolForm
 
         return $schema
             ->components([
+
                 Grid::make([
                     'default' => 1,
-                    'xl' => 12,
+                    'lg' => 4,
                 ])
                     ->schema([
+
+                        /*
+                        |--------------------------------------------------------------------------
+                        | LEFT - SCHOOL INFORMATION
+                        |--------------------------------------------------------------------------
+                        */
+
                         Section::make('School Information')
                             ->description('Manage the school’s main profile information.')
                             ->icon('heroicon-o-building-library')
                             ->columnSpan([
                                 'default' => 1,
-                                'xl' => 8,
+                                'lg' => 3,
                             ])
                             ->columns([
                                 'default' => 1,
                                 'md' => 2,
+                                'lg' => 3,
                             ])
                             ->schema([
+
                                 TextInput::make('name')
                                     ->label('School Name')
                                     ->required()
@@ -53,6 +64,17 @@ class SchoolForm
                                     ->disabled(fn () => ! $isSuperAdmin())
                                     ->dehydrated(fn () => $isSuperAdmin()),
 
+                                // Identity, not configuration: class levels,
+                                // report cards and grading all branch on this.
+                                Select::make('school_type')
+                                    ->label('School type')
+                                    ->options(School::TYPES)
+                                    ->required()
+                                    ->native(false)
+                                    ->disabled(fn () => ! $isSuperAdmin())
+                                    ->dehydrated(fn () => $isSuperAdmin())
+                                    ->helperText('Set once at signup. Changing it later does not convert existing classes.'),
+
                                 Select::make('status')
                                     ->label('Status')
                                     ->options([
@@ -68,8 +90,7 @@ class SchoolForm
 
                                 TextInput::make('motto')
                                     ->label('School Motto')
-                                    ->placeholder('e.g. Ora et Labora')
-                                    ->columnSpanFull(),
+                                    ->placeholder('e.g. Ora et Labora'),
 
                                 Textarea::make('description')
                                     ->label('Description')
@@ -112,20 +133,27 @@ class SchoolForm
                                 TextInput::make('website')
                                     ->label('Website')
                                     ->url()
-                                    ->placeholder('https://...')
-                                    ->columnSpanFull(),
+                                    ->placeholder('https://...'),
                             ]),
+
+                        /*
+                        |--------------------------------------------------------------------------
+                        | RIGHT - BRANDING & SETTINGS
+                        |--------------------------------------------------------------------------
+                        */
 
                         Grid::make(1)
                             ->columnSpan([
                                 'default' => 1,
-                                'xl' => 4,
+                                'lg' => 1,
                             ])
                             ->schema([
+
                                 Section::make('Branding')
                                     ->description('Logo and headteacher signature.')
                                     ->icon('heroicon-o-identification')
                                     ->schema([
+
                                         FileUpload::make('logo')
                                             ->label('School Logo')
                                             ->image()
@@ -169,9 +197,10 @@ class SchoolForm
                                     ->columns([
                                         'default' => 1,
                                         'md' => 2,
-                                        'xl' => 1,
+                                        'lg' => 1,
                                     ])
                                     ->schema([
+
                                         TextInput::make('nssf_employer_number')
                                             ->label('NSSF employer number')
                                             ->placeholder('e.g. ER/12345'),

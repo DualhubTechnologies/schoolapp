@@ -2,6 +2,8 @@
 
 namespace App\Providers;
 
+use App\Models\School;
+use App\Observers\SchoolObserver;
 use Carbon\CarbonImmutable;
 use Illuminate\Auth\Events\Failed;
 use Illuminate\Auth\Events\Login;
@@ -30,6 +32,7 @@ class AppServiceProvider extends ServiceProvider
     {
         $this->configureDefaults();
         $this->configureAuthLogging();
+        $this->configureObservers();
     }
 
     /**
@@ -52,6 +55,17 @@ class AppServiceProvider extends ServiceProvider
                 ->uncompromised()
             : null,
         );
+    }
+
+    /**
+     * Model observers.
+     */
+    protected function configureObservers(): void
+    {
+        // Gives a new school the class levels its type implies, so the
+        // admin can add classes straight away rather than meeting an
+        // empty screen.
+        School::observe(SchoolObserver::class);
     }
 
     /**

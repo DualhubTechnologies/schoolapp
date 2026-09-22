@@ -8,7 +8,6 @@ use Filament\Http\Middleware\AuthenticateSession;
 use Filament\Http\Middleware\DisableBladeIconComponents;
 use Filament\Http\Middleware\DispatchServingFilamentEvent;
 use Filament\Navigation\NavigationGroup;
-use Filament\Pages\Dashboard;
 use Filament\Panel;
 use Filament\PanelProvider;
 use Filament\Support\Colors\Color;
@@ -29,8 +28,21 @@ class AppPanelProvider extends PanelProvider
             ->default()
             ->id('app')
             ->path('/')                       // Serves at http://schoolapp.test
-            ->login()
+            ->login(\App\Filament\Pages\Auth\Login::class)
+            // Schools sign themselves up; the person registering becomes its School Admin.
+            ->registration(\App\Filament\Pages\Auth\RegisterSchool::class)
             ->passwordReset()
+
+            // Public landing page at the site root. Registered here (not in
+            // routes/web.php) so Filament sees "/" is taken and sends
+            // signed-in users to /dashboard instead.
+            ->routes(function () {
+                \Illuminate\Support\Facades\Route::get('/', \App\Http\Controllers\LandingController::class)->name('landing');
+                // "Book a demo" form on the landing page.
+                \Illuminate\Support\Facades\Route::post('/demo-request', \App\Http\Controllers\DemoRequestController::class)
+                    ->middleware('throttle:5,10')
+                    ->name('demo-request');
+            })
 
             // The compiled Tailwind theme. This was MISSING before, which
             // is why modals (e.g. the student import wizard) rendered with
@@ -66,6 +78,11 @@ class AppPanelProvider extends PanelProvider
             // Printable fee documents, behind the panel's login. Full route
             // names: filament.app.fees.receipt / filament.app.fees.letters.
             ->authenticatedRoutes(function () {
+                // Filament sends people to the route named "home" after
+                // sign-in and from the logo; "/" is the landing page, so
+                // point it at the dashboard.
+                \Illuminate\Support\Facades\Route::get('/home', fn () => redirect(\App\Filament\App\Pages\Dashboard::getUrl()))
+                    ->name('home');
                 \Illuminate\Support\Facades\Route::get('/fees/receipts/{payment}', [\App\Http\Controllers\FeeDocumentController::class, 'receipt'])
                     ->whereNumber('payment')
                     ->name('fees.receipt');
@@ -115,10 +132,16 @@ class AppPanelProvider extends PanelProvider
             ->renderHook(
                 \Filament\View\PanelsRenderHook::HEAD_END,
                 fn () => '<link rel="stylesheet" href="' . asset('css/filament-custom.css') . '?v=' . filemtime(public_path('css/filament-custom.css')) . '">'
+                    . '<link rel="stylesheet" href="' . asset('css/dashboard.css') . '?v=' . filemtime(public_path('css/dashboard.css')) . '">'
             )
             ->renderHook(
                 \Filament\View\PanelsRenderHook::PAGE_START,
                 fn () => view('filament.partials.topbar')
+            )
+            // Subscription warnings for School Admins (after the topbar).
+            ->renderHook(
+                \Filament\View\PanelsRenderHook::PAGE_START,
+                fn () => view('filament.partials.subscription-banner')
             )
             ->renderHook(
                 \Filament\View\PanelsRenderHook::FOOTER,
@@ -133,13 +156,22 @@ class AppPanelProvider extends PanelProvider
             ->discoverResources(in: app_path('Filament/App/Resources'), for: 'App\Filament\App\Resources')
             ->discoverPages(in: app_path('Filament/Pages'), for: 'App\Filament\Pages')
             ->pages([
-                Dashboard::class,
+                \App\Filament\App\Pages\Dashboard::class,
             ])
             ->discoverWidgets(in: app_path('Filament/Widgets'), for: 'App\Filament\Widgets')
             // Everything in app/Filament/Widgets is discovered; the old
             // welcome card is left out -- the topbar already has the user menu.
             ->widgets([
                 \App\Filament\Widgets\StatsOverview::class,
+                // Per-user-group dashboard widgets (App\Filament\App\Pages\Dashboard
+                // picks which ones each user sees).
+                \App\Filament\App\Widgets\WelcomeBanner::class,
+                \App\Filament\App\Widgets\LeadershipKpis::class,
+                \App\Filament\App\Widgets\BursarKpis::class,
+                \App\Filament\App\Widgets\HrKpis::class,
+                \App\Filament\App\Widgets\TeacherKpis::class,
+                \App\Filament\App\Widgets\TeacherMarksProgress::class,
+                \App\Filament\App\Widgets\PlatformKpis::class,
             ])
 
             // --- Middleware ---
@@ -156,6 +188,8 @@ class AppPanelProvider extends PanelProvider
             ])
             ->authMiddleware([
                 Authenticate::class,
+                // Expired or suspended schools see only their Subscription page.
+                \App\Http\Middleware\EnsureSchoolSubscribed::class,
             ]);
     }
 }

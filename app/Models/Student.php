@@ -61,6 +61,16 @@ class Student extends Model
      */
     protected static function booted(): void
     {
+        // The school's plan caps how many active students it may have.
+        static::saving(function (Student $student): void {
+            $becomesActive = ($student->status ?? 'active') === 'active'
+                && (! $student->exists || $student->getOriginal('status') !== 'active' || $student->isDirty('school_id'));
+
+            if ($becomesActive && $student->school_id) {
+                \App\Services\Subscriptions\SubscriptionManager::ensureRoomForStudents((int) $student->school_id);
+            }
+        });
+
         static::saving(function (Student $student): void {
             $full = trim("{$student->first_name} {$student->last_name}");
 

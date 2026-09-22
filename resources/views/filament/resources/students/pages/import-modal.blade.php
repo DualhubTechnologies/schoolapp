@@ -249,7 +249,17 @@
         $existingRows = (int) ($validationResult['existing_rows'] ?? 0);
         $existing = $validationResult['existing'] ?? [];
         $preview = $validationResult['preview'] ?? [];
+        $planRoom = $validationResult['plan_room'] ?? null;
     @endphp
+
+    {{-- The school's plan cannot take every new student in the file --}}
+    @if ($planRoom !== null && $validRows > $planRoom)
+        <div class="rounded-lg bg-red-50 ring-1 ring-red-200 px-3 py-2 mb-4 text-xs text-red-800">
+            <strong>Your plan has room for {{ number_format($planRoom) }} more active {{ \Illuminate\Support\Str::plural('student', $planRoom) }}.</strong>
+            Only the first {{ number_format($planRoom) }} new {{ \Illuminate\Support\Str::plural('row', $planRoom) }} will be imported; the rest are skipped.
+            Ask for a bigger plan on the Subscription page, or mark students who have left as Withdrawn/Transferred/Completed.
+        </div>
+    @endif
 
 
     {{-- Existing-students banner (echoes the choice made on upload) --}}

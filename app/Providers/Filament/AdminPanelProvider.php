@@ -13,7 +13,6 @@ use Filament\PanelProvider;
 use Filament\Support\Colors\Color;
 use Filament\Support\Enums\Width;
 use Filament\Support\Icons\Heroicon;
-use Filament\Widgets\AccountWidget;
 use Illuminate\Cookie\Middleware\AddQueuedCookiesToResponse;
 use Illuminate\Cookie\Middleware\EncryptCookies;
 use Illuminate\Foundation\Http\Middleware\PreventRequestForgery;
@@ -28,7 +27,7 @@ class AdminPanelProvider extends PanelProvider
         return $panel
             ->id('admin')
             ->path('admin')                   // Super Admin only — gated in User::canAccessPanel()
-            ->login()
+            ->login(\App\Filament\Pages\Auth\Login::class)
 
             ->passwordReset()
             ->viteTheme('resources/css/filament/admin/theme.css')
@@ -76,6 +75,7 @@ class AdminPanelProvider extends PanelProvider
             ->renderHook(
                 \Filament\View\PanelsRenderHook::HEAD_END,
                 fn () => '<link rel="stylesheet" href="' . asset('css/filament-custom.css') . '?v=' . filemtime(public_path('css/filament-custom.css')) . '">'
+                    . '<link rel="stylesheet" href="' . asset('css/dashboard.css') . '?v=' . filemtime(public_path('css/dashboard.css')) . '">'
             )
             ->renderHook(
                 \Filament\View\PanelsRenderHook::PAGE_START,
@@ -102,8 +102,11 @@ class AdminPanelProvider extends PanelProvider
                 Dashboard::class,
             ])
             ->discoverWidgets(in: app_path('Filament/Widgets'), for: 'App\Filament\Widgets')
+            // Same dashboard design as the school app: greeting banner and
+            // platform cards first, then the subscription figures.
             ->widgets([
-                AccountWidget::class,
+                \App\Filament\App\Widgets\WelcomeBanner::class,
+                \App\Filament\App\Widgets\PlatformKpis::class,
                 \App\Filament\Widgets\StatsOverview::class,
             ])
 

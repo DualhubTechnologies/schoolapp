@@ -25,6 +25,8 @@ class SchoolForm
                     'default' => 1,
                     'lg' => 4,
                 ])
+                    // The form itself has two columns; this layout needs all of it.
+                    ->columnSpanFull()
                     ->schema([
 
                         /*
@@ -75,13 +77,23 @@ class SchoolForm
                                     ->dehydrated(fn () => $isSuperAdmin())
                                     ->helperText('Decides what the school sees everywhere: Primary shows nursery and primary only; Secondary shows O-Level and A-Level only. Set once at signup — changing it later does not convert existing classes.'),
 
+                                Select::make('boarding_type')
+                                    ->label('Day / boarding')
+                                    ->options(School::BOARDING_TYPES)
+                                    ->native(false),
+
+                                Select::make('ownership')
+                                    ->options(School::OWNERSHIP)
+                                    ->native(false),
+
+                                TextInput::make('expected_students')
+                                    ->label('Number of learners (approx.)')
+                                    ->numeric()
+                                    ->minValue(1),
+
                                 Select::make('status')
                                     ->label('Status')
-                                    ->options([
-                                        'active' => 'Active',
-                                        'suspended' => 'Suspended',
-                                        'inactive' => 'Inactive',
-                                    ])
+                                    ->options(School::STATUSES)
                                     ->default('active')
                                     ->required()
                                     ->native(false)

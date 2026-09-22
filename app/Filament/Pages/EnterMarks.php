@@ -57,6 +57,16 @@ class EnterMarks extends Page
     public function mount(): void
     {
         $this->assessmentId = request()->integer('assessment') ?: $this->assessmentOptions()->keys()->first();
+
+        // Deep links from the teacher dashboard; ignored unless the user may mark them.
+        if (($class = request()->integer('class')) && $this->classOptions()->has($class)) {
+            $this->classId = $class;
+
+            if (($subject = request()->integer('subject')) && $this->subjectOptions()->has($subject)) {
+                $this->subjectId = $subject;
+                $this->updatedSubjectId();
+            }
+        }
     }
 
     public static function canAccess(): bool

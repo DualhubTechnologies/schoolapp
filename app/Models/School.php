@@ -30,6 +30,41 @@ class School extends Model
         'timezone',
         'currency',
         'status',
+        'boarding_type',
+        'ownership',
+        'expected_students',
+        'contact_person',
+        'contact_title',
+        'approved_at',
+        'approved_by',
+        'rejection_reason',
+    ];
+
+    protected function casts(): array
+    {
+        return ['approved_at' => 'datetime'];
+    }
+
+    public const STATUSES = [
+        'pending' => 'Awaiting approval',
+        'active' => 'Active',
+        'suspended' => 'Suspended',
+        'inactive' => 'Inactive',
+        'rejected' => 'Rejected',
+    ];
+
+    public const BOARDING_TYPES = [
+        'day' => 'Day school',
+        'boarding' => 'Boarding school',
+        'mixed' => 'Day & boarding',
+    ];
+
+    public const OWNERSHIP = [
+        'private' => 'Private',
+        'government' => 'Government',
+        'government_aided' => 'Government-aided',
+        'community' => 'Community',
+        'religious' => 'Religious foundation',
     ];
 
     /**
@@ -62,6 +97,21 @@ class School extends Model
     public function students(): HasMany
     {
         return $this->hasMany(Student::class);
+    }
+
+    public function subscriptions(): HasMany
+    {
+        return $this->hasMany(Subscription::class)->orderByDesc('starts_on');
+    }
+
+    public function subscriptionPayments(): HasMany
+    {
+        return $this->hasMany(SubscriptionPayment::class)->orderByDesc('paid_on');
+    }
+
+    public function users(): HasMany
+    {
+        return $this->hasMany(User::class);
     }
 
     // ── Type helpers ──

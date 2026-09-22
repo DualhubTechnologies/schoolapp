@@ -2117,9 +2117,10 @@ html .fi-body {
 
 .sh-footer {
 
-    position: sticky;
-
-    bottom: 0;
+    /* In the normal flow: a sticky footer sat on top of the last widgets. */
+    position: static;
+    gap: 0.35em;
+    flex-wrap: wrap;
 
 
     display: flex;
@@ -3216,4 +3217,163 @@ html .fi-body {
     .fi-resource-edit-record-page .fi-page-content {
         width: 100% !important;
     }
+}
+
+
+/* ============================================================
+ * TOPBAR — NEEDS-ATTENTION BELL
+ *   Built in resources/views/filament/partials/topbar.blade.php from
+ *   App\Services\AttentionItems. Each row links to where it is fixed.
+ * ============================================================ */
+
+.sh-bell {
+    position: relative;
+    margin-right: 0.6rem;
+}
+
+.sh-bell-btn {
+    position: relative;
+    border-color: var(--sh-border);
+    background: var(--sh-surface);
+}
+
+.sh-bell-btn.is-active {
+    background: #eff6ff;
+    border-color: #bfdbfe;
+    color: #1d4ed8;
+}
+
+.sh-bell-badge {
+    position: absolute;
+    top: -0.4rem;
+    right: -0.4rem;
+    min-width: 1.15rem;
+    height: 1.15rem;
+    padding: 0 0.3rem;
+    border-radius: 999px;
+    border: 2px solid var(--sh-surface);
+    color: #fff;
+    font-size: 0.65rem;
+    font-weight: 700;
+    line-height: 0.8rem;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    box-sizing: content-box;
+}
+
+.sh-bell-badge-danger { background: #dc2626; }
+.sh-bell-badge-warning { background: #f59e0b; }
+
+.sh-bell-menu {
+    position: absolute;
+    top: calc(100% + 0.5rem);
+    right: -0.25rem;
+    width: 23rem;
+    max-width: calc(100vw - 2rem);
+    max-height: min(32rem, calc(100vh - 6rem));
+    overflow-y: auto;
+    background: var(--sh-surface);
+    border: 1px solid var(--sh-border);
+    border-radius: 12px;
+    box-shadow: 0 16px 36px rgba(13, 31, 56, 0.16);
+    z-index: 150;
+}
+
+.sh-bell-head {
+    position: sticky;
+    top: 0;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    padding: 0.85rem 1rem;
+    background: var(--sh-surface);
+    border-bottom: 1px solid var(--sh-border);
+    font-size: 0.9rem;
+    color: var(--sh-text);
+}
+
+.sh-bell-head span {
+    padding: 0.1rem 0.5rem;
+    border-radius: 999px;
+    background: #f1f5f9;
+    color: var(--sh-text-muted);
+    font-size: 0.75rem;
+    font-weight: 600;
+}
+
+.sh-bell-item {
+    display: flex;
+    align-items: flex-start;
+    gap: 0.75rem;
+    padding: 0.8rem 1rem;
+    border-bottom: 1px solid #f1f5f9;
+    color: var(--sh-text);
+    text-decoration: none;
+    transition: background 0.15s ease;
+}
+
+.sh-bell-item:last-child { border-bottom: 0; }
+.sh-bell-item:hover { background: #f8fafc; }
+.sh-bell-item:hover .sh-bell-go { color: #2563eb; transform: translateX(2px); }
+
+.sh-bell-icon {
+    flex: none;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    width: 2rem;
+    height: 2rem;
+    border-radius: 8px;
+}
+
+.sh-bell-icon svg { width: 1.1rem; height: 1.1rem; }
+.sh-bell-icon-danger { background: #fef2f2; color: #dc2626; }
+.sh-bell-icon-warning { background: #fffbeb; color: #d97706; }
+.sh-bell-icon-info { background: #eff6ff; color: #2563eb; }
+
+.sh-bell-text {
+    flex: 1;
+    min-width: 0;
+    display: flex;
+    flex-direction: column;
+    gap: 0.1rem;
+}
+
+.sh-bell-title {
+    font-size: 0.85rem;
+    font-weight: 600;
+    line-height: 1.35;
+}
+
+.sh-bell-detail {
+    font-size: 0.78rem;
+    color: var(--sh-text-muted);
+    line-height: 1.4;
+    overflow-wrap: anywhere;
+}
+
+.sh-bell-go {
+    flex: none;
+    align-self: center;
+    color: #cbd5e1;
+    transition: color 0.15s ease, transform 0.15s ease;
+}
+
+.sh-bell-empty {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 0.3rem;
+    padding: 2rem 1.25rem;
+    text-align: center;
+    color: var(--sh-text-muted);
+    font-size: 0.82rem;
+}
+
+.sh-bell-empty svg { color: #16a34a; margin-bottom: 0.25rem; }
+.sh-bell-empty strong { color: var(--sh-text); font-size: 0.9rem; }
+
+@media (max-width: 640px) {
+    .sh-bell-menu { position: fixed; top: 4rem; left: 1rem; right: 1rem; width: auto; max-width: none; }
 }

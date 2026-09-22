@@ -209,6 +209,8 @@ class StudentCsvImporter
             'existing' => array_slice($existing, 0, self::ERROR_DISPLAY_LIMIT),
             'preview' => $preview,
             'unknown_columns' => $unknown,
+            // How many more active students the school's plan allows (null = no limit).
+            'plan_room' => \App\Services\Subscriptions\SubscriptionManager::roomForStudents($this->schoolId),
         ];
     }
 

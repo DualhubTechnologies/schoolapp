@@ -65,6 +65,14 @@ class AppServiceProvider extends ServiceProvider
     protected function configureDuplicateEntryHandling(): void
     {
         \Livewire\on('exception', function ($component, \Throwable $e, callable $stopPropagation): void {
+            // Adding past the school's plan: explain instead of an error page.
+            if ($e instanceof \App\Exceptions\PlanLimitReached) {
+                Notification::make()->title('Plan limit reached')->body($e->getMessage())->warning()->persistent()->send();
+                $stopPropagation();
+
+                return;
+            }
+
             if (! $e instanceof UniqueConstraintViolationException) {
                 return;
             }

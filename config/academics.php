@@ -224,6 +224,13 @@ return [
      * Suggested class-teacher comments by average %, for the "fill
      * comments" button. Always editable before printing.
      */
+    // How many electives a learner takes on top of the compulsory subjects
+    // (NCDC lower secondary: one or two, in S1-S2 and in S3-S4). The
+    // Subject Choices page flags learners outside this range.
+    'electives' => [
+        'o_level' => ['min' => 1, 'max' => 2],
+    ],
+
     'comments' => [
         80 => 'Excellent work. Keep it up!',
         70 => 'Very good performance. Aim even higher.',

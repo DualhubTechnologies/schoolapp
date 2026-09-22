@@ -51,14 +51,14 @@ class StudentsByClassChart extends ChartWidget
             ->all();
 
         $datasets = [
-            ['label' => 'Male', 'data' => $series('male'), 'backgroundColor' => '#2472c4', 'borderRadius' => 3],
-            ['label' => 'Female', 'data' => $series('female'), 'backgroundColor' => '#e0719c', 'borderRadius' => 3],
+            ['label' => 'Male', 'data' => $series('male'), 'backgroundColor' => '#2472c4', 'borderRadius' => 4, 'maxBarThickness' => 44],
+            ['label' => 'Female', 'data' => $series('female'), 'backgroundColor' => '#c8588a', 'borderRadius' => 4, 'maxBarThickness' => 44],
         ];
 
         // Only show "Not recorded" when some students lack a gender.
         $unknown = $series(null);
         if (array_sum($unknown) > 0) {
-            $datasets[] = ['label' => 'Not recorded', 'data' => $unknown, 'backgroundColor' => '#cbd5e1', 'borderRadius' => 3];
+            $datasets[] = ['label' => 'Not recorded', 'data' => $unknown, 'backgroundColor' => '#cbd5e1', 'borderRadius' => 4, 'maxBarThickness' => 44];
         }
 
         return [
@@ -70,10 +70,10 @@ class StudentsByClassChart extends ChartWidget
     protected function getOptions(): array
     {
         return [
-            'plugins' => ['legend' => ['position' => 'bottom']],
+            'plugins' => ['legend' => ['position' => 'bottom', 'labels' => ['usePointStyle' => true, 'pointStyle' => 'circle', 'padding' => 18]]],
             'scales' => [
                 'x' => ['stacked' => true, 'grid' => ['display' => false]],
-                'y' => ['stacked' => true, 'beginAtZero' => true, 'ticks' => ['precision' => 0]],
+                'y' => ['stacked' => true, 'beginAtZero' => true, 'ticks' => ['precision' => 0], 'border' => ['display' => false], 'grid' => ['color' => '#eef2f7']],
             ],
         ];
     }

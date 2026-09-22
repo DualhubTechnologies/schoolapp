@@ -68,6 +68,57 @@
     {{-- ---------- RIGHT ---------- --}}
     <div class="sh-topbar-right" x-data="{ open: false }">
 
+        {{-- Needs-attention bell: every item is a link to where it is dealt with. --}}
+        @php
+            $attention = $user ? \App\Services\AttentionItems::for($user) : [];
+            $attentionCount = count($attention);
+            $attentionTone = collect($attention)->contains('tone', 'danger') ? 'danger' : ($attentionCount ? 'warning' : null);
+        @endphp
+        <div class="sh-bell" x-data="{ bell: false }" @keydown.escape.window="bell = false">
+            <button type="button"
+                    class="sh-icon-btn sh-bell-btn"
+                    :class="bell && 'is-active'"
+                    @click="bell = !bell; open = false"
+                    @click.outside="bell = false"
+                    aria-haspopup="true"
+                    :aria-expanded="bell"
+                    aria-label="{{ $attentionCount ? "{$attentionCount} " . str('item')->plural($attentionCount) . ' need attention' : 'Nothing needs attention' }}">
+                <svg width="20" height="20" fill="none" stroke="currentColor" stroke-width="1.8" viewBox="0 0 24 24">
+                    <path stroke-linecap="round" stroke-linejoin="round"
+                          d="M14.857 17.082a23.848 23.848 0 0 0 5.454-1.31A8.967 8.967 0 0 1 18 9.75V9A6 6 0 0 0 6 9v.75a8.967 8.967 0 0 1-2.312 6.022c1.733.64 3.56 1.085 5.455 1.31m5.714 0a24.255 24.255 0 0 1-5.714 0m5.714 0a3 3 0 1 1-5.714 0" />
+                </svg>
+                @if ($attentionCount)
+                    <span class="sh-bell-badge sh-bell-badge-{{ $attentionTone }}">{{ $attentionCount > 9 ? '9+' : $attentionCount }}</span>
+                @endif
+            </button>
+
+            <div class="sh-bell-menu" x-show="bell" x-cloak x-transition.opacity.duration.150ms @click.outside="bell = false">
+                <div class="sh-bell-head">
+                    <strong>Needs attention</strong>
+                    @if ($attentionCount)<span>{{ $attentionCount }}</span>@endif
+                </div>
+
+                @forelse ($attention as $item)
+                    <a href="{{ $item['url'] }}" class="sh-bell-item">
+                        <span class="sh-bell-icon sh-bell-icon-{{ $item['tone'] }}">
+                            <x-filament::icon :icon="$item['icon']" />
+                        </span>
+                        <span class="sh-bell-text">
+                            <span class="sh-bell-title">{{ $item['title'] }}</span>
+                            @if ($item['detail'])<span class="sh-bell-detail">{{ $item['detail'] }}</span>@endif
+                        </span>
+                        <svg class="sh-bell-go" width="16" height="16" viewBox="0 0 20 20" fill="currentColor" aria-hidden="true"><path fill-rule="evenodd" d="M8.22 5.22a.75.75 0 0 1 1.06 0l4.25 4.25a.75.75 0 0 1 0 1.06l-4.25 4.25a.75.75 0 0 1-1.06-1.06L11.94 10 8.22 6.28a.75.75 0 0 1 0-1.06Z" clip-rule="evenodd"/></svg>
+                    </a>
+                @empty
+                    <div class="sh-bell-empty">
+                        <svg width="28" height="28" fill="none" stroke="currentColor" stroke-width="1.6" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M9 12.75 11.25 15 15 9.75M21 12a9 9 0 1 1-18 0 9 9 0 0 1 18 0Z"/></svg>
+                        <strong>You're all caught up</strong>
+                        <span>Nothing needs your attention right now.</span>
+                    </div>
+                @endforelse
+            </div>
+        </div>
+
         <button type="button"
                 class="sh-user-btn"
                 @click="open = !open"

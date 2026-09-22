@@ -2,7 +2,10 @@
 
 namespace App\Filament\Admin\Resources\Schools\Tables;
 
+use App\Filament\Admin\Resources\Schools\SubscriptionActions;
 use App\Models\School;
+use App\Services\Subscriptions\SubscriptionManager;
+use Filament\Actions\ActionGroup;
 use Filament\Actions\BulkActionGroup;
 use Filament\Actions\DeleteBulkAction;
 use Filament\Actions\EditAction;
@@ -41,10 +44,42 @@ class SchoolsTable
                         default => 'warning',
                     }),
 
-                TextColumn::make('students_count')
+                TextColumn::make('plan')
+                    ->label('Plan')
+                    ->state(fn (School $record) => SubscriptionManager::current($record)?->plan?->name ?? '—')
+                    ->description(function (School $record) {
+                        $st = SubscriptionManager::status($record);
+
+                        return $st['ends_on'] ? 'to ' . $st['ends_on']->format('j M Y') : null;
+                    }),
+
+                TextColumn::make('subscription_state')
+                    ->label('Subscription')
+                    ->badge()
+                    ->state(fn (School $record) => SubscriptionManager::status($record)['state'])
+                    ->formatStateUsing(fn (string $state) => SubscriptionActions::stateLabel($state))
+                    ->color(fn (string $state) => SubscriptionActions::stateColor($state)),
+
+                TextColumn::make('usage_students')
                     ->label('Students')
-                    ->counts('students')
-                    ->sortable(),
+                    ->state(function (School $record) {
+                        $u = SubscriptionManager::usage($record)['students'];
+
+                        return number_format($u['used']) . ' / ' . ($u['limit'] === null ? '∞' : number_format($u['limit']));
+                    })
+                    ->color(function (School $record) {
+                        $u = SubscriptionManager::usage($record)['students'];
+
+                        return $u['limit'] !== null && $u['used'] >= $u['limit'] ? 'danger' : null;
+                    }),
+
+                TextColumn::make('usage_users')
+                    ->label('Logins')
+                    ->state(function (School $record) {
+                        $u = SubscriptionManager::usage($record)['users'];
+
+                        return $u['used'] . ' / ' . ($u['limit'] === null ? '∞' : $u['limit']);
+                    }),
 
                 TextColumn::make('city')
                     ->label('City / District')
@@ -107,7 +142,13 @@ class SchoolsTable
                     ]),
             ])
             ->recordActions([
-                EditAction::make(),
+                SubscriptionActions::renew()->iconButton()->tooltip('Record payment'),
+                ActionGroup::make([
+                    EditAction::make(),
+                    SubscriptionActions::changePlan(),
+                    SubscriptionActions::extend(),
+                    SubscriptionActions::suspend(),
+                ]),
             ])
             ->toolbarActions([
                 BulkActionGroup::make([

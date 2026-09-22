@@ -50,6 +50,18 @@ class User extends Authenticatable implements FilamentUser
     }
 
     /**
+     * The school's plan caps how many staff logins it may have.
+     */
+    protected static function booted(): void
+    {
+        static::creating(function (User $user): void {
+            if ($user->school_id) {
+                \App\Services\Subscriptions\SubscriptionManager::ensureRoomForUsers((int) $user->school_id);
+            }
+        });
+    }
+
+    /**
      * The staff record this login belongs to (teachers, bursars...).
      */
     public function staff(): \Illuminate\Database\Eloquent\Relations\HasOne

@@ -36,7 +36,8 @@ class SchoolResource extends Resource
     public static function getRelations(): array
     {
         return [
-            //
+            RelationManagers\SubscriptionsRelationManager::class,
+            RelationManagers\SubscriptionPaymentsRelationManager::class,
         ];
     }
 

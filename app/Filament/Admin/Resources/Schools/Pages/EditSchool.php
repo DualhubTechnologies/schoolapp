@@ -23,6 +23,7 @@ class EditSchool extends EditRecord
     protected function getHeaderActions(): array
     {
         return [
+            ...\App\Filament\Admin\Resources\Schools\SubscriptionActions::all(),
             DeleteAction::make(),
         ];
     }

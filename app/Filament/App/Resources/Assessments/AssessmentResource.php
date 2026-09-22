@@ -31,6 +31,8 @@ use Illuminate\Database\Eloquent\Builder;
  */
 class AssessmentResource extends Resource
 {
+    use \App\Filament\Concerns\GatedByModule;
+
     protected static ?string $model = Assessment::class;
 
     protected static string|BackedEnum|null $navigationIcon = Heroicon::OutlinedClipboardDocumentList;
@@ -80,7 +82,7 @@ class AssessmentResource extends Resource
                 ->native(false),
             Select::make('curriculum')
                 ->label('For')
-                ->options(config('academics.curricula'))
+                ->options(fn () => \App\Support\SchoolType::curricula())
                 ->placeholder('All classes')
                 ->native(false)
                 ->live()

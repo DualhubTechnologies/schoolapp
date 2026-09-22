@@ -16,6 +16,8 @@ use Spatie\Activitylog\Models\Activity;
 
 class AuditTrailResource extends Resource
 {
+    use \App\Filament\Concerns\GatedByModule;
+
     protected static ?string $model = Activity::class;
 
     protected static string|BackedEnum|null $navigationIcon = Heroicon::OutlinedClipboardDocumentList;

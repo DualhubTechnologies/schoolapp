@@ -39,8 +39,11 @@ class ReportCards extends Page
 
     public bool $showFees = true;
 
-    /** @var array<int, array{class_teacher_comment: ?string, head_teacher_comment: ?string, conduct: ?string}> */
+    /** @var array<int, array{class_teacher_comment: ?string, conduct: ?string}> */
     public array $comments = [];
+
+    /** One head teacher's comment, printed on every report card of the class. */
+    public ?string $headComment = null;
 
     public const CONDUCT = ['Excellent', 'Very good', 'Good', 'Fair', 'Needs improvement'];
 
@@ -48,6 +51,7 @@ class ReportCards extends Page
     {
         $this->termId = request()->integer('term') ?: Term::current()?->getKey();
         $this->classId = request()->integer('class') ?: null;
+        $this->pickOwnStream();
         $this->loadComments();
     }
 
@@ -64,7 +68,16 @@ class ReportCards extends Page
     public function updatedClassId(): void
     {
         $this->sectionId = null;
+        $this->pickOwnStream();
         $this->loadComments();
+    }
+
+    /** Teachers only work on the stream they are class teacher of. */
+    protected function pickOwnStream(): void
+    {
+        if (! AcademicAccess::manages()) {
+            $this->sectionId = AcademicAccess::classTeacherStreamsIn($this->classId)[0] ?? null;
+        }
     }
 
     public function updatedSectionId(): void
@@ -85,13 +98,22 @@ class ReportCards extends Page
     /** @return Collection<int, string> */
     public function classOptions(): Collection
     {
-        return SchoolClass::where('school_id', auth()->user()?->school_id)->orderBy('level')->orderBy('name')->pluck('name', 'id');
+        return SchoolClass::where('school_id', auth()->user()?->school_id)
+            ->when(! AcademicAccess::manages(), fn ($q) => $q->whereIn('id', array_values(AcademicAccess::classTeacherStreams())))
+            ->orderBy('level')
+            ->orderBy('name')
+            ->pluck('name', 'id');
     }
 
     /** @return Collection<int, string> */
     public function sectionOptions(): Collection
     {
-        return $this->classId ? Section::where('school_class_id', $this->classId)->orderBy('name')->pluck('name', 'id') : collect();
+        return $this->classId
+            ? Section::where('school_class_id', $this->classId)
+                ->when(! AcademicAccess::manages(), fn ($q) => $q->whereIn('id', AcademicAccess::classTeacherStreamsIn($this->classId)))
+                ->orderBy('name')
+                ->pluck('name', 'id')
+            : collect();
     }
 
     #[Computed]
@@ -100,6 +122,11 @@ class ReportCards extends Page
         $class = $this->classId ? SchoolClass::where('school_id', auth()->user()?->school_id)->find($this->classId) : null;
         $term = $this->termId ? Term::where('school_id', auth()->user()?->school_id)->find($this->termId) : null;
 
+        // A teacher sees only the stream they are class teacher of.
+        if (! AcademicAccess::manages() && ! in_array($this->sectionId, AcademicAccess::classTeacherStreamsIn($this->classId), true)) {
+            return null;
+        }
+
         return $class && $term ? app(ResultsCalculator::class)->forClass($class, $term, $this->sectionId) : null;
     }
 
@@ -107,12 +134,18 @@ class ReportCards extends Page
     {
         unset($this->results);
         $this->comments = [];
+        $this->headComment = collect($this->results['rows'] ?? [])
+            ->pluck('report.head_teacher_comment')
+            ->filter()
+            ->countBy()
+            ->sortDesc()
+            ->keys()
+            ->first();
 
         foreach ($this->results['rows'] ?? [] as $row) {
             $report = $row['report'];
             $this->comments[$row['student']->id] = [
                 'class_teacher_comment' => $report?->class_teacher_comment,
-                'head_teacher_comment' => $report?->head_teacher_comment,
                 'conduct' => $report?->conduct,
             ];
         }
@@ -145,6 +178,7 @@ class ReportCards extends Page
     {
         $studentIds = collect($this->results['rows'] ?? [])->pluck('student.id');
         $isHead = AcademicAccess::manages();
+        $head = trim((string) $this->headComment) ?: null;
 
         foreach ($studentIds as $id) {
             $data = $this->comments[$id] ?? [];
@@ -155,7 +189,7 @@ class ReportCards extends Page
 
             // Only the head teacher / administrator writes the head's comment.
             if ($isHead) {
-                $values['head_teacher_comment'] = trim((string) ($data['head_teacher_comment'] ?? '')) ?: null;
+                $values['head_teacher_comment'] = $head;
             }
 
             TermReport::updateOrCreate(['student_id' => $id, 'term_id' => $this->termId], $values);

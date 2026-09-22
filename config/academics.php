@@ -46,6 +46,17 @@ return [
      */
     'subjects' => [
 
+        // Nursery / ECD learning areas (Baby, Middle and Top class).
+        'nursery' => [
+            ['name' => 'Language & Communication', 'short' => 'LANG'],
+            ['name' => 'Number Concepts', 'short' => 'NUM'],
+            ['name' => 'Reading Readiness', 'short' => 'READ'],
+            ['name' => 'Social Development & Environment', 'short' => 'SOC'],
+            ['name' => 'Health Habits', 'short' => 'HLTH'],
+            ['name' => 'Creative Arts & Music', 'short' => 'ART'],
+            ['name' => 'Religious Education', 'short' => 'RE'],
+        ],
+
         'primary' => [
             // Lower primary thematic curriculum (P1–P3)
             ['name' => 'Literacy I', 'short' => 'LIT1', 'offered_in' => [1, 2, 3]],

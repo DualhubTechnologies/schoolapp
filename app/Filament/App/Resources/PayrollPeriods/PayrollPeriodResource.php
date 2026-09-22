@@ -27,6 +27,8 @@ use Illuminate\Database\Eloquent\Model;
  */
 class PayrollPeriodResource extends Resource
 {
+    use \App\Filament\Concerns\GatedByModule;
+
     protected static ?string $model = PayrollPeriod::class;
 
     protected static string|BackedEnum|null $navigationIcon = Heroicon::OutlinedWallet;

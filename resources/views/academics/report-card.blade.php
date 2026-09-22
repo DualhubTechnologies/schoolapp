@@ -7,7 +7,6 @@
     $assessments = $results['assessments'];
     $logo = $school?->logo ? Storage::disk('public')->url($school->logo) : null;
     $signature = $school?->hm_signature ? Storage::disk('public')->url($school->hm_signature) : null;
-    $initials = fn (?string $name) => $name ? collect(preg_split('/\s+/', trim($name)))->map(fn ($p) => mb_strtoupper(mb_substr($p, 0, 1)))->implode('') : '';
     $n = fn ($v) => $v === null ? '—' : rtrim(rtrim(number_format((float) $v, 1), '0'), '.');
     $title = [
         'primary' => "Pupil's Progress Report",
@@ -116,7 +115,7 @@
                             <td class="c"><strong>{{ $n($res['final']) }}</strong></td>
                             <td class="grade">{{ $res['grade'] ?? '—' }}</td>
                             <td>{{ $res['comment'] ?: $res['descriptor'] }}</td>
-                            <td class="c">{{ $initials($teachers[$res['subject']->pivot->teacher_id ?? 0] ?? null) }}</td>
+                            <td class="c">{{ $teachers[$res['subject']->pivot->teacher_id ?? 0] ?? '' }}</td>
                         </tr>
                     @endforeach
                 </tbody>
@@ -144,6 +143,9 @@
                         <div class="kv"><span>Position in stream</span><b>{{ $row['stream_position'] }} out of {{ $row['stream_out_of'] }}</b></div>
                     @endif
                     @if ($report?->conduct)<div class="kv"><span>Conduct</span><b>{{ $report->conduct }}</b></div>@endif
+                    @if (! empty($promotionText[$student->id]))
+                        <div class="kv"><span>Promotion</span><b style="color:#1e3a5f">{{ $promotionText[$student->id] }}</b></div>
+                    @endif
                     <div class="kv"><span>Next term begins</span><b>{{ $nextTerm?->start_date?->format('j M Y') ?? 'To be communicated' }}</b></div>
                 </div>
             </div>

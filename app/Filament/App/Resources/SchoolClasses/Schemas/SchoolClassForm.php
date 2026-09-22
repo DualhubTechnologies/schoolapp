@@ -21,7 +21,7 @@ class SchoolClassForm
                     ->schema([
                         TextInput::make('name')
                             ->label('Class name')
-                            ->placeholder('e.g. Senior 1, P.4')
+                            ->placeholder(fn () => \App\Support\SchoolType::isPrimary() ? 'e.g. P.4, Primary Five, Baby Class' : ('e.g. S1, Senior 5'))
                             ->required()
                             ->unique(ignoreRecord: true, modifyRuleUsing: fn (Unique $rule, Get $get) => $rule->where('school_id', $get('school_id') ?? auth()->user()?->school_id))
                             ->validationMessages(['unique' => 'A class with this name already exists.']),

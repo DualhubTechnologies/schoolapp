@@ -17,6 +17,8 @@ use Illuminate\Database\Eloquent\Builder;
 
 class ClassLevelResource extends Resource
 {
+    use \App\Filament\Concerns\GatedByModule;
+
     protected static ?string $model = ClassLevel::class;
 
     protected static string|BackedEnum|null $navigationIcon = Heroicon::OutlinedRectangleStack;

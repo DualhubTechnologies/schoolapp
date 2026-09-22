@@ -17,6 +17,8 @@ use Illuminate\Database\Eloquent\Builder;
 
 class DeductionTypeResource extends Resource
 {
+    use \App\Filament\Concerns\GatedByModule;
+
     protected static ?string $model = DeductionType::class;
 
 

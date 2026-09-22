@@ -19,6 +19,8 @@ use Illuminate\Database\Eloquent\Model;
 
 class FeeStructureResource extends Resource
 {
+    use \App\Filament\Concerns\GatedByModule;
+
     protected static ?string $model = FeeStructure::class;
 
     protected static string|BackedEnum|null $navigationIcon = Heroicon::OutlinedTableCells;

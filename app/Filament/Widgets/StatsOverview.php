@@ -227,7 +227,12 @@ class StatsOverview extends StatsOverviewWidget
     {
         $schoolId = $this->schoolId();
 
-        $activeStaff = Staff::where('school_id', $schoolId)->where('status', 'active')->count();
+        $byCategory = Staff::where('school_id', $schoolId)
+            ->where('status', 'active')
+            ->selectRaw('category, COUNT(*) as n')
+            ->groupBy('category')
+            ->pluck('n', 'category');
+        $activeStaff = (int) $byCategory->sum();
 
         $latestPayroll = PayrollPeriod::where('school_id', $schoolId)
             ->orderByDesc('year')
@@ -240,9 +245,12 @@ class StatsOverview extends StatsOverviewWidget
 
         return [
             Stat::make('Active staff', number_format($activeStaff))
-                ->description($latestPayroll
-                    ? "Payroll {$latestPayroll->period_label}: " . static::shortMoney((float) $latestPayroll->total_net) . ' net · ' . $latestPayroll->status
-                    : 'No payroll run yet')
+                ->description(
+                    ((int) ($byCategory['teaching'] ?? 0)) . ' teaching · ' . ((int) ($byCategory['non_teaching'] ?? 0)) . ' non-teaching'
+                    . ($latestPayroll
+                        ? " · Payroll {$latestPayroll->period_label}: " . static::shortMoney((float) $latestPayroll->total_net) . ' net'
+                        : '')
+                )
                 ->icon('heroicon-o-user-group')
                 ->color('success'),
 

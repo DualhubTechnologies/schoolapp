@@ -1923,7 +1923,54 @@ html .fi-body {
 }
 
 
-/* Tabs */
+/* Tabs
+ *
+ * Filament centres free-standing tab bars (e.g. the Salary / Allowances /
+ * Deductions tabs under a record) in a floating pill. Line them up with
+ * the content instead, as an underlined tab strip.
+ */
+
+.fi-tabs:not(.fi-contained) {
+
+    margin-inline: 0 !important;
+
+    width: 100%;
+
+    background: transparent !important;
+
+    box-shadow: none !important;
+
+    border-radius: 0 !important;
+
+    padding: 0 !important;
+
+    border-bottom: 1px solid var(--sh-border);
+
+    gap: 0.25rem;
+
+}
+
+.fi-tabs:not(.fi-contained) .fi-tabs-tab {
+
+    border-radius: 0 !important;
+
+    border-bottom: 2px solid transparent;
+
+    margin-bottom: -1px;
+
+    padding: 0.7rem 1rem !important;
+
+    background: transparent !important;
+
+}
+
+.fi-tabs:not(.fi-contained) .fi-tabs-tab.fi-active {
+
+    border-bottom-color: var(--sh-blue-600);
+
+    color: var(--sh-blue-600) !important;
+
+}
 
 .fi-tabs-tab {
 
@@ -3134,9 +3181,9 @@ html .fi-body {
 
 .fi-resource-edit-record-page .fi-page-content,
 
-.fi-resource-create-record-page form,
+.fi-resource-create-record-page form:not(.fi-modal-window),
 
-.fi-resource-edit-record-page form {
+.fi-resource-edit-record-page form:not(.fi-modal-window) {
 
     max-width: 100% !important;
 
@@ -3145,8 +3192,8 @@ html .fi-body {
 }
 
 /* Keep Filament form/grid children from forcing narrow or overflowing columns. */
-.fi-resource-create-record-page form > *,
-.fi-resource-edit-record-page form > *,
+.fi-resource-create-record-page form:not(.fi-modal-window) > *,
+.fi-resource-edit-record-page form:not(.fi-modal-window) > *,
 .fi-resource-create-record-page .fi-fo-component-ctn,
 .fi-resource-edit-record-page .fi-fo-component-ctn,
 .fi-resource-create-record-page .fi-section,

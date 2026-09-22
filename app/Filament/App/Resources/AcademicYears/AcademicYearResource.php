@@ -17,6 +17,8 @@ use Illuminate\Database\Eloquent\Builder;
 
 class AcademicYearResource extends Resource
 {
+    use \App\Filament\Concerns\GatedByModule;
+
     protected static ?string $model = AcademicYear::class;
 
     protected static string|BackedEnum|null $navigationIcon = Heroicon::OutlinedCalendarDays;

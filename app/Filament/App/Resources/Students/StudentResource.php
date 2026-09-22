@@ -19,6 +19,8 @@ use Illuminate\Database\Eloquent\Model;
 
 class StudentResource extends Resource
 {
+    use \App\Filament\Concerns\GatedByModule;
+
     protected static ?string $model = Student::class;
 
     protected static string|BackedEnum|null $navigationIcon = Heroicon::OutlinedAcademicCap;

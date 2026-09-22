@@ -61,6 +61,10 @@ class ViewPayrollPeriod extends ViewRecord
                         ->{$notes ? 'warning' : 'success'}()
                         ->persistent($notes !== '')
                         ->send();
+
+                    // Reload so the totals and the payslips table below show
+                    // the new figures.
+                    $this->redirect(static::getResource()::getUrl('view', ['record' => $this->record]));
                 }),
 
             Action::make('approve')

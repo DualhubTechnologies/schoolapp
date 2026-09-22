@@ -172,7 +172,7 @@ class FeeStructureSheet extends Page
 
     public static function shouldRegisterNavigation(): bool
     {
-        return auth()->user()?->hasRole(['Super Admin', 'School Admin', 'Accountant', 'Bursar']) ?? false;
+        return \App\Support\Modules::allows('fees');
     }
 
     public static function canAccess(): bool

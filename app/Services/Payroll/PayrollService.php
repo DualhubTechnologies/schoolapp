@@ -48,8 +48,12 @@ class PayrollService
         $count = 0;
 
         DB::transaction(function () use ($period, $staff, $country, &$skipped, &$count) {
-            // Start clean: a draft is always a fresh calculation.
-            $period->entries()->each(fn (PayrollEntry $e) => $e->delete());
+            // Each staff member keeps the SAME payslip record across
+            // recalculations -- updated in place, never deleted and
+            // re-created -- so payslip links already on screen keep working.
+            // An exclusion made on the draft is kept too.
+            $existing = $period->entries()->get()->keyBy('staff_id');
+            $paid = [];
 
             foreach ($staff as $member) {
                 $pay = $this->calculator->forMonth($member, $period->month, $period->year, $country);
@@ -60,14 +64,25 @@ class PayrollService
                     continue;
                 }
 
-                $entry = $period->entries()->create($pay['entry'] + [
-                    'staff_id' => $member->getKey(),
-                    'status' => 'included',
-                ]);
+                $entry = $existing->get($member->getKey());
+
+                if ($entry) {
+                    $entry->update($pay['entry']);
+                    $entry->items()->delete();
+                } else {
+                    $entry = $period->entries()->create($pay['entry'] + [
+                        'staff_id' => $member->getKey(),
+                        'status' => 'included',
+                    ]);
+                }
 
                 $entry->items()->createMany($pay['items']);
+                $paid[] = $member->getKey();
                 $count++;
             }
+
+            // Staff no longer due pay this month (left, no salary): drop them.
+            $period->entries()->whereNotIn('staff_id', $paid)->get()->each(fn (PayrollEntry $e) => $e->delete());
 
             $this->refreshTotals($period);
             $period->update(['generated_by' => auth()->id()]);

@@ -33,7 +33,7 @@ class ClassLevelForm
                         // aggregates & divisions, A–E levels, or A-Level points.
                         Select::make('curriculum')
                             ->label('Curriculum')
-                            ->options(config('academics.curricula'))
+                            ->options(fn () => \App\Support\SchoolType::curricula())
                             ->native(false)
                             ->helperText('Decides the subjects, grading and report cards for classes in this level.'),
 

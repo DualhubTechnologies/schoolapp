@@ -17,7 +17,9 @@ class SalariesRelationManager extends RelationManager
 {
     protected static string $relationship = 'salaries';
 
-    protected static ?string $title = 'Salary History';
+    protected static ?string $title = 'Salary';
+
+    protected static ?string $modelLabel = 'salary';
 
     public function form(Schema $schema): Schema
     {
@@ -62,7 +64,6 @@ class SalariesRelationManager extends RelationManager
             ])
             ->headerActions([
                 CreateAction::make()
-                    ->label('Add salary record')
                     ->mutateFormDataUsing(function (array $data): array {
                         $data['school_id'] = $this->getOwnerRecord()->school_id;
                         return $data;

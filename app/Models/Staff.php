@@ -17,6 +17,7 @@ class Staff extends Model
         'nssf_number',
         'tin_number',
         'staff_no',
+        'initials',
         'position',
         'department',
         'phone',
@@ -25,11 +26,22 @@ class Staff extends Model
         'gender',
         'nin',
         'employment_type',
+        'category',
         'pays_nssf',
         'pays_lst',
     ];
 
     public const GENDERS = ['male' => 'Male', 'female' => 'Female'];
+
+    public const CATEGORIES = [
+        'teaching' => 'Teaching staff',
+        'non_teaching' => 'Non-teaching staff',
+    ];
+
+    public function isTeaching(): bool
+    {
+        return $this->category === 'teaching';
+    }
 
     public const EMPLOYMENT_TYPES = [
         'permanent' => 'Permanent',
@@ -120,5 +132,21 @@ class Staff extends Model
     public function payrollEntries(): HasMany
     {
         return $this->hasMany(PayrollEntry::class);
+    }
+
+    /**
+     * Initials printed beside the teacher's subjects on report cards:
+     * as typed on the staff record, else the first letter of each name.
+     */
+    public function reportInitials(): string
+    {
+        if (filled($this->initials)) {
+            return $this->initials;
+        }
+
+        return collect(preg_split('/\s+/', trim((string) $this->name)))
+            ->filter()
+            ->map(fn ($part) => mb_strtoupper(mb_substr($part, 0, 1)) . '.')
+            ->implode('');
     }
 }

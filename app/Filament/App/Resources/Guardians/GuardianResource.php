@@ -17,6 +17,8 @@ use Illuminate\Database\Eloquent\Builder;
 
 class GuardianResource extends Resource
 {
+    use \App\Filament\Concerns\GatedByModule;
+
     protected static ?string $model = Guardian::class;
 
     protected static string|BackedEnum|null $navigationIcon = Heroicon::OutlinedUsers;

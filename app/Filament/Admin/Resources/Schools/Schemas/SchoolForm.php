@@ -73,7 +73,7 @@ class SchoolForm
                                     ->native(false)
                                     ->disabled(fn () => ! $isSuperAdmin())
                                     ->dehydrated(fn () => $isSuperAdmin())
-                                    ->helperText('Set once at signup. Changing it later does not convert existing classes.'),
+                                    ->helperText('Decides what the school sees everywhere: Primary shows nursery and primary only; Secondary shows O-Level and A-Level only. Set once at signup — changing it later does not convert existing classes.'),
 
                                 Select::make('status')
                                     ->label('Status')

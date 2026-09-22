@@ -60,17 +60,11 @@ class SchoolProfile extends Page implements HasForms
 
     public static function shouldRegisterNavigation(): bool
     {
-        return auth()->user()?->hasRole([
-            'Super Admin',
-            'School Admin',
-        ]) ?? false;
+        return static::canAccess();
     }
 
     public static function canAccess(): bool
     {
-        return auth()->user()?->hasRole([
-            'Super Admin',
-            'School Admin',
-        ]) ?? false;
+        return \App\Support\Modules::allows('settings');
     }
 }

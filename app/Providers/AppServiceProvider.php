@@ -36,6 +36,21 @@ class AppServiceProvider extends ServiceProvider
         $this->configureAuthLogging();
         $this->configureObservers();
         $this->configureDuplicateEntryHandling();
+        $this->configureFilamentDefaults();
+    }
+
+    /**
+     * House style for every table and pop-up in the panels. Anything that
+     * sets its own value overrides these.
+     */
+    protected function configureFilamentDefaults(): void
+    {
+        // Add/edit pop-ups sized like a dialog, not stretched across the screen.
+        \Filament\Actions\CreateAction::configureUsing(fn ($action) => $action->modalWidth(\Filament\Support\Enums\Width::TwoExtraLarge));
+        \Filament\Actions\EditAction::configureUsing(fn ($action) => $action->modalWidth(\Filament\Support\Enums\Width::TwoExtraLarge));
+
+        // Empty lists show a neutral "nothing here yet" icon, not an "X".
+        \Filament\Tables\Table::configureUsing(fn ($table) => $table->emptyStateIcon('heroicon-o-inbox'));
     }
 
     /**

@@ -7,6 +7,7 @@ use Filament\Forms\Components\DatePicker;
 use Filament\Forms\Components\Select;
 use Filament\Forms\Components\TextInput;
 use Filament\Forms\Components\Toggle;
+use Filament\Forms\Components\ToggleButtons;
 use Filament\Schemas\Components\Section;
 use Filament\Schemas\Schema;
 
@@ -56,6 +57,24 @@ class StaffForm
                             ->visible(fn () => auth()->user()->hasRole('Super Admin'))
                             ->required()
                             ->columnSpanFull(),
+                        ToggleButtons::make('category')
+                            ->label('Staff category')
+                            ->options(Staff::CATEGORIES)
+                            ->icons([
+                                'teaching' => 'heroicon-o-academic-cap',
+                                'non_teaching' => 'heroicon-o-wrench-screwdriver',
+                            ])
+                            ->colors(['teaching' => 'primary', 'non_teaching' => 'gray'])
+                            ->default('teaching')
+                            ->inline()
+                            ->required()
+                            ->helperText('Only teaching staff can be assigned subjects to teach.')
+                            ->columnSpanFull(),
+                        TextInput::make('initials')
+                            ->label('Initials on report cards')
+                            ->placeholder('e.g. B.K.')
+                            ->maxLength(10)
+                            ->helperText('Leave blank to use the first letter of each name.'),
                         TextInput::make('staff_no')
                             ->label('Staff number')
                             ->required()
@@ -68,7 +87,7 @@ class StaffForm
                             ->native(false)
                             ->required(),
                         TextInput::make('position')
-                            ->placeholder('e.g. Teacher, Bursar, Cook')
+                            ->placeholder('e.g. Teacher, Bursar, Matron, Driver')
                             ->required(),
                         TextInput::make('department')
                             ->placeholder('e.g. Sciences, Administration'),

@@ -26,6 +26,22 @@ class UsersTable
                     ->label('Roles')
                     ->badge()
                     ->searchable(),
+                TextColumn::make('access')
+                    ->label('Can open')
+                    ->state(fn (\App\Models\User $record) => \App\Support\Modules::hasFullAccess($record)
+                        ? ['Everything']
+                        : collect(\App\Support\Modules::forUser($record))
+                            ->map(fn ($key) => \App\Support\Modules::LIST[$key][0] ?? $key)
+                            ->values()->all())
+                    ->badge()
+                    ->color(fn (\App\Models\User $record) => $record->modules !== null ? 'warning' : 'gray')
+                    ->tooltip(fn (\App\Models\User $record) => $record->modules !== null ? 'Chosen for this user' : 'Role defaults')
+                    ->placeholder('Nothing')
+                    ->wrap(),
+                TextColumn::make('staff.name')
+                    ->label('Staff record')
+                    ->placeholder('Not linked')
+                    ->toggleable(),
                 TextColumn::make('created_at')
                     ->dateTime()
                     ->sortable()

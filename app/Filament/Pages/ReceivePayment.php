@@ -291,6 +291,6 @@ class ReceivePayment extends Page
 
     public static function canAccess(): bool
     {
-        return auth()->user()?->hasRole(['School Admin', 'Accountant', 'Bursar']) ?? false;
+        return \App\Support\Modules::allows('fees');
     }
 }

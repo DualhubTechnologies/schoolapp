@@ -20,6 +20,8 @@ use Illuminate\Database\Eloquent\Builder;
  */
 class BillingResource extends Resource
 {
+    use \App\Filament\Concerns\GatedByModule;
+
     protected static ?string $model = StudentCharge::class;
 
     protected static string|BackedEnum|null $navigationIcon = Heroicon::OutlinedCalculator;

@@ -20,6 +20,8 @@ use Illuminate\Database\Eloquent\Builder;
  */
 class FeeBalanceResource extends Resource
 {
+    use \App\Filament\Concerns\GatedByModule;
+
     protected static ?string $model = Student::class;
 
     protected static string|BackedEnum|null $navigationIcon = Heroicon::OutlinedWallet;

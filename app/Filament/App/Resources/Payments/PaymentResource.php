@@ -19,6 +19,8 @@ use Illuminate\Database\Eloquent\Model;
  */
 class PaymentResource extends Resource
 {
+    use \App\Filament\Concerns\GatedByModule;
+
     protected static ?string $model = StudentPayment::class;
 
     protected static string|BackedEnum|null $navigationIcon = Heroicon::OutlinedClipboardDocumentCheck;
@@ -57,7 +59,7 @@ class PaymentResource extends Resource
 
     public static function canViewAny(): bool
     {
-        return auth()->user()?->hasRole(['Super Admin', 'School Admin', 'Accountant', 'Bursar']) ?? false;
+        return \App\Support\Modules::allows('fees');
     }
 
     // Payments are taken on the Receive Payment page and never edited or

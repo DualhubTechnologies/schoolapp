@@ -17,6 +17,8 @@ use Illuminate\Database\Eloquent\Builder;
 
 class StudentDiscountResource extends Resource
 {
+    use \App\Filament\Concerns\GatedByModule;
+
     protected static ?string $model = StudentDiscount::class;
 
     protected static string|BackedEnum|null $navigationIcon = Heroicon::OutlinedReceiptPercent;

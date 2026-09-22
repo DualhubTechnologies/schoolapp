@@ -17,6 +17,8 @@ use Illuminate\Database\Eloquent\Builder;
 
 class TermResource extends Resource
 {
+    use \App\Filament\Concerns\GatedByModule;
+
     protected static ?string $model = Term::class;
 
     protected static string|BackedEnum|null $navigationIcon = Heroicon::OutlinedCalendar;

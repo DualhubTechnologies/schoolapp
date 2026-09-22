@@ -12,7 +12,7 @@ class PayrollAccess
 
     public static function allowed(): bool
     {
-        return auth()->user()?->hasRole(self::ROLES) ?? false;
+        return Modules::allows('hr');
     }
 
     /**

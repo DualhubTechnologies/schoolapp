@@ -76,6 +76,9 @@ class AppPanelProvider extends PanelProvider
                     ->name('payroll.schedule');
                 \Illuminate\Support\Facades\Route::get('/academics/report-cards', \App\Http\Controllers\ReportCardController::class)
                     ->name('academics.report-cards');
+                \Illuminate\Support\Facades\Route::get('/finance/vouchers/{entry}', [\App\Http\Controllers\FinanceDocumentController::class, 'voucher'])
+                    ->whereNumber('entry')
+                    ->name('finance.voucher');
             })
 
             // --- Navigation ---
@@ -85,6 +88,7 @@ class AppPanelProvider extends PanelProvider
             ->navigationGroups([
                 NavigationGroup::make('Students'),
                 NavigationGroup::make('Fees'),
+                NavigationGroup::make('Finance'),
                 NavigationGroup::make('Exams & Results'),
                 NavigationGroup::make('Human Resources'),
                 NavigationGroup::make('Academics'),

@@ -17,6 +17,8 @@ use Illuminate\Database\Eloquent\Builder;
 
 class SalaryArrearResource extends Resource
 {
+    use \App\Filament\Concerns\GatedByModule;
+
     protected static ?string $model = SalaryArrear::class;
 
     protected static string|BackedEnum|null $navigationIcon = Heroicon::OutlinedExclamationTriangle;

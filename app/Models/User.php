@@ -27,7 +27,7 @@ use Spatie\Permission\Traits\HasRoles;
  * @property Carbon|null $created_at
  * @property Carbon|null $updated_at
  */
-#[Fillable(['name', 'email', 'password', 'school_id'])]
+#[Fillable(['name', 'email', 'password', 'school_id', 'modules'])]
 #[Hidden(['password', 'remember_token'])]
 class User extends Authenticatable implements FilamentUser
 {
@@ -44,7 +44,17 @@ class User extends Authenticatable implements FilamentUser
         return [
             'email_verified_at' => 'datetime',
             'password' => 'hashed',
+            // Modules chosen by the administrator; null = the role's defaults.
+            'modules' => 'array',
         ];
+    }
+
+    /**
+     * The staff record this login belongs to (teachers, bursars...).
+     */
+    public function staff(): \Illuminate\Database\Eloquent\Relations\HasOne
+    {
+        return $this->hasOne(Staff::class);
     }
 
     /**

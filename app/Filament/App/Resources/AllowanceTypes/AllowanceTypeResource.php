@@ -17,6 +17,8 @@ use Illuminate\Database\Eloquent\Builder;
 
 class AllowanceTypeResource extends Resource
 {
+    use \App\Filament\Concerns\GatedByModule;
+
     protected static ?string $model = AllowanceType::class;
 
 

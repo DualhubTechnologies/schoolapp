@@ -28,7 +28,7 @@ class SubjectsRelationManager extends RelationManager
 
     public static function canViewForRecord(Model $ownerRecord, string $pageClass): bool
     {
-        return \App\Support\AcademicAccess::manages();
+        return \App\Support\Modules::allows('academics');
     }
 
     public function form(Schema $schema): Schema
@@ -98,6 +98,7 @@ class SubjectsRelationManager extends RelationManager
     {
         return Staff::where('school_id', auth()->user()?->school_id)
             ->where('status', 'active')
+            ->where('category', 'teaching')
             ->orderBy('name')
             ->pluck('name', 'id')
             ->all();

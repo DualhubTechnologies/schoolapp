@@ -193,6 +193,6 @@ class StudentAccount extends Page
 
     public static function canAccess(): bool
     {
-        return auth()->user()?->hasRole(['Super Admin', 'School Admin', 'Accountant', 'Bursar']) ?? false;
+        return \App\Support\Modules::allows('fees');
     }
 }

@@ -25,6 +25,12 @@ class ReportCardController extends Controller
         $class = SchoolClass::where('school_id', $schoolId)->with('classLevel')->findOrFail($request->integer('class'));
         $term = Term::where('school_id', $schoolId)->with('academicYear')->findOrFail($request->integer('term'));
 
+        // Teachers print only the stream they are class teacher of.
+        abort_unless(
+            AcademicAccess::manages() || in_array($request->integer('section'), AcademicAccess::classTeacherStreamsIn($class->getKey()), true),
+            403,
+        );
+
         $results = $calculator->forClass($class, $term, $request->integer('section') ?: null);
         $rows = $results['rows']->filter(fn ($r) => $r['average'] !== null);
 
@@ -42,7 +48,39 @@ class ReportCardController extends Controller
             ? FeeStructure::termlyFor($nextTerm)->where('school_class_id', $class->getKey())
             : collect();
 
-        $teachers = Staff::whereIn('id', $class->subjects->pluck('pivot.teacher_id')->filter())->pluck('name', 'id');
+        $teachers = Staff::whereIn('id', $class->subjects->pluck('pivot.teacher_id')->filter())->get()
+            ->mapWithKeys(fn (Staff $s) => [$s->id => $s->reportInitials()]);
+
+        // The last term of the year carries the promotion decision, as
+        // Ugandan report cards do: the decision already made if the class
+        // has been promoted, otherwise the rules' recommendation.
+        $promotionText = [];
+        $isFinalTerm = ! $nextTerm || $nextTerm->academic_year_id !== $term->academic_year_id;
+        $promotions = app(\App\Services\Academics\PromotionService::class);
+
+        if ($isFinalTerm && ! $promotions->isFinalClass($class)) {
+            $nextClass = $promotions->nextClass($class)?->name ?? 'the next class';
+            $made = \App\Models\Promotion::where('academic_year_id', $term->academic_year_id)
+                ->whereIn('student_id', $rows->pluck('student.id'))
+                ->whereNull('reversed_at')
+                ->with('toClass')
+                ->get()
+                ->keyBy('student_id');
+            $advice = app(\App\Services\Academics\PromotionAdvisor::class)->advise($class, $term->academicYear);
+
+            foreach ($rows as $row) {
+                $id = $row['student']->id;
+                $decision = $made->get($id)?->action ?? ($advice[$id]['recommendation'] ?? null);
+                $to = $made->get($id)?->toClass?->name ?? $nextClass;
+
+                $promotionText[$id] = match ($decision) {
+                    'promote' => "Promoted to {$to}",
+                    'probation' => "Promoted to {$to} on probation",
+                    'repeat' => "Advised to repeat {$class->name}",
+                    default => null,
+                };
+            }
+        }
 
         $scales = GradingScale::where('school_id', $schoolId)
             ->where('curriculum', $class->curriculum())
@@ -61,6 +99,7 @@ class ReportCardController extends Controller
             'nextFees' => $nextFees,
             'teachers' => $teachers,
             'scales' => $scales,
+            'promotionText' => $promotionText,
         ]);
     }
 }

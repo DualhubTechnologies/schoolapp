@@ -33,6 +33,11 @@ class StaffTable
                 TextColumn::make('school.name')
                     ->label('School')
                     ->visible(fn () => auth()->user()?->hasRole('Super Admin')),
+                TextColumn::make('category')
+                    ->label('Category')
+                    ->badge()
+                    ->formatStateUsing(fn (?string $state) => $state === 'teaching' ? 'Teaching' : 'Non-teaching')
+                    ->color(fn (?string $state) => $state === 'teaching' ? 'primary' : 'gray'),
                 TextColumn::make('department')
                     ->placeholder('—')
                     ->searchable()
@@ -86,6 +91,9 @@ class StaffTable
                 SelectFilter::make('status')
                     ->options(Staff::STATUSES)
                     ->default('active'),
+                SelectFilter::make('category')
+                    ->label('Category')
+                    ->options(Staff::CATEGORIES),
                 SelectFilter::make('employment_type')
                     ->label('Type')
                     ->options(Staff::EMPLOYMENT_TYPES),

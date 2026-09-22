@@ -22,7 +22,9 @@ class ArrearsRelationManager extends RelationManager
 {
     protected static string $relationship = 'arrears';
 
-    protected static ?string $title = 'Salary Arrears';
+    protected static ?string $title = 'Arrears';
+
+    protected static ?string $modelLabel = 'salary arrear';
 
     public function form(Schema $schema): Schema
     {
@@ -100,7 +102,6 @@ class ArrearsRelationManager extends RelationManager
             ])
             ->headerActions([
                 CreateAction::make()
-                    ->label('Add arrears')
                     ->mutateFormDataUsing(function (array $data): array {
                         $data['school_id'] = $this->getOwnerRecord()->school_id;
                         $data['status'] = 'pending';

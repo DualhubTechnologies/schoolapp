@@ -20,6 +20,8 @@ use Illuminate\Database\Eloquent\Model;
 
 class StaffResource extends Resource
 {
+    use \App\Filament\Concerns\GatedByModule;
+
     protected static ?string $model = Staff::class;
 
 

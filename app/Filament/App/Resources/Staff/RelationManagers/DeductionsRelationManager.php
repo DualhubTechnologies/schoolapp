@@ -2,6 +2,7 @@
 
 namespace App\Filament\App\Resources\Staff\RelationManagers;
 
+use App\Models\DeductionType;
 use Filament\Actions\BulkActionGroup;
 use Filament\Actions\CreateAction;
 use Filament\Actions\DeleteAction;
@@ -25,6 +26,8 @@ class DeductionsRelationManager extends RelationManager
 
     protected static ?string $title = 'Deductions';
 
+    protected static ?string $modelLabel = 'deduction';
+
     public function form(Schema $schema): Schema
     {
         return $schema
@@ -38,8 +41,37 @@ class DeductionsRelationManager extends RelationManager
                     )
                     ->required()
                     ->preload()
+                    ->searchable()
                     ->live()
-                    ->helperText('Statutory deductions (NSSF, PAYE) are calculated automatically — only custom deductions are assigned here.'),
+                    ->helperText('NSSF, PAYE and LST are calculated automatically. Not in the list? Click + to add a new deduction type.')
+                    ->createOptionModalHeading('New deduction type')
+                    ->createOptionForm([
+                        TextInput::make('name')
+                            ->label('Deduction name')
+                            ->placeholder('e.g. Staff loan, SACCO, Welfare, Salary advance')
+                            ->required()
+                            ->maxLength(100),
+                        Select::make('calculation_method')
+                            ->label('Deducted as')
+                            ->options(['fixed' => 'A fixed amount each month', 'percentage' => 'A percentage of gross pay'])
+                            ->default('fixed')
+                            ->required()
+                            ->live(),
+                        TextInput::make('default_rate')
+                            ->label('Usual rate')
+                            ->numeric()
+                            ->suffix('%')
+                            ->visible(fn (Get $get) => $get('calculation_method') === 'percentage'),
+                    ])
+                    ->createOptionUsing(fn (array $data): int => DeductionType::firstOrCreate(
+                        ['school_id' => $this->getOwnerRecord()->school_id, 'name' => trim($data['name'])],
+                        [
+                            'calculation_method' => $data['calculation_method'] ?? 'fixed',
+                            'default_rate' => $data['default_rate'] ?? null,
+                            'is_statutory' => false,
+                            'is_active' => true,
+                        ],
+                    )->getKey()),
                 TextInput::make('amount')
                     ->label('Monthly deduction amount')
                     ->numeric()
@@ -123,8 +155,7 @@ class DeductionsRelationManager extends RelationManager
                     ->boolean(),
             ])
             ->headerActions([
-                CreateAction::make()
-                    ->label('Add deduction'),
+                CreateAction::make(),
             ])
             ->recordActions([
                 EditAction::make(),

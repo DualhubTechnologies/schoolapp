@@ -17,6 +17,8 @@ use Illuminate\Database\Eloquent\Builder;
 
 class SectionResource extends Resource
 {
+    use \App\Filament\Concerns\GatedByModule;
+
     protected static ?string $model = Section::class;
 
     protected static string|BackedEnum|null $navigationIcon = Heroicon::OutlinedSquares2x2;

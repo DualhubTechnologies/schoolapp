@@ -17,6 +17,8 @@ use Illuminate\Database\Eloquent\Builder;
 
 class HouseResource extends Resource
 {
+    use \App\Filament\Concerns\GatedByModule;
+
     protected static ?string $model = House::class;
 
     protected static string|BackedEnum|null $navigationIcon = Heroicon::OutlinedFlag;

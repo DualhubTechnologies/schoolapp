@@ -10,6 +10,11 @@ class EditStaff extends EditRecord
 {
     protected static string $resource = StaffResource::class;
 
+    public function getSubheading(): ?string
+    {
+        return 'Pay is set in the tabs below the form: Salary, Allowances, Deductions, Bank details and Arrears.';
+    }
+
     protected function getHeaderActions(): array
     {
         return [

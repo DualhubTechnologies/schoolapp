@@ -29,6 +29,8 @@ use Illuminate\Validation\Rules\Unique;
  */
 class SubjectResource extends Resource
 {
+    use \App\Filament\Concerns\GatedByModule;
+
     protected static ?string $model = Subject::class;
 
     protected static string|BackedEnum|null $navigationIcon = Heroicon::OutlinedBookOpen;
@@ -43,6 +45,7 @@ class SubjectResource extends Resource
     {
         return parent::getEloquentQuery()
             ->where('school_id', auth()->user()?->school_id)
+            ->whereIn('curriculum', \App\Support\SchoolType::keys())
             ->withCount('classes');
     }
 
@@ -50,7 +53,7 @@ class SubjectResource extends Resource
     {
         return $schema->columns(2)->components([
             Select::make('curriculum')
-                ->options(config('academics.curricula'))
+                ->options(fn () => \App\Support\SchoolType::curricula())
                 ->required()
                 ->native(false)
                 ->live(),
@@ -109,7 +112,7 @@ class SubjectResource extends Resource
                 IconColumn::make('is_active')->label('Active')->boolean(),
             ])
             ->filters([
-                SelectFilter::make('curriculum')->options(config('academics.curricula')),
+                SelectFilter::make('curriculum')->options(fn () => \App\Support\SchoolType::curricula()),
             ])
             ->recordActions([
                 EditAction::make(),
@@ -124,7 +127,7 @@ class SubjectResource extends Resource
 
     public static function canViewAny(): bool
     {
-        return AcademicAccess::manages();
+        return \App\Support\Modules::allows('academics');
     }
 
     public static function getPages(): array

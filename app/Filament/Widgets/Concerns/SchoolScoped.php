@@ -27,8 +27,7 @@ trait SchoolScoped
     {
         $user = auth()->user();
 
-        return $user?->school_id !== null
-            && $user->hasRole(['School Admin', 'Accountant', 'Bursar']);
+        return $user?->school_id !== null && \App\Support\Modules::allows('fees');
     }
 
     protected static function money(float $amount): string

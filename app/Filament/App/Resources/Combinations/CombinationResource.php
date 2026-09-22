@@ -27,6 +27,8 @@ use Illuminate\Validation\Rules\Unique;
  */
 class CombinationResource extends Resource
 {
+    use \App\Filament\Concerns\GatedByModule;
+
     protected static ?string $model = Combination::class;
 
     protected static string|BackedEnum|null $navigationIcon = Heroicon::OutlinedSquaresPlus;
@@ -107,7 +109,7 @@ class CombinationResource extends Resource
 
     public static function canViewAny(): bool
     {
-        return AcademicAccess::manages();
+        return \App\Support\Modules::allows('academics') && \App\Support\SchoolType::allows('a_level');
     }
 
     public static function shouldRegisterNavigation(): bool

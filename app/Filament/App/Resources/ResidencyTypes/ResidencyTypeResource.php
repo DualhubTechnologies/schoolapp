@@ -17,6 +17,8 @@ use Illuminate\Database\Eloquent\Builder;
 
 class ResidencyTypeResource extends Resource
 {
+    use \App\Filament\Concerns\GatedByModule;
+
     protected static ?string $model = ResidencyType::class;
 
     protected static string|BackedEnum|null $navigationIcon = Heroicon::OutlinedHomeModern;

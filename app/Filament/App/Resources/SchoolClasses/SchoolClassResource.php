@@ -17,6 +17,8 @@ use Illuminate\Database\Eloquent\Builder;
 
 class SchoolClassResource extends Resource
 {
+    use \App\Filament\Concerns\GatedByModule;
+
     protected static ?string $model = SchoolClass::class;
 
     protected static string|BackedEnum|null $navigationIcon = Heroicon::OutlinedBuildingLibrary;

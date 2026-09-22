@@ -22,6 +22,8 @@ use Illuminate\Database\Eloquent\Builder;
  */
 class GradingScaleResource extends Resource
 {
+    use \App\Filament\Concerns\GatedByModule;
+
     protected static ?string $model = GradingScale::class;
 
     protected static string|BackedEnum|null $navigationIcon = Heroicon::OutlinedAdjustmentsHorizontal;
@@ -36,6 +38,7 @@ class GradingScaleResource extends Resource
     {
         return parent::getEloquentQuery()
             ->where('school_id', auth()->user()?->school_id)
+            ->whereIn('curriculum', \App\Support\SchoolType::keys())
             ->with('bands');
     }
 
@@ -47,7 +50,7 @@ class GradingScaleResource extends Resource
                 ->relationship('bands', fn (Builder $q) => $q->reorder()->orderByDesc('min_score'))
                 ->label('Grades (highest first)')
                 ->schema([
-                    TextInput::make('grade')->required()->maxLength(10),
+                    TextInput::make('grade')->required()->maxLength(30),
                     TextInput::make('min_score')->label('From %')->numeric()->minValue(0)->maxValue(100)->required(),
                     TextInput::make('max_score')->label('To %')->numeric()->minValue(0)->maxValue(100)->required(),
                     TextInput::make('value')
@@ -86,7 +89,7 @@ class GradingScaleResource extends Resource
 
     public static function canViewAny(): bool
     {
-        return AcademicAccess::manages();
+        return \App\Support\Modules::allows('academics');
     }
 
     public static function canCreate(): bool

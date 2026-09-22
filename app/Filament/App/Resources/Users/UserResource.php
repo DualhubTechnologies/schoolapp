@@ -17,6 +17,8 @@ use Illuminate\Database\Eloquent\Builder;
 
 class UserResource extends Resource
 {
+    use \App\Filament\Concerns\GatedByModule;
+
     protected static ?string $model = User::class;
 
    
@@ -41,15 +43,25 @@ class UserResource extends Resource
         $user = auth()->user();
 
         if ($user && ! $user->hasRole('Super Admin')) {
-            $query->where('school_id', $user->school_id);
+            $query->where('school_id', $user->school_id)
+                ->whereDoesntHave('roles', fn ($q) => $q->where('name', 'Super Admin'));
         }
 
         return $query;
     }
 
+    /**
+     * Logins decide who can open what, so only School Admins (and the
+     * platform owner) manage them - never someone given the Settings module.
+     */
+    public static function canViewAny(): bool
+    {
+        return \App\Support\Modules::hasFullAccess(auth()->user());
+    }
+
     public static function canCreate(): bool
     {
-        return auth()->user()?->hasRole('Super Admin') ?? false;
+        return static::canViewAny();
     }
 
     public static function getRelations(): array

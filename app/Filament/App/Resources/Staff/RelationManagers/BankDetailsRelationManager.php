@@ -21,7 +21,9 @@ class BankDetailsRelationManager extends RelationManager
 {
     protected static string $relationship = 'bankDetails';
 
-    protected static ?string $title = 'Payment Details';
+    protected static ?string $title = 'Bank / Mobile money';
+
+    protected static ?string $modelLabel = 'payment details';
 
     public function form(Schema $schema): Schema
     {
@@ -92,8 +94,7 @@ class BankDetailsRelationManager extends RelationManager
                     ->boolean(),
             ])
             ->headerActions([
-                CreateAction::make()
-                    ->label('Add payment method'),
+                CreateAction::make(),
             ])
             ->recordActions([
                 EditAction::make(),

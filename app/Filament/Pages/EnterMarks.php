@@ -86,6 +86,12 @@ class EnterMarks extends Page
 
     public function updatedSubjectId(): void
     {
+        $limit = $this->streamLimit();
+
+        if ($limit !== null && ! in_array($this->sectionId, $limit, true)) {
+            $this->sectionId = $limit[0] ?? null;
+        }
+
         $this->loadSheet();
     }
 
@@ -138,7 +144,9 @@ class EnterMarks extends Page
 
         return SchoolClass::where('school_id', auth()->user()?->school_id)
             ->with('classLevel')
-            ->when(! AcademicAccess::manages(), fn ($q) => $q->whereHas('subjects', fn ($s) => $s->where('class_subject.teacher_id', AcademicAccess::staffId())))
+            ->when(! AcademicAccess::manages(), fn ($q) => $q->where(fn ($q) => $q
+                ->whereHas('subjects', fn ($s) => $s->where('class_subject.teacher_id', AcademicAccess::staffId()))
+                ->orWhereIn('id', array_values(AcademicAccess::classTeacherStreams()))))
             ->orderBy('level')
             ->orderBy('name')
             ->get()
@@ -155,14 +163,31 @@ class EnterMarks extends Page
     /** @return Collection<int, string> */
     public function sectionOptions(): Collection
     {
-        return $this->classId ? Section::where('school_class_id', $this->classId)->orderBy('name')->pluck('name', 'id') : collect();
+        $limit = $this->streamLimit();
+
+        return $this->classId
+            ? Section::where('school_class_id', $this->classId)->when($limit !== null, fn ($q) => $q->whereIn('id', $limit))->orderBy('name')->pluck('name', 'id')
+            : collect();
+    }
+
+    /**
+     * Streams the user may mark for the chosen subject: null = all. A class
+     * teacher entering a subject they do not teach gets only their stream.
+     *
+     * @return list<int>|null
+     */
+    public function streamLimit(): ?array
+    {
+        $subject = $this->subjectId ? $this->schoolClass?->subjects->firstWhere('id', $this->subjectId) : null;
+
+        return $subject ? AcademicAccess::streamsForMarks($subject->pivot->teacher_id, $this->classId) : null;
     }
 
     /** @return Collection<int, string> */
     public function subjectOptions(): Collection
     {
         return ($this->schoolClass?->subjects ?? collect())
-            ->filter(fn (Subject $s) => AcademicAccess::canEnterMarksFor($s->pivot->teacher_id))
+            ->filter(fn (Subject $s) => AcademicAccess::canEnterMarksFor($s->pivot->teacher_id, $this->classId))
             ->mapWithKeys(fn (Subject $s) => [$s->id => $s->name]);
     }
 
@@ -173,7 +198,7 @@ class EnterMarks extends Page
 
         // A teacher cannot open another teacher's mark sheet, even by
         // forcing the subject id.
-        return $subject && AcademicAccess::canEnterMarksFor($subject->pivot->teacher_id) ? $subject : null;
+        return $subject && AcademicAccess::canEnterMarksFor($subject->pivot->teacher_id, $this->classId) ? $subject : null;
     }
 
     // ── The sheet ──
@@ -199,6 +224,8 @@ class EnterMarks extends Page
         $students = Student::where('school_class_id', $class->getKey())
             ->where('status', 'active')
             ->when($this->sectionId, fn ($q) => $q->where('section_id', $this->sectionId))
+            // A class teacher marking a subject they do not teach: their stream only.
+            ->when(($limit = $this->streamLimit()) !== null, fn ($q) => $q->whereIn('section_id', $limit))
             ->with(['combination.subjects', 'electives'])
             ->orderBy('name')
             ->get();
@@ -251,7 +278,7 @@ class EnterMarks extends Page
             return;
         }
 
-        abort_unless(AcademicAccess::canEnterMarksFor($subject->pivot->teacher_id), 403);
+        abort_unless(AcademicAccess::canEnterMarksFor($subject->pivot->teacher_id, $this->classId), 403);
 
         if ($assessment->isLocked()) {
             Notification::make()->title('This exam is locked')->body('Ask the administrator to reopen it.')->danger()->send();

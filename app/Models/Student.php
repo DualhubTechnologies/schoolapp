@@ -101,7 +101,7 @@ class Student extends Model
 
     public const STATUSES = [
         'active' => 'Active',
-        'graduated' => 'Graduated',
+        'graduated' => 'Completed',
         'withdrawn' => 'Withdrawn',
         'transferred' => 'Transferred',
     ];

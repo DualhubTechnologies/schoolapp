@@ -21,6 +21,8 @@ use Illuminate\Database\Eloquent\Model;
  */
 class FeeReminderResource extends Resource
 {
+    use \App\Filament\Concerns\GatedByModule;
+
     protected static ?string $model = FeeReminder::class;
 
     protected static string|BackedEnum|null $navigationIcon = Heroicon::OutlinedBellAlert;
@@ -112,7 +114,7 @@ class FeeReminderResource extends Resource
 
     public static function canViewAny(): bool
     {
-        return auth()->user()?->hasRole(['School Admin', 'Accountant', 'Bursar']) ?? false;
+        return \App\Support\Modules::allows('fees');
     }
 
     public static function canCreate(): bool

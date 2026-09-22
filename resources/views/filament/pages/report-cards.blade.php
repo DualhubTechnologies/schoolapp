@@ -36,7 +36,7 @@
                 <label class="rc-label">Stream</label>
                 <x-filament::input.wrapper>
                     <x-filament::input.select wire:model.live="sectionId" :disabled="! $this->classId">
-                        <option value="">Whole class</option>
+                        @if ($isHead)<option value="">Whole class</option>@endif
                         @foreach ($this->sectionOptions() as $id => $label)
                             <option value="{{ $id }}">{{ $label }}</option>
                         @endforeach
@@ -46,7 +46,9 @@
         </div>
     </div>
 
-    @if (! $r)
+    @if (! $isHead && ! \App\Support\AcademicAccess::classTeacherStreams())
+        <div class="rc-empty">Report cards are written by class teachers. You are not class teacher of any stream — ask the administrator.</div>
+    @elseif (! $r)
         <div class="rc-empty">Choose a term and class.</div>
     @elseif (! $r['summary']['with_results'])
         <div class="rc-empty">No marks entered for {{ $r['class']->name }} in {{ $r['term']->label() }} yet.</div>
@@ -65,6 +67,15 @@
                 </div>
             </div>
 
+            <div class="rc-headnote">
+                <label class="rc-label" for="rc-head-comment">Head teacher's comment <span class="rc-muted">— one comment, printed on every report card in {{ $r['class']->name }}{{ $this->sectionId ? ' ' . ($this->sectionOptions()[$this->sectionId] ?? '') : '' }}</span></label>
+                @if ($isHead)
+                    <textarea id="rc-head-comment" rows="2" class="rc-input" wire:model="headComment" placeholder="e.g. A good term. Let us all work harder next term."></textarea>
+                @else
+                    <div class="rc-headtext">{{ $this->headComment ?: 'The head teacher has not written it yet.' }}</div>
+                @endif
+            </div>
+
             <div class="rc-scroll">
                 <table class="rc-table">
                     <thead>
@@ -74,7 +85,6 @@
                             <th class="rc-c">Avg.</th>
                             <th>Result</th>
                             <th>Class teacher's comment</th>
-                            <th>Head teacher's comment</th>
                             <th>Conduct</th>
                             <th></th>
                         </tr>
@@ -91,7 +101,6 @@
                                 <td class="rc-c rc-strong">{{ $row['average'] ?? '—' }}</td>
                                 <td class="rc-nowrap">{{ $overall($row) }}</td>
                                 <td><textarea rows="2" class="rc-input" wire:model="comments.{{ $id }}.class_teacher_comment" placeholder="Class teacher's comment"></textarea></td>
-                                <td><textarea rows="2" class="rc-input" wire:model="comments.{{ $id }}.head_teacher_comment" placeholder="{{ $isHead ? 'Head teacher\'s comment' : 'Head teacher only' }}" @disabled(! $isHead)></textarea></td>
                                 <td>
                                     <select class="rc-input" wire:model="comments.{{ $id }}.conduct">
                                         <option value="">—</option>
@@ -129,6 +138,9 @@
         .rc-nowrap { white-space: nowrap; }
         .rc-input { width: 100%; min-width: 11rem; font-size: .8rem; padding: .35rem .5rem; border: 1px solid #e2e8f0; border-radius: 6px; background: #fff; }
         .rc-input:disabled { background: #f8fafc; }
+        .rc-headnote { padding: .9rem 1.2rem; border-bottom: 1px solid #eef2f7; background: #fafcff; }
+        .rc-headnote .rc-input { max-width: 48rem; }
+        .rc-headtext { font-size: .85rem; color: #16233a; font-style: italic; }
         .rc-link { color: #1a5fa8; font-weight: 600; font-size: .8rem; }
     </style>
 </x-filament-panels::page>

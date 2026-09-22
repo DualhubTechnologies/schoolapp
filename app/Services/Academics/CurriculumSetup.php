@@ -27,7 +27,8 @@ class CurriculumSetup
         $result = ['subjects' => 0, 'class_subjects' => 0, 'scales' => 0, 'combinations' => 0, 'curricula' => []];
 
         $classes = SchoolClass::where('school_id', $school->getKey())->with('classLevel')->get();
-        $curricula = $classes->map->curriculum()->filter()->unique()->values();
+        $allowed = \App\Support\SchoolType::keys($school);
+        $curricula = $classes->map->curriculum()->filter(fn ($c) => in_array($c, $allowed, true))->unique()->values();
 
         // A school whose levels carry no curriculum yet: go by school type.
         if ($curricula->isEmpty()) {

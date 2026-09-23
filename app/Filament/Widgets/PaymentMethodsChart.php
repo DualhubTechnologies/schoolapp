@@ -20,6 +20,12 @@ class PaymentMethodsChart extends ChartWidget
 
     protected ?string $maxHeight = '260px';
 
+    protected ?string $icon = 'heroicon-o-credit-card';
+
+    protected ?string $iconColor = 'success';
+
+    protected string $view = 'filament.widgets.branded-chart-widget';
+
     public static function canView(): bool
     {
         return static::userHandlesFees();
@@ -30,8 +36,8 @@ class PaymentMethodsChart extends ChartWidget
         $term = $this->currentTerm();
         $total = array_sum($this->totals());
 
-        return ($total > 0 ? static::shortMoney($total) . ' collected' : 'Nothing collected yet')
-            . ($term ? ', ' . $term->label() : '');
+        return ($total > 0 ? static::shortMoney($total).' collected' : 'Nothing collected yet')
+            .($term ? ', '.$term->label() : '');
     }
 
     protected function getType(): string
@@ -93,7 +99,7 @@ class PaymentMethodsChart extends ChartWidget
             ]],
             // "Mobile money · 64%": the legend carries the share, the tooltip the amount.
             'labels' => collect($totals)
-                ->map(fn ($v, $m) => (StudentPayment::METHODS[$m] ?? ucfirst((string) $m)) . ' · ' . round($v / $sum * 100) . '%')
+                ->map(fn ($v, $m) => (StudentPayment::METHODS[$m] ?? ucfirst((string) $m)).' · '.round($v / $sum * 100).'%')
                 ->values()
                 ->all(),
         ];

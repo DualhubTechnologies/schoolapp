@@ -1,4 +1,3 @@
-```blade
 <!DOCTYPE html>
 <html lang="en">
 <head>
@@ -179,40 +178,82 @@
            FEES
         ========================= */
 
-        .fee-highlight {
+        .fee-table {
             width: 100%;
-            background: #eff6ff;
+            border-collapse: collapse;
             border: 1px solid #bfdbfe;
             margin: 12px 0;
-            padding: 9px 12px;
         }
 
-        .fee-highlight table {
+        .fee-table caption {
+            text-align: left;
+            font-size: 8px;
+            font-weight: bold;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+            color: #1e3a8a;
+            background: #eff6ff;
+            border: 1px solid #bfdbfe;
+            border-bottom: none;
+            padding: 6px 9px;
+            caption-side: top;
+        }
+
+        .fee-table td {
+            padding: 5px 9px;
+            font-size: 9.5px;
+            border-bottom: 1px solid #dbeafe;
+        }
+
+        .fee-table td.amt {
+            text-align: right;
+            white-space: nowrap;
+        }
+
+        .fee-table tr.total td {
+            border-top: 2px solid #1e3a8a;
+            border-bottom: none;
+            font-weight: bold;
+            font-size: 12px;
+            color: #1e3a8a;
+            padding-top: 7px;
+        }
+
+        /* =========================
+           HOW TO PAY
+        ========================= */
+
+        .pay-box {
+            width: 100%;
+            border: 1px solid #d1d5db;
+            background: #f8fafc;
+            margin: 12px 0;
+            padding: 8px 10px;
+        }
+
+        .pay-box .pay-title {
+            font-size: 8.5px;
+            font-weight: bold;
+            text-transform: uppercase;
+            letter-spacing: 0.4px;
+            color: #4b5563;
+            margin-bottom: 4px;
+        }
+
+        .pay-box table {
             width: 100%;
             border-collapse: collapse;
         }
 
-        .fee-label {
-            font-size: 8px;
-            color: #6b7280;
-            text-transform: uppercase;
-            letter-spacing: 0.5px;
-            margin-bottom: 2px;
+        .pay-box td {
+            font-size: 9.5px;
+            padding: 2px 0;
+            vertical-align: top;
         }
 
-        .fee-amount {
-            font-size: 17px;
-            font-weight: bold;
-            color: #1e3a8a;
-        }
-
-        .fee-description {
-            text-align: right;
-            vertical-align: middle;
-            width: 42%;
-            font-size: 8.5px;
+        .pay-box td.k {
+            width: 30%;
             color: #6b7280;
-            line-height: 1.35;
         }
 
         /* =========================
@@ -273,7 +314,8 @@
         .header,
         .doc-title,
         .details-box,
-        .fee-highlight,
+        .fee-table,
+        .pay-box,
         .signature-row {
             page-break-inside: avoid;
         }
@@ -369,8 +411,8 @@
     <div class="body-text">
 
         We are pleased to inform you that you have been offered a place at
-        <strong>{{ $school->name }}</strong> for the academic year
-        <strong>{{ $academicYear }}</strong>.
+        <strong>{{ $school->name }}</strong>@if ($term) for
+        <strong>{{ $term->label() }}</strong>@endif.
 
         Following a review of your application, you have been admitted to
         the class and section indicated below. Congratulations, and welcome
@@ -416,11 +458,21 @@
             </td>
         </tr>
 
+        @if ($student->residencyType)
+            <tr>
+                <td class="label">Residency</td>
+                <td class="value">{{ $student->residencyType->name }}</td>
+            </tr>
+        @endif
+
         @if ($student->guardian)
             <tr>
                 <td class="label">Parent / Guardian</td>
                 <td class="value">
                     {{ $student->guardian->name }}
+                    @if ($student->guardian->phone)
+                        — {{ $student->guardian->phone }}
+                    @endif
                 </td>
             </tr>
         @endif
@@ -448,37 +500,23 @@
          FEES
     ========================== --}}
 
-    @if ($feeStructure)
+    @if ($feeLines->isNotEmpty())
 
-        <div class="fee-highlight">
+        <table class="fee-table">
+            <caption>Fees Payable — {{ $term?->label() }}</caption>
 
-            <table>
+            @foreach ($feeLines as $fee)
                 <tr>
-
-                    <td>
-                        <div class="fee-label">
-                            Fees Payable —
-                            {{ $feeStructure->term }},
-                            {{ $feeStructure->academic_year }}
-                        </div>
-
-                        <div class="fee-amount">
-                            {{ $feeStructure->formattedAmount() }}
-                        </div>
-                    </td>
-
-                    @if ($feeStructure->description)
-
-                        <td class="fee-description">
-                            {{ $feeStructure->description }}
-                        </td>
-
-                    @endif
-
+                    <td>{{ $fee->name }}</td>
+                    <td class="amt">{{ $fee->currency ?: 'UGX' }} {{ number_format((float) $fee->amount, 0) }}</td>
                 </tr>
-            </table>
+            @endforeach
 
-        </div>
+            <tr class="total">
+                <td>Total payable</td>
+                <td class="amt">UGX {{ number_format($feeTotal, 0) }}</td>
+            </tr>
+        </table>
 
     @else
 
@@ -487,6 +525,42 @@
                 Fee details for this class have not yet been set.
                 Please contact the bursar's office.
             </em>
+        </div>
+
+    @endif
+
+
+    {{-- =========================
+         HOW TO PAY
+    ========================== --}}
+
+    @if ($school->fee_payment_bank || $school->fee_payment_mobile_money || $school->fee_payment_instructions)
+
+        <div class="pay-box">
+            <div class="pay-title">How to pay</div>
+
+            <table>
+                @if ($school->fee_payment_bank)
+                    <tr>
+                        <td class="k">Bank</td>
+                        <td>{{ $school->fee_payment_bank }}</td>
+                    </tr>
+                @endif
+
+                @if ($school->fee_payment_mobile_money)
+                    <tr>
+                        <td class="k">Mobile money</td>
+                        <td>{{ $school->fee_payment_mobile_money }}</td>
+                    </tr>
+                @endif
+
+                @if ($school->fee_payment_instructions)
+                    <tr>
+                        <td class="k">Notes</td>
+                        <td>{{ $school->fee_payment_instructions }}</td>
+                    </tr>
+                @endif
+            </table>
         </div>
 
     @endif
@@ -502,8 +576,8 @@
 
         <strong>
             {{
-                $openingDate
-                    ? \Illuminate\Support\Carbon::parse($openingDate)->format('l, j F Y')
+                $term?->start_date
+                    ? $term->start_date->format('l, j F Y')
                     : 'a date to be communicated'
             }}
         </strong>.
@@ -605,4 +679,3 @@
 
 </body>
 </html>
-```

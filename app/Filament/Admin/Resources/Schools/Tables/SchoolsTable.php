@@ -25,7 +25,7 @@ class SchoolsTable
                     ->disk('public')
                     ->circular()
                     ->defaultImageUrl(fn ($record) => 'https://ui-avatars.com/api/?name='
-                        . urlencode($record->name) . '&background=random'),
+                        .urlencode($record->name).'&background=random'),
 
                 TextColumn::make('name')
                     ->label('School')
@@ -50,7 +50,7 @@ class SchoolsTable
                     ->description(function (School $record) {
                         $st = SubscriptionManager::status($record);
 
-                        return $st['ends_on'] ? 'to ' . $st['ends_on']->format('j M Y') : null;
+                        return $st['ends_on'] ? 'to '.$st['ends_on']->format('j M Y') : null;
                     }),
 
                 TextColumn::make('subscription_state')
@@ -65,7 +65,7 @@ class SchoolsTable
                     ->state(function (School $record) {
                         $u = SubscriptionManager::usage($record)['students'];
 
-                        return number_format($u['used']) . ' / ' . ($u['limit'] === null ? '∞' : number_format($u['limit']));
+                        return number_format($u['used']).' / '.($u['limit'] === null ? '∞' : number_format($u['limit']));
                     })
                     ->color(function (School $record) {
                         $u = SubscriptionManager::usage($record)['students'];
@@ -78,7 +78,7 @@ class SchoolsTable
                     ->state(function (School $record) {
                         $u = SubscriptionManager::usage($record)['users'];
 
-                        return $u['used'] . ' / ' . ($u['limit'] === null ? '∞' : $u['limit']);
+                        return $u['used'].' / '.($u['limit'] === null ? '∞' : $u['limit']);
                     }),
 
                 TextColumn::make('city')
@@ -143,6 +143,7 @@ class SchoolsTable
             ])
             ->recordActions([
                 SubscriptionActions::renew()->iconButton()->tooltip('Record payment'),
+                SubscriptionActions::activationCode()->iconButton()->tooltip('Generate activation code'),
                 ActionGroup::make([
                     EditAction::make(),
                     SubscriptionActions::changePlan(),

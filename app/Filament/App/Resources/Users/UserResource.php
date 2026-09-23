@@ -8,6 +8,7 @@ use App\Filament\App\Resources\Users\Pages\ListUsers;
 use App\Filament\App\Resources\Users\Schemas\UserForm;
 use App\Filament\App\Resources\Users\Tables\UsersTable;
 use App\Models\User;
+use App\Support\Modules;
 use BackedEnum;
 use Filament\Resources\Resource;
 use Filament\Schemas\Schema;
@@ -17,11 +18,13 @@ use Illuminate\Database\Eloquent\Builder;
 
 class UserResource extends Resource
 {
-    use \App\Filament\Concerns\GatedByModule;
+    // No GatedByModule here: canViewAny() below is already the full,
+    // correct rule (School Admin or Super Admin only) -- the trait's
+    // module check would only narrow it further and wrongly excludes
+    // Super Admin, who has no school modules of its own.
 
     protected static ?string $model = User::class;
 
-   
     protected static string|BackedEnum|null $navigationIcon = Heroicon::OutlinedShieldCheck;
 
     protected static ?string $recordTitleAttribute = 'name';
@@ -56,7 +59,7 @@ class UserResource extends Resource
      */
     public static function canViewAny(): bool
     {
-        return \App\Support\Modules::hasFullAccess(auth()->user());
+        return Modules::hasFullAccess(auth()->user());
     }
 
     public static function canCreate(): bool
@@ -70,8 +73,9 @@ class UserResource extends Resource
             //
         ];
     }
+
     protected static ?int $navigationSort = 2;
-    
+
     public static function getNavigationGroup(): ?string
     {
         if (auth()->user()?->hasRole('Super Admin')) {

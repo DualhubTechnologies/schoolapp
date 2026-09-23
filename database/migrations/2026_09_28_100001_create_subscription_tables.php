@@ -58,10 +58,10 @@ return new class extends Migration
         $now = now();
         DB::table('plans')->insert([
             ['name' => 'Free Trial', 'slug' => 'trial', 'description' => 'Try everything for 30 days.', 'max_students' => 1000, 'max_users' => 10, 'price_per_term' => 0, 'price_per_year' => 0, 'is_trial' => true, 'sort_order' => 0],
-            ['name' => 'Starter', 'slug' => 'starter', 'description' => 'Small schools.', 'max_students' => 300, 'max_users' => 10, 'price_per_term' => 300000, 'price_per_year' => 810000, 'is_trial' => false, 'sort_order' => 1],
-            ['name' => 'Standard', 'slug' => 'standard', 'description' => 'Most day and boarding schools.', 'max_students' => 800, 'max_users' => 25, 'price_per_term' => 600000, 'price_per_year' => 1620000, 'is_trial' => false, 'sort_order' => 2],
-            ['name' => 'Premium', 'slug' => 'premium', 'description' => 'Large schools with several streams.', 'max_students' => 1500, 'max_users' => 60, 'price_per_term' => 1000000, 'price_per_year' => 2700000, 'is_trial' => false, 'sort_order' => 3],
-            ['name' => 'Enterprise', 'slug' => 'enterprise', 'description' => 'No limits.', 'max_students' => null, 'max_users' => null, 'price_per_term' => 1800000, 'price_per_year' => 4860000, 'is_trial' => false, 'sort_order' => 4],
+            ['name' => 'Starter', 'slug' => 'starter', 'description' => 'Small schools.', 'max_students' => 300, 'max_users' => 10, 'price_per_term' => 160000, 'price_per_year' => 432000, 'is_trial' => false, 'sort_order' => 1],
+            ['name' => 'Standard', 'slug' => 'standard', 'description' => 'Most day and boarding schools.', 'max_students' => 800, 'max_users' => 25, 'price_per_term' => 300000, 'price_per_year' => 810000, 'is_trial' => false, 'sort_order' => 2],
+            ['name' => 'Premium', 'slug' => 'premium', 'description' => 'Large schools with several streams.', 'max_students' => 1500, 'max_users' => 60, 'price_per_term' => 500000, 'price_per_year' => 1350000, 'is_trial' => false, 'sort_order' => 3],
+            ['name' => 'Enterprise', 'slug' => 'enterprise', 'description' => 'No limits.', 'max_students' => null, 'max_users' => null, 'price_per_term' => 900000, 'price_per_year' => 2430000, 'is_trial' => false, 'sort_order' => 4],
         ]);
         DB::table('plans')->update(['created_at' => $now, 'updated_at' => $now]);
 

@@ -2,14 +2,18 @@
 
 namespace App\Filament\App\Resources\Students\Pages;
 
+use App\Filament\App\Resources\Students\Schemas\StudentForm;
 use App\Filament\App\Resources\Students\StudentResource;
 use App\Jobs\ProcessStudentImport;
+use App\Models\Student;
 use App\Models\StudentImport;
 use App\Services\StudentCsvImporter;
+use App\Services\Subscriptions\SubscriptionManager;
 use Filament\Actions\Action;
 use Filament\Actions\CreateAction;
 use Filament\Notifications\Notification;
 use Filament\Resources\Pages\ListRecords;
+use Filament\Schemas\Components\Wizard\Step;
 use Illuminate\Contracts\View\View;
 use Livewire\WithFileUploads;
 
@@ -105,8 +109,59 @@ class ListStudents extends ListRecords
                     );
                 }),
 
+            // Admission as a modal, one step at a time — same fields as
+            // editing a student, just presented one group at a time.
             CreateAction::make()
-                ->label('New student'),
+                ->label('New student')
+                ->modalHeading('New student')
+                ->modalWidth('7xl')
+                ->extraModalWindowAttributes(['class' => 'sh-admission-modal'])
+                // The School field is only shown to the platform owner.
+                ->mutateDataUsing(fn (array $data): array => [
+                    ...$data,
+                    'school_id' => $data['school_id'] ?? auth()->user()->school_id,
+                ])
+                ->disabled(fn () => SubscriptionManager::roomForStudents(auth()->user()->school_id) === 0)
+                ->tooltip(fn () => SubscriptionManager::roomForStudents(auth()->user()->school_id) === 0
+                    ? 'The school has as many active students as its plan allows. Mark students who have left as Withdrawn/Transferred/Completed, or ask for a bigger plan on the Subscription page.'
+                    : null)
+                ->steps([
+                    Step::make('Student Details')
+                        ->description('Name, photo and identifiers')
+                        ->icon('heroicon-o-identification')
+                        // Photo on the left (2/6), details on the right (4/6).
+                        ->columns(['default' => 1, 'md' => 6])
+                        ->schema(StudentForm::identityFields()),
+
+                    Step::make('Class & Enrollment')
+                        ->description('Where this student belongs')
+                        ->icon('heroicon-o-academic-cap')
+                        ->columns(2)
+                        ->schema(StudentForm::enrollmentFields()),
+
+                    Step::make('Parent & Contact')
+                        ->description('Guardian and contact details')
+                        ->icon('heroicon-o-user-group')
+                        ->columns(2)
+                        ->schema(StudentForm::contactFields()),
+
+                    Step::make('Address & Welfare')
+                        ->description('Optional — can be added later')
+                        ->icon('heroicon-o-heart')
+                        ->columns(2)
+                        ->schema(StudentForm::welfareFields()),
+                ])
+                ->successNotification(fn (Student $record) => Notification::make()
+                    ->title('Student admitted')
+                    ->body($record->name.' ('.$record->admission_no.') has been added.')
+                    ->success()
+                    ->actions([
+                        Action::make('printAdmissionLetter')
+                            ->label('Print admission letter')
+                            ->button()
+                            ->url(route('filament.app.students.admission-letter', $record))
+                            ->openUrlInNewTab(),
+                    ])),
         ];
     }
 
@@ -263,7 +318,7 @@ class ListStudents extends ListRecords
     public function formatDuration(int $seconds): string
     {
         if ($seconds < 60) {
-            return $seconds . 's';
+            return $seconds.'s';
         }
 
         $minutes = floor($seconds / 60);

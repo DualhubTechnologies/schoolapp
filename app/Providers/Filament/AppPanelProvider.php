@@ -2,6 +2,25 @@
 
 namespace App\Providers\Filament;
 
+use App\Filament\App\Pages\Dashboard;
+use App\Filament\App\Widgets\BursarKpis;
+use App\Filament\App\Widgets\HrKpis;
+use App\Filament\App\Widgets\LeadershipKpis;
+use App\Filament\App\Widgets\PlatformKpis;
+use App\Filament\App\Widgets\TeacherKpis;
+use App\Filament\App\Widgets\TeacherMarksProgress;
+use App\Filament\App\Widgets\WelcomeBanner;
+use App\Filament\Pages\Auth\Login;
+use App\Filament\Pages\Auth\RegisterSchool;
+use App\Filament\Widgets\StatsOverview;
+use App\Http\Controllers\DemoRequestController;
+use App\Http\Controllers\FeeDocumentController;
+use App\Http\Controllers\FinanceDocumentController;
+use App\Http\Controllers\LandingController;
+use App\Http\Controllers\PayrollDocumentController;
+use App\Http\Controllers\ReportCardController;
+use App\Http\Controllers\StudentDocumentController;
+use App\Http\Middleware\EnsureSchoolSubscribed;
 use Filafly\LogoTools\LogoToolsPlugin;
 use Filament\Http\Middleware\Authenticate;
 use Filament\Http\Middleware\AuthenticateSession;
@@ -13,11 +32,13 @@ use Filament\PanelProvider;
 use Filament\Support\Colors\Color;
 use Filament\Support\Enums\Width;
 use Filament\Support\Icons\Heroicon;
+use Filament\View\PanelsRenderHook;
 use Illuminate\Cookie\Middleware\AddQueuedCookiesToResponse;
 use Illuminate\Cookie\Middleware\EncryptCookies;
 use Illuminate\Foundation\Http\Middleware\PreventRequestForgery;
 use Illuminate\Routing\Middleware\SubstituteBindings;
 use Illuminate\Session\Middleware\StartSession;
+use Illuminate\Support\Facades\Route;
 use Illuminate\View\Middleware\ShareErrorsFromSession;
 
 class AppPanelProvider extends PanelProvider
@@ -28,18 +49,20 @@ class AppPanelProvider extends PanelProvider
             ->default()
             ->id('app')
             ->path('/')                       // Serves at http://schoolapp.test
-            ->login(\App\Filament\Pages\Auth\Login::class)
+            ->login(Login::class)
             // Schools sign themselves up; the person registering becomes its School Admin.
-            ->registration(\App\Filament\Pages\Auth\RegisterSchool::class)
+            ->registration(RegisterSchool::class)
             ->passwordReset()
 
             // Public landing page at the site root. Registered here (not in
             // routes/web.php) so Filament sees "/" is taken and sends
             // signed-in users to /dashboard instead.
             ->routes(function () {
-                \Illuminate\Support\Facades\Route::get('/', \App\Http\Controllers\LandingController::class)->name('landing');
+                Route::get('/', LandingController::class)->name('landing');
+                // Terms and conditions, linked from registration and the site footers.
+                Route::view('/terms-and-conditions', 'legal.terms')->name('legal.terms');   // /terms is the academic Terms resource
                 // "Book a demo" form on the landing page.
-                \Illuminate\Support\Facades\Route::post('/demo-request', \App\Http\Controllers\DemoRequestController::class)
+                Route::post('/demo-request', DemoRequestController::class)
                     ->middleware('throttle:5,10')
                     ->name('demo-request');
             })
@@ -59,10 +82,10 @@ class AppPanelProvider extends PanelProvider
             // --- Colors ---
             ->colors([
                 'primary' => Color::Blue,
-                'danger'  => Color::Red,
+                'danger' => Color::Red,
                 'success' => Color::Green,
                 'warning' => Color::Amber,
-                'info'    => Color::Sky,
+                'info' => Color::Sky,
             ])
 
             // --- Layout ---
@@ -81,21 +104,27 @@ class AppPanelProvider extends PanelProvider
                 // Filament sends people to the route named "home" after
                 // sign-in and from the logo; "/" is the landing page, so
                 // point it at the dashboard.
-                \Illuminate\Support\Facades\Route::get('/home', fn () => redirect(\App\Filament\App\Pages\Dashboard::getUrl()))
+                Route::get('/home', fn () => redirect(Dashboard::getUrl()))
                     ->name('home');
-                \Illuminate\Support\Facades\Route::get('/fees/receipts/{payment}', [\App\Http\Controllers\FeeDocumentController::class, 'receipt'])
+                Route::get('/fees/receipts/{payment}', [FeeDocumentController::class, 'receipt'])
                     ->whereNumber('payment')
                     ->name('fees.receipt');
-                \Illuminate\Support\Facades\Route::get('/fees/reminder-letters', [\App\Http\Controllers\FeeDocumentController::class, 'letters'])
+                Route::get('/fees/reminder-letters', [FeeDocumentController::class, 'letters'])
                     ->name('fees.letters');
-                \Illuminate\Support\Facades\Route::get('/payroll-documents/{period}/{type}', [\App\Http\Controllers\PayrollDocumentController::class, 'schedule'])
+                Route::get('/payroll-documents/{period}/{type}', [PayrollDocumentController::class, 'schedule'])
                     ->whereNumber('period')
                     ->name('payroll.schedule');
-                \Illuminate\Support\Facades\Route::get('/academics/report-cards', \App\Http\Controllers\ReportCardController::class)
+                Route::get('/academics/report-cards', ReportCardController::class)
                     ->name('academics.report-cards');
-                \Illuminate\Support\Facades\Route::get('/finance/vouchers/{entry}', [\App\Http\Controllers\FinanceDocumentController::class, 'voucher'])
+                Route::get('/finance/vouchers/{entry}', [FinanceDocumentController::class, 'voucher'])
                     ->whereNumber('entry')
                     ->name('finance.voucher');
+                Route::get('/students/{student}/admission-letter', [StudentDocumentController::class, 'admissionLetter'])
+                    ->whereNumber('student')
+                    ->name('students.admission-letter');
+                Route::get('/students/{student}/profile', [StudentDocumentController::class, 'profile'])
+                    ->whereNumber('student')
+                    ->name('students.profile');
             })
 
             // --- Navigation ---
@@ -130,25 +159,25 @@ class AppPanelProvider extends PanelProvider
             // hidden in CSS, and this custom bar renders at the top of
             // the page content instead.
             ->renderHook(
-                \Filament\View\PanelsRenderHook::HEAD_END,
-                fn () => '<link rel="stylesheet" href="' . asset('css/filament-custom.css') . '?v=' . filemtime(public_path('css/filament-custom.css')) . '">'
-                    . '<link rel="stylesheet" href="' . asset('css/dashboard.css') . '?v=' . filemtime(public_path('css/dashboard.css')) . '">'
+                PanelsRenderHook::HEAD_END,
+                fn () => '<link rel="stylesheet" href="'.asset('css/filament-custom.css').'?v='.filemtime(public_path('css/filament-custom.css')).'">'
+                    .'<link rel="stylesheet" href="'.asset('css/dashboard.css').'?v='.filemtime(public_path('css/dashboard.css')).'">'
             )
             ->renderHook(
-                \Filament\View\PanelsRenderHook::PAGE_START,
+                PanelsRenderHook::PAGE_START,
                 fn () => view('filament.partials.topbar')
             )
             // Subscription warnings for School Admins (after the topbar).
             ->renderHook(
-                \Filament\View\PanelsRenderHook::PAGE_START,
+                PanelsRenderHook::PAGE_START,
                 fn () => view('filament.partials.subscription-banner')
             )
             ->renderHook(
-                \Filament\View\PanelsRenderHook::FOOTER,
+                PanelsRenderHook::FOOTER,
                 fn () => view('filament.partials.footer')
             )
             ->renderHook(
-                \Filament\View\PanelsRenderHook::SIMPLE_PAGE_START,
+                PanelsRenderHook::SIMPLE_PAGE_START,
                 fn () => view('filament.partials.login-brand')
             )
 
@@ -156,22 +185,22 @@ class AppPanelProvider extends PanelProvider
             ->discoverResources(in: app_path('Filament/App/Resources'), for: 'App\Filament\App\Resources')
             ->discoverPages(in: app_path('Filament/Pages'), for: 'App\Filament\Pages')
             ->pages([
-                \App\Filament\App\Pages\Dashboard::class,
+                Dashboard::class,
             ])
             ->discoverWidgets(in: app_path('Filament/Widgets'), for: 'App\Filament\Widgets')
             // Everything in app/Filament/Widgets is discovered; the old
             // welcome card is left out -- the topbar already has the user menu.
             ->widgets([
-                \App\Filament\Widgets\StatsOverview::class,
+                StatsOverview::class,
                 // Per-user-group dashboard widgets (App\Filament\App\Pages\Dashboard
                 // picks which ones each user sees).
-                \App\Filament\App\Widgets\WelcomeBanner::class,
-                \App\Filament\App\Widgets\LeadershipKpis::class,
-                \App\Filament\App\Widgets\BursarKpis::class,
-                \App\Filament\App\Widgets\HrKpis::class,
-                \App\Filament\App\Widgets\TeacherKpis::class,
-                \App\Filament\App\Widgets\TeacherMarksProgress::class,
-                \App\Filament\App\Widgets\PlatformKpis::class,
+                WelcomeBanner::class,
+                LeadershipKpis::class,
+                BursarKpis::class,
+                HrKpis::class,
+                TeacherKpis::class,
+                TeacherMarksProgress::class,
+                PlatformKpis::class,
             ])
 
             // --- Middleware ---
@@ -189,7 +218,7 @@ class AppPanelProvider extends PanelProvider
             ->authMiddleware([
                 Authenticate::class,
                 // Expired or suspended schools see only their Subscription page.
-                \App\Http\Middleware\EnsureSchoolSubscribed::class,
+                EnsureSchoolSubscribed::class,
             ]);
     }
 }

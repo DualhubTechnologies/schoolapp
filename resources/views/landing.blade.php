@@ -100,7 +100,7 @@
         .header.is-open .mobile-nav { display: block; }
 
         /* ── Hero ── */
-        .hero { position: relative; padding: 5rem 0 4rem; overflow: hidden; }
+        .hero { position: relative; padding: 2.5rem 0 4rem; overflow: hidden; }
         .hero::before { content: ""; position: absolute; inset: 0; z-index: -1; background-image: linear-gradient(var(--slate-100) 1px, transparent 1px), linear-gradient(90deg, var(--slate-100) 1px, transparent 1px); background-size: 3.5rem 3.5rem; mask-image: radial-gradient(ellipse 70% 60% at 50% 0%, #000 40%, transparent 100%); -webkit-mask-image: radial-gradient(ellipse 70% 60% at 50% 0%, #000 40%, transparent 100%); }
         .hero-copy { max-width: 48rem; margin: 0 auto; text-align: center; }
         .badge { display: inline-flex; align-items: center; gap: .5rem; padding: .3125rem .875rem .3125rem .375rem; border: 1px solid var(--slate-200); border-radius: 999px; background: #fff; font-size: .8125rem; font-weight: 500; color: var(--slate-600); box-shadow: var(--shadow-sm); }
@@ -338,7 +338,7 @@
         @media (max-width: 640px) {
             .container { padding: 0 1rem; }
             .brand img { height: 2.25rem; }
-            .hero { padding: 3.5rem 0 3rem; }
+            .hero { padding: 2rem 0 3rem; }
             .section { padding: 4.5rem 0; }
             .grid-3, .steps { grid-template-columns: 1fr; }
             .app-row { grid-template-columns: 1fr; }
@@ -672,7 +672,7 @@
             <div class="section-head">
                 <div class="eyebrow">Pricing</div>
                 <h2>Simple pricing, paid per term</h2>
-                <p>Every plan includes every feature. Plans differ only by the number of learners and staff logins.</p>
+                <p>Every plan includes every module. Plans differ by the number of learners, staff logins, and parent &amp; student portal access.</p>
             </div>
 
             @if ($hasYearly)
@@ -696,18 +696,26 @@
                         <h3>{{ $plan->name }}</h3>
                         <p class="plan-desc">{{ $plan->description }}</p>
 
-                        <div class="plan-price price-term"><small>UGX</small><b>{{ number_format($plan->price_per_term) }}</b><span>per term</span></div>
-                        <div class="plan-price price-year"><small>UGX</small><b>{{ number_format($plan->price_per_year ?: $plan->price_per_term * 3) }}</b><span>per year</span></div>
-                        <p class="plan-sub price-term">Billed at the start of each term</p>
-                        <p class="plan-sub price-year">{{ $yearSaving > 0 ? "Save {$yearSaving}% compared with paying per term" : 'Billed once a year' }}</p>
+                        @if ($plan->contact_sales)
+                            <div class="plan-price"><b>Custom pricing</b></div>
+                            <p class="plan-sub">Sized to your school — talk to us for a quote.</p>
+                            <a href="#demo" class="btn btn-block btn-secondary">Contact sales</a>
+                        @else
+                            <div class="plan-price price-term"><small>UGX</small><b>{{ number_format($plan->price_per_term) }}</b><span>per term</span></div>
+                            <div class="plan-price price-year"><small>UGX</small><b>{{ number_format($plan->price_per_year ?: $plan->price_per_term * 3) }}</b><span>per year</span></div>
+                            <p class="plan-sub price-term">Billed at the start of each term</p>
+                            <p class="plan-sub price-year">{{ $yearSaving > 0 ? "Save {$yearSaving}% compared with paying per term" : 'Billed once a year' }}</p>
 
-                        <a href="{{ $startUrl }}" @class(['btn', 'btn-block', 'btn-primary' => $plan->id === $popular, 'btn-secondary' => $plan->id !== $popular])>Start free trial</a>
+                            <a href="{{ $startUrl }}" @class(['btn', 'btn-block', 'btn-primary' => $plan->id === $popular, 'btn-secondary' => $plan->id !== $popular])>Start free trial</a>
+                        @endif
 
                         <ul>
                             <li>{!! $check !!} {{ \App\Models\Plan::limitLabel($plan->max_students) }} active learners</li>
                             <li>{!! $check !!} {{ \App\Models\Plan::limitLabel($plan->max_users) }} staff logins</li>
                             <li>{!! $check !!} All modules included</li>
-                            <li>{!! $check !!} Free parent &amp; student logins</li>
+                            @if ($plan->parent_student_login)
+                                <li>{!! $check !!} Free parent &amp; student logins</li>
+                            @endif
                         </ul>
                     </div>
                 @endforeach
@@ -732,7 +740,7 @@
                     ["What happens when the {$trialDays}-day trial ends?", "Choose a plan and pay by mobile money or bank transfer. If a payment is late, the school keeps working for {$graceDays} more days. After that, access pauses until payment is recorded — your data is never deleted."],
                     ['Can we import our existing student lists?', 'Yes. Download the template, fill it in from your existing Excel register, and import all your learners in one go.'],
                     ['Does it work for both primary and secondary?', 'Yes. Primary schools get nursery and primary classes with PLE-style grading; secondary schools get O-Level (including the competency-based curriculum) and A-Level with subject combinations.'],
-                    ['Do parents and students count towards our staff logins?', 'No. Plans limit staff logins only. Parent and student logins are always free.'],
+                    ['Do parents and students count towards our staff logins?', 'No — where included, parent and student logins never count towards your staff-login limit. Parent & student portal access comes with the Premium and Enterprise plans; it is not included on Starter or Standard.'],
                 ];
             @endphp
             <div class="faq">
@@ -902,6 +910,7 @@
                     <li><a href="{{ $registerUrl }}">Register your school</a></li>
                     <li><a href="{{ $loginUrl }}">Sign in</a></li>
                     <li><a href="{{ filament()->getRequestPasswordResetUrl() }}">Reset password</a></li>
+                    <li><a href="{{ route('filament.app.legal.terms') }}">Terms &amp; conditions</a></li>
                 </ul>
             </div>
             <div>

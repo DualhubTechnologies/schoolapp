@@ -15,8 +15,7 @@ class SchoolForm
 {
     public static function configure(Schema $schema): Schema
     {
-        $isSuperAdmin = fn (): bool =>
-            auth()->user()?->hasRole('Super Admin') ?? false;
+        $isSuperAdmin = fn (): bool => auth()->user()?->hasRole('Super Admin') ?? false;
 
         return $schema
             ->components([
@@ -146,6 +145,33 @@ class SchoolForm
                                     ->label('Website')
                                     ->url()
                                     ->placeholder('https://...'),
+                            ]),
+
+                        Section::make('Fee Payment Details')
+                            ->description('Shown to parents on receipts, statements and the admission letter, so they know how to pay.')
+                            ->icon('heroicon-o-banknotes')
+                            ->columnSpan([
+                                'default' => 1,
+                                'lg' => 3,
+                            ])
+                            ->columns([
+                                'default' => 1,
+                                'md' => 2,
+                            ])
+                            ->schema([
+                                TextInput::make('fee_payment_bank')
+                                    ->label('Bank details')
+                                    ->placeholder('e.g. Stanbic Bank, A/C 9030012345678, Green Hill School Ltd'),
+
+                                TextInput::make('fee_payment_mobile_money')
+                                    ->label('Mobile money')
+                                    ->placeholder('e.g. MTN 0772 000000 (Green Hill School)'),
+
+                                Textarea::make('fee_payment_instructions')
+                                    ->label('Other instructions')
+                                    ->placeholder('e.g. Use the student\'s admission number as the payment reference, then bring the slip to the bursar.')
+                                    ->rows(2)
+                                    ->columnSpanFull(),
                             ]),
 
                         /*

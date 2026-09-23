@@ -73,6 +73,8 @@ class PlanResource extends Resource
                     ->helperText('Usually about 10% less than three terms.'),
                 TextInput::make('description')->maxLength(255)->columnSpanFull(),
                 TextInput::make('sort_order')->numeric()->default(0),
+                Toggle::make('parent_student_login')->label('Parent & student portal logins included')->default(true)->inline(false),
+                Toggle::make('contact_sales')->label('"Contact sales" instead of price / self-serve trial')->default(false)->inline(false),
                 Toggle::make('is_active')->label('Offered to schools')->default(true)->inline(false),
                 Toggle::make('is_trial')->label('This is the free trial plan')->inline(false),
             ]),
@@ -98,6 +100,8 @@ class PlanResource extends Resource
                         ->where('ends_on', '>=', today())
                         ->distinct('school_id')
                         ->count('school_id')),
+                IconColumn::make('parent_student_login')->label('Parent/student login')->boolean(),
+                IconColumn::make('contact_sales')->label('Contact sales')->boolean(),
                 IconColumn::make('is_trial')->label('Trial')->boolean(),
                 IconColumn::make('is_active')->label('Offered')->boolean(),
             ])

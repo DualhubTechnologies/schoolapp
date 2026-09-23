@@ -17,6 +17,7 @@ use Filament\Schemas\Schema;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Notification;
+use Illuminate\Support\HtmlString;
 use Illuminate\Support\Str;
 use SensitiveParameter;
 
@@ -93,7 +94,8 @@ class RegisterSchool extends Register
                         $this->getPasswordFormComponent(),
                         $this->getPasswordConfirmationFormComponent(),
                         Checkbox::make('terms')
-                            ->label('I am authorised to register this school and accept the terms of use.')
+                            // Opens in a new tab so the half-filled form is not lost.
+                            ->label(new HtmlString('I am authorised to register this school and accept the <a href="'.e(route('filament.app.legal.terms')).'" target="_blank" rel="noopener" class="shr-terms-link">terms and conditions</a>.'))
                             ->accepted()
                             ->validationMessages(['accepted' => 'Please confirm to continue.'])
                             ->dehydrated(false)
@@ -131,6 +133,11 @@ class RegisterSchool extends Register
                 'timezone' => 'Africa/Kampala',
                 'contact_person' => $data['name'],
                 'status' => 'active',
+                // Which terms were accepted, when and by whom (config/legal.php).
+                'terms_version' => config('legal.terms_version'),
+                'terms_accepted_at' => now(),
+                'terms_accepted_by' => "{$data['name']} <{$data['email']}>",
+                'terms_accepted_ip' => request()->ip(),
             ]);
 
             // The trial must exist before the user: its plan sets the login limit.
@@ -172,7 +179,7 @@ class RegisterSchool extends Register
     protected function uniqueCode(): string
     {
         do {
-            $code = 'SH' . random_int(10000, 99999);
+            $code = 'SH'.random_int(10000, 99999);
         } while (School::where('unique_code', $code)->exists());
 
         return $code;

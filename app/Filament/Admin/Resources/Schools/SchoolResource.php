@@ -18,7 +18,6 @@ class SchoolResource extends Resource
 {
     protected static ?string $model = School::class;
 
-    
     protected static string|BackedEnum|null $navigationIcon = Heroicon::OutlinedBuildingOffice2;
 
     protected static ?string $recordTitleAttribute = 'name';
@@ -38,6 +37,7 @@ class SchoolResource extends Resource
         return [
             RelationManagers\SubscriptionsRelationManager::class,
             RelationManagers\SubscriptionPaymentsRelationManager::class,
+            RelationManagers\ActivationCodesRelationManager::class,
         ];
     }
 
@@ -54,7 +54,9 @@ class SchoolResource extends Resource
     {
         return auth()->user()?->hasRole('Super Admin') ?? false;
     }
+
     protected static ?int $navigationSort = 1;
+
     public static function canViewAny(): bool
     {
         return auth()->user()?->hasRole('Super Admin') ?? false;
@@ -74,6 +76,7 @@ class SchoolResource extends Resource
     {
         return auth()->user()?->hasRole('Super Admin') ?? false;
     }
+
     public static function getNavigationGroup(): ?string
     {
         return 'Platform Management';

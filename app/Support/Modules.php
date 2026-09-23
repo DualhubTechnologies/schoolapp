@@ -114,6 +114,13 @@ class Modules
             return [];
         }
 
+        // The platform owner runs SchoolHub itself, not a single school's
+        // day-to-day work -- it gets none of these school modules. Its own
+        // pages (Schools, Plans, Users, ...) check the role directly.
+        if ($user->hasRole('Super Admin')) {
+            return [];
+        }
+
         if (static::hasFullAccess($user)) {
             return array_keys(self::LIST);
         }

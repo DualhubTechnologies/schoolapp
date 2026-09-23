@@ -2,11 +2,11 @@
 
 namespace App\Filament\App\Resources\Students;
 
-use App\Filament\App\Resources\Students\Pages\CreateStudent;
 use App\Filament\App\Resources\Students\Pages\EditStudent;
 use App\Filament\App\Resources\Students\Pages\ListStudents;
 use App\Filament\App\Resources\Students\Schemas\StudentForm;
 use App\Filament\App\Resources\Students\Tables\StudentsTable;
+use App\Filament\Concerns\GatedByModule;
 use App\Models\Student;
 use BackedEnum;
 use Filament\Resources\Resource;
@@ -19,7 +19,7 @@ use Illuminate\Database\Eloquent\Model;
 
 class StudentResource extends Resource
 {
-    use \App\Filament\Concerns\GatedByModule;
+    use GatedByModule;
 
     protected static ?string $model = Student::class;
 
@@ -79,7 +79,6 @@ class StudentResource extends Resource
     {
         return [
             'index' => ListStudents::route('/'),
-            'create' => CreateStudent::route('/create'),
             'edit' => EditStudent::route('/{record}/edit'),
         ];
     }

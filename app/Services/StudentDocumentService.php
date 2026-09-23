@@ -3,6 +3,7 @@
 namespace App\Services;
 
 use App\Models\Student;
+use App\Models\Term;
 use Barryvdh\DomPDF\Facade\Pdf;
 use Illuminate\Support\Facades\Storage;
 
@@ -10,29 +11,25 @@ class StudentDocumentService
 {
     /**
      * Generate the admission letter PDF for a student and return the
-     * Dompdf instance (caller decides stream/download).
-     *
-     * @param  string|null  $term  e.g. 'Term 1' — which term's fees to show
-     * @param  string|null  $academicYear  e.g. '2026'
-     * @param  string|null  $openingDate  ISO date string for term opening
+     * Dompdf instance (caller decides stream/download). Fees shown are
+     * whatever applies to this student for the school's current term
+     * (BillingService — the same rules a real billing run would use), so
+     * there is nothing to type in before printing.
      */
-    public function admissionLetter(
-        Student $student,
-        ?string $term = null,
-        ?string $academicYear = null,
-        ?string $openingDate = null,
-    ) {
-        $student->loadMissing(['school', 'guardian', 'schoolClass', 'section']);
+    public function admissionLetter(Student $student, BillingService $billing)
+    {
+        $student->loadMissing(['school', 'guardian', 'schoolClass', 'section', 'residencyType']);
 
-        $academicYear ??= (string) now()->year;
-        $feeStructure = $student->feeStructure($term, $academicYear);
+        $term = Term::current($student->school_id);
+        $feeLines = $term ? $billing->applicableFees($student, $term) : collect();
+        $feeTotal = $feeLines->sum(fn ($fee) => (float) $fee->amount);
 
         $pdf = Pdf::loadView('pdf.admission-letter', [
             'student' => $student,
             'school' => $student->school,
-            'feeStructure' => $feeStructure,
-            'academicYear' => $academicYear,
-            'openingDate' => $openingDate,
+            'term' => $term,
+            'feeLines' => $feeLines,
+            'feeTotal' => $feeTotal,
             'logoPath' => $this->embeddableImage($student->school->logo ?? null),
         ]);
 
@@ -82,7 +79,7 @@ class StudentDocumentService
             $contents = Storage::disk('public')->get($path);
             $mime = Storage::disk('public')->mimeType($path) ?: 'image/jpeg';
 
-            return 'data:' . $mime . ';base64,' . base64_encode($contents);
+            return 'data:'.$mime.';base64,'.base64_encode($contents);
         } catch (\Throwable $e) {
             return null;
         }

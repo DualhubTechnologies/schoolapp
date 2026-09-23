@@ -225,6 +225,40 @@ a.shd-kpi:hover .shd-kpi-go { opacity: 1; color: var(--t); }
 .fi-page:has(.shd-banner) .fi-wi-table .fi-ta-ctn,
 .fi-page:has(.shd-banner) .fi-wi-stats-overview-stat { border-radius: 16px !important; }
 
+/* Chart cards: an icon badge + tidy header, so a chart reads as part of
+   the same card system as the KPIs and panels around it, not a plain
+   default Filament section. */
+.fi-page:has(.shd-banner) .fi-wi-chart .fi-section-header {
+    display: flex;
+    align-items: center;
+    gap: 0.75rem;
+    padding: 1.15rem 1.25rem;
+}
+
+.fi-page:has(.shd-banner) .fi-wi-chart .fi-section-header > svg.fi-icon {
+    flex: none;
+    box-sizing: border-box;
+    width: 2.35rem !important;
+    height: 2.35rem !important;
+    padding: 0.55rem;
+    border-radius: 10px;
+    background: color-mix(in srgb, currentColor 14%, white);
+    box-shadow: inset 0 0 0 1px color-mix(in srgb, currentColor 28%, white);
+}
+
+.fi-page:has(.shd-banner) .fi-wi-chart .fi-section-header-heading {
+    font-size: 1rem;
+    font-weight: 700;
+    color: #0f172a;
+}
+
+.fi-page:has(.shd-banner) .fi-wi-chart .fi-section-header-description {
+    font-size: 0.8rem;
+    color: var(--sh-text-muted, #64748b);
+}
+
+.fi-page:has(.shd-banner) .fi-wi-chart .fi-section-content-ctn { padding: 0.25rem 1.25rem 1.25rem; }
+
 @media (max-width: 1280px) {
     .shd-kpis { grid-template-columns: repeat(2, minmax(0, 1fr)); }
 }

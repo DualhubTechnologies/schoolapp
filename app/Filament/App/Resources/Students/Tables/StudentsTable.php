@@ -5,15 +5,11 @@ namespace App\Filament\App\Resources\Students\Tables;
 use App\Filament\Pages\ReceivePayment;
 use App\Filament\Pages\StudentAccount;
 use App\Models\Student;
-use App\Services\StudentDocumentService;
 use Filament\Actions\Action;
 use Filament\Actions\ActionGroup;
 use Filament\Actions\BulkActionGroup;
 use Filament\Actions\DeleteBulkAction;
 use Filament\Actions\EditAction;
-use Filament\Forms\Components\DatePicker;
-use Filament\Forms\Components\Select;
-use Filament\Forms\Components\TextInput;
 use Filament\Notifications\Notification;
 use Filament\Support\Enums\FontWeight;
 use Filament\Tables\Columns\ImageColumn;
@@ -21,7 +17,6 @@ use Filament\Tables\Columns\TextColumn;
 use Filament\Tables\Filters\SelectFilter;
 use Filament\Tables\Table;
 use Illuminate\Database\Eloquent\Builder;
-use Symfony\Component\HttpFoundation\StreamedResponse;
 
 class StudentsTable
 {
@@ -155,55 +150,24 @@ class StudentsTable
             ->recordActions([
                 ActionGroup::make([
 
-                    // ── Admission letter PDF ──
+                    // ── Admission letter PDF ── one click, opens in a new
+                    // tab: fees shown are whatever applies to the student
+                    // for the school's current term, so there is nothing
+                    // to fill in first.
                     Action::make('admissionLetter')
                         ->label('Admission letter')
                         ->icon('heroicon-o-document-text')
                         ->color('primary')
-                        ->form([
-                            Select::make('term')
-                                ->options([
-                                    'Term 1' => 'Term 1',
-                                    'Term 2' => 'Term 2',
-                                    'Term 3' => 'Term 3',
-                                ])
-                                ->default('Term 1')
-                                ->required(),
-                            TextInput::make('academic_year')
-                                ->label('Academic year')
-                                ->default(fn () => (string) now()->year)
-                                ->required(),
-                            DatePicker::make('opening_date')
-                                ->label('School opening date')
-                                ->required(),
-                        ])
-                        ->action(function ($record, array $data): StreamedResponse {
-                            $pdf = app(StudentDocumentService::class)->admissionLetter(
-                                $record,
-                                $data['term'],
-                                $data['academic_year'],
-                                $data['opening_date'],
-                            );
-
-                            return response()->streamDownload(
-                                fn () => print($pdf->output()),
-                                'admission-letter-' . $record->admission_no . '.pdf',
-                            );
-                        }),
+                        ->url(fn ($record) => route('filament.app.students.admission-letter', $record))
+                        ->openUrlInNewTab(),
 
                     // ── Student profile PDF ──
                     Action::make('profile')
                         ->label('Print profile')
                         ->icon('heroicon-o-identification')
                         ->color('gray')
-                        ->action(function ($record): StreamedResponse {
-                            $pdf = app(StudentDocumentService::class)->profile($record);
-
-                            return response()->streamDownload(
-                                fn () => print($pdf->output()),
-                                'profile-' . $record->admission_no . '.pdf',
-                            );
-                        }),
+                        ->url(fn ($record) => route('filament.app.students.profile', $record))
+                        ->openUrlInNewTab(),
 
                     // ── Payments go through Receive Payment, which issues a
                     //    numbered receipt (and auto-confirms enrolment) ──
@@ -232,7 +196,7 @@ class StudentsTable
 
                             Notification::make()
                                 ->title('Student confirmed')
-                                ->body($record->name . ' is now a full student.')
+                                ->body($record->name.' is now a full student.')
                                 ->success()
                                 ->send();
                         }),

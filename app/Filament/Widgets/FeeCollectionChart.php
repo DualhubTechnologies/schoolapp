@@ -8,7 +8,6 @@ use App\Models\StudentPayment;
 use Filament\Support\RawJs;
 use Filament\Widgets\ChartWidget;
 use Illuminate\Support\Carbon;
-use Illuminate\Support\Facades\DB;
 
 /**
  * Billed vs collected, month by month, for the last twelve months.
@@ -26,6 +25,12 @@ class FeeCollectionChart extends ChartWidget
     protected ?string $description = 'By month, UGX — hover a bar for the exact amount';
 
     protected ?string $maxHeight = '280px';
+
+    protected ?string $icon = 'heroicon-o-banknotes';
+
+    protected ?string $iconColor = 'primary';
+
+    protected string $view = 'filament.widgets.branded-chart-widget';
 
     public static function canView(): bool
     {

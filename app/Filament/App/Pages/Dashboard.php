@@ -9,8 +9,10 @@ use App\Filament\App\Widgets\PlatformKpis;
 use App\Filament\App\Widgets\TeacherKpis;
 use App\Filament\App\Widgets\TeacherMarksProgress;
 use App\Filament\App\Widgets\WelcomeBanner;
+use App\Filament\Widgets\AdmissionsTrendChart;
 use App\Filament\Widgets\FeeCollectionChart;
 use App\Filament\Widgets\FinanceSnapshot;
+use App\Filament\Widgets\OutstandingByClassChart;
 use App\Filament\Widgets\PaymentMethodsChart;
 use App\Filament\Widgets\RecentPaymentsTable;
 use App\Filament\Widgets\SetupChecklist;
@@ -45,7 +47,9 @@ class Dashboard extends BaseDashboard
                 LeadershipKpis::class,
                 FeeCollectionChart::class,
                 StudentsByClassChart::class,
+                AdmissionsTrendChart::class,
                 PaymentMethodsChart::class,
+                OutstandingByClassChart::class,
                 FinanceSnapshot::class,
                 TopDebtorsTable::class,
                 RecentPaymentsTable::class,
@@ -55,6 +59,7 @@ class Dashboard extends BaseDashboard
                 BursarKpis::class,
                 FeeCollectionChart::class,
                 PaymentMethodsChart::class,
+                OutstandingByClassChart::class,
                 StudentsByClassChart::class,
                 FinanceSnapshot::class,
                 RecentPaymentsTable::class,

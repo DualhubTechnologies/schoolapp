@@ -17,6 +17,20 @@
     $logout   = route("filament.{$panelId}.auth.logout");
     $role     = $user?->getRoleNames()->first();
     $initials = method_exists($user, 'initials') ? $user->initials() : mb_substr($user?->name ?? '?', 0, 2);
+
+    // Subscribed plan chip: schools only (the platform owner has no plan of its own).
+    // On trial it just says "Trial" -- once there is a real paid plan (active,
+    // or overdue on one) the chip names that plan instead.
+    $subStatus = $user?->school_id ? \App\Services\Subscriptions\SubscriptionManager::status($user->school_id) : null;
+    $plan      = $subStatus['plan'] ?? null;
+    $planState = $subStatus['state'] ?? null;
+    $planLabel = $planState === 'trial' ? 'Trial' : $plan?->name;
+    $planTone  = match ($planState) {
+        'trial' => 'blue',
+        'active' => 'green',
+        default => 'red', // grace, expired, none, suspended
+    };
+    $canManageSub = $plan && \App\Support\Modules::hasFullAccess($user);
 @endphp
 
 <div class="sh-topbar">
@@ -61,6 +75,22 @@
                 <span>ROLE</span>
                 <span class="sh-chip-value">{{ $role }}</span>
             </div>
+        @endif
+
+        {{-- Subscribed plan --}}
+        @if ($plan)
+            @php $tag = $canManageSub ? 'a' : 'div'; @endphp
+            <{{ $tag }}
+                @if ($canManageSub) href="{{ \App\Filament\Pages\SchoolSubscription::getUrl() }}" @endif
+                @class(['sh-chip', 'sh-chip-plan', "sh-chip-plan-{$planTone}", 'sh-chip-link' => $canManageSub])
+            >
+                <svg width="18" height="18" fill="none" stroke="currentColor" stroke-width="1.8" viewBox="0 0 24 24">
+                    <path stroke-linecap="round" stroke-linejoin="round"
+                          d="M2.25 8.25h19.5M2.25 9h19.5m-16.5 5.25h6m-6 2.25h3M3.75 19.5h16.5a1.5 1.5 0 001.5-1.5V6a1.5 1.5 0 00-1.5-1.5H3.75A1.5 1.5 0 002.25 6v12a1.5 1.5 0 001.5 1.5z" />
+                </svg>
+                <span>PLAN</span>
+                <span class="sh-chip-value">{{ $planLabel }}</span>
+            </{{ $tag }}>
         @endif
 
     </div>

@@ -17,8 +17,10 @@ class Plan extends Model
         'description',
         'max_students',
         'max_users',
+        'parent_student_login',
         'price_per_term',
         'price_per_year',
+        'contact_sales',
         'is_trial',
         'is_active',
         'sort_order',
@@ -29,8 +31,10 @@ class Plan extends Model
         return [
             'max_students' => 'integer',
             'max_users' => 'integer',
+            'parent_student_login' => 'boolean',
             'price_per_term' => 'float',
             'price_per_year' => 'float',
+            'contact_sales' => 'boolean',
             'is_trial' => 'boolean',
             'is_active' => 'boolean',
         ];
@@ -62,7 +66,7 @@ class Plan extends Model
             ->when(! $includeTrial, fn ($q) => $q->where('is_trial', false))
             ->orderBy('sort_order')
             ->get()
-            ->mapWithKeys(fn (Plan $p) => [$p->id => "{$p->name} — " . static::limitLabel($p->max_students) . ' students · ' . static::limitLabel($p->max_users) . ' users'])
+            ->mapWithKeys(fn (Plan $p) => [$p->id => "{$p->name} — ".static::limitLabel($p->max_students).' students · '.static::limitLabel($p->max_users).' users'])
             ->all();
     }
 }

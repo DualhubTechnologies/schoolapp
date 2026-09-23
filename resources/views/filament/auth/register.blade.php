@@ -44,5 +44,7 @@
         .shr-next li:not(:last-child)::after { content: ""; position: absolute; left: .8rem; top: 1.75rem; bottom: .15rem; width: 1px; background: rgba(255, 255, 255, .15); }
         .shr-next li span { flex: none; display: grid; place-items: center; width: 1.6rem; height: 1.6rem; border-radius: 50%; background: rgba(255, 255, 255, .1); color: #fff; font-size: .75rem; font-weight: 700; }
         .shr-next li strong { display: block; color: #fff; font-size: .9rem; font-weight: 600; }
+        .shr-terms-link { color: #1a5fa8; font-weight: 600; text-decoration: underline; text-underline-offset: 2px; }
+        .shr-terms-link:hover { color: #12294a; }
     </style>
 </x-auth-shell>

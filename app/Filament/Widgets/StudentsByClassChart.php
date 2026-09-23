@@ -22,6 +22,12 @@ class StudentsByClassChart extends ChartWidget
 
     protected ?string $maxHeight = '260px';
 
+    protected ?string $icon = 'heroicon-o-user-group';
+
+    protected ?string $iconColor = 'info';
+
+    protected string $view = 'filament.widgets.branded-chart-widget';
+
     public static function canView(): bool
     {
         return auth()->user()?->school_id !== null;

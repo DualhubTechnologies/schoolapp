@@ -3,6 +3,8 @@
 namespace App\Filament\App\Resources\Users\Schemas;
 
 use App\Models\Staff;
+use App\Models\User;
+use App\Services\Subscriptions\SubscriptionManager;
 use App\Support\Modules;
 use Filament\Forms\Components\CheckboxList;
 use Filament\Forms\Components\Select;
@@ -14,6 +16,7 @@ use Filament\Schemas\Components\Utilities\Get;
 use Filament\Schemas\Schema;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Hash;
+use Spatie\Permission\Models\Role;
 
 /**
  * A login: who they are, which parts of the system they may open, and
@@ -24,7 +27,7 @@ class UserForm
     public static function configure(Schema $schema): Schema
     {
         $isAdminRole = fn (Get $get): bool => collect($get('roles') ?? [])
-            ->map(fn ($id) => \Spatie\Permission\Models\Role::find($id)?->name)
+            ->map(fn ($id) => Role::find($id)?->name)
             ->intersect(Modules::FULL_ACCESS_ROLES)
             ->isNotEmpty();
 
@@ -61,15 +64,17 @@ class UserForm
                             ->relationship(
                                 'roles',
                                 'name',
-                                modifyQueryUsing: fn ($query) => auth()->user()->hasRole('Super Admin')
-                                    ? $query
-                                    : $query->where('name', '!=', 'Super Admin'),
+                                modifyQueryUsing: fn ($query) => $query
+                                    ->when(! auth()->user()->hasRole('Super Admin'), fn ($q) => $q->where('name', '!=', 'Super Admin'))
+                                    ->when(! static::planAllowsParentStudentLogin(), fn ($q) => $q->whereNotIn('name', ['Parent', 'Student'])),
                             )
                             ->multiple()
                             ->preload()
                             ->live()
                             ->required()
-                            ->helperText('The role sets what a person can do by default; the modules below narrow or widen it.')
+                            ->helperText(fn () => static::planAllowsParentStudentLogin()
+                                ? 'The role sets what a person can do by default; the modules below narrow or widen it.'
+                                : 'The role sets what a person can do by default; the modules below narrow or widen it. Parent & student portal logins are not included in your plan — upgrade to Premium or Enterprise to add them.')
                             ->columnSpanFull(),
                     ]),
 
@@ -81,7 +86,7 @@ class UserForm
                         Toggle::make('custom_access')
                             ->label('Choose modules for this user')
                             ->helperText(fn (Get $get) => 'Off: the defaults for their role — '
-                                . static::roleDefaultsText($get('roles') ?? []) . '.')
+                                .static::roleDefaultsText($get('roles') ?? []).'.')
                             ->live()
                             ->dehydrated(false)
                             ->hidden($isAdminRole),
@@ -102,11 +107,11 @@ class UserForm
                     ->schema([
                         Select::make('staff_id')
                             ->label('Staff record')
-                            ->options(fn (?\App\Models\User $record) => Staff::where('school_id', $record?->school_id ?? auth()->user()->school_id)
+                            ->options(fn (?User $record) => Staff::where('school_id', $record?->school_id ?? auth()->user()->school_id)
                                 ->where(fn ($q) => $q->whereNull('user_id')->when($record, fn ($q) => $q->orWhere('user_id', $record->getKey())))
                                 ->orderBy('name')
                                 ->get()
-                                ->mapWithKeys(fn (Staff $s) => [$s->id => $s->name . ($s->staff_no ? " ({$s->staff_no})" : '') . ($s->category === 'non_teaching' ? ' · non-teaching' : '')]))
+                                ->mapWithKeys(fn (Staff $s) => [$s->id => $s->name.($s->staff_no ? " ({$s->staff_no})" : '').($s->category === 'non_teaching' ? ' · non-teaching' : '')]))
                             ->searchable()
                             ->placeholder('Not linked')
                             ->live()
@@ -172,10 +177,22 @@ class UserForm
             ->all();
     }
 
+    /** Super Admin (platform owner) is never restricted; otherwise it depends on the signed-in user's school plan. */
+    protected static function planAllowsParentStudentLogin(): bool
+    {
+        if (auth()->user()?->hasRole('Super Admin')) {
+            return true;
+        }
+
+        $plan = SubscriptionManager::current(auth()->user()->school_id)?->plan;
+
+        return $plan?->parent_student_login ?? true;
+    }
+
     protected static function roleDefaultsText(array $roleIds): string
     {
         $modules = collect($roleIds)
-            ->map(fn ($id) => \Spatie\Permission\Models\Role::find($id)?->name)
+            ->map(fn ($id) => Role::find($id)?->name)
             ->flatMap(fn ($role) => Modules::ROLE_DEFAULTS[$role] ?? [])
             ->unique()
             ->map(fn ($key) => Modules::LIST[$key][0]);

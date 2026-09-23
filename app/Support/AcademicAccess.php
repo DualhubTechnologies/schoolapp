@@ -23,6 +23,10 @@ class AcademicAccess
      */
     public static function manages(): bool
     {
+        if (auth()->user()?->hasRole('Super Admin')) {
+            return false;
+        }
+
         return Modules::hasFullAccess() || Modules::allows('exams_all');
     }
 

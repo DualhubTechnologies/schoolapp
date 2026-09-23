@@ -22,6 +22,9 @@ class School extends Model
         'tin_number',
         'phone',
         'website',
+        'fee_payment_bank',
+        'fee_payment_mobile_money',
+        'fee_payment_instructions',
         'address',
         'city',
         'country',
@@ -38,11 +41,15 @@ class School extends Model
         'approved_at',
         'approved_by',
         'rejection_reason',
+        'terms_version',
+        'terms_accepted_at',
+        'terms_accepted_by',
+        'terms_accepted_ip',
     ];
 
     protected function casts(): array
     {
-        return ['approved_at' => 'datetime'];
+        return ['approved_at' => 'datetime', 'terms_accepted_at' => 'datetime'];
     }
 
     public const STATUSES = [
@@ -107,6 +114,11 @@ class School extends Model
     public function subscriptionPayments(): HasMany
     {
         return $this->hasMany(SubscriptionPayment::class)->orderByDesc('paid_on');
+    }
+
+    public function activationCodes(): HasMany
+    {
+        return $this->hasMany(SubscriptionActivationCode::class)->orderByDesc('created_at');
     }
 
     public function users(): HasMany

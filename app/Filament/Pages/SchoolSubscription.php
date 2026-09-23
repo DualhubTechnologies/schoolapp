@@ -2,12 +2,14 @@
 
 namespace App\Filament\Pages;
 
+use App\Exceptions\InvalidActivationCode;
 use App\Models\Plan;
 use App\Models\School;
 use App\Models\SubscriptionPayment;
 use App\Services\Subscriptions\SubscriptionManager;
 use App\Support\Modules;
 use BackedEnum;
+use Filament\Notifications\Notification;
 use Filament\Pages\Page;
 use Filament\Support\Icons\Heroicon;
 use Illuminate\Support\Collection;
@@ -33,6 +35,8 @@ class SchoolSubscription extends Page
 
     protected string $view = 'filament.pages.school-subscription';
 
+    public string $activationCode = '';
+
     /**
      * School Admins manage it. Anyone at a locked school is sent here so
      * they understand why (without the payment details).
@@ -56,6 +60,50 @@ class SchoolSubscription extends Page
     public function isManager(): bool
     {
         return Modules::hasFullAccess(auth()->user());
+    }
+
+    public ?int $codeModalPlanId = null;
+
+    /** They clicked "Activate with a code" on a plan card -- open the prompt for that plan. */
+    public function chooseplan(int $planId): void
+    {
+        if (! $this->isManager()) {
+            return;
+        }
+
+        $this->codeModalPlanId = $planId;
+        $this->activationCode = '';
+    }
+
+    public function closeCodeModal(): void
+    {
+        $this->codeModalPlanId = null;
+        $this->activationCode = '';
+    }
+
+    /**
+     * Paid, got a code from SchoolHub, typed it in -- applies that exact
+     * renewal immediately. No admin visit needed.
+     */
+    public function redeemCode(): void
+    {
+        if (! $this->isManager() || blank($this->activationCode)) {
+            return;
+        }
+
+        try {
+            SubscriptionManager::redeemActivationCode($this->school, $this->activationCode, $this->codeModalPlanId);
+        } catch (InvalidActivationCode $e) {
+            Notification::make()->title('Invalid code')->body($e->getMessage())->danger()->send();
+
+            return;
+        }
+
+        $this->activationCode = '';
+        $this->codeModalPlanId = null;
+        unset($this->status, $this->usage, $this->payments);
+
+        Notification::make()->title('Activated')->body('Your subscription has been updated.')->success()->send();
     }
 
     #[Computed]

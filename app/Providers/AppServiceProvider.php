@@ -4,6 +4,7 @@ namespace App\Providers;
 
 use App\Models\School;
 use App\Observers\SchoolObserver;
+use App\Support\PasswordStrength;
 use Carbon\CarbonImmutable;
 use Filament\Notifications\Notification;
 use Illuminate\Database\UniqueConstraintViolationException;
@@ -131,15 +132,9 @@ class AppServiceProvider extends ServiceProvider
             app()->isProduction(),
         );
 
-        Password::defaults(fn (): ?Password => app()->isProduction()
-            ? Password::min(12)
-                ->mixedCase()
-                ->letters()
-                ->numbers()
-                ->symbols()
-                ->uncompromised()
-            : null,
-        );
+        // Defined in PasswordStrength so the live checklist on password
+        // fields shows exactly these rules.
+        Password::defaults(fn (): ?Password => PasswordStrength::rule());
     }
 
     /**

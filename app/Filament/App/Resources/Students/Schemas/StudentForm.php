@@ -5,6 +5,7 @@ namespace App\Filament\App\Resources\Students\Schemas;
 use App\Models\Guardian;
 use App\Models\SchoolClass;
 use App\Models\Student;
+use App\Support\EmailCheck;
 use Filament\Forms\Components\DatePicker;
 use Filament\Forms\Components\FileUpload;
 use Filament\Forms\Components\Select;
@@ -387,7 +388,7 @@ class StudentForm
                                 ->native(false)
                                 ->required(),
 
-                            TextInput::make('email')
+                            EmailCheck::apply(TextInput::make('email'))
                                 ->label('Email address')
                                 ->email()
                                 ->maxLength(150),
@@ -405,7 +406,7 @@ class StudentForm
                 ->placeholder('Optional')
                 ->maxLength(30),
 
-            TextInput::make('email')
+            EmailCheck::apply(TextInput::make('email'))
                 ->label('Student email')
                 ->email()
                 ->placeholder('Optional')

@@ -12,6 +12,7 @@ use App\Filament\App\Widgets\TeacherMarksProgress;
 use App\Filament\App\Widgets\WelcomeBanner;
 use App\Filament\Pages\Auth\Login;
 use App\Filament\Pages\Auth\RegisterSchool;
+use App\Filament\Pages\Auth\ResetPassword;
 use App\Filament\Widgets\StatsOverview;
 use App\Http\Controllers\DemoRequestController;
 use App\Http\Controllers\FeeDocumentController;
@@ -52,7 +53,7 @@ class AppPanelProvider extends PanelProvider
             ->login(Login::class)
             // Schools sign themselves up; the person registering becomes its School Admin.
             ->registration(RegisterSchool::class)
-            ->passwordReset()
+            ->passwordReset(resetAction: ResetPassword::class)
 
             // Public landing page at the site root. Registered here (not in
             // routes/web.php) so Filament sees "/" is taken and sends

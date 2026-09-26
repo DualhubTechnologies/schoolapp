@@ -4,6 +4,8 @@ namespace App\Filament\App\Resources\Staff\Tables;
 
 use App\Models\Staff;
 use App\Models\User;
+use App\Support\EmailCheck;
+use App\Support\PasswordStrength;
 use Filament\Actions\Action;
 use Filament\Actions\EditAction;
 use Filament\Forms\Components\Select;
@@ -14,6 +16,7 @@ use Filament\Tables\Columns\TextColumn;
 use Filament\Tables\Filters\SelectFilter;
 use Filament\Tables\Table;
 use Illuminate\Support\Facades\Hash;
+use Illuminate\Validation\Rules\Password;
 use Spatie\Permission\Models\Role;
 
 class StaffTable
@@ -113,16 +116,24 @@ class StaffTable
                     ->color('success')
                     ->visible(fn ($record) => $record->user_id === null)
                     ->form([
-                        TextInput::make('email')
+                        EmailCheck::apply(TextInput::make('email'))
                             ->label('Email address')
                             ->email()
                             ->required()
                             ->unique(table: 'users', column: 'email', ignoreRecord: false)
                             ->default(fn ($record) => $record->email),
-                        TextInput::make('password')
+                        PasswordStrength::meter(TextInput::make('password'))
                             ->password()
+                            ->revealable()
                             ->required()
-                            ->minLength(8),
+                            ->rule(Password::default())
+                            ->same('passwordConfirmation'),
+                        PasswordStrength::matches(TextInput::make('passwordConfirmation'))
+                            ->label('Confirm password')
+                            ->password()
+                            ->revealable()
+                            ->required()
+                            ->dehydrated(false),
                         Select::make('roles')
                             ->multiple()
                             ->required()

@@ -3,6 +3,7 @@
 namespace App\Filament\Admin\Resources\Schools\Schemas;
 
 use App\Models\School;
+use App\Support\EmailCheck;
 use Filament\Forms\Components\FileUpload;
 use Filament\Forms\Components\Select;
 use Filament\Forms\Components\Textarea;
@@ -132,7 +133,7 @@ class SchoolForm
                                     ->searchable()
                                     ->native(false),
 
-                                TextInput::make('email')
+                                EmailCheck::apply(TextInput::make('email'))
                                     ->label('Email address')
                                     ->email()
                                     ->required(),

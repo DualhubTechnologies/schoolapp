@@ -5,7 +5,9 @@ namespace App\Filament\App\Resources\Users\Schemas;
 use App\Models\Staff;
 use App\Models\User;
 use App\Services\Subscriptions\SubscriptionManager;
+use App\Support\EmailCheck;
 use App\Support\Modules;
+use App\Support\PasswordStrength;
 use Filament\Forms\Components\CheckboxList;
 use Filament\Forms\Components\Select;
 use Filament\Forms\Components\TextInput;
@@ -16,6 +18,7 @@ use Filament\Schemas\Components\Utilities\Get;
 use Filament\Schemas\Schema;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Hash;
+use Illuminate\Validation\Rules\Password;
 use Spatie\Permission\Models\Role;
 
 /**
@@ -41,19 +44,27 @@ class UserForm
                         TextInput::make('name')
                             ->required()
                             ->maxLength(150),
-                        TextInput::make('email')
+                        EmailCheck::apply(TextInput::make('email'))
                             ->label('Email address')
                             ->email()
                             ->required()
                             ->unique(ignoreRecord: true)
                             ->validationMessages(['unique' => 'Another user already has this email address.']),
-                        TextInput::make('password')
+                        PasswordStrength::meter(TextInput::make('password'))
                             ->password()
                             ->revealable()
                             ->required(fn (string $operation): bool => $operation === 'create')
+                            ->rule(Password::default())
+                            ->same('passwordConfirmation')
                             ->dehydrateStateUsing(fn ($state) => Hash::make($state))
                             ->dehydrated(fn ($state) => filled($state))
                             ->helperText(fn (string $operation) => $operation === 'edit' ? 'Leave blank to keep the current password.' : null),
+                        PasswordStrength::matches(TextInput::make('passwordConfirmation'))
+                            ->label('Confirm password')
+                            ->password()
+                            ->revealable()
+                            ->requiredWith('password')
+                            ->dehydrated(false),
                         Select::make('school_id')
                             ->label('School')
                             ->relationship('school', 'name')

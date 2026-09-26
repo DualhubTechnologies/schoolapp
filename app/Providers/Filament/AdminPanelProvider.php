@@ -29,7 +29,7 @@ class AdminPanelProvider extends PanelProvider
             ->path('admin')                   // Super Admin only — gated in User::canAccessPanel()
             ->login(\App\Filament\Pages\Auth\Login::class)
 
-            ->passwordReset()
+            ->passwordReset(resetAction: \App\Filament\Pages\Auth\ResetPassword::class)
             ->viteTheme('resources/css/filament/admin/theme.css')
 
             // --- Branding ---

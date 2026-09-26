@@ -3,6 +3,7 @@
 namespace App\Filament\App\Resources\Staff\Schemas;
 
 use App\Models\Staff;
+use App\Support\EmailCheck;
 use Filament\Forms\Components\DatePicker;
 use Filament\Forms\Components\Select;
 use Filament\Forms\Components\TextInput;
@@ -42,7 +43,7 @@ class StaffForm
                         TextInput::make('phone')
                             ->tel()
                             ->placeholder('e.g. 0772 123456'),
-                        TextInput::make('email')
+                        EmailCheck::apply(TextInput::make('email'))
                             ->label('Email address')
                             ->email(),
                     ]),

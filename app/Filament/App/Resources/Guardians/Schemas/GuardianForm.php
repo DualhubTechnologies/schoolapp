@@ -3,6 +3,7 @@
 namespace App\Filament\App\Resources\Guardians\Schemas;
 
 use App\Models\Guardian;
+use App\Support\EmailCheck;
 use Filament\Forms\Components\Select;
 use Filament\Forms\Components\Textarea;
 use Filament\Forms\Components\TextInput;
@@ -34,7 +35,7 @@ class GuardianForm
                 TextInput::make('alt_phone')
                     ->label('Alternative phone')
                     ->tel(),
-                TextInput::make('email')
+                EmailCheck::apply(TextInput::make('email'))
                     ->label('Email address')
                     ->email(),
                 TextInput::make('occupation'),

@@ -8,3 +8,56 @@
 
 @source '../../../../app/Filament/**/*.php';
 @source '../../../../resources/views/filament/**/*.blade.php';
+
+/* Live password checklist and match line (resources/views/filament/forms/password-*.blade.php). */
+.sh-pw, .sh-pw-match {
+    --sh-weak: var(--danger-600, #dc2626);
+    --sh-fair: var(--warning-600, #d97706);
+    --sh-strong: var(--success-600, #16a34a);
+    --sh-muted: var(--gray-500, #6b7280);
+    --sh-track: var(--gray-200, #e5e7eb);
+    font-size: .8125rem;
+    line-height: 1.25rem;
+}
+.dark .sh-pw, .dark .sh-pw-match {
+    --sh-weak: var(--danger-400, #f87171);
+    --sh-fair: var(--warning-400, #fbbf24);
+    --sh-strong: var(--success-400, #4ade80);
+    --sh-muted: var(--gray-400, #9ca3af);
+    --sh-track: var(--gray-700, #374151);
+}
+.sh-pw { --sh-level: var(--sh-weak); }
+.sh-pw--fair { --sh-level: var(--sh-fair); }
+.sh-pw--strong { --sh-level: var(--sh-strong); }
+
+.sh-pw-bar { display: flex; gap: .25rem; }
+.sh-pw-bar span { flex: 1; height: .3rem; border-radius: 999px; background: var(--sh-track); transition: background-color .15s; }
+.sh-pw-bar span.is-on { background: var(--sh-level); }
+.sh-pw-summary { margin: .35rem 0 .15rem; font-weight: 600; color: var(--sh-level); }
+.sh-pw-list { display: grid; gap: .1rem; margin: 0; padding: 0; list-style: none; color: var(--sh-muted); }
+.sh-pw-list li { display: flex; align-items: center; gap: .35rem; }
+.sh-pw-list li.is-met { color: var(--sh-strong); }
+.sh-pw-list svg, .sh-pw-match svg { flex: none; width: 1rem; height: 1rem; }
+.sh-pw-note { margin: .35rem 0 0; color: var(--sh-muted); }
+.sh-pw-sr { position: absolute; width: 1px; height: 1px; overflow: hidden; clip-path: inset(50%); white-space: nowrap; }
+
+.sh-pw-match { display: flex; align-items: center; gap: .35rem; font-weight: 500; }
+.sh-pw-match--match { color: var(--sh-strong); }
+.sh-pw-match--partial { color: var(--sh-muted); }
+.sh-pw-match--mismatch { color: var(--sh-weak); }
+
+/* Live email hints (resources/views/filament/forms/email-check.blade.php). */
+.sh-email {
+    --sh-muted: var(--gray-500, #6b7280);
+    --sh-accent: var(--primary-600, #2563eb);
+    font-size: .8125rem;
+    line-height: 1.25rem;
+    color: var(--sh-muted);
+}
+.dark .sh-email {
+    --sh-muted: var(--gray-400, #9ca3af);
+    --sh-accent: var(--primary-400, #60a5fa);
+}
+.sh-email p { margin: 0; }
+.sh-email strong { font-weight: 600; }
+.sh-email-suggest button { font-weight: 600; color: var(--sh-accent); text-decoration: underline; text-underline-offset: 2px; cursor: pointer; }

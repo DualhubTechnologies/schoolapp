@@ -5,12 +5,16 @@ namespace App\Filament\Pages\Auth;
 use App\Models\School;
 use App\Models\User;
 use App\Notifications\SchoolRegistered;
+use App\Notifications\WelcomeToSchoolHub;
 use App\Services\Subscriptions\SubscriptionManager;
+use App\Support\EmailCheck;
+use App\Support\PasswordStrength;
 use Filament\Actions\Action;
 use Filament\Auth\Pages\Register;
 use Filament\Forms\Components\Checkbox;
 use Filament\Forms\Components\Select;
 use Filament\Forms\Components\TextInput;
+use Filament\Schemas\Components\Component;
 use Filament\Schemas\Components\Grid;
 use Filament\Schemas\Components\Section;
 use Filament\Schemas\Schema;
@@ -20,6 +24,7 @@ use Illuminate\Support\Facades\Notification;
 use Illuminate\Support\HtmlString;
 use Illuminate\Support\Str;
 use SensitiveParameter;
+use Throwable;
 
 /**
  * A school signs itself up with only the essentials: its name, level and
@@ -82,7 +87,7 @@ class RegisterSchool extends Register
                             ->required()
                             ->regex('/^[\d\s\+\-\(\)]{9,20}$/')
                             ->validationMessages(['regex' => 'Enter a valid phone number.']),
-                        TextInput::make('email')
+                        EmailCheck::apply(TextInput::make('email'))
                             ->label('Email (for signing in)')
                             ->email()
                             ->required()
@@ -105,6 +110,22 @@ class RegisterSchool extends Register
         ]);
     }
 
+    protected function getPasswordFormComponent(): Component
+    {
+        /** @var TextInput $field */
+        $field = parent::getPasswordFormComponent();
+
+        return PasswordStrength::meter($field);
+    }
+
+    protected function getPasswordConfirmationFormComponent(): Component
+    {
+        /** @var TextInput $field */
+        $field = parent::getPasswordConfirmationFormComponent();
+
+        return PasswordStrength::matches($field);
+    }
+
     public function getRegisterFormAction(): Action
     {
         return parent::getRegisterFormAction()
@@ -118,7 +139,7 @@ class RegisterSchool extends Register
      */
     protected function handleRegistration(#[SensitiveParameter] array $data): Model
     {
-        $user = DB::transaction(function () use ($data) {
+        [$user, $trial] = DB::transaction(function () use ($data) {
             // Creating the school also seeds its class levels (SchoolObserver).
             $school = School::create([
                 'name' => $data['school_name'],
@@ -141,7 +162,7 @@ class RegisterSchool extends Register
             ]);
 
             // The trial must exist before the user: its plan sets the login limit.
-            SubscriptionManager::startTrial($school);
+            $trial = SubscriptionManager::startTrial($school);
 
             $user = User::create([
                 'name' => $data['name'],
@@ -151,14 +172,26 @@ class RegisterSchool extends Register
             ]);
             $user->assignRole('School Admin');
 
-            return $user;
+            return [$user, $trial];
         });
+
+        // Emails are a courtesy: if the mail server is down, the school is
+        // still registered and the failure is logged rather than shown.
+        try {
+            $user->notify(new WelcomeToSchoolHub($user->school, $trial->ends_on));
+        } catch (Throwable $e) {
+            report($e);
+        }
 
         // Let the platform owner(s) know a new school has joined.
         $owners = User::role('Super Admin')->get();
 
         if ($owners->isNotEmpty()) {
-            Notification::send($owners, new SchoolRegistered($user->school));
+            try {
+                Notification::send($owners, new SchoolRegistered($user->school));
+            } catch (Throwable $e) {
+                report($e);
+            }
         }
 
         return $user;

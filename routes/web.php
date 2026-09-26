@@ -20,3 +20,14 @@ Route::get('/nssf-schedule/{period}/excel', [NssfScheduleController::class, 'dow
 Route::get('/payslips/{period}/all', [PayslipController::class, 'downloadAll'])
     ->name('payslips.all')
     ->middleware('auth');
+
+// Some hosts (e.g. InfinityFree) disable PHP's symlink(), so `storage:link`
+// can't create public/storage. This serves the same files dynamically instead.
+Route::get('/storage/{path}', function (string $path) {
+    $base = storage_path('app/public');
+    $full = realpath($base.'/'.$path);
+
+    abort_unless($full && str_starts_with($full, $base), 404);
+
+    return response()->file($full);
+})->where('path', '.*')->name('storage.local');

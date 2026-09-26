@@ -2,6 +2,10 @@
 
 namespace App\Providers\Filament;
 
+use App\Filament\Admin\Resources\ActivationCodes\ActivationCodeResource;
+use App\Filament\Admin\Resources\DemoRequests\DemoRequestResource;
+use App\Filament\Admin\Resources\Plans\PlanResource;
+use App\Filament\Admin\Resources\Schools\SchoolResource;
 use App\Filament\App\Pages\Dashboard;
 use App\Filament\App\Widgets\BursarKpis;
 use App\Filament\App\Widgets\HrKpis;
@@ -28,6 +32,7 @@ use Filament\Http\Middleware\AuthenticateSession;
 use Filament\Http\Middleware\DisableBladeIconComponents;
 use Filament\Http\Middleware\DispatchServingFilamentEvent;
 use Filament\Navigation\NavigationGroup;
+use Filament\Navigation\NavigationItem;
 use Filament\Panel;
 use Filament\PanelProvider;
 use Filament\Support\Colors\Color;
@@ -142,6 +147,21 @@ class AppPanelProvider extends PanelProvider
                 NavigationGroup::make('Settings')->collapsed(),
                 NavigationGroup::make('Platform Management'),
             ])
+            // The platform owner's own pages live in the admin panel
+            // (/admin); link them here so the Super Admin's sidebar isn't
+            // just Dashboard and Users.
+            ->navigationItems(collect([
+                [SchoolResource::class, 'Schools', Heroicon::OutlinedBuildingOffice2, 0],
+                [PlanResource::class, 'Plans & pricing', Heroicon::OutlinedRectangleStack, 1],
+                [DemoRequestResource::class, 'Demo requests', Heroicon::OutlinedCalendarDays, 3],
+                [ActivationCodeResource::class, 'Activation codes', Heroicon::OutlinedKey, 4],
+            ])->map(fn (array $item) => NavigationItem::make($item[1])
+                ->url(fn (): string => $item[0]::getUrl(panel: 'admin'))
+                ->icon($item[2])
+                ->group('Platform Management')
+                ->sort($item[3])
+                ->visible(fn (): bool => auth()->user()?->hasRole('Super Admin') ?? false))
+                ->all())
 
             // --- Plugins ---
             // Supplies the icon-only logo shown in the collapsed sidebar

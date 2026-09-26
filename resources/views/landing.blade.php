@@ -4,7 +4,8 @@
     Served by LandingController.
 
     Palette: slate neutrals + one blue primary (the app panel's
-    Color::Blue), with the logo's amber used only as a small accent.
+    Color::Blue), deepened towards indigo in gradients, with the logo's
+    amber used only as a small accent.
 --}}
 @php
     $signedIn = filament()->auth()->check();
@@ -47,6 +48,10 @@
             --slate-100: #f1f5f9; --slate-50: #f8fafc;
             /* Primary (blue) */
             --blue-700: #1d4ed8; --blue-600: #2563eb; --blue-500: #3b82f6; --blue-100: #dbeafe; --blue-50: #eff6ff;
+            --indigo-600: #4f46e5; --indigo-500: #6366f1; --sky-400: #38bdf8;
+            --gradient: linear-gradient(135deg, var(--blue-600) 0%, var(--indigo-600) 100%);
+            --gradient-text: linear-gradient(90deg, var(--blue-600) 0%, var(--indigo-500) 55%, var(--sky-400) 100%);
+            --glow: 0 10px 30px -10px rgba(37, 99, 235, .55);
             /* Status */
             --green-600: #16a34a; --green-50: #f0fdf4; --amber-500: #f59e0b; --amber-50: #fffbeb; --red-600: #dc2626;
 
@@ -316,8 +321,77 @@
         .footer ul a:hover { color: #fff; }
         .footer-bottom { display: flex; flex-wrap: wrap; justify-content: space-between; gap: 1rem; padding: 1.5rem 0; border-top: 1px solid var(--slate-800); font-size: .875rem; }
 
+        /* ── Automation ("you do / SchoolHub does") ── */
+        .auto-grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: 1.25rem; }
+        .auto { position: relative; display: flex; flex-direction: column; gap: .875rem; padding: 1.5rem; border: 1px solid var(--slate-200); border-radius: var(--radius-lg); background: #fff; box-shadow: var(--shadow-sm); transition: transform .2s, box-shadow .2s, border-color .2s; }
+        .auto:hover { transform: translateY(-3px); border-color: var(--blue-100); box-shadow: var(--shadow-lg); }
+        .auto-you { display: inline-flex; align-self: flex-start; align-items: center; gap: .375rem; padding: .25rem .625rem; border-radius: 999px; background: var(--slate-100); font-size: .75rem; font-weight: 600; color: var(--slate-600); }
+        .auto-you svg { width: .875rem; height: .875rem; }
+        .auto-does { display: flex; gap: .75rem; align-items: flex-start; }
+        .auto-does .icon { flex: none; }
+        .auto-does div b { display: block; font-size: 1rem; font-weight: 700; color: var(--slate-900); line-height: 1.35; }
+        .auto-does div span { display: block; margin-top: .25rem; font-size: .875rem; color: var(--slate-600); }
+
+        /* ── Visual polish ── */
+        .btn-primary { background: var(--gradient); border: 0; box-shadow: var(--glow); }
+        .btn-primary:hover { background: var(--gradient); filter: brightness(1.08); box-shadow: 0 14px 34px -10px rgba(37, 99, 235, .65); }
+        .btn-lg, .btn-primary, .btn-secondary, .btn-white { transition: transform .15s, box-shadow .15s, background-color .15s, border-color .15s, filter .15s; }
+        .btn-lg:hover { transform: translateY(-1px); }
+
+        .hero { padding-bottom: 5rem; }
+        .hero::after { content: ""; position: absolute; inset: -10rem -20% auto; height: 44rem; z-index: -2; pointer-events: none;
+            background:
+                radial-gradient(38% 45% at 22% 30%, rgba(59, 130, 246, .20), transparent 70%),
+                radial-gradient(34% 40% at 80% 22%, rgba(99, 102, 241, .20), transparent 70%),
+                radial-gradient(26% 32% at 62% 62%, rgba(56, 189, 248, .16), transparent 70%),
+                radial-gradient(18% 22% at 35% 70%, rgba(245, 158, 11, .10), transparent 70%); }
+        .hero h1 span { background: var(--gradient-text); -webkit-background-clip: text; background-clip: text; color: transparent; }
+        .badge b { background: var(--gradient); color: #fff; }
+
+        .preview-float { position: absolute; z-index: 2; display: flex; align-items: center; gap: .625rem; padding: .625rem .875rem .625rem .625rem; border: 1px solid rgba(226, 232, 240, .9); border-radius: .875rem; background: rgba(255, 255, 255, .92); backdrop-filter: blur(10px); -webkit-backdrop-filter: blur(10px); box-shadow: var(--shadow-lg); font-size: .75rem; color: var(--slate-600); text-align: left; animation: float 6s ease-in-out infinite; }
+        .preview-float b { display: block; font-size: .8125rem; font-weight: 700; color: var(--slate-900); }
+        .preview-float .dot { flex: none; display: flex; align-items: center; justify-content: center; width: 2rem; height: 2rem; border-radius: .625rem; color: #fff; background: var(--gradient); }
+        .preview-float .dot.green { background: linear-gradient(135deg, #22c55e, #16a34a); }
+        .preview-float .dot.amber { background: linear-gradient(135deg, #fbbf24, #f59e0b); }
+        .preview-float .dot svg { width: 1.125rem; height: 1.125rem; }
+        .pf-1 { top: 18%; left: -3.5rem; }
+        .pf-2 { top: 22%; right: -3.5rem; animation-delay: -2s; }
+        .pf-3 { bottom: -1.5rem; left: 14%; animation-delay: -4s; }
+        @keyframes float { 0%, 100% { transform: translateY(0); } 50% { transform: translateY(-8px); } }
+
+        .fact b { background: var(--gradient-text); -webkit-background-clip: text; background-clip: text; color: transparent; }
+        .section-alt { background: linear-gradient(180deg, var(--slate-50), #fff 85%); }
+        .eyebrow { display: inline-flex; align-items: center; gap: .375rem; padding: .25rem .75rem; border-radius: 999px; background: var(--blue-50); border: 1px solid var(--blue-100); font-size: .8125rem; }
+        .show-copy .eyebrow { padding: .1875rem .625rem; }
+        .icon { background: var(--gradient); color: #fff; border: 0; box-shadow: var(--glow); }
+        .card:hover { transform: translateY(-3px); border-color: var(--blue-100); box-shadow: var(--shadow-lg); }
+        .card { transition: transform .2s, border-color .2s, box-shadow .2s; }
+        .step-num { background: var(--gradient); box-shadow: var(--glow); }
+        .step { transition: transform .2s, box-shadow .2s; }
+        .step:hover { transform: translateY(-3px); box-shadow: var(--shadow-lg); }
+        .plan { transition: transform .2s, box-shadow .2s; }
+        .plan:hover { transform: translateY(-4px); box-shadow: var(--shadow-lg); }
+        .plan.featured { border: 2px solid transparent; background: linear-gradient(#fff, #fff) padding-box, var(--gradient) border-box; box-shadow: 0 30px 60px -20px rgba(79, 70, 229, .35); }
+        .plan-flag { background: var(--gradient); box-shadow: var(--glow); }
+        .contact-item.wa .icon { box-shadow: none; }
+        .success .icon { box-shadow: none; }
+        .cta { background: var(--gradient); box-shadow: 0 30px 60px -24px rgba(79, 70, 229, .55); }
+        .cta::after { content: ""; position: absolute; inset: -40% -10% auto auto; width: 28rem; height: 28rem; border-radius: 50%; background: radial-gradient(closest-side, rgba(56, 189, 248, .45), transparent); pointer-events: none; }
+
+        /* Fade-in on scroll. Only hidden once the script confirms it can reveal them. */
+        /* An animation (not a transition) so hover effects keep their own timing afterwards. */
+        .reveal-ready [data-reveal]:not(.is-visible) { opacity: 0; }
+        .reveal-ready [data-reveal].is-visible { animation: reveal .6s ease backwards; }
+        @keyframes reveal { from { opacity: 0; transform: translateY(18px); } to { opacity: 1; transform: none; } }
+
         /* ── Responsive ── */
+        @media (max-width: 1100px) {
+            .preview-float { display: none; }
+            .nav { gap: 1.25rem; }
+            .header-actions .btn-secondary { display: none; }
+        }
         @media (max-width: 1024px) {
+            .auto-grid { grid-template-columns: repeat(2, 1fr); }
             .demo { grid-template-columns: 1fr; }
             .grid-3, .steps { grid-template-columns: repeat(2, 1fr); }
             .show { grid-template-columns: 1fr; gap: 2.5rem; }
@@ -340,7 +414,7 @@
             .brand img { height: 2.25rem; }
             .hero { padding: 2rem 0 3rem; }
             .section { padding: 4.5rem 0; }
-            .grid-3, .steps { grid-template-columns: 1fr; }
+            .grid-3, .steps, .auto-grid { grid-template-columns: 1fr; }
             .app-row { grid-template-columns: 1fr; }
             .hero-actions .btn { width: 100%; }
             .footer-grid { grid-template-columns: 1fr; gap: 2rem; }
@@ -355,7 +429,8 @@
         }
         @media (prefers-reduced-motion: reduce) {
             html { scroll-behavior: auto; }
-            * { transition: none !important; }
+            * { transition: none !important; animation: none !important; }
+            .reveal-ready [data-reveal]:not(.is-visible) { opacity: 1; }
         }
     </style>
 </head>
@@ -371,6 +446,7 @@
 
         <nav class="nav" aria-label="Main">
             <a href="#features">Features</a>
+            <a href="#automation">Automation</a>
             <a href="#modules">Modules</a>
             <a href="#pricing">Pricing</a>
             <a href="#faq">FAQ</a>
@@ -393,6 +469,7 @@
 
     <div class="mobile-nav" id="mobile-nav">
         <a href="#features">Features</a>
+        <a href="#automation">Automation</a>
         <a href="#modules">Modules</a>
         <a href="#pricing">Pricing</a>
         <a href="#faq">FAQ</a>
@@ -413,8 +490,8 @@
         <div class="container">
             <div class="hero-copy">
                 <span class="badge"><b>New</b> Built for the lower-secondary competency curriculum</span>
-                <h1>The complete management system for <span>Ugandan schools</span></h1>
-                <p class="hero-lead">Admissions, fees, exams and report cards, payroll and finance — in one secure system that your head teacher, bursar and teachers can all use from any device.</p>
+                <h1>Run your whole school from <span>one smart system</span></h1>
+                <p class="hero-lead">SchoolHub works out grades, positions, fee balances and PAYE for you — so your head teacher, bursar and teachers spend less time on paperwork and more time on learners. Built for Ugandan primary and secondary schools.</p>
 
                 <div class="hero-actions">
                     @if ($signedIn)
@@ -429,10 +506,23 @@
                     <span>{!! $check !!} {{ $trialDays }}-day free trial</span>
                     <span>{!! $check !!} No payment details needed</span>
                     <span>{!! $check !!} Set up in minutes</span>
+                    <span>{!! $check !!} Works on any phone or computer</span>
                 </div>
             </div>
 
             <div class="preview" aria-hidden="true">
+                <div class="preview-float pf-1">
+                    <span class="dot green">{!! $check !!}</span>
+                    <span><b>Report cards ready</b>S.2 East · positions worked out</span>
+                </div>
+                <div class="preview-float pf-2">
+                    <span class="dot"><svg viewBox="0 0 20 20" fill="currentColor"><path fill-rule="evenodd" d="M1 4a1 1 0 0 1 1-1h16a1 1 0 0 1 1 1v8a1 1 0 0 1-1 1H2a1 1 0 0 1-1-1V4Zm12 4a3 3 0 1 1-6 0 3 3 0 0 1 6 0ZM4 9a1 1 0 1 0 0-2 1 1 0 0 0 0 2Zm13-1a1 1 0 1 1-2 0 1 1 0 0 1 2 0ZM1.75 14.5a.75.75 0 0 0 0 1.5c4.417 0 8.693.603 12.749 1.73 1.111.309 2.251-.512 2.251-1.696v-.784a.75.75 0 0 0-1.5 0v.784a.272.272 0 0 1-.35.25A49.043 49.043 0 0 0 1.75 14.5Z" clip-rule="evenodd"/></svg></span>
+                    <span><b>Payroll calculated</b>PAYE &amp; NSSF on 38 payslips</span>
+                </div>
+                <div class="preview-float pf-3">
+                    <span class="dot amber"><svg viewBox="0 0 20 20" fill="currentColor"><path fill-rule="evenodd" d="M4.93 2.31a41.401 41.401 0 0 1 10.14 0C16.194 2.45 17 3.414 17 4.517V17.25a.75.75 0 0 1-1.075.676l-2.8-1.344-2.8 1.344a.75.75 0 0 1-.65 0l-2.8-1.344-2.8 1.344A.75.75 0 0 1 3 17.25V4.517c0-1.103.806-2.068 1.93-2.207Zm4.822 3.997a.75.75 0 1 0-1.004-1.114l-2.5 2.25a.75.75 0 0 0 0 1.114l2.5 2.25a.75.75 0 0 0 1.004-1.114L8.704 8.75h1.921a1.875 1.875 0 0 1 0 3.75.75.75 0 0 0 0 1.5 3.375 3.375 0 1 0 0-6.75h-1.92l1.047-.943Z" clip-rule="evenodd"/></svg></span>
+                    <span><b>Receipt printed</b>Balance updated instantly</span>
+                </div>
                 <div class="window">
                     <div class="window-bar">
                         <div class="dots"><i></i><i></i><i></i></div>
@@ -499,42 +589,76 @@
         </div>
     </section>
 
+    {{-- ── Automation: what staff do, and what SchoolHub then does for them ── --}}
+    @php
+        $you = '<svg viewBox="0 0 20 20" fill="currentColor" aria-hidden="true"><path d="M10 8a3 3 0 1 0 0-6 3 3 0 0 0 0 6ZM3.465 14.493a1.23 1.23 0 0 0 .41 1.412A9.957 9.957 0 0 0 10 18c2.31 0 4.438-.784 6.131-2.1.43-.333.604-.903.408-1.41a7.002 7.002 0 0 0-13.074.003Z"/></svg>';
+        $automations = [
+            ['Teacher enters marks', 'Grades, aggregates, divisions and positions', 'Worked out against your grading scale the moment marks are saved.', 'M4.26 10.147a60.438 60.438 0 0 0-.491 6.347A48.62 48.62 0 0 1 12 20.904a48.62 48.62 0 0 1 8.232-4.41 60.46 60.46 0 0 0-.491-6.347m-15.482 0a50.636 50.636 0 0 0-2.658-.813A59.906 59.906 0 0 1 12 3.493a59.903 59.903 0 0 1 10.399 5.84c-.896.248-1.783.52-2.658.814m-15.482 0A50.717 50.717 0 0 1 12 13.489a50.702 50.702 0 0 1 7.74-3.342M6.75 15a.75.75 0 1 0 0-1.5.75.75 0 0 0 0 1.5Zm0 0v-3.675A55.378 55.378 0 0 1 12 8.443m-7.007 11.55A5.981 5.981 0 0 0 6.75 15.75v-1.5'],
+            ['Director of studies clicks once', 'Report cards for the whole class', 'Every learner\'s results, grades and position, ready to print.', 'M19.5 14.25v-2.625a3.375 3.375 0 0 0-3.375-3.375h-1.5A1.125 1.125 0 0 1 13.5 7.125v-1.5a3.375 3.375 0 0 0-3.375-3.375H8.25m0 12.75h7.5m-7.5 3H12M10.5 2.25H5.625c-.621 0-1.125.504-1.125 1.125v17.25c0 .621.504 1.125 1.125 1.125h12.75c.621 0 1.125-.504 1.125-1.125V11.25a9 9 0 0 0-9-9Z'],
+            ['Bursar receives a payment', 'Receipt printed, balance updated', 'Fee balances are always current, and discounts and bursaries apply themselves.', 'M2.25 8.25h19.5M2.25 9h19.5m-16.5 5.25h6m-6 2.25h3m-3.75 3h15a2.25 2.25 0 0 0 2.25-2.25V6.75A2.25 2.25 0 0 0 19.5 4.5h-15a2.25 2.25 0 0 0-2.25 2.25v10.5A2.25 2.25 0 0 0 4.5 19.5Z'],
+            ['Accountant runs payroll', 'PAYE, NSSF and LST on every payslip', 'Statutory deductions calculated for each staff member, with NSSF schedules ready to submit.', 'M15.75 15.75V18m-7.5-6.75h.008v.008H8.25v-.008Zm0 2.25h.008v.008H8.25V13.5Zm0 2.25h.008v.008H8.25v-.008Zm0 2.25h.008v.008H8.25V18Zm2.498-6.75h.007v.008h-.007v-.008Zm0 2.25h.007v.008h-.007V13.5Zm0 2.25h.007v.008h-.007v-.008Zm0 2.25h.007v.008h-.007V18Zm2.504-6.75h.008v.008h-.008v-.008Zm0 2.25h.008v.008h-.008V13.5Zm0 2.25h.008v.008h-.008v-.008Zm0 2.25h.008v.008h-.008V18Zm2.498-6.75h.008v.008h-.008v-.008Zm0 2.25h.008v.008h-.008V13.5ZM8.25 6h7.5v2.25h-7.5V6ZM12 2.25c-1.892 0-3.758.11-5.593.322C5.307 2.7 4.5 3.65 4.5 4.757V19.5a2.25 2.25 0 0 0 2.25 2.25h10.5a2.25 2.25 0 0 0 2.25-2.25V4.757c0-1.108-.806-2.057-1.907-2.185A48.507 48.507 0 0 0 12 2.25Z'],
+            ['Year comes to an end', 'Learners promoted to their next class', 'Move a whole school up a year in a few clicks, not a week of re-typing.', 'M4.5 10.5 12 3m0 0 7.5 7.5M12 3v18'],
+            ['Anyone changes a record', 'Logged in the audit trail', 'Who did what, and when, recorded automatically for every change.', 'M9 12.75 11.25 15 15 9.75m-3-7.036A11.959 11.959 0 0 1 3.598 6 11.99 11.99 0 0 0 3 9.749c0 5.592 3.824 10.29 9 11.623 5.176-1.332 9-6.03 9-11.622 0-1.31-.21-2.571-.598-3.751h-.152c-3.196 0-6.1-1.248-8.25-3.285Z'],
+        ];
+    @endphp
+    <section class="section section-alt" id="automation">
+        <div class="container">
+            <div class="section-head" data-reveal>
+                <div class="eyebrow">Automation built in</div>
+                <h2>Let SchoolHub do the heavy lifting</h2>
+                <p>The calculations that used to take evenings and weekends now happen by themselves. Your staff do one simple step; SchoolHub does the rest.</p>
+            </div>
+
+            <div class="auto-grid">
+                @foreach ($automations as [$trigger, $result, $detail, $path])
+                    <div class="auto" data-reveal>
+                        <span class="auto-you">{!! $you !!} {{ $trigger }}</span>
+                        <div class="auto-does">
+                            <span class="icon"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" aria-hidden="true"><path stroke-linecap="round" stroke-linejoin="round" d="{{ $path }}"/></svg></span>
+                            <div><b>{{ $result }}</b><span>{{ $detail }}</span></div>
+                        </div>
+                    </div>
+                @endforeach
+            </div>
+        </div>
+    </section>
+
     {{-- ── Features ── --}}
     <section class="section" id="features">
         <div class="container">
-            <div class="section-head">
+            <div class="section-head" data-reveal>
                 <div class="eyebrow">Everything in one place</div>
                 <h2>Replace the ledgers, spreadsheets and paper files</h2>
                 <p>Every plan includes every module. Give each member of staff access to only the parts they need.</p>
             </div>
 
             <div class="grid-3">
-                <div class="card">
+                <div class="card" data-reveal>
                     <div class="icon"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6"><path stroke-linecap="round" stroke-linejoin="round" d="M15 19.128a9.38 9.38 0 0 0 2.625.372 9.337 9.337 0 0 0 4.121-.952 4.125 4.125 0 0 0-7.533-2.493M15 19.128v-.003c0-1.113-.285-2.16-.786-3.07M15 19.128v.106A12.318 12.318 0 0 1 8.624 21c-2.331 0-4.512-.645-6.374-1.766l-.001-.109a6.375 6.375 0 0 1 11.964-3.07M12 6.375a3.375 3.375 0 1 1-6.75 0 3.375 3.375 0 0 1 6.75 0Zm8.25 2.25a2.625 2.625 0 1 1-5.25 0 2.625 2.625 0 0 1 5.25 0Z"/></svg></div>
                     <h3>Students &amp; guardians</h3>
                     <p>Admissions, classes and streams, parent contacts, bulk import from Excel, and year-end promotion in a few clicks.</p>
                 </div>
-                <div class="card">
+                <div class="card" data-reveal>
                     <div class="icon"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6"><path stroke-linecap="round" stroke-linejoin="round" d="M2.25 8.25h19.5M2.25 9h19.5m-16.5 5.25h6m-6 2.25h3m-3.75 3h15a2.25 2.25 0 0 0 2.25-2.25V6.75A2.25 2.25 0 0 0 19.5 4.5h-15a2.25 2.25 0 0 0-2.25 2.25v10.5A2.25 2.25 0 0 0 4.5 19.5Z"/></svg></div>
                     <h3>Fees &amp; receipts</h3>
                     <p>Fee structures per class, bursaries and discounts, printed receipts, live balances and reminder letters to parents.</p>
                 </div>
-                <div class="card">
+                <div class="card" data-reveal>
                     <div class="icon"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6"><path stroke-linecap="round" stroke-linejoin="round" d="M4.26 10.147a60.438 60.438 0 0 0-.491 6.347A48.62 48.62 0 0 1 12 20.904a48.62 48.62 0 0 1 8.232-4.41 60.46 60.46 0 0 0-.491-6.347m-15.482 0a50.636 50.636 0 0 0-2.658-.813A59.906 59.906 0 0 1 12 3.493a59.903 59.903 0 0 1 10.399 5.84c-.896.248-1.783.52-2.658.814m-15.482 0A50.717 50.717 0 0 1 12 13.489a50.702 50.702 0 0 1 7.74-3.342M6.75 15a.75.75 0 1 0 0-1.5.75.75 0 0 0 0 1.5Zm0 0v-3.675A55.378 55.378 0 0 1 12 8.443m-7.007 11.55A5.981 5.981 0 0 0 6.75 15.75v-1.5"/></svg></div>
                     <h3>Exams &amp; report cards</h3>
                     <p>Teachers enter marks for their own subjects; grades, aggregates, divisions and positions are worked out for you.</p>
                 </div>
-                <div class="card">
+                <div class="card" data-reveal>
                     <div class="icon"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6"><path stroke-linecap="round" stroke-linejoin="round" d="M20.25 14.15v4.25c0 1.094-.787 2.036-1.872 2.18-2.087.277-4.216.42-6.378.42s-4.291-.143-6.378-.42c-1.085-.144-1.872-1.086-1.872-2.18v-4.25m16.5 0a2.18 2.18 0 0 0 .75-1.661V8.706c0-1.081-.768-2.015-1.837-2.175a48.114 48.114 0 0 0-3.413-.387m4.5 8.006c-.194.165-.42.295-.673.38A23.978 23.978 0 0 1 12 15.75c-2.648 0-5.195-.429-7.577-1.22a2.016 2.016 0 0 1-.673-.38m0 0A2.18 2.18 0 0 1 3 12.489V8.706c0-1.081.768-2.015 1.837-2.175a48.111 48.111 0 0 1 3.413-.387m7.5 0V5.25A2.25 2.25 0 0 0 13.5 3h-3a2.25 2.25 0 0 0-2.25 2.25v.894m7.5 0a48.667 48.667 0 0 0-7.5 0"/></svg></div>
                     <h3>Staff &amp; payroll</h3>
                     <p>Staff records, allowances and deductions, with PAYE, NSSF and LST calculated for you, plus payslips and schedules.</p>
                 </div>
-                <div class="card">
+                <div class="card" data-reveal>
                     <div class="icon"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6"><path stroke-linecap="round" stroke-linejoin="round" d="M3 13.125C3 12.504 3.504 12 4.125 12h2.25c.621 0 1.125.504 1.125 1.125v6.75C7.5 20.496 6.996 21 6.375 21h-2.25A1.125 1.125 0 0 1 3 19.875v-6.75ZM9.75 8.625c0-.621.504-1.125 1.125-1.125h2.25c.621 0 1.125.504 1.125 1.125v11.25c0 .621-.504 1.125-1.125 1.125h-2.25a1.125 1.125 0 0 1-1.125-1.125V8.625ZM16.5 4.125c0-.621.504-1.125 1.125-1.125h2.25C20.496 3 21 3.504 21 4.125v15.75c0 .621-.504 1.125-1.125 1.125h-2.25a1.125 1.125 0 0 1-1.125-1.125V4.125Z"/></svg></div>
                     <h3>Finance &amp; budget</h3>
                     <p>Record expenses and other income, set a term budget, and see income against expenditure whenever you need it.</p>
                 </div>
-                <div class="card">
+                <div class="card" data-reveal>
                     <div class="icon"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6"><path stroke-linecap="round" stroke-linejoin="round" d="M9 12.75 11.25 15 15 9.75m-3-7.036A11.959 11.959 0 0 1 3.598 6 11.99 11.99 0 0 0 3 9.749c0 5.592 3.824 10.29 9 11.623 5.176-1.332 9-6.03 9-11.622 0-1.31-.21-2.571-.598-3.751h-.152c-3.196 0-6.1-1.248-8.25-3.285Z"/></svg></div>
                     <h3>Access control &amp; audit trail</h3>
                     <p>Each user sees only their modules, and every change is logged — so you always know who did what, and when.</p>
@@ -546,13 +670,13 @@
     {{-- ── Module showcase ── --}}
     <section class="section section-alt" id="modules">
         <div class="container">
-            <div class="section-head">
+            <div class="section-head" data-reveal>
                 <div class="eyebrow">Made for how Ugandan schools work</div>
                 <h2>Less time on paperwork, more time on learners</h2>
             </div>
 
             <div class="showcase">
-                <div class="show">
+                <div class="show" data-reveal>
                     <div class="show-copy">
                         <div class="eyebrow">Fees</div>
                         <h3>Know every balance, every day</h3>
@@ -580,7 +704,7 @@
                     </div>
                 </div>
 
-                <div class="show">
+                <div class="show" data-reveal>
                     <div class="show-copy">
                         <div class="eyebrow">Exams &amp; results</div>
                         <h3>Report cards without the weekend of calculations</h3>
@@ -606,7 +730,7 @@
                     </div>
                 </div>
 
-                <div class="show">
+                <div class="show" data-reveal>
                     <div class="show-copy">
                         <div class="eyebrow">Payroll</div>
                         <h3>Pay staff correctly, on time</h3>
@@ -639,24 +763,24 @@
     {{-- ── How it works ── --}}
     <section class="section" id="how">
         <div class="container">
-            <div class="section-head">
+            <div class="section-head" data-reveal>
                 <div class="eyebrow">Getting started</div>
                 <h2>Up and running in an afternoon</h2>
                 <p>No installation, no servers and no long training. If your staff can use a smartphone, they can use SchoolHub.</p>
             </div>
 
             <div class="steps">
-                <div class="step">
+                <div class="step" data-reveal>
                     <span class="step-num">1</span>
                     <h3>Register your school</h3>
                     <p>Enter your school's name, category and district, plus your own details. You become the school's administrator immediately.</p>
                 </div>
-                <div class="step">
+                <div class="step" data-reveal>
                     <span class="step-num">2</span>
                     <h3>Set up and import</h3>
                     <p>Class levels are created for you. Add your streams, term and fee structure, then import learners from Excel.</p>
                 </div>
-                <div class="step">
+                <div class="step" data-reveal>
                     <span class="step-num">3</span>
                     <h3>Invite your team</h3>
                     <p>Create logins for the bursar, teachers and director of studies, and choose which modules each person can open.</p>
@@ -669,7 +793,7 @@
     @if ($plans->isNotEmpty())
     <section class="section section-alt" id="pricing">
         <div class="container" id="pricing-root" data-cycle="term">
-            <div class="section-head">
+            <div class="section-head" data-reveal>
                 <div class="eyebrow">Pricing</div>
                 <h2>Simple pricing, paid per term</h2>
                 <p>Every plan includes every module. Plans differ by the number of learners, staff logins, and parent &amp; student portal access.</p>
@@ -691,7 +815,7 @@
                             ? (int) round((1 - $plan->price_per_year / ($plan->price_per_term * 3)) * 100)
                             : 0;
                     @endphp
-                    <div @class(['plan', 'featured' => $plan->id === $popular])>
+                    <div @class(['plan', 'featured' => $plan->id === $popular]) data-reveal>
                         @if ($plan->id === $popular)<span class="plan-flag">Most popular</span>@endif
                         <h3>{{ $plan->name }}</h3>
                         <p class="plan-desc">{{ $plan->description }}</p>
@@ -728,7 +852,7 @@
     {{-- ── FAQ ── --}}
     <section class="section" id="faq">
         <div class="container">
-            <div class="section-head">
+            <div class="section-head" data-reveal>
                 <div class="eyebrow">FAQ</div>
                 <h2>Frequently asked questions</h2>
             </div>
@@ -874,7 +998,7 @@
 
     {{-- ── CTA ── --}}
     <section class="container">
-        <div class="cta">
+        <div class="cta" data-reveal>
             <h2>Ready to run your school the modern way?</h2>
             <p>Register in about a minute and try every module free for {{ $trialDays }} days. No payment details needed.</p>
             <div class="hero-actions">
@@ -900,6 +1024,7 @@
                 <h4>Product</h4>
                 <ul>
                     <li><a href="#features">Features</a></li>
+                    <li><a href="#automation">Automation</a></li>
                     <li><a href="#modules">Modules</a></li>
                     <li><a href="#pricing">Pricing</a></li>
                 </ul>
@@ -954,6 +1079,27 @@
                 menuBtn.setAttribute('aria-expanded', 'false');
             });
         });
+
+        // Fade sections in as they scroll into view. Content stays visible if
+        // the browser can't observe (or the visitor prefers less motion).
+        var revealables = document.querySelectorAll('[data-reveal]');
+        if ('IntersectionObserver' in window && ! window.matchMedia('(prefers-reduced-motion: reduce)').matches) {
+            var observer = new IntersectionObserver(function (entries) {
+                entries.forEach(function (entry) {
+                    if (entry.isIntersecting) {
+                        entry.target.classList.add('is-visible');
+                        observer.unobserve(entry.target);
+                    }
+                });
+            }, { rootMargin: '0px 0px -8% 0px' });
+
+            revealables.forEach(function (el) {
+                // Stagger siblings in the same grid slightly.
+                el.style.animationDelay = (Array.prototype.indexOf.call(el.parentNode.children, el) % 3) * 80 + 'ms';
+                observer.observe(el);
+            });
+            document.documentElement.classList.add('reveal-ready');
+        }
 
         // Per term / per year pricing.
         var root = document.getElementById('pricing-root');

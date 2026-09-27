@@ -55,17 +55,18 @@ it('accepts a six-character password and rejects a shorter one', function () {
     expect(User::where('email', 'head@hope.test')->exists())->toBeFalse();
 });
 
-it('asks production passwords for six characters with upper and lower case letters and a number, no symbol', function () {
+it('asks production passwords for six characters with a letter and a number, no capital or symbol', function () {
     app()->detectEnvironment(fn () => 'production');
 
     // Without the data-leak lookup, which needs the internet.
-    $rule = Password::min(PasswordStrength::MIN_LENGTH)->mixedCase()->letters()->numbers();
+    $rule = Password::min(PasswordStrength::MIN_LENGTH)->letters()->numbers();
     $passes = fn (string $password): bool => Validator::make(['password' => $password], ['password' => $rule])->passes();
 
-    expect($passes('Abc123'))->toBeTrue()
-        ->and($passes('abc123'))->toBeFalse()
-        ->and($passes('Abcdef'))->toBeFalse()
+    expect($passes('abc123'))->toBeTrue()
+        ->and($passes('Abc123'))->toBeTrue()
+        ->and($passes('abcdef'))->toBeFalse()
+        ->and($passes('123456'))->toBeFalse()
         ->and(PasswordStrength::MIN_LENGTH)->toBe(6)
         ->and(collect(PasswordStrength::requirements())->pluck('label')->all())
-        ->toBe(['At least 6 characters', 'An uppercase letter', 'A lowercase letter', 'A number']);
+        ->toBe(['At least 6 characters', 'A letter', 'A number']);
 });

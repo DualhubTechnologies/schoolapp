@@ -27,7 +27,6 @@ class PasswordStrength
     {
         return static::strict()
             ? Password::min(static::MIN_LENGTH)
-                ->mixedCase()
                 ->letters()
                 ->numbers()
                 ->uncompromised()
@@ -48,8 +47,7 @@ class PasswordStrength
 
         return [
             ['label' => 'At least '.static::MIN_LENGTH.' characters', 'pattern' => '^[\\s\\S]{'.static::MIN_LENGTH.',}$'],
-            ['label' => 'An uppercase letter', 'pattern' => '\\p{Lu}'],
-            ['label' => 'A lowercase letter', 'pattern' => '\\p{Ll}'],
+            ['label' => 'A letter', 'pattern' => '\\p{L}'],
             ['label' => 'A number', 'pattern' => '\\p{N}'],
         ];
     }

@@ -96,6 +96,8 @@
         .header-actions { display: flex; align-items: center; gap: .75rem; }
         .link-signin { font-size: .9375rem; font-weight: 600; color: var(--slate-700); padding: 0 .5rem; }
         .link-signin:hover { color: var(--slate-900); }
+        .hero-signin { margin-top: 1rem; font-size: .9375rem; color: var(--slate-600); }
+        .hero-signin a { font-weight: 600; color: var(--blue-600); text-decoration: underline; text-underline-offset: 3px; }
         .menu-btn { display: none; width: 2.5rem; height: 2.5rem; align-items: center; justify-content: center; border: 1px solid var(--slate-200); border-radius: .5rem; background: #fff; color: var(--slate-700); cursor: pointer; }
         .menu-btn svg { width: 1.25rem; height: 1.25rem; }
         .mobile-nav { display: none; border-top: 1px solid var(--slate-200); background: #fff; padding: 1rem 1.5rem 1.5rem; }
@@ -189,6 +191,9 @@
         .showcase { display: grid; gap: 6rem; }
         .show { display: grid; grid-template-columns: 1fr 1fr; gap: 4rem; align-items: center; }
         .show:nth-child(even) .show-media { order: -1; }
+        /* Let the columns shrink below their content's width, so a wide
+           mock-up can't push the page sideways on small phones. */
+        .show > * { min-width: 0; }
         .show h3 { margin-top: .5rem; font-size: clamp(1.5rem, 2.6vw, 2rem); font-weight: 800; letter-spacing: -.025em; }
         .show-copy > p { margin-top: 1rem; font-size: 1.0625rem; color: var(--slate-600); }
         .ticks { list-style: none; margin-top: 1.5rem; display: grid; gap: .75rem; }
@@ -401,7 +406,11 @@
         }
         @media (min-width: 861px) { .header.is-open .mobile-nav { display: none; } }
         @media (max-width: 860px) {
-            .nav, .header-actions .link-signin, .header-actions .btn { display: none; }
+            /* Phones keep Sign in (or Go to dashboard) beside the menu button. */
+            .nav, .header-actions .btn:not(.header-keep) { display: none; }
+            .header-actions { gap: .5rem; }
+            .header-actions .link-signin { display: inline-flex; align-items: center; height: 2.5rem; padding: 0 1rem; border: 1px solid var(--slate-300); border-radius: .5rem; background: #fff; font-size: .875rem; color: var(--slate-900); }
+            .header-actions .header-keep { height: 2.5rem; }
             .menu-btn { display: inline-flex; }
             .app { grid-template-columns: 1fr; }
             .app-side { display: none; }
@@ -455,7 +464,7 @@
 
         <div class="header-actions">
             @if ($signedIn)
-                <a href="{{ $dashboardUrl }}" class="btn btn-primary btn-sm">Go to dashboard</a>
+                <a href="{{ $dashboardUrl }}" class="btn btn-primary btn-sm header-keep">Go to dashboard</a>
             @else
                 <a href="{{ $loginUrl }}" class="link-signin">Sign in</a>
                 <a href="#demo" class="btn btn-secondary btn-sm">Book a demo</a>
@@ -501,6 +510,10 @@
                         <a href="#demo" class="btn btn-secondary btn-lg">Book a free demo</a>
                     @endif
                 </div>
+
+                @unless ($signedIn)
+                    <p class="hero-signin">Already registered? <a href="{{ $loginUrl }}">Sign in to your school</a></p>
+                @endunless
 
                 <div class="hero-points">
                     <span>{!! $check !!} {{ $trialDays }}-day free trial</span>

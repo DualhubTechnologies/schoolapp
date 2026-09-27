@@ -70,7 +70,7 @@ class ListFeeReminders extends ListRecords
 
                     Textarea::make('template')
                         ->label('Message')
-                        ->default(FeeReminderService::DEFAULT_TEMPLATE)
+                        ->default(fn (): string => FeeReminderService::defaultTemplate())
                         ->rows(4)
                         ->maxLength(459)
                         ->required(fn (Get $get) => $get('channel') === 'sms')

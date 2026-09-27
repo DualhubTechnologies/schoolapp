@@ -3,6 +3,7 @@
 namespace App\Filament\Admin\Resources\Schools\Schemas;
 
 use App\Models\School;
+use App\Services\ParentMessages;
 use App\Support\EmailCheck;
 use App\Support\ImageShrinker;
 use App\Support\PrivateFiles;
@@ -175,6 +176,13 @@ class SchoolForm
                                     ->placeholder('e.g. Use the student\'s admission number as the payment reference, then bring the slip to the bursar.')
                                     ->rows(2)
                                     ->columnSpanFull(),
+
+                                Select::make('parent_sms_language')
+                                    ->label('Language of texts to parents')
+                                    ->options(ParentMessages::LANGUAGES)
+                                    ->default('en')
+                                    ->selectablePlaceholder(false)
+                                    ->helperText('Receipts and fee reminders sent by SMS or WhatsApp.'),
                             ]),
 
                         /*

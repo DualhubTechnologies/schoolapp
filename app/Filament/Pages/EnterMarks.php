@@ -54,6 +54,9 @@ class EnterMarks extends Page
 
     public bool $showComments = false;
 
+    /** When the sheet was last saved, shown beside the Save button. */
+    public ?string $savedAt = null;
+
     public function mount(): void
     {
         $this->assessmentId = request()->integer('assessment') ?: $this->assessmentOptions()->keys()->first();
@@ -281,6 +284,20 @@ class EnterMarks extends Page
 
     public function save(): void
     {
+        $this->persist(quiet: false);
+    }
+
+    /**
+     * Called by the sheet a few seconds after typing stops. Saves only when
+     * every score is valid, and says so quietly beside the Save button.
+     */
+    public function autosave(): void
+    {
+        $this->persist(quiet: true);
+    }
+
+    protected function persist(bool $quiet): void
+    {
         $assessment = $this->assessment;
         $subject = $this->subject;
 
@@ -291,6 +308,10 @@ class EnterMarks extends Page
         abort_unless(AcademicAccess::canEnterMarksFor($subject->pivot->teacher_id, $this->classId), 403);
 
         if ($assessment->isLocked()) {
+            if ($quiet) {
+                return;
+            }
+
             Notification::make()->title('This exam is locked')->body('Ask the administrator to reopen it.')->danger()->send();
 
             return;
@@ -310,6 +331,12 @@ class EnterMarks extends Page
 
         if ($errors) {
             $this->setErrorBag($errors);
+            $this->savedAt = null;
+
+            if ($quiet) {
+                return;
+            }
+
             Notification::make()->title(count($errors).' '.str('score')->plural(count($errors)).' need fixing')->body('Scores must be from 0 to '.(float) $max.'.')->danger()->send();
 
             return;
@@ -341,7 +368,11 @@ class EnterMarks extends Page
             }
         });
 
-        Notification::make()->title("Marks saved ({$saved})")->success()->send();
+        $this->savedAt = now()->format('g:i a');
+
+        if (! $quiet) {
+            Notification::make()->title("Marks saved ({$saved})")->success()->send();
+        }
     }
 
     /**

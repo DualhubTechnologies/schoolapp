@@ -27,6 +27,7 @@ class Term extends Model
     {
         return [
             'sequence' => 'integer',
+            'report_cards_released_at' => 'datetime',
             'start_date' => 'date',
             'end_date' => 'date',
             'is_current' => 'boolean',
@@ -138,6 +139,11 @@ class Term extends Model
 
         if ($withinYear) {
             return $withinYear;
+        }
+
+        // Without a start date there is no telling which year comes next.
+        if (! $this->academicYear?->start_date) {
+            return null;
         }
 
         $nextYear = AcademicYear::where('school_id', $this->school_id)

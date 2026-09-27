@@ -29,6 +29,18 @@ class StaffResource extends Resource
 
     protected static ?string $recordTitleAttribute = 'name';
 
+    /** @return list<string> */
+    public static function getGloballySearchableAttributes(): array
+    {
+        return ['name', 'staff_no', 'phone'];
+    }
+
+    /** @return array<string, string> */
+    public static function getGlobalSearchResultDetails(Model $record): array
+    {
+        return array_filter(['Position' => $record->position, 'Phone' => $record->phone]);
+    }
+
     protected static ?int $navigationSort = 1;
 
     /**

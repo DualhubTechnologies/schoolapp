@@ -40,6 +40,9 @@
                         <x-filament::button tag="a" :href="\App\Filament\Pages\ReceivePayment::receiptUrl($issued, true)" target="_blank" icon="heroicon-o-printer">
                             Print receipt
                         </x-filament::button>
+                        <x-filament::button tag="a" color="success" :href="$this->whatsAppUrl($issued)" target="_blank" rel="noopener" icon="heroicon-o-chat-bubble-left-right">
+                            Send on WhatsApp
+                        </x-filament::button>
                         <x-filament::button color="gray" wire:click="startNew" icon="heroicon-o-plus">
                             Next student
                         </x-filament::button>

@@ -10,6 +10,7 @@ use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
 use Illuminate\Database\Eloquent\Relations\BelongsToMany;
 use Illuminate\Database\Eloquent\Relations\HasMany;
+use Illuminate\Support\Str;
 use Spatie\Activitylog\Models\Concerns\LogsActivity;
 use Spatie\Activitylog\Support\LogOptions;
 
@@ -273,5 +274,23 @@ class Student extends Model
     public function photoUrl(): string
     {
         return PrivateFiles::url($this->photo) ?? asset('images/student-avatar.svg');
+    }
+
+    /**
+     * The parent page for this learner: a short private link that needs no
+     * login, sent to the guardian by SMS (App\Http\Controllers\ParentPageController).
+     */
+    public function parentPageUrl(): string
+    {
+        if (! $this->parent_token) {
+            do {
+                $token = Str::random(10);
+            } while (static::where('parent_token', $token)->exists());
+
+            // Quietly: making the link is not a change to the learner's record.
+            $this->forceFill(['parent_token' => $token])->saveQuietly();
+        }
+
+        return route('parent.page', ['token' => $this->parent_token]);
     }
 }

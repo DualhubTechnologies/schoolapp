@@ -2,13 +2,18 @@
 
 namespace App\Filament\Pages;
 
+use App\Models\Mark;
 use App\Models\SchoolClass;
 use App\Models\Section;
+use App\Models\Student;
 use App\Models\Term;
 use App\Models\TermReport;
 use App\Services\Academics\ResultsCalculator;
+use App\Services\ParentMessages;
 use App\Support\AcademicAccess;
 use BackedEnum;
+use Filament\Actions\Action;
+use Filament\Forms\Components\Toggle;
 use Filament\Notifications\Notification;
 use Filament\Pages\Page;
 use Filament\Support\Icons\Heroicon;
@@ -46,6 +51,72 @@ class ReportCards extends Page
     public ?string $headComment = null;
 
     public const CONDUCT = ['Excellent', 'Very good', 'Good', 'Fair', 'Needs improvement'];
+
+    /**
+     * Share the chosen term's report cards with parents on their parent
+     * page, and text them the link. Heads and the director of studies only.
+     *
+     * @return array<Action>
+     */
+    protected function getHeaderActions(): array
+    {
+        return [
+            Action::make('shareWithParents')
+                ->label('Share with parents')
+                ->icon('heroicon-o-paper-airplane')
+                ->visible(fn (): bool => AcademicAccess::manages() && ! $this->selectedTerm()?->report_cards_released_at)
+                ->modalHeading(fn (): string => 'Share '.$this->selectedTerm()?->label().' report cards with parents')
+                ->modalDescription('Each family can then open their own child\'s report card from their private SchoolHub link, on any phone. Finish all marks and comments first.')
+                ->schema([
+                    Toggle::make('text_parents')
+                        ->label('Text every family the link now')
+                        ->helperText('One SMS per learner with marks this term.')
+                        ->default(true),
+                ])
+                ->modalSubmitActionLabel('Share report cards')
+                ->action(function (array $data): void {
+                    $term = $this->selectedTerm();
+
+                    if (! $term) {
+                        return;
+                    }
+
+                    $term->forceFill(['report_cards_released_at' => now()])->save();
+                    $body = 'Parents can now open them from their SchoolHub link.';
+
+                    if ($data['text_parents'] ?? false) {
+                        $students = Student::where('school_id', $term->school_id)
+                            ->where('status', 'active')
+                            ->whereIn('id', Mark::join('assessments', 'assessments.id', '=', 'marks.assessment_id')
+                                ->where('assessments.term_id', $term->getKey())
+                                ->select('marks.student_id'))
+                            ->get();
+
+                        $sent = app(ParentMessages::class)->sendReportCardsReady($students, $term);
+                        $body .= " {$sent['sent']} texted".($sent['no_phone'] ? ", {$sent['no_phone']} without a phone number" : '').($sent['failed'] ? ", {$sent['failed']} failed" : '').'.';
+                    }
+
+                    Notification::make()->title('Report cards shared with parents')->body($body)->success()->send();
+                }),
+
+            Action::make('stopSharing')
+                ->label('Stop sharing with parents')
+                ->icon('heroicon-o-eye-slash')
+                ->color('gray')
+                ->visible(fn (): bool => AcademicAccess::manages() && (bool) $this->selectedTerm()?->report_cards_released_at)
+                ->requiresConfirmation()
+                ->modalDescription('Parents will no longer see this term\'s report cards on their page. You can share them again at any time.')
+                ->action(function (): void {
+                    $this->selectedTerm()?->forceFill(['report_cards_released_at' => null])->save();
+                    Notification::make()->title('Report cards hidden from parents')->success()->send();
+                }),
+        ];
+    }
+
+    public function selectedTerm(): ?Term
+    {
+        return $this->termId ? Term::where('school_id', auth()->user()?->school_id)->with('academicYear')->find($this->termId) : null;
+    }
 
     public function mount(): void
     {

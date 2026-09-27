@@ -97,7 +97,7 @@ class FeeReminderActions
         return [
             Textarea::make('template')
                 ->label('Message')
-                ->default(FeeReminderService::DEFAULT_TEMPLATE)
+                ->default(fn (): string => FeeReminderService::defaultTemplate())
                 ->rows(4)
                 ->required()
                 ->maxLength(459) // three SMS parts

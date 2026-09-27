@@ -3885,3 +3885,103 @@ html .fi-body {
 @media (max-width: 640px) {
     .sh-bell-menu { position: fixed; top: 4rem; left: 1rem; right: 1rem; width: auto; max-width: none; }
 }
+
+
+/* ============================================================
+ * 13. PHONES — bottom bar, home-screen tip, card tables
+ * (resources/views/filament/partials/mobile-nav.blade.php,
+ *  App\Support\MobileNav, public/js/schoolhub-mobile.js)
+ * ============================================================ */
+.sh-mnav,
+.sh-install { display: none; }
+
+@media (max-width: 768px) {
+    body.fi-body { padding-bottom: calc(4.1rem + env(safe-area-inset-bottom)); }
+
+    .sh-mnav {
+        position: fixed;
+        inset: auto 0 0 0;
+        z-index: 30;
+        display: grid;
+        grid-auto-flow: column;
+        grid-auto-columns: 1fr;
+        padding: .3rem .25rem calc(.3rem + env(safe-area-inset-bottom));
+        background: rgba(255, 255, 255, .97);
+        -webkit-backdrop-filter: blur(10px);
+        backdrop-filter: blur(10px);
+        border-top: 1px solid var(--sh-border);
+        box-shadow: 0 -6px 20px -12px rgba(13, 31, 56, .35);
+    }
+    .sh-mnav-item {
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+        gap: .15rem;
+        padding: .35rem 0;
+        border: 0;
+        background: none;
+        border-radius: .6rem;
+        color: #64748b;
+        font-size: .68rem;
+        font-weight: 600;
+        text-decoration: none;
+    }
+    .sh-mnav-icon { width: 1.4rem; height: 1.4rem; }
+    .sh-mnav-item.is-active { color: var(--sh-blue-600); }
+    .sh-mnav-item.is-active .sh-mnav-icon { transform: translateY(-1px); }
+    .sh-mnav-item:active { background: #eef3fa; }
+
+    /* Keep the floating Cancel / Save bar above the bottom bar. */
+    .fi-sc-actions.fi-sticky .fi-ac {
+        bottom: calc(4.1rem + env(safe-area-inset-bottom)) !important;
+    }
+
+    .sh-install {
+        position: fixed;
+        left: .75rem;
+        right: .75rem;
+        bottom: calc(4.8rem + env(safe-area-inset-bottom));
+        z-index: 31;
+        display: flex;
+        align-items: center;
+        gap: .7rem;
+        padding: .7rem .8rem;
+        background: #0d1f38;
+        color: #e2e8f0;
+        border-radius: .9rem;
+        box-shadow: 0 12px 30px -10px rgba(13, 31, 56, .6);
+    }
+    .sh-install[x-cloak] { display: none !important; }
+    .sh-install img { width: 2.4rem; height: 2.4rem; border-radius: .55rem; background: #fff; flex: none; }
+    .sh-install-text { flex: 1; min-width: 0; font-size: .78rem; line-height: 1.35; }
+    .sh-install-text strong { display: block; color: #fff; font-size: .85rem; }
+    .sh-install-text svg { width: .9rem; height: .9rem; vertical-align: -2px; }
+    .sh-install-go { flex: none; padding: .45rem .8rem; border: 0; border-radius: .55rem; background: #f59e0b; color: #0d1f38; font-weight: 700; font-size: .8rem; }
+    .sh-install-x { flex: none; border: 0; background: none; color: #94a3b8; font-size: 1.4rem; line-height: 1; padding: 0 .2rem; }
+
+    /* Card tables: label on the left, value on the right, one line each. */
+    .fi-ta-table-stacked-on-mobile .fi-ta-row { border-bottom: 8px solid var(--sh-bg) !important; }
+    .fi-ta-table-stacked-on-mobile .fi-ta-cell:has(> .fi-ta-cell-label) {
+        display: grid !important;
+        grid-template-columns: 38% 1fr;
+        align-items: center;
+        gap: .5rem;
+        padding-block: 0 !important;
+        border-top: 0 !important;
+    }
+    .fi-ta-table-stacked-on-mobile .fi-ta-cell-label {
+        padding: .45rem 0 .45rem 1rem;
+        font-size: .72rem;
+        font-weight: 600;
+        color: #7a8699;
+    }
+    .fi-ta-table-stacked-on-mobile .fi-ta-cell-content .fi-ta-text,
+    .fi-ta-table-stacked-on-mobile .fi-ta-cell-content > .fi-ta-col > * {
+        padding-block: .45rem !important;
+        padding-inline: 0 1rem !important;
+    }
+    /* The first column (usually the name) reads as the card's title. */
+    .fi-ta-table-stacked-on-mobile .fi-ta-selection-cell + .fi-ta-cell > .fi-ta-cell-label,
+    .fi-ta-table-stacked-on-mobile .fi-ta-row > .fi-ta-cell:first-of-type > .fi-ta-cell-label { color: #94a3b8; }
+    .fi-ta-table-stacked-on-mobile .fi-ta-selection-cell { padding: .6rem 1rem 0 !important; }
+}

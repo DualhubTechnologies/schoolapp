@@ -15,6 +15,7 @@ use Filament\Schemas\Schema;
 use Filament\Support\Icons\Heroicon;
 use Filament\Tables\Table;
 use Illuminate\Database\Eloquent\Builder;
+use Illuminate\Database\Eloquent\Model;
 
 class GuardianResource extends Resource
 {
@@ -25,6 +26,18 @@ class GuardianResource extends Resource
     protected static string|BackedEnum|null $navigationIcon = Heroicon::OutlinedUsers;
 
     protected static ?string $recordTitleAttribute = 'name';
+
+    /** @return list<string> */
+    public static function getGloballySearchableAttributes(): array
+    {
+        return ['name', 'phone', 'alt_phone'];
+    }
+
+    /** @return array<string, string> */
+    public static function getGlobalSearchResultDetails(Model $record): array
+    {
+        return array_filter(['Phone' => $record->phone, 'Relationship' => $record->relationship ? ucfirst($record->relationship) : null]);
+    }
 
     protected static ?int $navigationSort = 2;
 

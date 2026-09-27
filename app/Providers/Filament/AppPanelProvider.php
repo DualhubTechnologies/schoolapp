@@ -24,6 +24,7 @@ use App\Filament\Pages\Auth\ResetPassword;
 use App\Filament\Pages\Auth\VerifyEmail;
 use App\Filament\Support\Pages\RecordFormScope;
 use App\Filament\Widgets\StatsOverview;
+use App\Http\Controllers\AppInstallController;
 use App\Http\Controllers\DemoRequestController;
 use App\Http\Controllers\FeeDocumentController;
 use App\Http\Controllers\FinanceDocumentController;
@@ -76,6 +77,9 @@ class AppPanelProvider extends PanelProvider
                 Route::view('/terms-and-conditions', 'legal.terms')->name('legal.terms');   // /terms is the academic Terms resource
                 // A new school administrator confirms their email with the code we sent.
                 Route::get('/verify-email', VerifyEmail::class)->name('auth.verify-email');
+                // "Add to home screen": the school's own name and logo on the phone.
+                Route::get('/manifest.webmanifest', [AppInstallController::class, 'manifest'])->name('app.manifest');
+                Route::get('/app-icon/{size}.png', [AppInstallController::class, 'icon'])->whereNumber('size')->name('app.icon');
                 // "Book a demo" form on the landing page.
                 Route::post('/demo-request', DemoRequestController::class)
                     ->middleware('throttle:5,10')
@@ -108,6 +112,9 @@ class AppPanelProvider extends PanelProvider
             ->sidebarCollapsibleOnDesktop()
             ->darkMode(false)
             ->breadcrumbs(false)
+            // Find a learner, receipt, staff member or parent from any page: Ctrl+K.
+            ->globalSearchKeyBindings(['command+k', 'ctrl+k'])
+            ->globalSearchFieldKeyBindingSuffix()
 
             // After saving a new or edited record, go back to its table.
             ->resourceCreatePageRedirect('index')
@@ -193,6 +200,21 @@ class AppPanelProvider extends PanelProvider
             // PAGE_START (not TOPBAR_START): Filament's own topbar is
             // hidden in CSS, and this custom bar renders at the top of
             // the page content instead.
+            // Installable on phones (AppInstallController, public/sw.js).
+            ->renderHook(
+                PanelsRenderHook::HEAD_END,
+                fn () => '<link rel="manifest" href="'.route('filament.app.app.manifest').'" crossorigin="use-credentials">'
+                    .'<meta name="theme-color" content="#0d1f38">'
+                    .'<meta name="mobile-web-app-capable" content="yes">'
+                    .'<meta name="apple-mobile-web-app-capable" content="yes">'
+                    .'<meta name="apple-mobile-web-app-title" content="'.e(auth()->user()?->school?->name ?? 'SchoolHub').'">'
+                    .'<link rel="apple-touch-icon" href="'.route('filament.app.app.icon', ['size' => 180]).'">'
+                    .'<script src="'.asset('js/schoolhub-mobile.js').'?v='.filemtime(public_path('js/schoolhub-mobile.js')).'"></script>'
+            )
+            ->renderHook(
+                PanelsRenderHook::BODY_END,
+                fn () => view('filament.partials.mobile-nav')
+            )
             ->renderHook(
                 PanelsRenderHook::HEAD_END,
                 fn () => '<link rel="stylesheet" href="'.asset('css/filament-custom.css').'?v='.filemtime(public_path('css/filament-custom.css')).'">'

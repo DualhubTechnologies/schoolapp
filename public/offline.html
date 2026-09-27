@@ -1,0 +1,23 @@
+<!doctype html>
+<html lang="en">
+<head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <title>You're offline · SchoolHub</title>
+    <style>
+        body { margin: 0; min-height: 100vh; display: grid; place-items: center; font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif; background: #f4f6fa; color: #334155; text-align: center; padding: 1.5rem; }
+        .card { max-width: 22rem; background: #fff; border: 1px solid #e4e9f1; border-radius: 1rem; padding: 2rem 1.5rem; }
+        img { width: 4rem; height: 4rem; }
+        h1 { font-size: 1.25rem; color: #0d1f38; margin: 1rem 0 .5rem; }
+        button { margin-top: 1rem; padding: .7rem 1.4rem; border: 0; border-radius: .6rem; background: #1a5fa8; color: #fff; font-weight: 600; font-size: 1rem; }
+    </style>
+</head>
+<body>
+    <div class="card">
+        <img src="/images/schoolhub-icon-192.png" alt="">
+        <h1>No internet connection</h1>
+        <p>SchoolHub needs the internet to show your school's latest fees and marks. Check your data or Wi-Fi, then try again.</p>
+        <button onclick="location.reload()">Try again</button>
+    </div>
+</body>
+</html>

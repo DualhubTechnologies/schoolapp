@@ -5,12 +5,15 @@ namespace App\Filament\Pages;
 use App\Models\Student;
 use App\Models\StudentPayment;
 use App\Models\Term;
+use App\Services\ParentMessages;
+use App\Services\SmsSender;
 use App\Support\Modules;
 use BackedEnum;
 use Filament\Forms\Components\DatePicker;
 use Filament\Forms\Components\Select;
 use Filament\Forms\Components\Textarea;
 use Filament\Forms\Components\TextInput;
+use Filament\Forms\Components\Toggle;
 use Filament\Forms\Components\ToggleButtons;
 use Filament\Notifications\Notification;
 use Filament\Pages\Page;
@@ -49,11 +52,16 @@ class ReceivePayment extends Page
 
     public function mount(): void
     {
+        $studentId = request()->integer('student') ?: null;
+        $balance = $studentId ? (Student::where('school_id', auth()->user()?->school_id)->find($studentId)?->balance() ?? 0) : 0;
+
         $this->form->fill([
-            'student_id' => request()->integer('student') ?: null,
+            'student_id' => $studentId,
+            'amount' => $balance > 0 ? (int) round($balance) : null,
             'paid_on' => now()->toDateString(),
             'method' => 'cash',
             'term_id' => Term::current()?->getKey(),
+            'send_sms' => true,
         ]);
     }
 
@@ -77,6 +85,9 @@ class ReceivePayment extends Page
                                 $student = $state ? Student::with('guardian')->find($state) : null;
                                 $set('paid_by', $student?->guardian?->name);
                                 $set('payer_phone', $student?->guardian?->phone);
+                                // Most parents clear the balance: start from it.
+                                $balance = $student?->balance() ?? 0;
+                                $set('amount', $balance > 0 ? (int) round($balance) : null);
                             })
                             ->required(),
                     ]),
@@ -145,8 +156,15 @@ class ReceivePayment extends Page
                             TextInput::make('payer_phone')
                                 ->label('Payer phone')
                                 ->tel()
+                                ->live(onBlur: true)
                                 ->maxLength(30),
                         ]),
+
+                        Toggle::make('send_sms')
+                            ->label(fn (Get $get) => 'Text the receipt to '.($get('payer_phone') ?: 'the payer'))
+                            ->helperText('An SMS with the amount, the new balance and a link to the learner\'s fees page.')
+                            ->default(true)
+                            ->visible(fn (Get $get) => SmsSender::normalisePhone($get('payer_phone')) !== null),
 
                         Textarea::make('notes')
                             ->rows(2)
@@ -189,9 +207,19 @@ class ReceivePayment extends Page
 
         $this->issuedPaymentId = $payment->getKey();
 
+        $balance = $student->balance();
+        $class = $student->schoolClass?->name;
+        $body = 'UGX '.number_format((float) $payment->amount)." recorded for {$student->name}".($class ? " ({$class})" : '').'. '
+            .($balance > 0 ? 'Balance now UGX '.number_format($balance).'.' : 'Fees fully paid.');
+
+        if (($data['send_sms'] ?? false) && SmsSender::normalisePhone($data['payer_phone'] ?? null)) {
+            $failed = app(ParentMessages::class)->sendReceipt($payment->load('student.school', 'student.schoolClass'), $data['payer_phone']);
+            $body .= $failed ? " The SMS was not sent: {$failed}" : " Receipt texted to {$data['payer_phone']}.";
+        }
+
         Notification::make()
             ->title("Receipt {$payment->receipt_no} issued")
-            ->body('UGX '.number_format((float) $payment->amount)." from {$student->name}.")
+            ->body($body)
             ->success()
             ->send();
 
@@ -199,11 +227,13 @@ class ReceivePayment extends Page
         // after another, but the next one starts with a clean form).
         $this->form->fill([
             'student_id' => $student->getKey(),
+            'amount' => $balance > 0 ? (int) round($balance) : null,
             'paid_on' => now()->toDateString(),
             'method' => $data['method'],
             'term_id' => $data['term_id'] ?? null,
             'paid_by' => $data['paid_by'] ?? null,
             'payer_phone' => $data['payer_phone'] ?? null,
+            'send_sms' => $data['send_sms'] ?? true,
         ]);
     }
 
@@ -258,6 +288,17 @@ class ReceivePayment extends Page
             'term_paid' => $term ? (float) $student->payments()->where('term_id', $term->getKey())->sum('amount') : 0,
             'recent' => $student->payments()->latest('paid_on')->latest('id')->limit(4)->get(),
         ];
+    }
+
+    /**
+     * WhatsApp, ready to send the receipt text to the payer.
+     */
+    public function whatsAppUrl(StudentPayment $payment): string
+    {
+        return app(ParentMessages::class)->whatsAppReceiptUrl(
+            $payment->loadMissing('student.school', 'student.schoolClass', 'student.guardian'),
+            $payment->payer_phone ?: $payment->student?->guardian?->phone,
+        );
     }
 
     public static function receiptUrl(StudentPayment|int $payment, bool $print = false): string

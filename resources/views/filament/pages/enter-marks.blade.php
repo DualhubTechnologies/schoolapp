@@ -72,6 +72,24 @@
               x-data="{
                   bands: @js($this->bandsForJs()),
                   max: {{ $max }},
+                  dirty: false,
+                  timer: null,
+                  bad(v) {
+                      if (v === null || v === '') return false;
+                      return isNaN(v) || parseFloat(v) < 0 || parseFloat(v) > this.max;
+                  },
+                  changed() {
+                      this.dirty = true;
+                      clearTimeout(this.timer);
+                      this.timer = setTimeout(() => this.autosave(), 3000);
+                  },
+                  autosave() {
+                      if (this.$root.querySelector('.em-score.is-bad')) return;
+                      $wire.autosave().then(() => { this.dirty = false; });
+                  },
+                  init() {
+                      window.addEventListener('beforeunload', (e) => { if (this.dirty) { e.preventDefault(); e.returnValue = ''; } });
+                  },
                   grade(v) {
                       if (v === null || v === '' || isNaN(v)) return '';
                       const pct = Math.min(100, (parseFloat(v) / this.max) * 100);
@@ -132,16 +150,19 @@
                                            wire:model="scores.{{ $id }}"
                                            x-model="v"
                                            :disabled="ab || {{ $locked ? 'true' : 'false' }}"
+                                           :class="{ 'is-bad': !ab && bad(v) }"
+                                           :title="!ab && bad(v) ? 'Must be from 0 to {{ $max + 0 }}' : ''"
+                                           @input="changed()"
                                            @keydown.enter.prevent="next($el)"
                                            @focus="$el.select()">
                                 </td>
                                 <td class="em-c em-muted" x-text="ab ? '' : pct(v)"></td>
                                 <td class="em-c"><span class="em-grade" x-text="ab ? 'AB' : grade(v)"></span></td>
                                 <td class="em-c">
-                                    <input type="checkbox" wire:model="absent.{{ $id }}" x-model="ab" @disabled($locked)>
+                                    <input type="checkbox" wire:model="absent.{{ $id }}" x-model="ab" @change="changed()" @disabled($locked)>
                                 </td>
                                 @if ($this->showComments)
-                                    <td><input type="text" class="em-comment" wire:model="comments.{{ $id }}" placeholder="Optional" @disabled($locked)></td>
+                                    <td><input type="text" class="em-comment" wire:model="comments.{{ $id }}" placeholder="Optional" @input="changed()" @disabled($locked)></td>
                                 @endif
                             </tr>
                         @endforeach
@@ -151,8 +172,14 @@
 
             @unless ($locked)
                 <div class="em-foot">
-                    <span class="em-muted">Press <kbd>Enter</kbd> to move to the next student. Blank = no mark.</span>
-                    <x-filament::button type="submit" icon="heroicon-o-check" wire:loading.attr="disabled">Save marks</x-filament::button>
+                    <span class="em-muted">Press <kbd>Enter</kbd> to move to the next student. Blank = no mark. Marks save by themselves as you type.</span>
+                    <span class="em-save">
+                        <span class="em-status" x-show="dirty" x-cloak>Unsaved changes…</span>
+                        @if ($this->savedAt)
+                            <span class="em-status is-saved" x-show="!dirty">✓ Saved {{ $this->savedAt }}</span>
+                        @endif
+                        <x-filament::button type="submit" icon="heroicon-o-check" wire:loading.attr="disabled" x-on:click="dirty = false">Save marks</x-filament::button>
+                    </span>
                 </div>
             @endunless
         </form>
@@ -181,7 +208,10 @@
         .em-score { width: 5.5rem; text-align: center; font-weight: 700; font-size: .95rem; padding: .35rem .4rem; border: 1px solid #cbd5e1; border-radius: 7px; }
         .em-score:focus { outline: 2px solid #2472c4; border-color: #2472c4; }
         .em-score:disabled { background: #f1f5f9; color: #94a3b8; }
-        .em-score.is-error { border-color: #dc2626; background: #fef2f2; }
+        .em-score.is-error, .em-score.is-bad { border-color: #dc2626; background: #fef2f2; color: #b91c1c; }
+        .em-save { display: flex; align-items: center; gap: .75rem; }
+        .em-status { font-size: .8rem; color: #b45309; white-space: nowrap; }
+        .em-status.is-saved { color: #15803d; font-weight: 600; }
         .em-grade { display: inline-block; min-width: 2.2rem; font-weight: 700; color: #1a5fa8; }
         .em-comment { width: 100%; min-width: 12rem; padding: .3rem .5rem; border: 1px solid #e2e8f0; border-radius: 6px; font-size: .82rem; }
         .em-foot { display: flex; justify-content: space-between; align-items: center; gap: 1rem; padding: .85rem 1.25rem; border-top: 1px solid #eef2f7; background: #fafbfd; position: sticky; bottom: 0; }

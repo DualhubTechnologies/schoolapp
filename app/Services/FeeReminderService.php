@@ -3,6 +3,7 @@
 namespace App\Services;
 
 use App\Models\FeeReminder;
+use App\Models\School;
 use App\Models\Student;
 use App\Models\Term;
 use Illuminate\Support\Carbon;
@@ -20,6 +21,10 @@ class FeeReminderService
     public const DEFAULT_TEMPLATE = 'Dear {guardian}, {student} ({class}) has a school fees balance of UGX {balance}. '
         .'Kindly clear it by {deadline}. Thank you. {school}';
 
+    /** The same reminder in Luganda, for schools that text parents in Luganda. */
+    public const LUGANDA_TEMPLATE = 'Ssebo/Nnyabo {guardian}, {student} ({class}) asigazza ebisale by\'essomero UGX {balance}. '
+        .'Tukusaba obisasule nga {deadline} tannatuuka. Webale nnyo. {school}';
+
     public const PLACEHOLDERS = [
         '{guardian}' => 'Guardian\'s name',
         '{student}' => 'Student\'s name',
@@ -29,7 +34,18 @@ class FeeReminderService
         '{term}' => 'Current term',
         '{deadline}' => 'Pay-by date',
         '{school}' => 'School name',
+        '{link}' => 'Link to the learner\'s fees page (adds about 35 characters)',
     ];
+
+    /**
+     * The reminder in the school's chosen language for texts to parents.
+     */
+    public static function defaultTemplate(?School $school = null): string
+    {
+        $school ??= auth()->user()?->school;
+
+        return ($school->parent_sms_language ?? 'en') === 'lg' ? self::LUGANDA_TEMPLATE : self::DEFAULT_TEMPLATE;
+    }
 
     public function __construct(protected SmsSender $sms) {}
 
@@ -130,7 +146,9 @@ class FeeReminderService
     {
         $guardian = $student->guardian?->name ?: 'Parent/Guardian';
 
-        return strtr($template ?: self::DEFAULT_TEMPLATE, [
+        $template = $template ?: self::defaultTemplate($student->school);
+
+        return strtr($template, [
             '{guardian}' => $this->firstWords($guardian, 2),
             '{student}' => $this->firstWords((string) $student->name, 2),
             '{adm}' => (string) $student->admission_no,
@@ -139,6 +157,8 @@ class FeeReminderService
             '{term}' => $term?->label() ?? '',
             '{deadline}' => $this->deadlineText($deadline),
             '{school}' => (string) $student->school?->name,
+            // Only made when used: it creates the learner's private link.
+            '{link}' => str_contains($template, '{link}') ? $student->parentPageUrl() : '',
         ]);
     }
 

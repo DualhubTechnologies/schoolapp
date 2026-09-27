@@ -7,8 +7,12 @@ use App\Filament\App\Resources\Students\Pages\ListStudents;
 use App\Filament\App\Resources\Students\Schemas\StudentForm;
 use App\Filament\App\Resources\Students\Tables\StudentsTable;
 use App\Filament\Concerns\GatedByModule;
+use App\Filament\Pages\ReceivePayment;
+use App\Filament\Pages\StudentAccount;
 use App\Models\Student;
+use App\Support\Modules;
 use BackedEnum;
+use Filament\Actions\Action;
 use Filament\Resources\Resource;
 use Filament\Schemas\Schema;
 use Filament\Support\Icons\Heroicon;
@@ -28,6 +32,35 @@ class StudentResource extends Resource
     protected static ?string $recordTitleAttribute = 'name';
 
     protected static ?int $navigationSort = 1;
+
+    /** @return list<string> */
+    public static function getGloballySearchableAttributes(): array
+    {
+        return ['name', 'admission_no', 'lin'];
+    }
+
+    public static function getGlobalSearchEloquentQuery(): Builder
+    {
+        return parent::getGlobalSearchEloquentQuery()->with(['schoolClass', 'guardian']);
+    }
+
+    /** @return array<string, string> */
+    public static function getGlobalSearchResultDetails(Model $record): array
+    {
+        return array_filter([
+            'Class' => $record->schoolClass?->name,
+            'Parent' => $record->guardian ? trim("{$record->guardian->name} {$record->guardian->phone}") : null,
+        ]);
+    }
+
+    /** @return array<Action> */
+    public static function getGlobalSearchResultActions(Model $record): array
+    {
+        return array_values(array_filter([
+            Modules::allows('fees') ? Action::make('pay')->label('Receive payment')->url(ReceivePayment::getUrl(['student' => $record->getKey()])) : null,
+            Modules::allows('fees') ? Action::make('account')->label('Fees account')->url(StudentAccount::getUrl(['student' => $record->getKey()])) : null,
+        ]));
+    }
 
     /**
      * "Allan Kato (ADM-0001)".

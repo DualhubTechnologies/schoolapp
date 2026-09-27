@@ -5,6 +5,7 @@ namespace App\Filament\App\Resources\Payments;
 use App\Filament\App\Resources\Payments\Pages\ListPayments;
 use App\Filament\App\Resources\Payments\Tables\PaymentsTable;
 use App\Filament\Concerns\GatedByModule;
+use App\Filament\Pages\ReceivePayment;
 use App\Models\StudentPayment;
 use App\Support\Modules;
 use BackedEnum;
@@ -38,6 +39,34 @@ class PaymentResource extends Resource
     protected static ?string $pluralModelLabel = 'Payments';
 
     protected static ?string $slug = 'payments';
+
+    /** Receipts are found from the search bar by their number. */
+    protected static ?string $recordTitleAttribute = 'receipt_no';
+
+    /** @return list<string> */
+    public static function getGloballySearchableAttributes(): array
+    {
+        return ['receipt_no', 'reference'];
+    }
+
+    public static function getGlobalSearchResultTitle(Model $record): string|Htmlable
+    {
+        return "Receipt {$record->receipt_no} · UGX ".number_format((float) $record->amount).($record->isVoided() ? ' (void)' : '');
+    }
+
+    /** @return array<string, string> */
+    public static function getGlobalSearchResultDetails(Model $record): array
+    {
+        return array_filter([
+            'Learner' => $record->student?->name,
+            'Paid' => $record->paid_on?->format('j M Y'),
+        ]);
+    }
+
+    public static function getGlobalSearchResultUrl(Model $record): ?string
+    {
+        return ReceivePayment::receiptUrl($record->getKey());
+    }
 
     public static function getRecordTitle(?Model $record): string|Htmlable|null
     {

@@ -34,17 +34,25 @@ class ReportCardController extends Controller
             403,
         );
 
-        $results = $calculator->forClass($class, $term, $request->integer('section') ?: null);
+        return $this->render($calculator, $class, $term, $request->integer('section') ?: null, $request->integer('student') ?: null, $request->boolean('fees'));
+    }
+
+    /**
+     * The report cards themselves, once access has been checked: by the
+     * school's staff above, or by the parent page for one learner.
+     */
+    public function render(ResultsCalculator $calculator, SchoolClass $class, Term $term, ?int $section, ?int $student, bool $showFees): View
+    {
+        $results = $calculator->forClass($class, $term, $section);
         $rows = $results['rows']->filter(fn ($r) => $r['average'] !== null);
 
-        if ($student = $request->integer('student')) {
+        if ($student) {
             $rows = $rows->filter(fn ($r) => $r['student']->id === $student);
         }
 
         abort_if($rows->isEmpty(), 404, 'No results to print.');
 
         $nextTerm = $term->next();
-        $showFees = $request->boolean('fees');
 
         // Next term's fees per residency, from the fee set-up in force then.
         $nextFees = $showFees && $nextTerm
@@ -85,7 +93,7 @@ class ReportCardController extends Controller
             }
         }
 
-        $scales = GradingScale::where('school_id', $schoolId)
+        $scales = GradingScale::where('school_id', $class->school_id)
             ->where('curriculum', $class->curriculum())
             ->with('bands')
             ->get()

@@ -58,7 +58,9 @@ class AppServiceProvider extends ServiceProvider
         EditAction::configureUsing(fn ($action) => $action->modalWidth(Width::TwoExtraLarge));
 
         // Empty lists show a neutral "nothing here yet" icon, not an "X".
-        Table::configureUsing(fn ($table) => $table->emptyStateIcon('heroicon-o-inbox'));
+        // On phones each row becomes a card with the column names beside
+        // the values, instead of a wide table to scroll sideways.
+        Table::configureUsing(fn ($table) => $table->emptyStateIcon('heroicon-o-inbox')->stackedOnMobile());
     }
 
     /**

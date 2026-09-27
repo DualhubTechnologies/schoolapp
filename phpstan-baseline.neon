@@ -253,18 +253,6 @@ parameters:
 			path: app/Filament/App/Resources/FeeBalances/Tables/FeeBalancesTable.php
 
 		-
-			message: '#^Access to an undefined property Illuminate\\Database\\Eloquent\\Model\:\:\$name\.$#'
-			identifier: property.notFound
-			count: 1
-			path: app/Filament/App/Resources/FeeBalances/Tables/FeeBalancesTable.php
-
-		-
-			message: '#^Access to an undefined property Illuminate\\Database\\Eloquent\\Model\:\:\$phone\.$#'
-			identifier: property.notFound
-			count: 1
-			path: app/Filament/App/Resources/FeeBalances/Tables/FeeBalancesTable.php
-
-		-
 			message: '#^Parameter \#1 \$sql of method Illuminate\\Database\\Eloquent\\Builder\<Illuminate\\Database\\Eloquent\\Model\>\:\:whereRaw\(\) expects Illuminate\\Contracts\\Database\\Query\\Expression\|literal\-string, non\-falsy\-string given\.$#'
 			identifier: argument.type
 			count: 8
@@ -719,18 +707,6 @@ parameters:
 			identifier: property.notFound
 			count: 1
 			path: app/Filament/App/Resources/Students/StudentResource.php
-
-		-
-			message: '#^Access to an undefined property Illuminate\\Database\\Eloquent\\Model\:\:\$name\.$#'
-			identifier: property.notFound
-			count: 1
-			path: app/Filament/App/Resources/Students/Tables/StudentsTable.php
-
-		-
-			message: '#^Access to an undefined property Illuminate\\Database\\Eloquent\\Model\:\:\$phone\.$#'
-			identifier: property.notFound
-			count: 1
-			path: app/Filament/App/Resources/Students/Tables/StudentsTable.php
 
 		-
 			message: '#^Call to an undefined method Illuminate\\Database\\Eloquent\\Model\:\:badgeColor\(\)\.$#'
@@ -1339,12 +1315,6 @@ parameters:
 			path: app/Filament/Pages/PromoteStudents.php
 
 		-
-			message: '#^Parameter \#1 \$section of method App\\Services\\Academics\\PromotionService\:\:matchingSection\(\) expects App\\Models\\Section\|null, Illuminate\\Database\\Eloquent\\Model given\.$#'
-			identifier: argument.type
-			count: 1
-			path: app/Filament/Pages/PromoteStudents.php
-
-		-
 			message: '#^Property App\\Filament\\Pages\\PromoteStudents\:\:\$advice type has no value type specified in iterable type array\.$#'
 			identifier: missingType.iterableValue
 			count: 1
@@ -1388,18 +1358,6 @@ parameters:
 
 		-
 			message: '#^Access to an undefined property App\\Models\\Student\|Illuminate\\Database\\Eloquent\\Collection\<int, App\\Models\\Student\>\:\:\$school_id\.$#'
-			identifier: property.notFound
-			count: 1
-			path: app/Filament/Pages/ReceivePayment.php
-
-		-
-			message: '#^Access to an undefined property Illuminate\\Database\\Eloquent\\Model\:\:\$name\.$#'
-			identifier: property.notFound
-			count: 2
-			path: app/Filament/Pages/ReceivePayment.php
-
-		-
-			message: '#^Access to an undefined property Illuminate\\Database\\Eloquent\\Model\:\:\$phone\.$#'
 			identifier: property.notFound
 			count: 1
 			path: app/Filament/Pages/ReceivePayment.php
@@ -1496,12 +1454,6 @@ parameters:
 
 		-
 			message: '#^Access to an undefined property App\\Filament\\Pages\\StudentAccount\:\:\$form\.$#'
-			identifier: property.notFound
-			count: 1
-			path: app/Filament/Pages/StudentAccount.php
-
-		-
-			message: '#^Access to an undefined property Illuminate\\Database\\Eloquent\\Model\:\:\$name\.$#'
 			identifier: property.notFound
 			count: 1
 			path: app/Filament/Pages/StudentAccount.php
@@ -1619,12 +1571,6 @@ parameters:
 			identifier: argument.templateType
 			count: 1
 			path: app/Filament/Pages/TermBudget.php
-
-		-
-			message: '#^Access to an undefined property Illuminate\\Database\\Eloquent\\Model\:\:\$name\.$#'
-			identifier: property.notFound
-			count: 1
-			path: app/Filament/Support/FeeReminderActions.php
 
 		-
 			message: '#^Method App\\Filament\\Support\\FeeReminderActions\:\:sendSms\(\) has parameter \$data with no value type specified in iterable type array\.$#'
@@ -1756,12 +1702,6 @@ parameters:
 			message: '#^Access to an undefined property App\\Models\\Student\:\:\$paid_total\.$#'
 			identifier: property.notFound
 			count: 2
-			path: app/Filament/Widgets/TopDebtorsTable.php
-
-		-
-			message: '#^Access to an undefined property Illuminate\\Database\\Eloquent\\Model\:\:\$name\.$#'
-			identifier: property.notFound
-			count: 1
 			path: app/Filament/Widgets/TopDebtorsTable.php
 
 		-
@@ -2635,12 +2575,6 @@ parameters:
 			path: app/Models/Student.php
 
 		-
-			message: '#^Method App\\Models\\Student\:\:guardian\(\) return type with generic class Illuminate\\Database\\Eloquent\\Relations\\BelongsTo does not specify its types\: TRelatedModel, TDeclaringModel$#'
-			identifier: missingType.generics
-			count: 1
-			path: app/Models/Student.php
-
-		-
 			message: '#^Method App\\Models\\Student\:\:house\(\) return type with generic class Illuminate\\Database\\Eloquent\\Relations\\BelongsTo does not specify its types\: TRelatedModel, TDeclaringModel$#'
 			identifier: missingType.generics
 			count: 1
@@ -2666,18 +2600,6 @@ parameters:
 
 		-
 			message: '#^Method App\\Models\\Student\:\:school\(\) return type with generic class Illuminate\\Database\\Eloquent\\Relations\\BelongsTo does not specify its types\: TRelatedModel, TDeclaringModel$#'
-			identifier: missingType.generics
-			count: 1
-			path: app/Models/Student.php
-
-		-
-			message: '#^Method App\\Models\\Student\:\:schoolClass\(\) return type with generic class Illuminate\\Database\\Eloquent\\Relations\\BelongsTo does not specify its types\: TRelatedModel, TDeclaringModel$#'
-			identifier: missingType.generics
-			count: 1
-			path: app/Models/Student.php
-
-		-
-			message: '#^Method App\\Models\\Student\:\:section\(\) return type with generic class Illuminate\\Database\\Eloquent\\Relations\\BelongsTo does not specify its types\: TRelatedModel, TDeclaringModel$#'
 			identifier: missingType.generics
 			count: 1
 			path: app/Models/Student.php
@@ -3217,12 +3139,6 @@ parameters:
 			path: app/Services/Academics/PromotionService.php
 
 		-
-			message: '#^Parameter \#1 \$section of method App\\Services\\Academics\\PromotionService\:\:matchingSection\(\) expects App\\Models\\Section\|null, Illuminate\\Database\\Eloquent\\Model\|null given\.$#'
-			identifier: argument.type
-			count: 1
-			path: app/Services/Academics/PromotionService.php
-
-		-
 			message: '#^Using nullsafe property access "\?\-\>sort_order" on left side of \?\? is unnecessary\. Use \-\> instead\.$#'
 			identifier: nullsafe.neverNull
 			count: 1
@@ -3481,19 +3397,7 @@ parameters:
 			path: app/Services/Dashboard/TeacherLoad.php
 
 		-
-			message: '#^Access to an undefined property Illuminate\\Database\\Eloquent\\Model\:\:\$alt_phone\.$#'
-			identifier: property.notFound
-			count: 1
-			path: app/Services/FeeReminderService.php
-
-		-
 			message: '#^Access to an undefined property Illuminate\\Database\\Eloquent\\Model\:\:\$name\.$#'
-			identifier: property.notFound
-			count: 3
-			path: app/Services/FeeReminderService.php
-
-		-
-			message: '#^Access to an undefined property Illuminate\\Database\\Eloquent\\Model\:\:\$phone\.$#'
 			identifier: property.notFound
 			count: 1
 			path: app/Services/FeeReminderService.php
@@ -3655,12 +3559,6 @@ parameters:
 			path: app/Services/SmsSender.php
 
 		-
-			message: '#^Access to an undefined property Illuminate\\Database\\Eloquent\\Model\:\:\$name\.$#'
-			identifier: property.notFound
-			count: 1
-			path: app/Services/StudentCsvImporter.php
-
-		-
 			message: '#^Cannot call method diffInSeconds\(\) on string\.$#'
 			identifier: method.nonObject
 			count: 1
@@ -3730,12 +3628,6 @@ parameters:
 			message: '#^Parameter \#1 \$stream of function fputcsv expects resource, resource\|false given\.$#'
 			identifier: argument.type
 			count: 2
-			path: app/Services/StudentCsvImporter.php
-
-		-
-			message: '#^Unable to resolve the template type TValue in call to function collect$#'
-			identifier: argument.templateType
-			count: 1
 			path: app/Services/StudentCsvImporter.php
 
 		-

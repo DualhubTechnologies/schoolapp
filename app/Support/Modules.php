@@ -21,6 +21,7 @@ class Modules
         'students' => ['Students', 'Student records, guardians'],
         'promotion' => ['Year-end promotion', 'Promote, repeat or complete students'],
         'fees' => ['Fees', 'Receive payments, receipts, billing, balances, reminders, fee set-up'],
+        'transport' => ['Transport', 'Van routes and fares, learners on the van, route lists'],
         'finance' => ['Finance & budget', 'Expenses, other income, budget, income vs expenditure'],
         'exams' => ['Exams & results', 'Enter marks (own subjects), results, report cards'],
         'exams_all' => ['Marks for all subjects', 'Enter marks for every subject and manage exams (Director of Studies)'],
@@ -32,8 +33,8 @@ class Modules
     /** What each role opens until the administrator chooses otherwise. */
     public const ROLE_DEFAULTS = [
         'Teacher' => ['exams', 'students'],
-        'Accountant' => ['fees', 'finance', 'hr'],
-        'Bursar' => ['fees', 'finance'],
+        'Accountant' => ['fees', 'transport', 'finance', 'hr'],
+        'Bursar' => ['fees', 'transport', 'finance'],
         'Staff' => [],
         'Parent' => [],
         'Student' => [],
@@ -59,7 +60,9 @@ class Modules
         'FeeReminderResource' => 'fees',
         'StudentDiscountResource' => 'fees',
         'FeeStructureResource' => 'fees',
-        'TransportRouteResource' => 'fees',
+        // Transport
+        'TransportRouteResource' => 'transport',
+        'TransportLearnerResource' => 'transport',
         'FeeStructureSheet' => 'fees',
         // Finance
         'IncomeExpenditure' => 'finance',

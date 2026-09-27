@@ -5,7 +5,6 @@ namespace App\Filament\App\Resources\Students\Schemas;
 use App\Models\Guardian;
 use App\Models\SchoolClass;
 use App\Models\Student;
-use App\Models\TransportRoute;
 use App\Support\EmailCheck;
 use App\Support\PrivateFiles;
 use Filament\Forms\Components\DatePicker;
@@ -346,28 +345,6 @@ class StudentForm
                 ->preload()
                 ->placeholder('Select house')
                 ->helperText('Full houses are hidden automatically.'),
-
-            // The parent's choice: the school van, or bring the child
-            // themselves. A route's fare is added to the bill each term.
-            Select::make('transport_route_id')
-                ->label('School van')
-                ->relationship(
-                    'transportRoute',
-                    'name',
-                    fn (Builder $query) => static::scopeToSchool($query)->where('is_active', true),
-                )
-                ->getOptionLabelFromRecordUsing(fn (TransportRoute $route): string => $route->name.' — UGX '.number_format((float) $route->fare))
-                ->preload()
-                ->placeholder('Brought by parent (no van)')
-                ->live()
-                ->helperText('The route\'s termly fare is added to the bill each term.'),
-
-            Select::make('transport_trip')
-                ->label('Uses the van')
-                ->options(TransportRoute::TRIPS)
-                ->default('both')
-                ->selectablePlaceholder(false)
-                ->visible(fn (Get $get): bool => filled($get('transport_route_id'))),
         ];
     }
 

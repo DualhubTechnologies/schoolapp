@@ -32,11 +32,11 @@ class TransportRouteResource extends Resource
 
     protected static string|BackedEnum|null $navigationIcon = Heroicon::OutlinedTruck;
 
-    protected static string|\UnitEnum|null $navigationGroup = 'Fees';
+    protected static string|\UnitEnum|null $navigationGroup = 'Transport';
 
-    protected static ?int $navigationSort = 9;
+    protected static ?int $navigationSort = 1;
 
-    protected static ?string $navigationLabel = 'Transport routes';
+    protected static ?string $navigationLabel = 'Routes';
 
     protected static ?string $modelLabel = 'route';
 

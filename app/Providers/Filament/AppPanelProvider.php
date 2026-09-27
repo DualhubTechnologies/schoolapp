@@ -143,6 +143,7 @@ class AppPanelProvider extends PanelProvider
             ->navigationGroups([
                 NavigationGroup::make('Students'),
                 NavigationGroup::make('Fees'),
+                NavigationGroup::make('Transport'),
                 NavigationGroup::make('Finance'),
                 NavigationGroup::make('Exams & Results'),
                 NavigationGroup::make('Human Resources'),

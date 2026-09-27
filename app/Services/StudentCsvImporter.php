@@ -3,11 +3,13 @@
 namespace App\Services;
 
 use App\Models\Guardian;
+use App\Models\School;
 use App\Models\SchoolClass;
 use App\Models\Section;
 use App\Models\Student;
 use App\Models\StudentImport;
 use App\Services\Subscriptions\SubscriptionManager;
+use App\Support\SchoolType;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Log;
 use Illuminate\Support\Facades\Storage;
@@ -609,45 +611,81 @@ class StudentCsvImporter
     }
 
     /**
-     * Generate a CSV template file and return its path. The example row
-     * uses one of the school's real classes so it validates as-is.
+     * Example learners for the template, one per class in turn.
+     *
+     * @var list<array{0: string, 1: string, 2: string, 3: string, 4: string}>
+     */
+    protected const TEMPLATE_EXAMPLES = [
+        ['Joan', 'Nakato', 'Female', 'Sarah Nakato', 'mother'],
+        ['Brian', 'Okello', 'Male', 'John Okello', 'father'],
+        ['Grace', 'Namuli', 'Female', 'Robert Namuli', 'father'],
+        ['Ivan', 'Mugisha', 'Male', 'Annet Mugisha', 'mother'],
+        ['Faith', 'Achieng', 'Female', 'Florence Achieng', 'guardian'],
+        ['Samuel', 'Kato', 'Male', 'David Kato', 'father'],
+        ['Mercy', 'Nabirye', 'Female', 'Harriet Nabirye', 'mother'],
+    ];
+
+    /**
+     * Generate a CSV template file and return its path. It shows one
+     * example learner in each of the school's own classes (P.1-P.7 in a
+     * primary school, S.1-S.6 in a secondary school), with an age to
+     * match, so it validates as-is and never asks what kind of school
+     * this is. A school with no classes yet gets the usual class names
+     * for its type.
      */
     public static function generateTemplate(?int $schoolId = null): string
     {
-        $class = $schoolId
-            ? SchoolClass::where('school_id', $schoolId)->orderBy('name')->first()
-            : null;
+        $school = $schoolId ? School::find($schoolId) : null;
 
-        $section = $class
-            ? Section::where('school_class_id', $class->id)->orderBy('name')->value('name')
-            : null;
+        $classes = $school
+            ? SchoolClass::where('school_id', $school->id)->orderBy('level')->orderBy('name')->with('sections')->get()
+                ->map(fn (SchoolClass $class): array => [$class->name, (string) ($class->sections->sortBy('name')->first()->name ?? '')])
+                ->all()
+            : [];
+
+        if ($classes === []) {
+            $classes = collect(SchoolType::keys($school))
+                ->reject(fn (string $curriculum): bool => $curriculum === 'nursery')
+                ->flatMap(fn (string $curriculum): array => config("academics.classes.{$curriculum}", []))
+                ->map(fn (string $name): array => [$name, ''])
+                ->all();
+        }
+
+        // Age on entering the first class: 6 for P.1, 13 for S.1.
+        $firstAge = $school?->school_type === School::TYPE_SECONDARY ? 13 : 6;
 
         $file = 'student-import-template'.($schoolId ? "-{$schoolId}" : '').'.csv';
         $path = Storage::disk('local')->path($file);
 
         $handle = fopen($path, 'w');
         fputcsv($handle, self::TEMPLATE_COLUMNS);
-        fputcsv($handle, [
-            'John',                 // first_name
-            'Mukasa',               // last_name
-            'ADM-0001',             // admission_no (must be new)
-            $class?->name ?? 'S1',  // class (must already exist)
-            $section ?? '',         // section (optional; must exist under the class)
-            'Male',                 // gender: Male / Female
-            '2010-03-15',           // date_of_birth: YYYY-MM-DD
-            '2026-02-01',           // admission_date: YYYY-MM-DD (blank = today)
-            '',                     // lin
-            '',                     // nin
-            '0771234567',           // phone
-            'john@example.com',     // email
-            'Kampala',              // address
-            '',                     // medical_notes
-            'David Mukasa',         // guardian_name
-            '0701234567',           // guardian_phone
-            'david@example.com',    // guardian_email
-            'father',               // guardian_relationship
-            'active',               // status: active / graduated / withdrawn / transferred
-        ]);
+
+        foreach (array_values($classes) as $i => [$className, $section]) {
+            [$first, $last, $gender, $guardian, $relationship] = self::TEMPLATE_EXAMPLES[$i % count(self::TEMPLATE_EXAMPLES)];
+
+            fputcsv($handle, [
+                $first,                                                  // first_name
+                $last,                                                   // last_name
+                sprintf('ADM-%04d', $i + 1),                             // admission_no (must be new)
+                $className,                                              // class (must already exist)
+                $section,                                                // section (optional)
+                $gender,                                                 // gender: Male / Female
+                today()->subYears($firstAge + $i)->format('Y').'-03-15', // date_of_birth: YYYY-MM-DD
+                today()->format('Y').'-02-02',                           // admission_date (blank = today)
+                '',                                                      // lin
+                '',                                                      // nin
+                '',                                                      // phone
+                '',                                                      // email
+                'Wakiso',                                                // address
+                '',                                                      // medical_notes
+                $guardian,                                               // guardian_name
+                '07'.(71234560 + $i),                                    // guardian_phone
+                '',                                                      // guardian_email
+                $relationship,                                           // guardian_relationship
+                'active',                                                // status: active / graduated / withdrawn / transferred
+            ]);
+        }
+
         fclose($handle);
 
         return $path;

@@ -19,6 +19,38 @@ return [
         'a_level' => 'A-Level',
     ],
 
+    /*
+     * The classes each curriculum starts with when a school takes the
+     * recommended setup. No streams: a class works on its own, and a school
+     * that splits a class adds streams later.
+     */
+    'classes' => [
+        'nursery' => ['Baby Class', 'Middle Class', 'Top Class'],
+        'primary' => ['P.1', 'P.2', 'P.3', 'P.4', 'P.5', 'P.6', 'P.7'],
+        'o_level' => ['S.1', 'S.2', 'S.3', 'S.4'],
+        'a_level' => ['S.5', 'S.6'],
+    ],
+
+    /*
+     * Ministry of Education and Sports term dates, one year at a time:
+     * [term name, opens, closes]. Update each January from
+     * https://www.education.go.ug/school-calendars/. A year missing here
+     * falls back to 'calendar_pattern' (the usual shape of the year).
+     */
+    'calendar' => [
+        2026 => [
+            ['Term 1', '2026-02-02', '2026-05-01'],
+            ['Term 2', '2026-05-25', '2026-08-22'],
+            ['Term 3', '2026-09-14', '2026-12-04'],
+        ],
+    ],
+
+    'calendar_pattern' => [
+        ['Term 1', '02-01', '04-30'],
+        ['Term 2', '05-25', '08-21'],
+        ['Term 3', '09-14', '12-04'],
+    ],
+
     'assessment_types' => [
         'bot' => 'Beginning of Term',
         'mot' => 'Mid-Term',

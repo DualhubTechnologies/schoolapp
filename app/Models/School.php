@@ -45,11 +45,13 @@ class School extends Model
         'terms_accepted_at',
         'terms_accepted_by',
         'terms_accepted_ip',
+        'setup_completed_at',
+        'setup_choice',
     ];
 
     protected function casts(): array
     {
-        return ['approved_at' => 'datetime', 'terms_accepted_at' => 'datetime'];
+        return ['approved_at' => 'datetime', 'terms_accepted_at' => 'datetime', 'setup_completed_at' => 'datetime'];
     }
 
     public const STATUSES = [

@@ -65,8 +65,8 @@ class SetupChecklist extends Widget
                     'done' => Term::where('school_id', $id)->exists(),
                 ],
                 [
-                    'title' => 'Add your classes and streams',
-                    'text' => 'Your class levels are ready-made; add the streams you run, e.g. S.1 East, P.4 Blue.',
+                    'title' => 'Add your classes',
+                    'text' => 'Add a class for each year group. Streams are optional: add them only if you split a class, e.g. S.1 East, P.4 Blue.',
                     'url' => SchoolClassResource::getUrl(),
                     'done' => SchoolClass::where('school_id', $id)->exists(),
                 ],

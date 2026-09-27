@@ -48,6 +48,7 @@ class StudentCsvImporter
         'admission_date',
         'lin',
         'nin',
+        'schoolpay_code',
         'phone',
         'email',
         'address',
@@ -426,6 +427,7 @@ class StudentCsvImporter
                 'admission_no' => $data['admission_no'],
                 'lin' => ($data['lin'] ?? '') ?: null,
                 'nin' => ($data['nin'] ?? '') ?: null,
+                'schoolpay_code' => ($data['schoolpay_code'] ?? '') ?: null,
                 'first_name' => $data['first_name'],
                 'last_name' => $data['last_name'] ?: null,
                 'school_class_id' => $classId,
@@ -674,6 +676,7 @@ class StudentCsvImporter
                 today()->format('Y').'-02-02',                           // admission_date (blank = today)
                 '',                                                      // lin
                 '',                                                      // nin
+                '',                                                      // schoolpay_code (only if the school uses SchoolPay)
                 '',                                                      // phone
                 '',                                                      // email
                 'Wakiso',                                                // address

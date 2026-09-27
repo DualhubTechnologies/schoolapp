@@ -218,6 +218,12 @@ class StudentForm
                         ->placeholder('Learner Identification Number')
                         ->maxLength(100),
 
+                    TextInput::make('schoolpay_code')
+                        ->label('SchoolPay code')
+                        ->hintIcon('heroicon-m-question-mark-circle', tooltip: 'Only if your school uses SchoolPay: the code parents pay fees to for this learner. It is shown on fee reminders, letters and the parent page.')
+                        ->placeholder('e.g. 1004567890')
+                        ->maxLength(30),
+
                     TextInput::make('nin')
                         ->hintIcon('heroicon-m-question-mark-circle', tooltip: 'National Identification Number, if the learner has a national ID.')
                         ->label('National ID')

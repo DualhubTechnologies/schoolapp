@@ -121,7 +121,13 @@
                         </tr>
                     </tfoot>
                 </table>
-                <p class="sa-note">Pay at the bursar's office, by bank deposit, SchoolPay or mobile money, quoting admission number <strong>{{ $student->admission_no }}</strong>.</p>
+                <p class="sa-note">
+                    @if ($student->schoolpay_code)
+                        Pay through <strong>SchoolPay, code {{ $student->schoolpay_code }}</strong>, or at the bursar's office quoting admission number <strong>{{ $student->admission_no }}</strong>.
+                    @else
+                        Pay at the bursar's office, by bank deposit, SchoolPay or mobile money, quoting admission number <strong>{{ $student->admission_no }}</strong>.
+                    @endif
+                </p>
             @endif
 
             {{-- ══ STATEMENT ══ --}}

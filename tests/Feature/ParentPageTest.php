@@ -128,3 +128,19 @@ it('texts parents in Luganda when the school chooses it', function () {
     expect(app(ParentMessages::class)->receipt($payment->fresh()))->toContain('Tufunye UGX 200,000')->toContain('Ebisale biweddeyo')
         ->and(FeeReminderService::defaultTemplate($this->school->fresh()))->toBe(FeeReminderService::LUGANDA_TEMPLATE);
 });
+
+it('tells parents the learner\'s SchoolPay code where they are told how to pay', function () {
+    $this->student->update(['schoolpay_code' => '1004567890']);
+
+    $this->get($this->student->parentPageUrl())->assertSee('SchoolPay code')->assertSee('1004567890');
+
+    $message = app(FeeReminderService::class)->message($this->student->fresh(), 200000, null, '2026-10-15');
+    expect($message)->toContain('Pay via SchoolPay code 1004567890.');
+
+    $this->school->update(['parent_sms_language' => 'lg']);
+    expect(app(FeeReminderService::class)->message($this->student->fresh(), 200000))->toContain('Sasula ku SchoolPay code 1004567890.');
+});
+
+it('leaves SchoolPay out for learners without a code', function () {
+    expect(app(FeeReminderService::class)->message($this->student, 200000))->not->toContain('SchoolPay');
+});

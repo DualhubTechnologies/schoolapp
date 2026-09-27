@@ -62,8 +62,13 @@
 
                 <p>
                     You are kindly requested to clear this balance by <strong>{{ $letter['deadline'] }}</strong>.
-                    Payment can be made at the bursar's office, by bank deposit or through SchoolPay / mobile money,
-                    quoting the student's admission number <strong>{{ $student->admission_no }}</strong>.
+                    @if ($student->schoolpay_code)
+                        Payment can be made through <strong>SchoolPay using code {{ $student->schoolpay_code }}</strong>,
+                        or at the bursar's office, quoting the student's admission number <strong>{{ $student->admission_no }}</strong>.
+                    @else
+                        Payment can be made at the bursar's office, by bank deposit or through SchoolPay / mobile money,
+                        quoting the student's admission number <strong>{{ $student->admission_no }}</strong>.
+                    @endif
                 </p>
 
                 <p>If you have already paid, please bring the receipt or bank slip to the bursar's office so that the account can be updated. Thank you for your continued support.</p>

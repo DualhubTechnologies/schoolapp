@@ -35,6 +35,7 @@ class Student extends Model
         'first_name',
         'last_name',
         'lin',
+        'schoolpay_code',
         'nin',
         'name',
         'email',
@@ -108,6 +109,7 @@ class Student extends Model
             ->logOnly([
                 'name',
                 'admission_no',
+                'schoolpay_code',
                 'school_class_id',
                 'section_id',
                 'residency_type_id',
@@ -295,5 +297,14 @@ class Student extends Model
         }
 
         return route('parent.page', ['token' => $this->parent_token]);
+    }
+
+    /**
+     * How the parent pays by SchoolPay, e.g. "SchoolPay code 1004567890",
+     * or null when the learner has no code.
+     */
+    public function schoolPayText(): ?string
+    {
+        return filled($this->schoolpay_code) ? "SchoolPay code {$this->schoolpay_code}" : null;
     }
 }

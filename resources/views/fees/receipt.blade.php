@@ -66,6 +66,9 @@
             <div><div class="label">Received from</div><div class="strong">{{ $payment->paid_by ?: ($student?->guardian?->name ?: '—') }}</div></div>
             <div><div class="label">Student</div><div class="strong">{{ $student?->name }}</div></div>
             <div><div class="label">Admission no.</div><div>{{ $student?->admission_no }}</div></div>
+            @if ($student?->schoolpay_code)
+                <div><div class="label">SchoolPay code</div><div>{{ $student->schoolpay_code }}</div></div>
+            @endif
             <div><div class="label">Class</div><div>{{ $student?->schoolClass?->name }}{{ $student?->section ? ' · ' . $student->section->name : '' }}</div></div>
             <div><div class="label">Payment method</div><div>{{ $payment->methodLabel() }}</div></div>
             <div><div class="label">Transaction / slip ref.</div><div>{{ $payment->reference ?: '—' }}</div></div>

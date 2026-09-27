@@ -36,7 +36,7 @@ class StudentResource extends Resource
     /** @return list<string> */
     public static function getGloballySearchableAttributes(): array
     {
-        return ['name', 'admission_no', 'lin'];
+        return ['name', 'admission_no', 'lin', 'schoolpay_code'];
     }
 
     public static function getGlobalSearchEloquentQuery(): Builder

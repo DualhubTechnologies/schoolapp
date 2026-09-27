@@ -117,6 +117,12 @@ class StudentsTable
                     ->badge()
                     ->placeholder('—')
                     ->toggleable(isToggledHiddenByDefault: true),
+                TextColumn::make('schoolpay_code')
+                    ->label('SchoolPay code')
+                    ->placeholder('—')
+                    ->searchable()
+                    ->copyable()
+                    ->toggleable(isToggledHiddenByDefault: true),
                 TextColumn::make('lin')
                     ->label('LIN')
                     ->placeholder('—')

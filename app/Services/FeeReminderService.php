@@ -19,11 +19,11 @@ use Illuminate\Support\Collection;
 class FeeReminderService
 {
     public const DEFAULT_TEMPLATE = 'Dear {guardian}, {student} ({class}) has a school fees balance of UGX {balance}. '
-        .'Kindly clear it by {deadline}. Thank you. {school}';
+        .'Kindly clear it by {deadline}.{schoolpay} Thank you. {school}';
 
     /** The same reminder in Luganda, for schools that text parents in Luganda. */
     public const LUGANDA_TEMPLATE = 'Ssebo/Nnyabo {guardian}, {student} ({class}) asigazza ebisale by\'essomero UGX {balance}. '
-        .'Tukusaba obisasule nga {deadline} tannatuuka. Webale nnyo. {school}';
+        .'Tukusaba obisasule nga {deadline} tannatuuka.{schoolpay} Webale nnyo. {school}';
 
     public const PLACEHOLDERS = [
         '{guardian}' => 'Guardian\'s name',
@@ -34,6 +34,7 @@ class FeeReminderService
         '{term}' => 'Current term',
         '{deadline}' => 'Pay-by date',
         '{school}' => 'School name',
+        '{schoolpay}' => 'The learner\'s SchoolPay code, when they have one (blank otherwise)',
         '{link}' => 'Link to the learner\'s fees page (adds about 35 characters)',
     ];
 
@@ -157,6 +158,11 @@ class FeeReminderService
             '{term}' => $term?->label() ?? '',
             '{deadline}' => $this->deadlineText($deadline),
             '{school}' => (string) $student->school?->name,
+            '{schoolpay}' => filled($student->schoolpay_code)
+                ? (($student->school->parent_sms_language ?? 'en') === 'lg'
+                    ? " Sasula ku SchoolPay code {$student->schoolpay_code}."
+                    : " Pay via SchoolPay code {$student->schoolpay_code}.")
+                : '',
             // Only made when used: it creates the learner's private link.
             '{link}' => str_contains($template, '{link}') ? $student->parentPageUrl() : '',
         ]);

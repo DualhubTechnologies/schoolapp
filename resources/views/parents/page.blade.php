@@ -49,6 +49,10 @@
         ul.list li:last-child, tr:last-child td { border-bottom: 0; }
         .btn { display: inline-block; padding: .45rem .85rem; border-radius: .6rem; background: #eff5fc; color: var(--blue); font-size: .85rem; }
         .pay p { margin: .2rem 0; }
+        .schoolpay { margin-bottom: .75rem; padding: .8rem 1rem; border-radius: .8rem; background: #eff6ff; border: 1px dashed #93c5fd; text-align: center; }
+        .schoolpay span { display: block; font-size: .72rem; text-transform: uppercase; letter-spacing: .08em; color: var(--muted); }
+        .schoolpay strong { display: block; font-size: 1.5rem; letter-spacing: .08em; color: var(--ink); user-select: all; }
+        .schoolpay small { color: var(--muted); }
         footer { text-align: center; font-size: .75rem; color: var(--muted); margin-top: 1.5rem; }
     </style>
 </head>
@@ -134,9 +138,16 @@
         </div>
     @endif
 
-    @if ($owing && ($school->fee_payment_bank || $school->fee_payment_mobile_money || $school->fee_payment_instructions))
+    @if ($owing && ($student->schoolpay_code || $school->fee_payment_bank || $school->fee_payment_mobile_money || $school->fee_payment_instructions))
         <div class="card pay">
             <h2>How to pay</h2>
+            @if ($student->schoolpay_code)
+                <div class="schoolpay">
+                    <span>SchoolPay code</span>
+                    <strong>{{ $student->schoolpay_code }}</strong>
+                    <small>Pay on mobile money (MTN or Airtel) or at a bank with this code.</small>
+                </div>
+            @endif
             @if ($school->fee_payment_bank)<p><strong>Bank:</strong> {{ $school->fee_payment_bank }}</p>@endif
             @if ($school->fee_payment_mobile_money)<p><strong>Mobile money:</strong> {{ $school->fee_payment_mobile_money }}</p>@endif
             @if ($school->fee_payment_instructions)<p>{!! nl2br(e($school->fee_payment_instructions)) !!}</p>@endif

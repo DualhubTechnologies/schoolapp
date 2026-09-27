@@ -1,7 +1,15 @@
 name: deploy
 
+# Deploys only after the "tests" workflow has passed on a push to main,
+# and deploys exactly the commit that was tested. A failing test stops
+# the deploy and the live site stays on the last good version. Can
+# also be started by hand (Actions -> deploy -> Run workflow).
 on:
-  push:
+  workflow_run:
+    workflows:
+      - tests
+    types:
+      - completed
     branches:
       - main
   workflow_dispatch:
@@ -15,12 +23,19 @@ permissions:
 
 jobs:
   deploy:
+    if: >-
+      github.event_name == 'workflow_dispatch' ||
+      (github.event.workflow_run.conclusion == 'success' && github.event.workflow_run.event == 'push')
     runs-on: ubuntu-latest
+
+    env:
+      DEPLOY_SHA: ${{ github.event.workflow_run.head_sha || github.sha }}
 
     steps:
       - name: Checkout code
         uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
         with:
+          ref: ${{ env.DEPLOY_SHA }}
           persist-credentials: false
 
       - name: Setup PHP
@@ -64,6 +79,7 @@ jobs:
           username: ${{ secrets.SSH_USER }}
           key: ${{ secrets.SSH_KEY }}
           port: ${{ secrets.SSH_PORT || 22 }}
+          envs: DEPLOY_SHA
           script: |
             set -e
             cd /var/www/schoolapp
@@ -71,7 +87,7 @@ jobs:
             trap 'php artisan up' EXIT
 
             git fetch origin main
-            git reset --hard origin/main
+            git reset --hard "$DEPLOY_SHA"
 
             composer install --no-dev --optimize-autoloader --no-interaction --prefer-dist
             php artisan migrate --force

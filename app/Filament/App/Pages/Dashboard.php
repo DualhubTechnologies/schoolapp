@@ -105,6 +105,7 @@ class Dashboard extends BaseDashboard
                         'currentTerm' => $terms[SchoolStarterSetup::currentTermIndex($terms)]['name'],
                         'officialCalendar' => SchoolStarterSetup::hasOfficialCalendar(),
                         'year' => today()->year,
+                        'isPrimary' => SchoolType::isPrimary($this->school()),
                     ]),
                 Callout::make('Nothing here is locked in')
                     ->description('Every class, term, subject and grade band is an ordinary record. Rename, edit or delete any of them later on its own page. Streams are optional: each class works on its own, so only add streams if you split a class.')

@@ -166,3 +166,20 @@ it('does not offer the setup to schools that have answered, or to other staff', 
         ->and(SchoolStarterSetup::isOfferedTo(adminOf(newSchool(), 'Teacher')))->toBeFalse()
         ->and(SchoolStarterSetup::isOfferedTo(User::factory()->create()->assignRole('Super Admin')))->toBeFalse();
 });
+
+it('describes the grading for the school type', function (bool $isPrimary, string $shown, string $hidden) {
+    $terms = SchoolStarterSetup::termsFor();
+
+    $html = view('filament.app.setup.whats-included', [
+        'terms' => $terms,
+        'currentTerm' => 'Term 3',
+        'officialCalendar' => true,
+        'year' => 2026,
+        'isPrimary' => $isPrimary,
+    ])->render();
+
+    expect($html)->toContain($shown)->not->toContain($hidden);
+})->with([
+    'primary' => [true, 'PLE grading scale and divisions', 'UACE'],
+    'secondary' => [false, 'UCE and UACE grading scales', 'PLE'],
+]);

@@ -18,7 +18,9 @@
         [
             'icon' => 'heroicon-o-book-open',
             'title' => 'Subjects and grading',
-            'text' => 'The national curriculum subjects for each class, PLE, UCE and UACE grading scales, and common A-Level combinations.',
+            'text' => $isPrimary
+                ? 'The national curriculum subjects for each class, with the PLE grading scale and divisions.'
+                : 'The national curriculum subjects for each class, UCE and UACE grading scales, and common A-Level combinations.',
         ],
         [
             'icon' => 'heroicon-o-home-modern',

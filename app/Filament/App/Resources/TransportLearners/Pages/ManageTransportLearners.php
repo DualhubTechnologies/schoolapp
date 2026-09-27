@@ -24,8 +24,9 @@ class ManageTransportLearners extends ManageRecords
     {
         return [
             Action::make('addLearners')
-                ->label('Add learners to a route')
+                ->label('Add to route')
                 ->icon('heroicon-o-plus')
+                ->modalHeading('Add learners to a route')
                 ->modalWidth('xl')
                 ->modalSubmitActionLabel('Add to route')
                 ->schema([

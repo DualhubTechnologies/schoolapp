@@ -1,6 +1,6 @@
 <?php
 
-use App\Filament\App\Widgets\RecentActivity;
+use App\Filament\Admin\Resources\ActivityLogs\Pages\ListActivityLogs;
 use App\Models\School;
 use App\Models\User;
 use Database\Seeders\RoleSeeder;
@@ -10,7 +10,7 @@ use Spatie\Activitylog\Facades\Activity;
 
 beforeEach(function () {
     $this->seed(RoleSeeder::class);
-    Filament::setCurrentPanel('app');
+    $this->withoutVite();
 
     $this->superAdmin = User::factory()->create()->assignRole('Super Admin');
 });
@@ -26,7 +26,7 @@ function schoolAdminAt(string $schoolName): User
     return User::factory()->create(['school_id' => $school->id])->assignRole('School Admin');
 }
 
-it('shows activity from every school to the Super Admin', function () {
+it('lists activity from every school for the Super Admin', function () {
     $kampala = schoolAdminAt('Kampala High');
     $gulu = schoolAdminAt('Gulu College');
 
@@ -34,34 +34,40 @@ it('shows activity from every school to the Super Admin', function () {
     Activity::causedBy($gulu)->event('updated')->log('updated');
     Activity::withProperties(['email' => 'intruder@example.com'])->event('login_failed')->log('Failed login attempt');
 
+    Filament::setCurrentPanel('admin');
     $this->actingAs($this->superAdmin);
 
-    Livewire::test(RecentActivity::class)
+    Livewire::test(ListActivityLogs::class)
         ->assertOk()
         ->assertSee(['Kampala High', 'Gulu College', $kampala->name, $gulu->name])
         ->assertSee(['Signed in', 'Updated', 'Failed sign-in', 'intruder@example.com']);
 });
 
-it('is hidden from school users', function () {
-    $this->actingAs(schoolAdminAt('Kampala High'));
+it('filters activity by school', function () {
+    $kampala = schoolAdminAt('Kampala High');
+    $gulu = schoolAdminAt('Gulu College');
 
-    expect(RecentActivity::canView())->toBeFalse();
+    Activity::causedBy($kampala)->event('login')->log('User logged in');
+    Activity::causedBy($gulu)->event('login')->log('User logged in');
+
+    Filament::setCurrentPanel('admin');
+    $this->actingAs($this->superAdmin);
+
+    Livewire::test(ListActivityLogs::class)
+        ->filterTable('school', $kampala->school_id)
+        ->assertSee($kampala->name)
+        ->assertDontSee($gulu->name);
 });
 
-it('appears on the Super Admin dashboard', function () {
-    $this->withoutVite();
-
+it('is in the Super Admin sidebar on both panels', function (string $url) {
     $this->actingAs($this->superAdmin)
-        ->get('/dashboard')
+        ->get($url)
         ->assertOk()
-        ->assertSeeLivewire(RecentActivity::class);
-});
+        ->assertSee('Activity logs');
+})->with(['/admin', '/dashboard']);
 
-it('appears on the admin panel dashboard', function () {
-    $this->withoutVite();
-
-    $this->actingAs($this->superAdmin)
-        ->get('/admin')
-        ->assertOk()
-        ->assertSeeLivewire(RecentActivity::class);
+it('is closed to school users', function () {
+    $this->actingAs(schoolAdminAt('Kampala High'))
+        ->get('/admin/activity-logs')
+        ->assertForbidden();
 });

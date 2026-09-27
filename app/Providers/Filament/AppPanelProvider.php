@@ -3,6 +3,7 @@
 namespace App\Providers\Filament;
 
 use App\Filament\Admin\Resources\ActivationCodes\ActivationCodeResource;
+use App\Filament\Admin\Resources\ActivityLogs\ActivityLogResource;
 use App\Filament\Admin\Resources\DemoRequests\DemoRequestResource;
 use App\Filament\Admin\Resources\Plans\PlanResource;
 use App\Filament\Admin\Resources\Schools\SchoolResource;
@@ -11,7 +12,6 @@ use App\Filament\App\Widgets\BursarKpis;
 use App\Filament\App\Widgets\HrKpis;
 use App\Filament\App\Widgets\LeadershipKpis;
 use App\Filament\App\Widgets\PlatformKpis;
-use App\Filament\App\Widgets\RecentActivity;
 use App\Filament\App\Widgets\TeacherKpis;
 use App\Filament\App\Widgets\TeacherMarksProgress;
 use App\Filament\App\Widgets\WelcomeBanner;
@@ -156,6 +156,7 @@ class AppPanelProvider extends PanelProvider
                 [PlanResource::class, 'Plans & pricing', Heroicon::OutlinedRectangleStack, 1],
                 [DemoRequestResource::class, 'Demo requests', Heroicon::OutlinedCalendarDays, 3],
                 [ActivationCodeResource::class, 'Activation codes', Heroicon::OutlinedKey, 4],
+                [ActivityLogResource::class, 'Activity logs', Heroicon::OutlinedClipboardDocumentList, 5],
             ])->map(fn (array $item) => NavigationItem::make($item[1])
                 ->url(fn (): string => $item[0]::getUrl(panel: 'admin'))
                 ->icon($item[2])
@@ -223,7 +224,6 @@ class AppPanelProvider extends PanelProvider
                 TeacherKpis::class,
                 TeacherMarksProgress::class,
                 PlatformKpis::class,
-                RecentActivity::class,
             ])
 
             // --- Middleware ---

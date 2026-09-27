@@ -4,6 +4,7 @@ namespace App\Filament\Admin\Resources\Schools\Schemas;
 
 use App\Models\School;
 use App\Support\EmailCheck;
+use App\Support\ImageShrinker;
 use App\Support\PrivateFiles;
 use Filament\Forms\Components\FileUpload;
 use Filament\Forms\Components\Select;
@@ -194,14 +195,15 @@ class SchoolForm
                                     ->icon('heroicon-o-identification')
                                     ->schema([
 
-                                        FileUpload::make('logo')
+                                        ImageShrinker::noBrowserResize(FileUpload::make('logo')
                                             ->label('School Logo')
                                             ->image()
                                             ->avatar()
                                             ->imageEditor()
                                             ->imageEditorAspectRatioOptions(['1:1'])
-                                            ->automaticallyResizeImagesToWidth('400')
-                                            ->automaticallyResizeImagesToHeight('400')
+                                            // Shrunk on the server, not in the browser: in-browser
+                                            // resizing hangs on iPhones for large pictures.
+                                            ->saveUploadedFileUsing(ImageShrinker::saveWithin(600, 600, square: true))
                                             ->disk('public')
                                             ->directory('school-logos')
                                             ->visibility('public')
@@ -210,15 +212,15 @@ class SchoolForm
                                                 'image/png',
                                                 'image/webp',
                                             ])
-                                            ->maxSize(2048)
-                                            ->helperText('Square crop. Appears on reports and documents.'),
+                                            ->maxSize(10240)
+                                            ->helperText('Square crop. Appears on reports and documents.')),
 
                                         FileUpload::make('hm_signature')
                                             ->label('Headteacher Signature')
                                             ->image()
                                             ->imageEditor()
                                             ->imageEditorAspectRatioOptions([null, '3:1', '4:1'])
-                                            ->automaticallyResizeImagesToWidth('600')
+                                            ->saveUploadedFileUsing(ImageShrinker::saveWithin(900, 400))
                                             ->disk(PrivateFiles::DISK)
                                             ->directory('school-signatures')
                                             ->visibility('private')
@@ -227,7 +229,7 @@ class SchoolForm
                                                 'image/png',
                                                 'image/webp',
                                             ])
-                                            ->maxSize(2048)
+                                            ->maxSize(10240)
                                             ->helperText('Crop freely — a signature is wider than it is tall.'),
                                     ]),
 

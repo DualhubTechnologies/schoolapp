@@ -6,6 +6,7 @@ use App\Models\Guardian;
 use App\Models\SchoolClass;
 use App\Models\Student;
 use App\Support\EmailCheck;
+use App\Support\ImageShrinker;
 use App\Support\PrivateFiles;
 use Filament\Forms\Components\DatePicker;
 use Filament\Forms\Components\FileUpload;
@@ -125,12 +126,14 @@ class StudentForm
     public static function identityFields(): array
     {
         return [
-            FileUpload::make('photo')
+            ImageShrinker::noBrowserResize(FileUpload::make('photo')
                 ->label('Student photo')
                 ->image()
                 ->avatar()
                 ->imageEditor()
                 ->circleCropper()
+                ->saveUploadedFileUsing(ImageShrinker::saveWithin(800, 800, square: true))
+                ->maxSize(10240)
                 ->disk(PrivateFiles::DISK)
                 ->visibility('private')
                 ->directory('students')
@@ -142,7 +145,7 @@ class StudentForm
                 ->columnSpan([
                     'default' => 1,
                     'md' => 2,
-                ]),
+                ])),
 
             Grid::make([
                 'default' => 1,

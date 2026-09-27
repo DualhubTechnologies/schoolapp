@@ -1,6 +1,9 @@
 includes:
     - vendor/larastan/larastan/extension.neon
     - vendor/nesbot/carbon/extension.neon
+    # Findings that predate the type check running in CI. New code must
+    # pass cleanly; remove entries from the baseline as they are fixed.
+    - phpstan-baseline.neon
 
 parameters:
     paths:

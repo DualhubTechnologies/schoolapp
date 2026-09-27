@@ -1,5 +1,6 @@
 <?php
 
+use App\Filament\App\Pages\TransportCollections;
 use App\Filament\App\Resources\TransportLearners\Pages\ManageTransportLearners;
 use App\Filament\App\Resources\TransportRoutes\Pages\ManageTransportRoutes;
 use App\Models\AcademicYear;
@@ -7,6 +8,7 @@ use App\Models\School;
 use App\Models\SchoolClass;
 use App\Models\Student;
 use App\Models\StudentCharge;
+use App\Models\StudentPayment;
 use App\Models\Term;
 use App\Models\TransportRoute;
 use App\Models\User;
@@ -159,4 +161,86 @@ it('is its own module, separate from fees', function () {
 
     $this->actingAs($transportOnly)->get('/transport-routes')->assertOk()->assertSee('Kakiri');
     $this->actingAs($transportOnly)->get('/transport-learners')->assertOk();
+});
+
+function schoolAdmin(): User
+{
+    return User::factory()->create(['school_id' => test()->school->id])->assignRole('School Admin');
+}
+
+function payFor(Student $student, float $amount): StudentPayment
+{
+    return StudentPayment::create([
+        'school_id' => $student->school_id, 'student_id' => $student->id, 'term_id' => test()->term->id,
+        'amount' => $amount, 'paid_on' => now()->toDateString(), 'method' => 'cash',
+    ]);
+}
+
+it('shows on the receipt how a payment was split, transport first', function () {
+    $this->withoutVite();
+    $rider = learner(['transport_route_id' => $this->kakiri->id]);
+    $walker = learner();
+    StudentCharge::create(['school_id' => $this->school->id, 'student_id' => $rider->id, 'term_id' => $this->term->id, 'description' => 'Tuition', 'amount' => 200000, 'discount_amount' => 0, 'charged_on' => now()]);
+    app(BillingService::class)->billTerm($this->term);
+
+    $riderPayment = payFor($rider, 50000);
+    $walkerPayment = payFor($walker, 50000);
+
+    $this->actingAs(schoolAdmin());
+
+    $this->get(route('filament.app.fees.receipt', $riderPayment))
+        ->assertOk()
+        ->assertSeeInOrder(['Applied to', 'Transport (school van)', 'UGX 15,000', 'School fees', 'UGX 35,000']);
+
+    $this->get(route('filament.app.fees.receipt', $walkerPayment))
+        ->assertOk()
+        ->assertDontSee('Applied to');
+});
+
+it('reports what each route has collected and who still owes', function () {
+    $paid = learner(['first_name' => 'Paid', 'last_name' => 'Learner', 'transport_route_id' => $this->kakiri->id]);
+    $owing = learner(['first_name' => 'Owing', 'last_name' => 'Learner', 'transport_route_id' => $this->kakiri->id]);
+    $kamba = learner(['first_name' => 'Kamba', 'last_name' => 'Learner', 'transport_route_id' => $this->kamba->id]);
+    app(BillingService::class)->billTerm($this->term);
+    payFor($paid, 15000);
+    payFor($owing, 5000);
+
+    $this->actingAs(schoolAdmin());
+    Filament::setCurrentPanel('app');
+
+    $page = Livewire::test(TransportCollections::class)
+        ->assertSet('termId', $this->term->id)
+        ->assertSee(['Kakiri', 'Kamba', 'Paid Learner', 'Owing Learner', 'Kamba Learner']);
+
+    $summary = $page->instance()->summary;
+
+    expect($summary['total'])->toBe(['learners' => 3, 'charged' => 43000.0, 'paid' => 20000.0, 'owed' => 23000.0])
+        ->and($summary['routes']['Kakiri'])->toBe(['learners' => 2, 'charged' => 30000.0, 'paid' => 20000.0, 'owed' => 10000.0]);
+
+    $page->set('show', 'owing')
+        ->assertSee('Owing Learner')
+        ->assertDontSee('Paid Learner');
+});
+
+it('prints a route list for the driver with each learner\'s van fee status', function () {
+    $paid = learner(['first_name' => 'Paid', 'last_name' => 'Learner', 'transport_route_id' => $this->kakiri->id]);
+    $owing = learner(['first_name' => 'Owing', 'last_name' => 'Learner', 'transport_route_id' => $this->kakiri->id, 'transport_trip' => 'one_way']);
+    $this->kakiri->update(['vehicle' => 'UAX 123B', 'driver_name' => 'Musa', 'driver_phone' => '0772111222']);
+    app(BillingService::class)->billTerm($this->term);
+    payFor($paid, 15000);
+
+    $this->actingAs(schoolAdmin());
+
+    $this->get(route('filament.app.transport.route-lists', ['route' => $this->kakiri->id]))
+        ->assertOk()
+        ->assertSee(['Kakiri', 'UAX 123B', 'Musa', 'Paid Learner', 'Owing Learner', 'One way only', 'Owes 8,000'])
+        ->assertDontSee('Kamba');
+});
+
+it('keeps the collections report and route lists inside the Transport module', function () {
+    $feesOnly = User::factory()->create(['school_id' => $this->school->id, 'modules' => ['fees']])->assignRole('Accountant');
+    $this->withoutVite();
+
+    $this->actingAs($feesOnly)->get('/transport-collections')->assertForbidden();
+    $this->actingAs($feesOnly)->get(route('filament.app.transport.route-lists'))->assertForbidden();
 });

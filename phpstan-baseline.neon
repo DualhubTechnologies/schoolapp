@@ -415,12 +415,6 @@ parameters:
 			path: app/Filament/App/Resources/Payments/PaymentResource.php
 
 		-
-			message: '#^Access to an undefined property Illuminate\\Database\\Eloquent\\Model\:\:\$admission_no\.$#'
-			identifier: property.notFound
-			count: 1
-			path: app/Filament/App/Resources/Payments/Tables/PaymentsTable.php
-
-		-
 			message: '#^Parameter \#2 \$direction of method Illuminate\\Database\\Eloquent\\Builder\<Illuminate\\Database\\Eloquent\\Model\>\:\:orderBy\(\) expects ''asc''\|''desc''\|SortDirection, string given\.$#'
 			identifier: argument.type
 			count: 1
@@ -1609,12 +1603,6 @@ parameters:
 			path: app/Filament/Widgets/FinanceSnapshot.php
 
 		-
-			message: '#^Access to an undefined property Illuminate\\Database\\Eloquent\\Model\:\:\$admission_no\.$#'
-			identifier: property.notFound
-			count: 1
-			path: app/Filament/Widgets/RecentPaymentsTable.php
-
-		-
 			message: '#^Unsafe usage of new static\(\)\.$#'
 			identifier: new.static
 			count: 1
@@ -2635,24 +2623,6 @@ parameters:
 			path: app/Models/StudentCharge.php
 
 		-
-			message: '#^Method App\\Models\\StudentCharge\:\:school\(\) return type with generic class Illuminate\\Database\\Eloquent\\Relations\\BelongsTo does not specify its types\: TRelatedModel, TDeclaringModel$#'
-			identifier: missingType.generics
-			count: 1
-			path: app/Models/StudentCharge.php
-
-		-
-			message: '#^Method App\\Models\\StudentCharge\:\:student\(\) return type with generic class Illuminate\\Database\\Eloquent\\Relations\\BelongsTo does not specify its types\: TRelatedModel, TDeclaringModel$#'
-			identifier: missingType.generics
-			count: 1
-			path: app/Models/StudentCharge.php
-
-		-
-			message: '#^Method App\\Models\\StudentCharge\:\:term\(\) return type with generic class Illuminate\\Database\\Eloquent\\Relations\\BelongsTo does not specify its types\: TRelatedModel, TDeclaringModel$#'
-			identifier: missingType.generics
-			count: 1
-			path: app/Models/StudentCharge.php
-
-		-
 			message: '#^Access to an undefined property Illuminate\\Database\\Eloquent\\Model\:\:\$name\.$#'
 			identifier: property.notFound
 			count: 1
@@ -2729,30 +2699,6 @@ parameters:
 			identifier: missingType.generics
 			count: 1
 			path: app/Models/StudentImport.php
-
-		-
-			message: '#^Call to an undefined method Illuminate\\Database\\Eloquent\\Model\:\:confirmEnrolment\(\)\.$#'
-			identifier: method.notFound
-			count: 1
-			path: app/Models/StudentPayment.php
-
-		-
-			message: '#^Method App\\Models\\StudentPayment\:\:school\(\) return type with generic class Illuminate\\Database\\Eloquent\\Relations\\BelongsTo does not specify its types\: TRelatedModel, TDeclaringModel$#'
-			identifier: missingType.generics
-			count: 1
-			path: app/Models/StudentPayment.php
-
-		-
-			message: '#^Method App\\Models\\StudentPayment\:\:student\(\) return type with generic class Illuminate\\Database\\Eloquent\\Relations\\BelongsTo does not specify its types\: TRelatedModel, TDeclaringModel$#'
-			identifier: missingType.generics
-			count: 1
-			path: app/Models/StudentPayment.php
-
-		-
-			message: '#^Method App\\Models\\StudentPayment\:\:term\(\) return type with generic class Illuminate\\Database\\Eloquent\\Relations\\BelongsTo does not specify its types\: TRelatedModel, TDeclaringModel$#'
-			identifier: missingType.generics
-			count: 1
-			path: app/Models/StudentPayment.php
 
 		-
 			message: '#^Method App\\Models\\StudentPayment\:\:withVoided\(\) return type with generic class Illuminate\\Database\\Eloquent\\Builder does not specify its types\: TModel$#'

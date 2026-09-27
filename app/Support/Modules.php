@@ -63,6 +63,7 @@ class Modules
         // Transport
         'TransportRouteResource' => 'transport',
         'TransportLearnerResource' => 'transport',
+        'TransportCollections' => 'transport',
         'FeeStructureSheet' => 'fees',
         // Finance
         'IncomeExpenditure' => 'finance',

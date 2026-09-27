@@ -9,6 +9,7 @@ use App\Filament\Admin\Resources\OnlineUsers\OnlineUserResource;
 use App\Filament\Admin\Resources\Plans\PlanResource;
 use App\Filament\Admin\Resources\Schools\SchoolResource;
 use App\Filament\App\Pages\Dashboard;
+use App\Filament\App\Pages\TransportCollections;
 use App\Filament\App\Widgets\BursarKpis;
 use App\Filament\App\Widgets\HrKpis;
 use App\Filament\App\Widgets\LeadershipKpis;
@@ -28,6 +29,7 @@ use App\Http\Controllers\LandingController;
 use App\Http\Controllers\PayrollDocumentController;
 use App\Http\Controllers\ReportCardController;
 use App\Http\Controllers\StudentDocumentController;
+use App\Http\Controllers\TransportDocumentController;
 use App\Http\Middleware\EnsureSchoolSubscribed;
 use Filafly\LogoTools\LogoToolsPlugin;
 use Filament\Http\Middleware\Authenticate;
@@ -131,6 +133,8 @@ class AppPanelProvider extends PanelProvider
                 Route::get('/students/{student}/admission-letter', [StudentDocumentController::class, 'admissionLetter'])
                     ->whereNumber('student')
                     ->name('students.admission-letter');
+                Route::get('/transport/route-lists', [TransportDocumentController::class, 'routeLists'])
+                    ->name('transport.route-lists');
                 Route::get('/students/{student}/profile', [StudentDocumentController::class, 'profile'])
                     ->whereNumber('student')
                     ->name('students.profile');
@@ -213,6 +217,7 @@ class AppPanelProvider extends PanelProvider
             ->discoverPages(in: app_path('Filament/Pages'), for: 'App\Filament\Pages')
             ->pages([
                 Dashboard::class,
+                TransportCollections::class,
             ])
             ->discoverWidgets(in: app_path('Filament/Widgets'), for: 'App\Filament\Widgets')
             // Everything in app/Filament/Widgets is discovered; the old

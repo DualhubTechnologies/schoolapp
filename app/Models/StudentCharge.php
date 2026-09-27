@@ -44,16 +44,35 @@ class StudentCharge extends Model
         ];
     }
 
+    /**
+     * @return BelongsTo<School, $this>
+     */
     public function school(): BelongsTo
     {
         return $this->belongsTo(School::class);
     }
 
+    /**
+     * @return BelongsTo<Student, $this>
+     */
     public function student(): BelongsTo
     {
         return $this->belongsTo(Student::class);
     }
 
+    /**
+     * The van route, for a transport charge; null for school fees.
+     *
+     * @return BelongsTo<TransportRoute, $this>
+     */
+    public function transportRoute(): BelongsTo
+    {
+        return $this->belongsTo(TransportRoute::class);
+    }
+
+    /**
+     * @return BelongsTo<Term, $this>
+     */
     public function term(): BelongsTo
     {
         return $this->belongsTo(Term::class);

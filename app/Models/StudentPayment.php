@@ -94,16 +94,25 @@ class StudentPayment extends Model
         return static::withoutGlobalScope('notVoided');
     }
 
+    /**
+     * @return BelongsTo<School, $this>
+     */
     public function school(): BelongsTo
     {
         return $this->belongsTo(School::class);
     }
 
+    /**
+     * @return BelongsTo<Student, $this>
+     */
     public function student(): BelongsTo
     {
         return $this->belongsTo(Student::class);
     }
 
+    /**
+     * @return BelongsTo<Term, $this>
+     */
     public function term(): BelongsTo
     {
         return $this->belongsTo(Term::class);

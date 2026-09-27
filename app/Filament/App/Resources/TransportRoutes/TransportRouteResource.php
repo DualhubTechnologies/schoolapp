@@ -6,6 +6,7 @@ use App\Filament\App\Resources\TransportRoutes\Pages\ManageTransportRoutes;
 use App\Filament\Concerns\GatedByModule;
 use App\Models\TransportRoute;
 use BackedEnum;
+use Filament\Actions\Action;
 use Filament\Actions\DeleteAction;
 use Filament\Actions\EditAction;
 use Filament\Forms\Components\TextInput;
@@ -129,6 +130,12 @@ class TransportRouteResource extends Resource
                     ->boolean(),
             ])
             ->recordActions([
+                Action::make('printList')
+                    ->label('Print list')
+                    ->icon('heroicon-o-printer')
+                    ->color('gray')
+                    ->visible(fn (TransportRoute $record): bool => $record->is_active)
+                    ->url(fn (TransportRoute $record): string => route('filament.app.transport.route-lists', ['route' => $record->getKey()]), shouldOpenInNewTab: true),
                 EditAction::make(),
                 DeleteAction::make()
                     ->modalDescription('Learners on this route will be set to "brought by parent". Past transport charges stay on their accounts.'),

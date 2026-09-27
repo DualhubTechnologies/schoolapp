@@ -27,6 +27,7 @@
     .foot { display: flex; justify-content: space-between; align-items: flex-end; gap: 2rem; margin-top: 1.4rem; }
     .sign { flex: 1; max-width: 16rem; border-top: 1px solid #111827; padding-top: .3rem; text-align: center; font-size: .75rem; color: #4b5563; }
     .balance { font-size: .9rem; }
+    .split { display: flex; flex-wrap: wrap; gap: .35rem 1.5rem; align-items: baseline; margin: -.25rem 0 1rem; font-size: .9rem; }
     .void-stamp { position: absolute; inset: 0; display: flex; align-items: center; justify-content: center; pointer-events: none; }
     .void-stamp span { transform: rotate(-18deg); font-size: 5rem; font-weight: 900; letter-spacing: .15em; color: rgba(185, 28, 28, .18); border: 8px solid rgba(185, 28, 28, .18); padding: 0 1.5rem; }
     .void-note { margin-top: .8rem; color: #b91c1c; font-weight: 600; }
@@ -77,6 +78,15 @@
             <div class="words">{{ $words }}</div>
             <div class="figure num">UGX {{ number_format((float) $payment->amount, 0) }}</div>
         </div>
+
+        @if ($transportShare !== null)
+            {{-- Van users: transport is paid first, the rest goes to school fees. --}}
+            <div class="split">
+                <span class="label">Applied to</span>
+                <span>Transport (school van) <strong class="num">UGX {{ number_format($transportShare, 0) }}</strong></span>
+                <span>School fees <strong class="num">UGX {{ number_format(max(0, (float) $payment->amount - $transportShare), 0) }}</strong></span>
+            </div>
+        @endif
 
         <div class="foot">
             <div class="balance">

@@ -5,6 +5,7 @@ namespace App\Http\Controllers;
 use App\Models\Student;
 use App\Models\StudentPayment;
 use App\Services\FeeReminderService;
+use App\Services\Transport\TransportLedger;
 use Illuminate\Http\Request;
 use Illuminate\View\View;
 
@@ -14,7 +15,7 @@ use Illuminate\View\View;
  */
 class FeeDocumentController extends Controller
 {
-    public function receipt(int $payment): View
+    public function receipt(int $payment, TransportLedger $ledger): View
     {
         // Voided receipts can still be viewed (and are stamped VOID).
         $payment = StudentPayment::withVoided()
@@ -23,11 +24,17 @@ class FeeDocumentController extends Controller
 
         $this->authorizeSchool($payment->school_id);
 
+        // For van users, how this payment was split: transport is paid first.
+        $transport = $payment->student ? $ledger->forStudent($payment->student) : null;
+
         return view('fees.receipt', [
             'payment' => $payment,
             'student' => $payment->student,
             'school' => $payment->school,
             'balanceAfter' => $payment->student?->balance() ?? 0,
+            'transportShare' => $transport && $transport['charged'] > 0 && $payment instanceof StudentPayment && ! $payment->isVoided()
+                ? ($transport['payments'][$payment->getKey()] ?? 0.0)
+                : null,
         ]);
     }
 

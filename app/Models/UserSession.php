@@ -31,6 +31,9 @@ class UserSession extends Model
 
     public $timestamps = false;
 
+    /**
+     * @return BelongsTo<User, $this>
+     */
     public function user(): BelongsTo
     {
         return $this->belongsTo(User::class);
@@ -52,8 +55,15 @@ class UserSession extends Model
      */
     public function scopeActiveNow(Builder $query): void
     {
-        $query->whereNotNull('user_id')
-            ->where('last_activity', '>=', now()->subMinutes(self::ACTIVE_MINUTES)->getTimestamp());
+        $query->whereNotNull('user_id')->where('last_activity', '>=', self::activeSince());
+    }
+
+    /**
+     * The timestamp after which a session counts as active now.
+     */
+    public static function activeSince(): int
+    {
+        return now()->subMinutes(self::ACTIVE_MINUTES)->getTimestamp();
     }
 
     public function lastSeen(): Carbon
@@ -63,7 +73,7 @@ class UserSession extends Model
 
     public function isActiveNow(): bool
     {
-        return $this->last_activity >= now()->subMinutes(self::ACTIVE_MINUTES)->getTimestamp();
+        return $this->last_activity >= self::activeSince();
     }
 
     /**

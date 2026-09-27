@@ -26,7 +26,12 @@ abstract class KpiCards extends Widget
      */
     abstract public function cards(): array;
 
-    /** Tones map to a colour set in the stylesheet: blue, emerald, amber, violet, rose, sky, teal, indigo. */
+    /**
+     * Tones map to a colour set in the stylesheet: blue, emerald, amber, violet, rose, sky, teal, indigo.
+     *
+     * @param  'up'|'down'|null  $trend
+     * @return array{tone: string, icon: string, label: string, value: string, sub: ?string, url: ?string, progress: ?int, trend: 'up'|'down'|null}
+     */
     protected static function card(string $tone, string $icon, string $label, string $value, ?string $sub = null, ?string $url = null, ?int $progress = null, ?string $trend = null): array
     {
         return compact('tone', 'icon', 'label', 'value', 'sub', 'url', 'progress', 'trend');

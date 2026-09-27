@@ -14,7 +14,9 @@ use Filament\Tables\Filters\Filter;
 use Filament\Tables\Filters\SelectFilter;
 use Filament\Tables\Table;
 use Illuminate\Database\Eloquent\Builder;
+use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\MorphTo;
+use Illuminate\Database\Eloquent\Relations\Relation;
 use Spatie\Activitylog\Models\Activity;
 
 /**
@@ -60,12 +62,12 @@ class ActivityLogResource extends Resource
         return false;
     }
 
-    public static function canEdit($record): bool
+    public static function canEdit(Model $record): bool
     {
         return false;
     }
 
-    public static function canDelete($record): bool
+    public static function canDelete(Model $record): bool
     {
         return false;
     }
@@ -73,7 +75,7 @@ class ActivityLogResource extends Resource
     public static function getEloquentQuery(): Builder
     {
         return parent::getEloquentQuery()->with([
-            'causer' => fn (MorphTo $morphTo) => $morphTo->morphWith([User::class => ['school']]),
+            'causer' => fn (Relation $causer) => $causer instanceof MorphTo ? $causer->morphWith([User::class => ['school']]) : $causer,
         ]);
     }
 
@@ -89,14 +91,14 @@ class ActivityLogResource extends Resource
                 TextColumn::make('causer.name')
                     ->label('User')
                     // Failed sign-ins have no user, only the email that was tried.
-                    ->state(fn (Activity $record): string => $record->causer?->name
+                    ->state(fn (Activity $record): string => self::user($record)->name
                         ?? data_get($record->properties, 'email')
                         ?? 'System')
-                    ->description(fn (Activity $record): ?string => $record->causer?->email),
+                    ->description(fn (Activity $record): ?string => self::user($record)?->email),
                 TextColumn::make('school')
                     ->label('School')
-                    ->state(fn (Activity $record): string => $record->causer?->school?->name
-                        ?? ($record->causer?->hasRole('Super Admin') ? 'Platform' : '—')),
+                    ->state(fn (Activity $record): string => self::user($record)->school->name
+                        ?? (self::user($record)?->hasRole('Super Admin') ? 'Platform' : '—')),
                 TextColumn::make('event')
                     ->label('Action')
                     ->badge()
@@ -142,6 +144,14 @@ class ActivityLogResource extends Resource
             ->paginationPageOptions([25, 50, 100])
             ->defaultPaginationPageOption(25)
             ->emptyStateHeading('No activity logged yet');
+    }
+
+    /**
+     * The user behind an entry; failed sign-ins and system jobs have none.
+     */
+    protected static function user(Activity $record): ?User
+    {
+        return $record->causer instanceof User ? $record->causer : null;
     }
 
     public static function getPages(): array

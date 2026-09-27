@@ -13,6 +13,7 @@ use Filament\Tables\Filters\SelectFilter;
 use Filament\Tables\Filters\TernaryFilter;
 use Filament\Tables\Table;
 use Illuminate\Database\Eloquent\Builder;
+use Illuminate\Database\Eloquent\Model;
 
 /**
  * Super Admin: who is signed in to SchoolHub right now, from which school
@@ -46,12 +47,12 @@ class OnlineUserResource extends Resource
         return false;
     }
 
-    public static function canEdit($record): bool
+    public static function canEdit(Model $record): bool
     {
         return false;
     }
 
-    public static function canDelete($record): bool
+    public static function canDelete(Model $record): bool
     {
         return false;
     }
@@ -83,7 +84,8 @@ class OnlineUserResource extends Resource
     public static function getEloquentQuery(): Builder
     {
         return parent::getEloquentQuery()
-            ->signedIn()
+            ->whereNotNull('user_id')
+            ->where('last_activity', '>=', now()->subMinutes((int) config('session.lifetime'))->getTimestamp())
             ->with(['user.school', 'user.roles']);
     }
 
@@ -105,7 +107,7 @@ class OnlineUserResource extends Resource
                     ->searchable(),
                 TextColumn::make('school')
                     ->label('School')
-                    ->state(fn (UserSession $record): string => $record->user?->school?->name
+                    ->state(fn (UserSession $record): string => $record->user->school->name
                         ?? ($record->user?->hasRole('Super Admin') ? 'Platform' : '—')),
                 TextColumn::make('role')
                     ->label('Role')
@@ -133,8 +135,8 @@ class OnlineUserResource extends Resource
                     ->trueLabel('Active now')
                     ->falseLabel('Idle')
                     ->queries(
-                        true: fn (Builder $query): Builder => $query->activeNow(),
-                        false: fn (Builder $query): Builder => $query->where('last_activity', '<', now()->subMinutes(UserSession::ACTIVE_MINUTES)->getTimestamp()),
+                        true: fn (Builder $query): Builder => $query->where('last_activity', '>=', UserSession::activeSince()),
+                        false: fn (Builder $query): Builder => $query->where('last_activity', '<', UserSession::activeSince()),
                     ),
                 SelectFilter::make('school')
                     ->label('School')

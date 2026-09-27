@@ -83,6 +83,8 @@ class User extends Authenticatable implements FilamentUser
 
     /**
      * Get the school this user belongs to.
+     *
+     * @return BelongsTo<School, $this>
      */
     public function school(): BelongsTo
     {

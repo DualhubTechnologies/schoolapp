@@ -46,7 +46,7 @@ class PlatformActivityKpis extends KpiCards
      * People active in the last few minutes. Needs the database session
      * driver; without it there is nothing to count.
      *
-     * @return array<string, mixed>
+     * @return array{tone: string, icon: string, label: string, value: string, sub: ?string, url: ?string, progress: ?int, trend: 'up'|'down'|null}
      */
     protected function onlineCard(string $url): array
     {

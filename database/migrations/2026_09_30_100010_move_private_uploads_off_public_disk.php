@@ -1,6 +1,7 @@
 <?php
 
 use App\Support\PrivateFiles;
+use Illuminate\Contracts\Filesystem\Filesystem;
 use Illuminate\Database\Migrations\Migration;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Storage;
@@ -30,7 +31,7 @@ return new class extends Migration
         $this->move(Storage::disk(PrivateFiles::DISK), Storage::disk('public'));
     }
 
-    protected function move($from, $to): void
+    protected function move(Filesystem $from, Filesystem $to): void
     {
         foreach (self::COLUMNS as $table => $column) {
             DB::table($table)->whereNotNull($column)->where($column, '!=', '')->orderBy('id')

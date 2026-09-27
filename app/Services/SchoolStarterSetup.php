@@ -122,15 +122,21 @@ class SchoolStarterSetup
     public static function termsFor(?Carbon $today = null): array
     {
         $year = ($today ?? today())->year;
-        $official = config("academics.calendar.{$year}");
+        $official = static::hasOfficialCalendar($today);
 
-        return collect($official ?? config('academics.calendar_pattern'))
-            ->map(fn (array $term): array => [
-                'name' => $term[0],
-                'starts' => Carbon::parse($official ? $term[1] : "{$year}-{$term[1]}"),
-                'ends' => Carbon::parse($official ? $term[2] : "{$year}-{$term[2]}"),
-            ])
-            ->all();
+        /** @var list<array{0: string, 1: string, 2: string}> $rows */
+        $rows = $official ? config("academics.calendar.{$year}") : config('academics.calendar_pattern');
+        $terms = [];
+
+        foreach ($rows as [$name, $starts, $ends]) {
+            $terms[] = [
+                'name' => $name,
+                'starts' => Carbon::parse($official ? $starts : "{$year}-{$starts}"),
+                'ends' => Carbon::parse($official ? $ends : "{$year}-{$ends}"),
+            ];
+        }
+
+        return $terms;
     }
 
     /**
@@ -224,7 +230,7 @@ class SchoolStarterSetup
 
         $year = AcademicYear::firstOrCreate(
             ['school_id' => $school->getKey(), 'name' => $name],
-            ['start_date' => $terms[0]['starts'], 'end_date' => end($terms)['ends']],
+            ['start_date' => $terms[0]['starts'], 'end_date' => $terms[count($terms) - 1]['ends']],
         );
 
         if (! AcademicYear::where('school_id', $school->getKey())->where('is_current', true)->exists()) {

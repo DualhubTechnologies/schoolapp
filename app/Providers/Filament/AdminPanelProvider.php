@@ -103,10 +103,12 @@ class AdminPanelProvider extends PanelProvider
             ])
             ->discoverWidgets(in: app_path('Filament/Widgets'), for: 'App\Filament\Widgets')
             // Same dashboard design as the school app: greeting banner and
-            // platform cards first, then the subscription figures.
+            // platform cards and today's activity first, then the subscription
+            // figures.
             ->widgets([
                 \App\Filament\App\Widgets\WelcomeBanner::class,
                 \App\Filament\App\Widgets\PlatformKpis::class,
+                \App\Filament\App\Widgets\PlatformActivityKpis::class,
                 \App\Filament\Widgets\StatsOverview::class,
             ])
 

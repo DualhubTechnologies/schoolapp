@@ -12,6 +12,7 @@ use App\Filament\App\Pages\Dashboard;
 use App\Filament\App\Widgets\BursarKpis;
 use App\Filament\App\Widgets\HrKpis;
 use App\Filament\App\Widgets\LeadershipKpis;
+use App\Filament\App\Widgets\PlatformActivityKpis;
 use App\Filament\App\Widgets\PlatformKpis;
 use App\Filament\App\Widgets\TeacherKpis;
 use App\Filament\App\Widgets\TeacherMarksProgress;
@@ -226,6 +227,7 @@ class AppPanelProvider extends PanelProvider
                 TeacherKpis::class,
                 TeacherMarksProgress::class,
                 PlatformKpis::class,
+                PlatformActivityKpis::class,
             ])
 
             // --- Middleware ---

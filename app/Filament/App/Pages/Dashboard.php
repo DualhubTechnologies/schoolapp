@@ -5,6 +5,7 @@ namespace App\Filament\App\Pages;
 use App\Filament\App\Widgets\BursarKpis;
 use App\Filament\App\Widgets\HrKpis;
 use App\Filament\App\Widgets\LeadershipKpis;
+use App\Filament\App\Widgets\PlatformActivityKpis;
 use App\Filament\App\Widgets\PlatformKpis;
 use App\Filament\App\Widgets\TeacherKpis;
 use App\Filament\App\Widgets\TeacherMarksProgress;
@@ -40,6 +41,7 @@ class Dashboard extends BaseDashboard
             DashboardProfile::PLATFORM => [
                 WelcomeBanner::class,
                 PlatformKpis::class,
+                PlatformActivityKpis::class,
             ],
             DashboardProfile::LEADERSHIP => [
                 WelcomeBanner::class,

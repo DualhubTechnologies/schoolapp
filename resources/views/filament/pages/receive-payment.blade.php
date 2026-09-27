@@ -50,7 +50,7 @@
             @if ($student)
                 <div class="rp-card">
                     <div class="rp-person">
-                        <img src="{{ $student->photo ? \Illuminate\Support\Facades\Storage::disk('public')->url($student->photo) : asset('images/student-avatar.svg') }}" alt="">
+                        <img src="{{ $student->photoUrl() }}" alt="">
                         <div>
                             <div class="rp-name">{{ $student->name ?: 'No name on record' }}</div>
                             <div class="rp-muted">

@@ -6,7 +6,7 @@
     $curriculum = $results['curriculum'];
     $assessments = $results['assessments'];
     $logo = $school?->logo ? Storage::disk('public')->url($school->logo) : null;
-    $signature = $school?->hm_signature ? Storage::disk('public')->url($school->hm_signature) : null;
+    $signature = $school?->signatureUrl();
     $n = fn ($v) => $v === null ? '—' : rtrim(rtrim(number_format((float) $v, 1), '0'), '.');
     $title = [
         'primary' => "Pupil's Progress Report",
@@ -58,7 +58,7 @@
         @php
             $student = $row['student'];
             $report = $row['report'];
-            $photo = $student->photo ? Storage::disk('public')->url($student->photo) : asset('images/student-avatar.svg');
+            $photo = $student->photoUrl();
             $counted = $row['counted_subject_ids'] ?? null;
         @endphp
         <div class="sheet">

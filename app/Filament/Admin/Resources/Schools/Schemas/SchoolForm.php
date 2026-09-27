@@ -4,6 +4,7 @@ namespace App\Filament\Admin\Resources\Schools\Schemas;
 
 use App\Models\School;
 use App\Support\EmailCheck;
+use App\Support\PrivateFiles;
 use Filament\Forms\Components\FileUpload;
 use Filament\Forms\Components\Select;
 use Filament\Forms\Components\Textarea;
@@ -218,9 +219,9 @@ class SchoolForm
                                             ->imageEditor()
                                             ->imageEditorAspectRatioOptions([null, '3:1', '4:1'])
                                             ->automaticallyResizeImagesToWidth('600')
-                                            ->disk('public')
+                                            ->disk(PrivateFiles::DISK)
                                             ->directory('school-signatures')
-                                            ->visibility('public')
+                                            ->visibility('private')
                                             ->acceptedFileTypes([
                                                 'image/jpeg',
                                                 'image/png',

@@ -33,7 +33,9 @@ return [
         'local' => [
             'driver' => 'local',
             'root' => storage_path('app/private'),
-            'serve' => true,
+            // Not served: its default address (/storage) would replace the
+            // public-file route in routes/web.php. Nothing links to it.
+            'serve' => false,
             'throw' => false,
             'report' => false,
         ],
@@ -43,6 +45,19 @@ return [
             'root' => storage_path('app/public'),
             'url' => rtrim((string) env('APP_URL', 'http://localhost'), '/').'/storage',
             'visibility' => 'public',
+            'throw' => false,
+            'report' => false,
+        ],
+
+        // Uploads that must not be public: student photos, the head
+        // teacher's signature, finance receipts. Never linked directly --
+        // the app hands out short-lived signed links (App\Support\PrivateFiles).
+        'uploads' => [
+            'driver' => 'local',
+            'root' => storage_path('app/private/uploads'),
+            'url' => rtrim((string) env('APP_URL', 'http://localhost'), '/').'/private-files',
+            'serve' => true,
+            'visibility' => 'private',
             'throw' => false,
             'report' => false,
         ],

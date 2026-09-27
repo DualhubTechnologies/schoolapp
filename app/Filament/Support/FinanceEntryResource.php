@@ -6,6 +6,7 @@ use App\Models\FinanceCategory;
 use App\Models\FinanceEntry;
 use App\Models\Term;
 use App\Support\FinanceAccess;
+use App\Support\PrivateFiles;
 use Filament\Actions\Action;
 use Filament\Actions\ActionGroup;
 use Filament\Actions\EditAction;
@@ -123,7 +124,8 @@ abstract class FinanceEntryResource extends Resource
                 ->maxLength(100),
             FileUpload::make('attachment')
                 ->label($expense ? 'Receipt / invoice (scan or photo)' : 'Supporting document')
-                ->disk('public')
+                ->disk(PrivateFiles::DISK)
+                ->visibility('private')
                 ->directory('finance')
                 ->acceptedFileTypes(['image/*', 'application/pdf'])
                 ->maxSize(5120)
@@ -203,7 +205,7 @@ abstract class FinanceEntryResource extends Resource
                         ->label('View attachment')
                         ->icon('heroicon-o-paper-clip')
                         ->visible(fn (FinanceEntry $r) => filled($r->attachment))
-                        ->url(fn (FinanceEntry $r) => \Illuminate\Support\Facades\Storage::disk('public')->url($r->attachment), shouldOpenInNewTab: true),
+                        ->url(fn (FinanceEntry $r) => PrivateFiles::url($r->attachment), shouldOpenInNewTab: true),
                     EditAction::make()->visible(fn (FinanceEntry $r) => ! $r->isVoided()),
                     Action::make('void')
                         ->label('Void')

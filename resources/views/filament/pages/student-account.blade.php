@@ -14,7 +14,7 @@
     $n       = fn ($v) => number_format((float) $v, 0);
     $date    = fn ($d) => $d ? \Illuminate\Support\Carbon::parse($d)->format('j M Y') : '—';
     $logo    = $school?->logo ? \Illuminate\Support\Facades\Storage::disk('public')->url($school->logo) : null;
-    $photo   = $student?->photo ? \Illuminate\Support\Facades\Storage::disk('public')->url($student->photo) : asset('images/student-avatar.svg');
+    $photo   = $student?->photoUrl() ?? asset('images/student-avatar.svg');
 @endphp
 
 <x-filament-panels::page>

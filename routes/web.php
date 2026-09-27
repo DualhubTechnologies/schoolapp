@@ -27,7 +27,9 @@ Route::get('/storage/{path}', function (string $path) {
     $base = storage_path('app/public');
     $full = realpath($base.'/'.$path);
 
-    abort_unless($full && str_starts_with($full, $base), 404);
+    // The trailing separator stops a sibling folder such as
+    // app/public-old from passing the check.
+    abort_unless($full && str_starts_with($full, $base.DIRECTORY_SEPARATOR), 404);
 
     return response()->file($full);
 })->where('path', '.*')->name('storage.local');

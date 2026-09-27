@@ -5,6 +5,7 @@ namespace App\Filament\App\Resources\Students\Tables;
 use App\Filament\Pages\ReceivePayment;
 use App\Filament\Pages\StudentAccount;
 use App\Models\Student;
+use App\Support\PrivateFiles;
 use Filament\Actions\Action;
 use Filament\Actions\ActionGroup;
 use Filament\Actions\BulkActionGroup;
@@ -30,6 +31,8 @@ class StudentsTable
             ->columns([
                 ImageColumn::make('photo')
                     ->label('')
+                    ->disk(PrivateFiles::DISK)
+                    ->visibility('private')
                     ->circular()
                     // Local placeholder: works offline and doesn't send
                     // student names to a third-party avatar service.

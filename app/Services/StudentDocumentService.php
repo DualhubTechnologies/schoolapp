@@ -4,6 +4,7 @@ namespace App\Services;
 
 use App\Models\Student;
 use App\Models\Term;
+use App\Support\PrivateFiles;
 use Barryvdh\DomPDF\Facade\Pdf;
 use Illuminate\Support\Facades\Storage;
 
@@ -49,7 +50,7 @@ class StudentDocumentService
             'student' => $student,
             'school' => $student->school,
             'logoPath' => $this->embeddableImage($student->school->logo ?? null),
-            'photoPath' => $this->embeddableImage($student->photo),
+            'photoPath' => PrivateFiles::dataUri($student->photo),
         ]);
 
         $pdf->setPaper('a4');
@@ -58,8 +59,9 @@ class StudentDocumentService
     }
 
     /**
-     * Convert a stored (public disk) image path into a base64 data URI
-     * that dompdf can embed. Returns null if missing/unreadable.
+     * Convert the school logo (public disk) into a base64 data URI that
+     * dompdf can embed. Returns null if missing/unreadable. Private files
+     * such as the student's photo go through PrivateFiles::dataUri().
      *
      * dompdf cannot fetch web URLs reliably and http fetching is disabled
      * by default for security, so we embed the raw bytes instead.
@@ -70,7 +72,7 @@ class StudentDocumentService
             return null;
         }
 
-        // Photos/logos are stored on the 'public' disk (FileUpload default).
+        // Logos are stored on the 'public' disk.
         if (! Storage::disk('public')->exists($path)) {
             return null;
         }

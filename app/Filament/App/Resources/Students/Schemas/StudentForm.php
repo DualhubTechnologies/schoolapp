@@ -6,6 +6,7 @@ use App\Models\Guardian;
 use App\Models\SchoolClass;
 use App\Models\Student;
 use App\Support\EmailCheck;
+use App\Support\PrivateFiles;
 use Filament\Forms\Components\DatePicker;
 use Filament\Forms\Components\FileUpload;
 use Filament\Forms\Components\Select;
@@ -130,6 +131,8 @@ class StudentForm
                 ->avatar()
                 ->imageEditor()
                 ->circleCropper()
+                ->disk(PrivateFiles::DISK)
+                ->visibility('private')
                 ->directory('students')
                 ->alignCenter()
                 ->helperText('Upload a clear photo. You can crop it before saving.')

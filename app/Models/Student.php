@@ -3,6 +3,7 @@
 namespace App\Models;
 
 use App\Concerns\HasFeeAccount;
+use App\Support\PrivateFiles;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
@@ -233,5 +234,13 @@ class Student extends Model
         ]);
 
         return true;
+    }
+
+    /**
+     * The photo as a short-lived signed link, or the generic avatar.
+     */
+    public function photoUrl(): string
+    {
+        return PrivateFiles::url($this->photo) ?? asset('images/student-avatar.svg');
     }
 }

@@ -3,6 +3,7 @@
 namespace App\Models;
 
 use App\Concerns\Auditable;
+use App\Support\PrivateFiles;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\HasMany;
 
@@ -143,5 +144,13 @@ class School extends Model
     public function typeLabel(): string
     {
         return self::TYPES[$this->school_type] ?? '—';
+    }
+
+    /**
+     * The head teacher's signature as a short-lived signed link.
+     */
+    public function signatureUrl(): ?string
+    {
+        return PrivateFiles::url($this->hm_signature);
     }
 }

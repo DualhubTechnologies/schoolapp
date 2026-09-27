@@ -1,681 +1,274 @@
+{{--
+    Letter of admission (A4, rendered by Dompdf: tables, no flexbox/grid).
+    Addressed to the parent, with a subject line, the learner's details,
+    this term's fees and how to pay, the head teacher's signature and a
+    tear-off acceptance slip for the parent to return.
+--}}
+@php
+    use Illuminate\Support\Str;
+
+    $name = Str::title(Str::lower((string) $student->name));
+    $guardian = $student->guardian;
+    $guardianName = $guardian?->name ? Str::title(Str::lower($guardian->name)) : null;
+    $class = $student->schoolClass?->name ?? '—';
+    $stream = $student->section?->name;
+    $termLabel = $term?->label();
+    $confirmed = $student->isConfirmed();
+    $money = fn ($value) => 'UGX ' . number_format((float) $value, 0);
+
+    // Reporting: the opening day while it is still ahead; once the term has
+    // started, the learner reports straight away.
+    $opens = $term?->start_date;
+    $reportText = $opens && $opens->isFuture()
+        ? 'The term opens on <strong>' . e($opens->format('l, j F Y')) . '</strong>. Please report on or before that day.'
+        : ($termLabel
+            ? e($termLabel) . ' is already in session. Please report to the school office as soon as possible.'
+            : 'The reporting date will be communicated by the school.');
+
+    $contact = collect([
+        $school->address ?: null,
+        $school->city,
+        $school->phone ? 'Tel: ' . $school->phone : null,
+        $school->email,
+        $school->website,
+    ])->filter()->implode('  ·  ');
+
+    $ref = 'ADM/' . preg_replace('/^ADM[-\/ ]*/i', '', (string) $student->admission_no) . '/' . ($term?->academicYear?->name ?? now()->format('Y'));
+    $hasPaymentDetails = $student->schoolpay_code || $school->fee_payment_bank || $school->fee_payment_mobile_money || $school->fee_payment_instructions;
+@endphp
 <!DOCTYPE html>
 <html lang="en">
 <head>
     <meta charset="utf-8">
-
-    <title>Admission Letter — {{ $student->name }}</title>
-
+    <title>Letter of Admission — {{ $name }}</title>
     <style>
-        @page {
-            size: A4 portrait;
-            margin: 15mm 16mm 13mm 16mm;
-        }
+        @page { size: A4 portrait; margin: 0; }
+        body { margin: 12mm 18mm 11mm 18mm; font-family: 'DejaVu Sans', sans-serif; font-size: 9.4px; color: #1f2937; line-height: 1.42; }
+        table { border-collapse: collapse; width: 100%; }
+        p { margin: 0 0 6px; }
+        strong { color: #0f1f38; }
 
-        * {
-            margin: 0;
-            padding: 0;
-            box-sizing: border-box;
-        }
+        .watermark { position: fixed; top: 290px; left: 170px; width: 340px; opacity: .05; }
 
-        body {
-            font-family: 'DejaVu Sans', sans-serif;
-            font-size: 10.5px;
-            color: #1f2937;
-            line-height: 1.45;
-        }
+        /* Letterhead */
+        .letterhead td { vertical-align: middle; }
+        .logo { width: 62px; height: 62px; }
+        .school { text-align: center; }
+        .school-name { font-family: 'DejaVu Serif', serif; font-size: 19px; font-weight: bold; letter-spacing: 1px; color: #0f2c5c; text-transform: uppercase; }
+        .motto { font-family: 'DejaVu Serif', serif; font-style: italic; font-size: 9.5px; color: #8a6d1d; margin-top: 2px; }
+        .contact { font-size: 8px; color: #4b5563; margin-top: 4px; }
+        .rule-thick { border-top: 2.5px solid #0f2c5c; margin-top: 8px; }
+        .rule-thin { border-top: 0.8px solid #c9a227; margin-top: 2px; }
 
-        /* =========================
-           HEADER
-        ========================= */
+        .meta { margin: 9px 0 8px; font-size: 9px; }
+        .meta td { padding: 0; }
+        .meta .label { color: #6b7280; }
 
-        .header {
-            width: 100%;
-            border-bottom: 2px solid #1e3a8a;
-            padding-bottom: 9px;
-            margin-bottom: 12px;
-        }
+        .to { margin-bottom: 7px; line-height: 1.45; }
+        .subject { margin: 3px 0 8px; font-weight: bold; font-size: 10px; color: #0f2c5c; text-transform: uppercase; text-decoration: underline; letter-spacing: .2px; }
 
-        .header table {
-            width: 100%;
-            border-collapse: collapse;
-        }
+        /* Learner details */
+        .details { margin: 4px 0 10px; border: 0.8px solid #d6dde8; }
+        .details td { padding: 3.5px 8px; border-bottom: 0.8px solid #e6ebf2; font-size: 9.2px; }
+        .details .k { width: 20%; color: #6b7280; background: #f6f8fb; }
+        .details .v { width: 30%; font-weight: bold; color: #0f1f38; }
+        .status-ok { color: #15803d; }
+        .status-wait { color: #b45309; }
 
-        .logo-cell {
-            width: 65px;
-            vertical-align: middle;
-        }
+        h3 { margin: 9px 0 4px; font-size: 9px; letter-spacing: 1.2px; text-transform: uppercase; color: #0f2c5c; }
 
-        .logo-cell img {
-            width: 55px;
-            height: 55px;
-            object-fit: contain;
-        }
+        /* Fees */
+        .fees td { padding: 3px 8px; border-bottom: 0.8px solid #eef1f6; }
+        .fees .amt { text-align: right; white-space: nowrap; }
+        .fees thead td { font-size: 8px; text-transform: uppercase; letter-spacing: .8px; color: #6b7280; border-bottom: 1px solid #0f2c5c; }
+        .fees .total td { border-top: 1.2px solid #0f2c5c; border-bottom: 0; font-weight: bold; font-size: 10.5px; color: #0f2c5c; padding-top: 6px; }
 
-        .school-name {
-            font-size: 18px;
-            font-weight: bold;
-            color: #1e3a8a;
-            margin-bottom: 3px;
-        }
+        .pay { margin-top: 6px; padding: 5px 9px; background: #f6f8fb; border-left: 2.5px solid #c9a227; font-size: 9px; }
+        .pay td { padding: 1px 0; vertical-align: top; }
+        .pay .k { width: 26%; color: #6b7280; }
 
-        .school-meta {
-            font-size: 8.5px;
-            color: #6b7280;
-            line-height: 1.35;
-        }
+        ul { margin: 0 0 6px 14px; padding: 0; }
+        li { margin-bottom: 2px; }
 
-        /* =========================
-           DOCUMENT TITLE
-        ========================= */
+        /* Signature */
+        .sign { margin-top: 8px; }
+        .sign td { vertical-align: bottom; }
+        .sig-img { height: 34px; }
+        .sig-line { border-top: 0.8px solid #374151; width: 190px; padding-top: 3px; font-size: 9px; }
+        .stamp { width: 110px; height: 54px; border: 0.8px dashed #9ca3af; text-align: center; vertical-align: middle; color: #9ca3af; font-size: 8px; }
 
-        .doc-title {
-            text-align: center;
-            font-size: 12px;
-            font-weight: bold;
-            letter-spacing: 1.5px;
-            text-transform: uppercase;
-            color: #1e3a8a;
+        /* Tear-off slip */
+        .cut { margin: 10px 0 5px; border-top: 1px dashed #9ca3af; text-align: center; font-size: 7.5px; color: #9ca3af; }
+        .slip-title { font-weight: bold; font-size: 9.5px; color: #0f2c5c; text-transform: uppercase; letter-spacing: .6px; margin-bottom: 4px; }
+        .slip td { padding: 4px 0 0; font-size: 9px; }
+        .blank { border-bottom: 0.8px dotted #6b7280; }
 
-            background: #eff6ff;
-            border: 1px solid #dbeafe;
-
-            padding: 6px 8px;
-            margin: 0 0 12px 0;
-        }
-
-        /* =========================
-           REFERENCE
-        ========================= */
-
-        .ref-row {
-            width: 100%;
-            border-collapse: collapse;
-            margin-bottom: 12px;
-            font-size: 9.5px;
-        }
-
-        .ref-row td {
-            padding: 1px 0;
-        }
-
-        .ref-row .right {
-            text-align: right;
-            color: #6b7280;
-        }
-
-        /* =========================
-           TEXT
-        ========================= */
-
-        .salutation {
-            margin-bottom: 8px;
-            font-size: 10.8px;
-        }
-
-        .body-text {
-            margin-bottom: 9px;
-            text-align: justify;
-        }
-
-        /* =========================
-           STUDENT DETAILS
-        ========================= */
-
-        .details-box {
-            width: 100%;
-            border-collapse: collapse;
-            border: 1px solid #d1d5db;
-            margin: 12px 0;
-        }
-
-        .details-box td {
-            border-bottom: 1px solid #e5e7eb;
-            padding: 6px 9px;
-            font-size: 9.8px;
-            vertical-align: middle;
-        }
-
-        .details-box tr:last-child td {
-            border-bottom: none;
-        }
-
-        .details-box .label {
-            width: 34%;
-            background: #f8fafc;
-            color: #4b5563;
-            font-weight: bold;
-        }
-
-        .details-box .value {
-            color: #111827;
-        }
-
-        /* =========================
-           STATUS
-        ========================= */
-
-        .status-badge {
-            display: inline-block;
-            padding: 2px 8px;
-            font-size: 8px;
-            font-weight: bold;
-            text-transform: uppercase;
-            letter-spacing: 0.4px;
-            border-radius: 8px;
-        }
-
-        .status-provisional {
-            background: #fef3c7;
-            color: #92400e;
-        }
-
-        .status-confirmed {
-            background: #d1fae5;
-            color: #065f46;
-        }
-
-        /* =========================
-           FEES
-        ========================= */
-
-        .fee-table {
-            width: 100%;
-            border-collapse: collapse;
-            border: 1px solid #bfdbfe;
-            margin: 12px 0;
-        }
-
-        .fee-table caption {
-            text-align: left;
-            font-size: 8px;
-            font-weight: bold;
-            text-transform: uppercase;
-            letter-spacing: 0.5px;
-            color: #1e3a8a;
-            background: #eff6ff;
-            border: 1px solid #bfdbfe;
-            border-bottom: none;
-            padding: 6px 9px;
-            caption-side: top;
-        }
-
-        .fee-table td {
-            padding: 5px 9px;
-            font-size: 9.5px;
-            border-bottom: 1px solid #dbeafe;
-        }
-
-        .fee-table td.amt {
-            text-align: right;
-            white-space: nowrap;
-        }
-
-        .fee-table tr.total td {
-            border-top: 2px solid #1e3a8a;
-            border-bottom: none;
-            font-weight: bold;
-            font-size: 12px;
-            color: #1e3a8a;
-            padding-top: 7px;
-        }
-
-        /* =========================
-           HOW TO PAY
-        ========================= */
-
-        .pay-box {
-            width: 100%;
-            border: 1px solid #d1d5db;
-            background: #f8fafc;
-            margin: 12px 0;
-            padding: 8px 10px;
-        }
-
-        .pay-box .pay-title {
-            font-size: 8.5px;
-            font-weight: bold;
-            text-transform: uppercase;
-            letter-spacing: 0.4px;
-            color: #4b5563;
-            margin-bottom: 4px;
-        }
-
-        .pay-box table {
-            width: 100%;
-            border-collapse: collapse;
-        }
-
-        .pay-box td {
-            font-size: 9.5px;
-            padding: 2px 0;
-            vertical-align: top;
-        }
-
-        .pay-box td.k {
-            width: 30%;
-            color: #6b7280;
-        }
-
-        /* =========================
-           CONDITIONS
-        ========================= */
-
-        .conditions {
-            margin: 5px 0 10px 18px;
-            padding-left: 12px;
-        }
-
-        .conditions li {
-            margin-bottom: 4px;
-            padding-left: 2px;
-            font-size: 9.8px;
-            line-height: 1.4;
-        }
-
-        /* =========================
-           SIGNATURES
-        ========================= */
-
-        .signature-row {
-            width: 100%;
-            border-collapse: collapse;
-            margin-top: 28px;
-        }
-
-        .signature-row td {
-            width: 50%;
-            vertical-align: bottom;
-            padding-top: 20px;
-        }
-
-        .sig-line {
-            border-top: 1px solid #6b7280;
-            width: 175px;
-            padding-top: 4px;
-            font-size: 8.5px;
-            color: #6b7280;
-        }
-
-        /* =========================
-           FOOTER
-        ========================= */
-
-        .footer {
-            margin-top: 20px;
-            padding-top: 7px;
-            border-top: 1px solid #e5e7eb;
-
-            font-size: 7.5px;
-            color: #9ca3af;
-            text-align: center;
-        }
-
-        /* Prevent important blocks from splitting */
-        .header,
-        .doc-title,
-        .details-box,
-        .fee-table,
-        .pay-box,
-        .signature-row {
-            page-break-inside: avoid;
-        }
+        .footer { position: fixed; bottom: 4mm; left: 0; right: 0; text-align: center; font-size: 7px; color: #9ca3af; }
     </style>
 </head>
-
 <body>
 
-    {{-- =========================
-         SCHOOL HEADER
-    ========================== --}}
+@if ($logoPath)
+    <img class="watermark" src="{{ $logoPath }}" alt="">
+@endif
 
-    <div class="header">
+{{-- Letterhead --}}
+<table class="letterhead">
+    <tr>
+        <td style="width: 80px;">
+            @if ($logoPath)<img class="logo" src="{{ $logoPath }}" alt="">@endif
+        </td>
+        <td class="school">
+            <div class="school-name">{{ $school->name }}</div>
+            @if ($school->motto)<div class="motto">“{{ $school->motto }}”</div>@endif
+            @if ($contact)<div class="contact">{{ $contact }}</div>@endif
+        </td>
+        <td style="width: 80px;"></td>
+    </tr>
+</table>
+<div class="rule-thick"></div>
+<div class="rule-thin"></div>
 
-        <table>
-            <tr>
+<table class="meta">
+    <tr>
+        <td><span class="label">Our ref:</span> <strong>{{ $ref }}</strong></td>
+        <td style="text-align: right;"><span class="label">Date:</span> <strong>{{ now()->format('j F Y') }}</strong></td>
+    </tr>
+</table>
 
-                @if (($school->logo ?? false) && $logoPath)
-                    <td class="logo-cell">
-                        <img src="{{ $logoPath }}" alt="School Logo">
-                    </td>
-                @endif
+<div class="to">
+    The Parent / Guardian of <strong>{{ $name }}</strong><br>
+    @if ($guardianName){{ $guardianName }}@if ($guardian?->phone) &nbsp;·&nbsp; {{ $guardian->phone }}@endif<br>@endif
+</div>
 
-                <td>
-                    <div class="school-name">
-                        {{ $school->name }}
-                    </div>
+<p>Dear {{ $guardianName ?: 'Parent / Guardian' }},</p>
 
-                    <div class="school-meta">
-                        @if ($school->address)
-                            {{ $school->address }}
-                        @endif
+<div class="subject">Re: Offer of admission — {{ $name }}, {{ $class }}{{ $termLabel ? ', ' . $termLabel : '' }}</div>
 
-                        @if ($school->phone)
-                            @if ($school->address) &nbsp; | &nbsp; @endif
-                            Tel: {{ $school->phone }}
-                        @endif
+<p>
+    We are pleased to offer your child, <strong>{{ $name }}</strong>, a place in <strong>{{ $class }}{{ $stream ? ' ' . $stream : '' }}</strong>
+    at {{ $school->name }}{{ $termLabel ? ', beginning ' . $termLabel : '' }}.
+    Please keep this letter safe; it is your child's record of admission.
+</p>
 
-                        @if ($school->email)
-                            @if ($school->phone || $school->address) &nbsp; | &nbsp; @endif
-                            {{ $school->email }}
-                        @endif
-                    </div>
-                </td>
-
-            </tr>
-        </table>
-
-    </div>
-
-
-    {{-- =========================
-         TITLE
-    ========================== --}}
-
-    <div class="doc-title">
-        Letter of Admission
-    </div>
-
-
-    {{-- =========================
-         REFERENCE & DATE
-    ========================== --}}
-
-    <table class="ref-row">
+<table class="details">
+    <tr>
+        <td class="k">Learner</td><td class="v">{{ $name }}</td>
+        <td class="k">Admission no.</td><td class="v">{{ $student->admission_no }}</td>
+    </tr>
+    <tr>
+        <td class="k">Class</td><td class="v">{{ $class }}{{ $stream ? ' — ' . $stream : '' }}</td>
+        <td class="k">Residency</td><td class="v">{{ $student->residencyType?->name ?? '—' }}</td>
+    </tr>
+    <tr>
+        <td class="k">Date admitted</td><td class="v">{{ ($student->admission_date ?? $student->created_at)?->format('j M Y') }}</td>
+        <td class="k">Admission</td>
+        <td class="v {{ $confirmed ? 'status-ok' : 'status-wait' }}">{{ $confirmed ? 'Confirmed' : 'Provisional' }}</td>
+    </tr>
+    @if ($student->lin || $student->schoolpay_code)
         <tr>
-            <td>
-                <strong>Ref:</strong>
-                ADM/{{ $student->admission_no }}/{{ now()->format('Y') }}
-            </td>
-
-            <td class="right">
-                <strong>Date:</strong>
-                {{ now()->format('j F Y') }}
-            </td>
+            <td class="k">LIN</td><td class="v">{{ $student->lin ?: '—' }}</td>
+            <td class="k">SchoolPay code</td><td class="v">{{ $student->schoolpay_code ?: '—' }}</td>
         </tr>
-    </table>
+    @endif
+</table>
 
-
-    {{-- =========================
-         SALUTATION
-    ========================== --}}
-
-    <div class="salutation">
-        Dear <strong>{{ $student->name }}</strong>,
-    </div>
-
-
-    {{-- =========================
-         INTRODUCTION
-    ========================== --}}
-
-    <div class="body-text">
-
-        We are pleased to inform you that you have been offered a place at
-        <strong>{{ $school->name }}</strong>@if ($term) for
-        <strong>{{ $term->label() }}</strong>@endif.
-
-        Following a review of your application, you have been admitted to
-        the class and section indicated below. Congratulations, and welcome
-        to the school.
-
-    </div>
-
-
-    {{-- =========================
-         STUDENT DETAILS
-    ========================== --}}
-
-    <table class="details-box">
-
-        <tr>
-            <td class="label">Student Name</td>
-            <td class="value">{{ $student->name }}</td>
-        </tr>
-
-        <tr>
-            <td class="label">Admission Number</td>
-            <td class="value">{{ $student->admission_no }}</td>
-        </tr>
-
-        @if ($student->lin)
-            <tr>
-                <td class="label">Learner ID (LIN)</td>
-                <td class="value">{{ $student->lin }}</td>
-            </tr>
-        @endif
-
-        <tr>
-            <td class="label">Class</td>
-            <td class="value">
-                {{ $student->schoolClass?->name ?? '—' }}
-            </td>
-        </tr>
-
-        <tr>
-            <td class="label">Section / Stream</td>
-            <td class="value">
-                {{ $student->section?->name ?? '—' }}
-            </td>
-        </tr>
-
-        @if ($student->residencyType)
-            <tr>
-                <td class="label">Residency</td>
-                <td class="value">{{ $student->residencyType->name }}</td>
-            </tr>
-        @endif
-
-        @if ($student->guardian)
-            <tr>
-                <td class="label">Parent / Guardian</td>
-                <td class="value">
-                    {{ $student->guardian->name }}
-                    @if ($student->guardian->phone)
-                        — {{ $student->guardian->phone }}
-                    @endif
-                </td>
-            </tr>
-        @endif
-
-        <tr>
-            <td class="label">Enrolment Status</td>
-            <td class="value">
-
-                <span class="status-badge status-{{ $student->enrolment_status }}">
-                    {{
-                        \App\Models\Student::ENROLMENT_STATUSES[
-                            $student->enrolment_status
-                        ]
-                        ?? $student->enrolment_status
-                    }}
-                </span>
-
-            </td>
-        </tr>
-
-    </table>
-
-
-    {{-- =========================
-         FEES
-    ========================== --}}
-
-    @if ($feeLines->isNotEmpty())
-
-        <table class="fee-table">
-            <caption>Fees Payable — {{ $term?->label() }}</caption>
-
+@if ($feeLines->isNotEmpty())
+    <h3>Fees for {{ $termLabel ?? 'this term' }}</h3>
+    <table class="fees">
+        <thead><tr><td>Item</td><td class="amt">Amount</td></tr></thead>
+        <tbody>
             @foreach ($feeLines as $fee)
                 <tr>
                     <td>{{ $fee->name }}</td>
-                    <td class="amt">{{ $fee->currency ?: 'UGX' }} {{ number_format((float) $fee->amount, 0) }}</td>
+                    <td class="amt">{{ $money($fee->amount) }}</td>
                 </tr>
             @endforeach
-
             <tr class="total">
                 <td>Total payable</td>
-                <td class="amt">UGX {{ number_format($feeTotal, 0) }}</td>
+                <td class="amt">{{ $money($feeTotal) }}</td>
             </tr>
-        </table>
-
-    @else
-
-        <div class="body-text" style="color:#92400e;">
-            <em>
-                Fee details for this class have not yet been set.
-                Please contact the bursar's office.
-            </em>
-        </div>
-
-    @endif
-
-
-    {{-- =========================
-         HOW TO PAY
-    ========================== --}}
-
-    @if ($school->fee_payment_bank || $school->fee_payment_mobile_money || $school->fee_payment_instructions)
-
-        <div class="pay-box">
-            <div class="pay-title">How to pay</div>
-
-            <table>
-                @if ($school->fee_payment_bank)
-                    <tr>
-                        <td class="k">Bank</td>
-                        <td>{{ $school->fee_payment_bank }}</td>
-                    </tr>
-                @endif
-
-                @if ($school->fee_payment_mobile_money)
-                    <tr>
-                        <td class="k">Mobile money</td>
-                        <td>{{ $school->fee_payment_mobile_money }}</td>
-                    </tr>
-                @endif
-
-                @if ($school->fee_payment_instructions)
-                    <tr>
-                        <td class="k">Notes</td>
-                        <td>{{ $school->fee_payment_instructions }}</td>
-                    </tr>
-                @endif
-            </table>
-        </div>
-
-    @endif
-
-
-    {{-- =========================
-         OPENING DATE
-    ========================== --}}
-
-    <div class="body-text">
-
-        The school term opens on
-
-        <strong>
-            {{
-                $term?->start_date
-                    ? $term->start_date->format('l, j F Y')
-                    : 'a date to be communicated'
-            }}
-        </strong>.
-
-        To take up this place, kindly observe the following conditions:
-
-    </div>
-
-
-    {{-- =========================
-         CONDITIONS
-    ========================== --}}
-
-    <ul class="conditions">
-
-        <li>
-            Report to the school on or before the opening date shown above.
-        </li>
-
-        <li>
-            This admission is <strong>provisional</strong> until fees are
-            paid or the place is confirmed by the school administration.
-        </li>
-
-        <li>
-            Bring this letter and your previous academic records on the
-            reporting day.
-        </li>
-
-        @if ($student->lin)
-
-            <li>
-                Your Learner Identification Number (LIN) is recorded as
-                shown above.
-            </li>
-
-        @else
-
-            <li>
-                Please provide your Learner Identification Number (LIN)
-                if available.
-            </li>
-
-        @endif
-
-    </ul>
-
-
-    {{-- =========================
-         CLOSING
-    ========================== --}}
-
-    <div class="body-text">
-
-        We look forward to welcoming you to
-        <strong>{{ $school->name }}</strong>.
-
-    </div>
-
-
-    {{-- =========================
-         SIGNATURES
-    ========================== --}}
-
-    <table class="signature-row">
-
-        <tr>
-
-            <td>
-                <div class="sig-line">
-                    Head Teacher / Principal
-                </div>
-            </td>
-
-            <td>
-                <div class="sig-line">
-                    Official School Stamp
-                </div>
-            </td>
-
-        </tr>
-
+        </tbody>
     </table>
+@endif
 
-
-    {{-- =========================
-         FOOTER
-    ========================== --}}
-
-    <div class="footer">
-
-        This is an official admission letter issued by
-        {{ $school->name }}.
-
-        Generated on
-        {{ now()->format('j F Y, g:i a') }}.
-
+@if ($hasPaymentDetails)
+    <div class="pay">
+        <table>
+            @if ($student->schoolpay_code)
+                <tr><td class="k">SchoolPay</td><td>Pay with code <strong>{{ $student->schoolpay_code }}</strong> (mobile money or bank)</td></tr>
+            @endif
+            @if ($school->fee_payment_bank)
+                <tr><td class="k">Bank</td><td>{{ $school->fee_payment_bank }}</td></tr>
+            @endif
+            @if ($school->fee_payment_mobile_money)
+                <tr><td class="k">Mobile money</td><td>{{ $school->fee_payment_mobile_money }}</td></tr>
+            @endif
+            @if ($school->fee_payment_instructions)
+                <tr><td class="k">Note</td><td>{{ $school->fee_payment_instructions }}</td></tr>
+            @endif
+            <tr><td class="k">Reference</td><td>Always quote admission number <strong>{{ $student->admission_no }}</strong>.</td></tr>
+        </table>
     </div>
+@endif
+
+<h3>Reporting</h3>
+<p>{!! $reportText !!}</p>
+<ul>
+    <li>Bring this letter and your child's most recent report card or school records.</li>
+    @unless ($student->lin)
+        <li>Bring your child's Learner Identification Number (LIN), if they have one.</li>
+    @endunless
+    @unless ($confirmed)
+        <li>The place is confirmed once the first fees payment is received by the school.</li>
+    @endunless
+    <li>Learners are expected to follow the school's rules and regulations.</li>
+</ul>
+
+<p>Congratulations, and welcome to the {{ $school->name }} family.</p>
+
+<table class="sign">
+    <tr>
+        <td>
+            <p style="margin-bottom: 2px;">Yours faithfully,</p>
+            @if ($signaturePath)
+                <img class="sig-img" src="{{ $signaturePath }}" alt="">
+            @else
+                <div style="height: 28px;"></div>
+            @endif
+            <div class="sig-line"><strong>Head Teacher</strong><br>{{ $school->name }}</div>
+        </td>
+        <td style="width: 120px; text-align: right;">
+            <table style="width: 110px; margin-left: auto;"><tr><td class="stamp">School stamp</td></tr></table>
+        </td>
+    </tr>
+</table>
+
+{{-- Acceptance slip, kept in one piece --}}
+<div style="page-break-inside: avoid;">
+<div class="cut">✂ &nbsp; cut here and return this part to the school &nbsp; ✂</div>
+<div class="slip-title">Acceptance of admission</div>
+<p style="margin-bottom: 2px;">
+    I accept the offer of admission for <strong>{{ $name }}</strong> (Adm. no. {{ $student->admission_no }})
+    to {{ $class }}{{ $termLabel ? ', ' . $termLabel : '' }}, and agree to the conditions above.
+</p>
+<table class="slip">
+    <tr>
+        <td style="width: 24%;">Parent / guardian's name:</td>
+        <td class="blank" style="width: 40%;">{{ $guardianName }}</td>
+        <td style="width: 10%; padding-left: 10px;">Phone:</td>
+        <td class="blank">{{ $guardian?->phone }}</td>
+    </tr>
+    <tr>
+        <td>Signature:</td>
+        <td class="blank">&nbsp;</td>
+        <td style="padding-left: 10px;">Date:</td>
+        <td class="blank">&nbsp;</td>
+    </tr>
+</table>
+</div>
+
+<div class="footer">{{ $school->name }} · Letter of admission {{ $ref }} · Printed {{ now()->format('j M Y') }}</div>
 
 </body>
 </html>

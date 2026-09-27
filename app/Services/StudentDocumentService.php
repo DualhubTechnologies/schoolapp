@@ -32,6 +32,7 @@ class StudentDocumentService
             'feeLines' => $feeLines,
             'feeTotal' => $feeTotal,
             'logoPath' => $this->embeddableImage($student->school->logo ?? null),
+            'signaturePath' => PrivateFiles::dataUri($student->school->hm_signature ?? null),
         ]);
 
         $pdf->setPaper('a4');

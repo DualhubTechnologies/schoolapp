@@ -110,3 +110,32 @@ it('asks for a stream only when the class has streams', function () {
         ->fillForm(['school_class_id' => $this->class->id])
         ->assertFormFieldVisible('section_id');
 });
+
+it('prints a formal admission letter addressed to the parent', function () {
+    $mother = Guardian::create(['school_id' => $this->school->id, 'name' => 'SARAH NAKATO', 'phone' => '0772555666']);
+    $student = Student::create(['school_id' => $this->school->id, 'school_class_id' => $this->class->id, 'residency_type_id' => $this->day->id, 'guardian_id' => $mother->id, 'first_name' => 'aisha', 'last_name' => 'nakato', 'admission_no' => 'ADM-007', 'status' => 'active', 'schoolpay_code' => '1004567890']);
+
+    $html = view('pdf.admission-letter', [
+        'student' => $student->load('school', 'guardian', 'schoolClass', 'residencyType'),
+        'school' => $this->school,
+        'term' => null,
+        'feeLines' => collect([(object) ['name' => 'Tuition', 'amount' => 370000]]),
+        'feeTotal' => 370000,
+        'logoPath' => null,
+        'signaturePath' => null,
+    ])->render();
+
+    expect($html)
+        ->toContain('The Parent / Guardian of <strong>Aisha Nakato</strong>')
+        ->toContain('Dear Sarah Nakato,')
+        ->toContain('Offer of admission')
+        ->toContain('ADM/007/')
+        ->toContain('UGX 370,000')
+        ->toContain('Pay with code <strong>1004567890</strong>')
+        ->toContain('Acceptance of admission')
+        ->toContain('Provisional');
+
+    $this->get(route('filament.app.students.admission-letter', $student))
+        ->assertOk()
+        ->assertHeader('content-type', 'application/pdf');
+});

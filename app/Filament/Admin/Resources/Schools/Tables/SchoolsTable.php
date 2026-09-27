@@ -4,11 +4,15 @@ namespace App\Filament\Admin\Resources\Schools\Tables;
 
 use App\Filament\Admin\Resources\Schools\SubscriptionActions;
 use App\Models\School;
+use App\Models\User;
 use App\Services\Subscriptions\SubscriptionManager;
+use App\Support\EmailVerificationCode;
+use Filament\Actions\Action;
 use Filament\Actions\ActionGroup;
 use Filament\Actions\BulkActionGroup;
 use Filament\Actions\DeleteBulkAction;
 use Filament\Actions\EditAction;
+use Filament\Notifications\Notification;
 use Filament\Tables\Columns\ImageColumn;
 use Filament\Tables\Columns\TextColumn;
 use Filament\Tables\Filters\SelectFilter;
@@ -149,6 +153,7 @@ class SchoolsTable
                     SubscriptionActions::changePlan(),
                     SubscriptionActions::extend(),
                     SubscriptionActions::suspend(),
+                    self::confirmAdminEmail(),
                 ]),
             ])
             ->toolbarActions([
@@ -156,5 +161,33 @@ class SchoolsTable
                     DeleteBulkAction::make(),
                 ]),
             ]);
+    }
+
+    /**
+     * For support: confirm a new school's administrator by hand when the
+     * code email never reaches them (full mailbox, strict spam filter).
+     */
+    public static function confirmAdminEmail(): Action
+    {
+        return Action::make('confirmAdminEmail')
+            ->label("Confirm admin's email")
+            ->icon('heroicon-o-check-badge')
+            ->color('success')
+            ->visible(fn (School $record): bool => $record->users()
+                ->whereNull('email_verified_at')
+                ->whereNotNull('email_verification_code')
+                ->exists())
+            ->requiresConfirmation()
+            ->modalHeading("Confirm the administrator's email")
+            ->modalDescription('Only do this after checking, by phone or WhatsApp, that the address belongs to the person who registered the school. They can then sign in without the emailed code.')
+            ->action(function (School $record): void {
+                $record->users()
+                    ->whereNull('email_verified_at')
+                    ->whereNotNull('email_verification_code')
+                    ->get()
+                    ->each(fn (User $user) => EmailVerificationCode::markVerified($user));
+
+                Notification::make()->title('Email confirmed — they can sign in now')->success()->send();
+            });
     }
 }

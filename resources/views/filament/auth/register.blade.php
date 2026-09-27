@@ -19,7 +19,7 @@
         <div class="shr-next">
             <div class="shr-next-title">What happens next</div>
             <ol>
-                <li><span>1</span><div><strong>Create your account</strong>You're signed in immediately.</div></li>
+                <li><span>1</span><div><strong>Create your account</strong>Confirm your email with the 6-digit code we send you.</div></li>
                 <li><span>2</span><div><strong>Follow the setup checklist</strong>Term, classes, fees and learners.</div></li>
                 <li><span>3</span><div><strong>Invite your team</strong>Bursar, teachers and director of studies.</div></li>
             </ol>

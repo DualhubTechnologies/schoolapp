@@ -4,11 +4,11 @@ namespace App\Filament\Admin\Resources\Schools\Pages;
 
 use App\Filament\Admin\Resources\Schools\SchoolResource;
 use App\Filament\Admin\Resources\Schools\SubscriptionActions;
+use App\Filament\Support\Pages\EditRecordPage;
 use Filament\Actions\DeleteAction;
-use Filament\Resources\Pages\EditRecord;
 use Filament\Support\Enums\Width;
 
-class EditSchool extends EditRecord
+class EditSchool extends EditRecordPage
 {
     protected static string $resource = SchoolResource::class;
 

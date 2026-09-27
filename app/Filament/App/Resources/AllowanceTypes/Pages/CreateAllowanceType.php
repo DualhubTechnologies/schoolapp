@@ -3,9 +3,9 @@
 namespace App\Filament\App\Resources\AllowanceTypes\Pages;
 
 use App\Filament\App\Resources\AllowanceTypes\AllowanceTypeResource;
-use Filament\Resources\Pages\CreateRecord;
+use App\Filament\Support\Pages\CreateRecordPage;
 
-class CreateAllowanceType extends CreateRecord
+class CreateAllowanceType extends CreateRecordPage
 {
     protected static string $resource = AllowanceTypeResource::class;
 }

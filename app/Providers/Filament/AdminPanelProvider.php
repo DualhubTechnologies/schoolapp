@@ -8,6 +8,7 @@ use App\Filament\App\Widgets\PlatformKpis;
 use App\Filament\App\Widgets\WelcomeBanner;
 use App\Filament\Pages\Auth\Login;
 use App\Filament\Pages\Auth\ResetPassword;
+use App\Filament\Support\Pages\RecordFormScope;
 use App\Filament\Widgets\StatsOverview;
 use Filafly\LogoTools\LogoToolsPlugin;
 use Filament\Http\Middleware\Authenticate;
@@ -88,6 +89,12 @@ class AdminPanelProvider extends PanelProvider
             ->renderHook(
                 PanelsRenderHook::PAGE_START,
                 fn () => view('filament.partials.topbar')
+            )
+            // "Back to the list" above the heading of every create / edit page.
+            ->renderHook(
+                PanelsRenderHook::PAGE_START,
+                fn () => RecordFormScope::backLink(),
+                scopes: RecordFormScope::NAME,
             )
             ->renderHook(
                 PanelsRenderHook::FOOTER,

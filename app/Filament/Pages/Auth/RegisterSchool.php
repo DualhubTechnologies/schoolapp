@@ -5,9 +5,9 @@ namespace App\Filament\Pages\Auth;
 use App\Models\School;
 use App\Models\User;
 use App\Notifications\SchoolRegistered;
-use App\Notifications\WelcomeToSchoolHub;
 use App\Services\Subscriptions\SubscriptionManager;
 use App\Support\EmailCheck;
+use App\Support\EmailVerificationCode;
 use App\Support\PasswordStrength;
 use DanHarrin\LivewireRateLimiting\Exceptions\TooManyRequestsException;
 use Filament\Actions\Action;
@@ -140,9 +140,9 @@ class RegisterSchool extends Register
 
     /**
      * Filament's registration, except the new administrator is not signed
-     * in: they land on the sign-in page with a confirmation and sign in
-     * with the details they just chose. The setup offer then greets them
-     * on the dashboard.
+     * in: we email them a 6-digit code and they confirm their email on the
+     * next page (VerifyEmail), then sign in with the details they just
+     * chose. The setup offer then greets them on the dashboard.
      */
     public function register(): ?RegistrationResponse
     {
@@ -175,16 +175,20 @@ class RegisterSchool extends Register
 
         event(new Registered($user));
 
-        $this->sendEmailVerificationNotification($user);
+        /** @var User $user */
+        EmailVerificationCode::rememberFor($user);
 
-        FilamentNotification::make()
-            ->title('Your school account is ready')
-            ->body('Sign in with the email and password you just chose to get started.')
-            ->success()
-            ->persistent()
-            ->send();
+        if (EmailVerificationCode::send($user)) {
+            FilamentNotification::make()
+                ->title('Your school account has been created')
+                ->body('We have emailed you a 6-digit code. Enter it to confirm your email, then sign in.')
+                ->success()
+                ->send();
+        } else {
+            VerifyEmail::notifyNotSent();
+        }
 
-        $this->redirect(Filament::getLoginUrl());
+        $this->redirect(VerifyEmail::url());
 
         return null;
     }
@@ -194,7 +198,7 @@ class RegisterSchool extends Register
      */
     protected function handleRegistration(#[SensitiveParameter] array $data): Model
     {
-        [$user, $trial] = DB::transaction(function () use ($data) {
+        $user = DB::transaction(function () use ($data) {
             // Creating the school also seeds its class levels (SchoolObserver).
             $school = School::create([
                 'name' => $data['school_name'],
@@ -217,7 +221,7 @@ class RegisterSchool extends Register
             ]);
 
             // The trial must exist before the user: its plan sets the login limit.
-            $trial = SubscriptionManager::startTrial($school);
+            SubscriptionManager::startTrial($school);
 
             $user = User::create([
                 'name' => $data['name'],
@@ -227,18 +231,11 @@ class RegisterSchool extends Register
             ]);
             $user->assignRole('School Admin');
 
-            return [$user, $trial];
+            return $user;
         });
 
-        // Emails are a courtesy: if the mail server is down, the school is
-        // still registered and the failure is logged rather than shown.
-        try {
-            $user->notify(new WelcomeToSchoolHub($user->school, $trial->ends_on));
-        } catch (Throwable $e) {
-            report($e);
-        }
-
-        // Let the platform owner(s) know a new school has joined.
+        // The welcome email follows once the email address is confirmed
+        // (VerifyEmail). Let the platform owner(s) know a new school has joined.
         $owners = User::role('Super Admin')->get();
 
         if ($owners->isNotEmpty()) {

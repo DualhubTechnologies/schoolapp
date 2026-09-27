@@ -4,10 +4,10 @@ namespace App\Filament\App\Resources\Users\Pages;
 
 use App\Filament\App\Resources\Users\Pages\Concerns\SyncsUserAccess;
 use App\Filament\App\Resources\Users\UserResource;
+use App\Filament\Support\Pages\EditRecordPage;
 use Filament\Actions\DeleteAction;
-use Filament\Resources\Pages\EditRecord;
 
-class EditUser extends EditRecord
+class EditUser extends EditRecordPage
 {
     use SyncsUserAccess;
 

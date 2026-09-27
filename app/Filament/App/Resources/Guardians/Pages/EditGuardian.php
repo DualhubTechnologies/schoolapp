@@ -3,10 +3,10 @@
 namespace App\Filament\App\Resources\Guardians\Pages;
 
 use App\Filament\App\Resources\Guardians\GuardianResource;
+use App\Filament\Support\Pages\EditRecordPage;
 use Filament\Actions\DeleteAction;
-use Filament\Resources\Pages\EditRecord;
 
-class EditGuardian extends EditRecord
+class EditGuardian extends EditRecordPage
 {
     protected static string $resource = GuardianResource::class;
 

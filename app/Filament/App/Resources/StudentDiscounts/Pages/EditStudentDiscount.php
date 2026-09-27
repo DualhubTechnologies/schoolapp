@@ -3,10 +3,10 @@
 namespace App\Filament\App\Resources\StudentDiscounts\Pages;
 
 use App\Filament\App\Resources\StudentDiscounts\StudentDiscountResource;
+use App\Filament\Support\Pages\EditRecordPage;
 use Filament\Actions\DeleteAction;
-use Filament\Resources\Pages\EditRecord;
 
-class EditStudentDiscount extends EditRecord
+class EditStudentDiscount extends EditRecordPage
 {
     protected static string $resource = StudentDiscountResource::class;
 

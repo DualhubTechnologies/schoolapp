@@ -3,11 +3,11 @@
 namespace App\Filament\Admin\Resources\Schools\Pages;
 
 use App\Filament\Admin\Resources\Schools\SchoolResource;
+use App\Filament\Support\Pages\CreateRecordPage;
 use App\Services\Subscriptions\SubscriptionManager;
-use Filament\Resources\Pages\CreateRecord;
 use Filament\Support\Enums\Width;
 
-class CreateSchool extends CreateRecord
+class CreateSchool extends CreateRecordPage
 {
     protected static string $resource = SchoolResource::class;
 

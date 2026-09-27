@@ -3,11 +3,11 @@
 namespace App\Filament\App\Resources\Students\Pages;
 
 use App\Filament\App\Resources\Students\StudentResource;
+use App\Filament\Support\Pages\EditRecordPage;
 use Filament\Actions\Action;
 use Filament\Actions\DeleteAction;
-use Filament\Resources\Pages\EditRecord;
 
-class EditStudent extends EditRecord
+class EditStudent extends EditRecordPage
 {
     protected static string $resource = StudentResource::class;
 

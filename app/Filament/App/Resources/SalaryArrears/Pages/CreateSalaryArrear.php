@@ -3,9 +3,9 @@
 namespace App\Filament\App\Resources\SalaryArrears\Pages;
 
 use App\Filament\App\Resources\SalaryArrears\SalaryArrearResource;
-use Filament\Resources\Pages\CreateRecord;
+use App\Filament\Support\Pages\CreateRecordPage;
 
-class CreateSalaryArrear extends CreateRecord
+class CreateSalaryArrear extends CreateRecordPage
 {
     protected static string $resource = SalaryArrearResource::class;
 }

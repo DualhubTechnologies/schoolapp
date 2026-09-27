@@ -52,7 +52,9 @@ class AppServiceProvider extends ServiceProvider
     protected function configureFilamentDefaults(): void
     {
         // Add/edit pop-ups sized like a dialog, not stretched across the screen.
-        CreateAction::configureUsing(fn ($action) => $action->modalWidth(Width::TwoExtraLarge));
+        // Saving always closes the pop-up and shows the record in the list:
+        // no "save & add another" that leaves the form open.
+        CreateAction::configureUsing(fn ($action) => $action->modalWidth(Width::TwoExtraLarge)->createAnother(false));
         EditAction::configureUsing(fn ($action) => $action->modalWidth(Width::TwoExtraLarge));
 
         // Empty lists show a neutral "nothing here yet" icon, not an "X".

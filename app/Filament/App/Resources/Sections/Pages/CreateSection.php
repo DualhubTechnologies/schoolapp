@@ -3,9 +3,9 @@
 namespace App\Filament\App\Resources\Sections\Pages;
 
 use App\Filament\App\Resources\Sections\SectionResource;
-use Filament\Resources\Pages\CreateRecord;
+use App\Filament\Support\Pages\CreateRecordPage;
 
-class CreateSection extends CreateRecord
+class CreateSection extends CreateRecordPage
 {
     protected static string $resource = SectionResource::class;
 }

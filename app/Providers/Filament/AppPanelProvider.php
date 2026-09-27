@@ -21,6 +21,8 @@ use App\Filament\App\Widgets\WelcomeBanner;
 use App\Filament\Pages\Auth\Login;
 use App\Filament\Pages\Auth\RegisterSchool;
 use App\Filament\Pages\Auth\ResetPassword;
+use App\Filament\Pages\Auth\VerifyEmail;
+use App\Filament\Support\Pages\RecordFormScope;
 use App\Filament\Widgets\StatsOverview;
 use App\Http\Controllers\DemoRequestController;
 use App\Http\Controllers\FeeDocumentController;
@@ -72,6 +74,8 @@ class AppPanelProvider extends PanelProvider
                 Route::get('/', LandingController::class)->name('landing');
                 // Terms and conditions, linked from registration and the site footers.
                 Route::view('/terms-and-conditions', 'legal.terms')->name('legal.terms');   // /terms is the academic Terms resource
+                // A new school administrator confirms their email with the code we sent.
+                Route::get('/verify-email', VerifyEmail::class)->name('auth.verify-email');
                 // "Book a demo" form on the landing page.
                 Route::post('/demo-request', DemoRequestController::class)
                     ->middleware('throttle:5,10')
@@ -202,6 +206,12 @@ class AppPanelProvider extends PanelProvider
             ->renderHook(
                 PanelsRenderHook::PAGE_START,
                 fn () => view('filament.partials.subscription-banner')
+            )
+            // "Back to the list" above the heading of every create / edit page.
+            ->renderHook(
+                PanelsRenderHook::PAGE_START,
+                fn () => RecordFormScope::backLink(),
+                scopes: RecordFormScope::NAME,
             )
             ->renderHook(
                 PanelsRenderHook::FOOTER,

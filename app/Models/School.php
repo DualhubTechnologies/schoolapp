@@ -124,6 +124,9 @@ class School extends Model
         return $this->hasMany(SubscriptionActivationCode::class)->orderByDesc('created_at');
     }
 
+    /**
+     * @return HasMany<User, $this>
+     */
     public function users(): HasMany
     {
         return $this->hasMany(User::class);

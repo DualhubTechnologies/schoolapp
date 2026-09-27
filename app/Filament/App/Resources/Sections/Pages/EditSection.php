@@ -3,10 +3,10 @@
 namespace App\Filament\App\Resources\Sections\Pages;
 
 use App\Filament\App\Resources\Sections\SectionResource;
+use App\Filament\Support\Pages\EditRecordPage;
 use Filament\Actions\DeleteAction;
-use Filament\Resources\Pages\EditRecord;
 
-class EditSection extends EditRecord
+class EditSection extends EditRecordPage
 {
     protected static string $resource = SectionResource::class;
 

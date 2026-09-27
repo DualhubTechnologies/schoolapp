@@ -23,6 +23,8 @@ use Spatie\Permission\Traits\HasRoles;
  * @property string $name
  * @property string $email
  * @property Carbon|null $email_verified_at
+ * @property string|null $email_verification_code hash of the code emailed at registration (App\Support\EmailVerificationCode)
+ * @property Carbon|null $email_verification_sent_at
  * @property string $password
  * @property int|null $school_id
  * @property string|null $remember_token
@@ -30,7 +32,7 @@ use Spatie\Permission\Traits\HasRoles;
  * @property Carbon|null $updated_at
  */
 #[Fillable(['name', 'email', 'password', 'school_id', 'modules'])]
-#[Hidden(['password', 'remember_token'])]
+#[Hidden(['password', 'remember_token', 'email_verification_code'])]
 class User extends Authenticatable implements FilamentUser
 {
     /** @use HasFactory<UserFactory> */
@@ -45,6 +47,7 @@ class User extends Authenticatable implements FilamentUser
     {
         return [
             'email_verified_at' => 'datetime',
+            'email_verification_sent_at' => 'datetime',
             'password' => 'hashed',
             // Modules chosen by the administrator; null = the role's defaults.
             'modules' => 'array',

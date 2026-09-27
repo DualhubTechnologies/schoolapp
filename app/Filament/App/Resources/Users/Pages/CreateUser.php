@@ -4,11 +4,11 @@ namespace App\Filament\App\Resources\Users\Pages;
 
 use App\Filament\App\Resources\Users\Pages\Concerns\SyncsUserAccess;
 use App\Filament\App\Resources\Users\UserResource;
+use App\Filament\Support\Pages\CreateRecordPage;
 use App\Services\Subscriptions\SubscriptionManager;
 use Filament\Notifications\Notification;
-use Filament\Resources\Pages\CreateRecord;
 
-class CreateUser extends CreateRecord
+class CreateUser extends CreateRecordPage
 {
     use SyncsUserAccess;
 

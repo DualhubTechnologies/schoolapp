@@ -3,10 +3,10 @@
 namespace App\Filament\App\Resources\Terms\Pages;
 
 use App\Filament\App\Resources\Terms\TermResource;
+use App\Filament\Support\Pages\EditRecordPage;
 use Filament\Actions\DeleteAction;
-use Filament\Resources\Pages\EditRecord;
 
-class EditTerm extends EditRecord
+class EditTerm extends EditRecordPage
 {
     protected static string $resource = TermResource::class;
 

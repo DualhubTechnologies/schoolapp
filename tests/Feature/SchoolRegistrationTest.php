@@ -1,6 +1,7 @@
 <?php
 
 use App\Filament\Pages\Auth\RegisterSchool;
+use App\Filament\Pages\Auth\VerifyEmail;
 use App\Models\School;
 use App\Models\User;
 use App\Support\PasswordStrength;
@@ -31,12 +32,12 @@ function registrationData(array $overrides = []): array
     ], $overrides);
 }
 
-it('sends a newly registered school to the sign-in page, signed out', function () {
+it('sends a newly registered school to confirm its email, signed out', function () {
     Livewire::test(RegisterSchool::class)
         ->fillForm(registrationData())
         ->call('register')
         ->assertHasNoFormErrors()
-        ->assertRedirect(Filament::getLoginUrl());
+        ->assertRedirect(VerifyEmail::url());
 
     $user = User::where('email', 'head@hope.test')->sole();
 
@@ -73,7 +74,7 @@ it('lets someone who insists register with a weak six-character password', funct
         ->fillForm(registrationData(['password' => '123456', 'passwordConfirmation' => '123456']))
         ->call('register')
         ->assertHasNoFormErrors()
-        ->assertRedirect(Filament::getLoginUrl());
+        ->assertRedirect(VerifyEmail::url());
 
     expect(User::where('email', 'head@hope.test')->exists())->toBeTrue();
 });

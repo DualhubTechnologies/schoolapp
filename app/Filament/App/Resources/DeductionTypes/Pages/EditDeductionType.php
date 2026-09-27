@@ -3,10 +3,10 @@
 namespace App\Filament\App\Resources\DeductionTypes\Pages;
 
 use App\Filament\App\Resources\DeductionTypes\DeductionTypeResource;
+use App\Filament\Support\Pages\EditRecordPage;
 use Filament\Actions\DeleteAction;
-use Filament\Resources\Pages\EditRecord;
 
-class EditDeductionType extends EditRecord
+class EditDeductionType extends EditRecordPage
 {
     protected static string $resource = DeductionTypeResource::class;
 

@@ -3,9 +3,9 @@
 namespace App\Filament\App\Resources\Staff\Pages;
 
 use App\Filament\App\Resources\Staff\StaffResource;
-use Filament\Resources\Pages\CreateRecord;
+use App\Filament\Support\Pages\CreateRecordPage;
 
-class CreateStaff extends CreateRecord
+class CreateStaff extends CreateRecordPage
 {
     protected static string $resource = StaffResource::class;
 
@@ -18,17 +18,8 @@ class CreateStaff extends CreateRecord
         return $data;
     }
 
-    /**
-     * Straight to the new record: salary, allowances, deductions and bank
-     * details are set in the tabs there.
-     */
-    protected function getRedirectUrl(): string
-    {
-        return static::getResource()::getUrl('edit', ['record' => $this->record]);
-    }
-
     protected function getCreatedNotificationTitle(): ?string
     {
-        return 'Staff member saved — now set their salary and allowances below';
+        return 'Staff member saved — open them from the list to set salary, allowances and bank details';
     }
 }

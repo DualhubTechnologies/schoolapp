@@ -3,18 +3,16 @@
 namespace App\Filament\App\Resources\PayrollPeriods\Pages;
 
 use App\Filament\App\Resources\PayrollPeriods\PayrollPeriodResource;
+use App\Filament\Support\Pages\CreateRecordPage;
 use App\Services\Payroll\PayrollService;
-use Filament\Resources\Pages\CreateRecord;
 
 /**
- * Starting a month's payroll calculates it straight away and opens the
- * run, rather than leaving an empty record to come back to.
+ * Starting a month's payroll calculates it straight away, then returns to
+ * the payroll list, where the new run waits to be reviewed and approved.
  */
-class CreatePayrollPeriod extends CreateRecord
+class CreatePayrollPeriod extends CreateRecordPage
 {
     protected static string $resource = PayrollPeriodResource::class;
-
-    protected static bool $canCreateAnother = false;
 
     public function getTitle(): string
     {
@@ -34,13 +32,8 @@ class CreatePayrollPeriod extends CreateRecord
         app(PayrollService::class)->generate($this->record);
     }
 
-    protected function getRedirectUrl(): string
-    {
-        return static::getResource()::getUrl('view', ['record' => $this->record]);
-    }
-
     protected function getCreatedNotificationTitle(): ?string
     {
-        return 'Payroll calculated — review it, then approve';
+        return 'Payroll calculated — open it from the list to review and approve';
     }
 }

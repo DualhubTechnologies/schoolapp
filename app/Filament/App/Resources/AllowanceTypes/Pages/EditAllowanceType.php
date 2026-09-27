@@ -3,10 +3,10 @@
 namespace App\Filament\App\Resources\AllowanceTypes\Pages;
 
 use App\Filament\App\Resources\AllowanceTypes\AllowanceTypeResource;
+use App\Filament\Support\Pages\EditRecordPage;
 use Filament\Actions\DeleteAction;
-use Filament\Resources\Pages\EditRecord;
 
-class EditAllowanceType extends EditRecord
+class EditAllowanceType extends EditRecordPage
 {
     protected static string $resource = AllowanceTypeResource::class;
 

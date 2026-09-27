@@ -3,12 +3,12 @@
 namespace App\Filament\App\Resources\FeeStructures\Pages;
 
 use App\Filament\App\Resources\FeeStructures\FeeStructureResource;
+use App\Filament\Support\Pages\CreateRecordPage;
 use App\Models\FeeStructure;
 use Filament\Notifications\Notification;
-use Filament\Resources\Pages\CreateRecord;
 use Illuminate\Database\Eloquent\Model;
 
-class CreateFeeStructure extends CreateRecord
+class CreateFeeStructure extends CreateRecordPage
 {
     protected static string $resource = FeeStructureResource::class;
 

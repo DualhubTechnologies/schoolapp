@@ -3,10 +3,10 @@
 namespace App\Filament\App\Resources\Staff\Pages;
 
 use App\Filament\App\Resources\Staff\StaffResource;
+use App\Filament\Support\Pages\EditRecordPage;
 use Filament\Actions\DeleteAction;
-use Filament\Resources\Pages\EditRecord;
 
-class EditStaff extends EditRecord
+class EditStaff extends EditRecordPage
 {
     protected static string $resource = StaffResource::class;
 

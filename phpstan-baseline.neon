@@ -1009,12 +1009,6 @@ parameters:
 			path: app/Filament/Imports/StudentImporter.php
 
 		-
-			message: '#^Parameter \#2 \$trialEndsOn of class App\\Notifications\\WelcomeToSchoolHub constructor expects Carbon\\CarbonInterface, string given\.$#'
-			identifier: argument.type
-			count: 1
-			path: app/Filament/Pages/Auth/RegisterSchool.php
-
-		-
 			message: '#^Access to an undefined property App\\Filament\\Pages\\ClassResults\:\:\$results\.$#'
 			identifier: property.notFound
 			count: 1
@@ -2282,12 +2276,6 @@ parameters:
 
 		-
 			message: '#^Method App\\Models\\School\:\:subscriptions\(\) return type with generic class Illuminate\\Database\\Eloquent\\Relations\\HasMany does not specify its types\: TRelatedModel, TDeclaringModel$#'
-			identifier: missingType.generics
-			count: 1
-			path: app/Models/School.php
-
-		-
-			message: '#^Method App\\Models\\School\:\:users\(\) return type with generic class Illuminate\\Database\\Eloquent\\Relations\\HasMany does not specify its types\: TRelatedModel, TDeclaringModel$#'
 			identifier: missingType.generics
 			count: 1
 			path: app/Models/School.php

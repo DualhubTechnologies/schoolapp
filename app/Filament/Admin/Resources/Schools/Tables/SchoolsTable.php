@@ -17,6 +17,8 @@ use Filament\Tables\Columns\ImageColumn;
 use Filament\Tables\Columns\TextColumn;
 use Filament\Tables\Filters\SelectFilter;
 use Filament\Tables\Table;
+use Illuminate\Support\Str;
+use Throwable;
 
 class SchoolsTable
 {
@@ -181,13 +183,32 @@ class SchoolsTable
             ->modalHeading("Confirm the administrator's email")
             ->modalDescription('Only do this after checking, by phone or WhatsApp, that the address belongs to the person who registered the school. They can then sign in without the emailed code.')
             ->action(function (School $record): void {
-                $record->users()
-                    ->whereNull('email_verified_at')
-                    ->whereNotNull('email_verification_code')
-                    ->get()
-                    ->each(fn (User $user) => EmailVerificationCode::markVerified($user));
+                // Only the platform owner sees this, so if anything on the
+                // server goes wrong, say what, rather than a blank error.
+                try {
+                    $confirmed = $record->users()
+                        ->whereNull('email_verified_at')
+                        ->whereNotNull('email_verification_code')
+                        ->get()
+                        ->each(fn (User $user) => EmailVerificationCode::markVerified($user))
+                        ->count();
+                } catch (Throwable $e) {
+                    report($e);
 
-                Notification::make()->title('Email confirmed — they can sign in now')->success()->send();
+                    Notification::make()
+                        ->title('Could not confirm the email')
+                        ->body(class_basename($e).': '.Str::limit($e->getMessage(), 300))
+                        ->danger()
+                        ->persistent()
+                        ->send();
+
+                    return;
+                }
+
+                Notification::make()
+                    ->title($confirmed ? 'Email confirmed — they can sign in now' : 'Already confirmed — they can sign in')
+                    ->success()
+                    ->send();
             });
     }
 }

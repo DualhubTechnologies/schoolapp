@@ -77,3 +77,12 @@ it('lets someone who insists register with a weak six-character password', funct
 
     expect(User::where('email', 'head@hope.test')->exists())->toBeTrue();
 });
+
+it('does not use a real school as the example name', function () {
+    $this->withoutVite();
+
+    $this->get(Filament::getPanel('app')->getRegistrationUrl())
+        ->assertOk()
+        ->assertSee("Your school's full name")
+        ->assertDontSee('Kisubi');
+});

@@ -59,7 +59,7 @@ class RegisterSchool extends Register
                     Grid::make(['default' => 1, 'sm' => 2, 'xl' => 3])->schema([
                         TextInput::make('school_name')
                             ->label('School name')
-                            ->placeholder('e.g. St. Mary\'s College Kisubi')
+                            ->placeholder('Your school\'s full name')
                             ->required()
                             ->maxLength(150)
                             ->columnSpan(['default' => 1, 'sm' => 2, 'xl' => 1])

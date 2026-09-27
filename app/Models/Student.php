@@ -307,4 +307,29 @@ class Student extends Model
     {
         return filled($this->schoolpay_code) ? "SchoolPay code {$this->schoolpay_code}" : null;
     }
+
+    /**
+     * Details worth having that quick admission leaves for later, as
+     * label => whether it is filled in.
+     *
+     * @return array<string, bool>
+     */
+    public function profileChecklist(): array
+    {
+        return [
+            'photo' => filled($this->photo),
+            'sex' => filled($this->gender),
+            'date of birth' => filled($this->date_of_birth),
+            'parent / guardian' => filled($this->guardian_id),
+            'LIN' => filled($this->lin),
+            'home address' => filled($this->address),
+        ];
+    }
+
+    public function profilePercent(): int
+    {
+        $checklist = $this->profileChecklist();
+
+        return (int) round(count(array_filter($checklist)) / count($checklist) * 100);
+    }
 }

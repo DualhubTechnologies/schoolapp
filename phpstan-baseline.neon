@@ -2017,12 +2017,6 @@ parameters:
 			path: app/Models/Guardian.php
 
 		-
-			message: '#^Method App\\Models\\Guardian\:\:students\(\) return type with generic class Illuminate\\Database\\Eloquent\\Relations\\HasMany does not specify its types\: TRelatedModel, TDeclaringModel$#'
-			identifier: missingType.generics
-			count: 1
-			path: app/Models/Guardian.php
-
-		-
 			message: '#^Method App\\Models\\Guardian\:\:user\(\) return type with generic class Illuminate\\Database\\Eloquent\\Relations\\BelongsTo does not specify its types\: TRelatedModel, TDeclaringModel$#'
 			identifier: missingType.generics
 			count: 1

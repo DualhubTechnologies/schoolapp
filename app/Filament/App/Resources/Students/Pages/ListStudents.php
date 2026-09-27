@@ -109,48 +109,38 @@ class ListStudents extends ListRecords
                     );
                 }),
 
-            // Admission as a modal, one step at a time — same fields as
-            // editing a student, just presented one group at a time.
+            // Quick admission: one short screen with what fees, marks and
+            // parents need. "Save & add more details" opens the learner's
+            // full profile for the photo, LIN, house, address and so on.
             CreateAction::make()
                 ->label('New student')
-                ->modalHeading('New student')
-                ->modalWidth('7xl')
-                ->extraModalWindowAttributes(['class' => 'sh-admission-modal'])
-                // The School field is only shown to the platform owner.
-                ->mutateDataUsing(fn (array $data): array => [
-                    ...$data,
-                    'school_id' => $data['school_id'] ?? auth()->user()->school_id,
+                ->modalHeading('Admit a learner')
+                ->modalDescription('Just the essentials. Everything else can be added on the learner\'s profile at any time.')
+                ->modalWidth('3xl')
+                ->schema(StudentForm::quickFields())
+                ->mutateDataUsing(function (array $data): array {
+                    $schoolId = $data['school_id'] ?? auth()->user()->school_id;
+
+                    return StudentForm::resolveQuickGuardian([
+                        ...$data,
+                        'school_id' => $schoolId,
+                        'admission_date' => $data['admission_date'] ?? now()->toDateString(),
+                        'status' => $data['status'] ?? 'active',
+                    ], (int) $schoolId);
+                })
+                ->modalSubmitActionLabel('Admit')
+                ->extraModalFooterActions(fn (CreateAction $action): array => [
+                    $action->makeModalSubmitAction('admitAndEdit', arguments: ['edit' => true])
+                        ->label('Admit & add more details')
+                        ->color('gray'),
                 ])
+                ->successRedirectUrl(fn (Student $record, array $arguments): ?string => ($arguments['edit'] ?? false)
+                    ? StudentResource::getUrl('edit', ['record' => $record])
+                    : null)
                 ->disabled(fn () => SubscriptionManager::roomForStudents(auth()->user()->school_id) === 0)
                 ->tooltip(fn () => SubscriptionManager::roomForStudents(auth()->user()->school_id) === 0
                     ? 'The school has as many active students as its plan allows. Mark students who have left as Withdrawn/Transferred/Completed, or ask for a bigger plan on the Subscription page.'
                     : null)
-                ->steps([
-                    Step::make('Student Details')
-                        ->description('Name, photo and identifiers')
-                        ->icon('heroicon-o-identification')
-                        // Photo on the left (2/6), details on the right (4/6).
-                        ->columns(['default' => 1, 'md' => 6])
-                        ->schema(StudentForm::identityFields()),
-
-                    Step::make('Class & Enrollment')
-                        ->description('Where this student belongs')
-                        ->icon('heroicon-o-academic-cap')
-                        ->columns(2)
-                        ->schema(StudentForm::enrollmentFields()),
-
-                    Step::make('Parent & Contact')
-                        ->description('Guardian and contact details')
-                        ->icon('heroicon-o-user-group')
-                        ->columns(2)
-                        ->schema(StudentForm::contactFields()),
-
-                    Step::make('Address & Welfare')
-                        ->description('Optional — can be added later')
-                        ->icon('heroicon-o-heart')
-                        ->columns(2)
-                        ->schema(StudentForm::welfareFields()),
-                ])
                 ->successNotification(fn (Student $record) => Notification::make()
                     ->title('Student admitted')
                     ->body($record->name.' ('.$record->admission_no.') has been added.')

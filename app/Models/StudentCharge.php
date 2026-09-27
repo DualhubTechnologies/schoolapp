@@ -24,6 +24,7 @@ class StudentCharge extends Model
         'student_id',
         'term_id',
         'fee_structure_id',
+        'transport_route_id',
         'description',
         'amount',
         'discount_amount',

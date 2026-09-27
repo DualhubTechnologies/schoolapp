@@ -27,6 +27,8 @@ class Student extends Model
         'section_id',
         'combination_id',
         'residency_type_id',
+        'transport_route_id',
+        'transport_trip',
         'house_id',
         'admission_no',
         'first_name',
@@ -64,6 +66,12 @@ class Student extends Model
      */
     protected static function booted(): void
     {
+        // A learner off the van has no trip either; one back on it rides
+        // both ways unless told otherwise.
+        static::saving(function (Student $student): void {
+            $student->transport_trip = $student->transport_route_id ? ($student->transport_trip ?: 'both') : null;
+        });
+
         // The school's plan caps how many active students it may have.
         static::saving(function (Student $student): void {
             $becomesActive = ($student->status ?? 'active') === 'active'
@@ -102,6 +110,8 @@ class Student extends Model
                 'school_class_id',
                 'section_id',
                 'residency_type_id',
+                'transport_route_id',
+                'transport_trip',
                 'house_id',
                 'status',
                 'enrolment_status',
@@ -178,6 +188,16 @@ class Student extends Model
     public function residencyType(): BelongsTo
     {
         return $this->belongsTo(ResidencyType::class);
+    }
+
+    /**
+     * The van route this learner uses, or null when a parent brings them.
+     *
+     * @return BelongsTo<TransportRoute, $this>
+     */
+    public function transportRoute(): BelongsTo
+    {
+        return $this->belongsTo(TransportRoute::class);
     }
 
     public function house(): BelongsTo

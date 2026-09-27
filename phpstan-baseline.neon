@@ -1957,12 +1957,6 @@ parameters:
 			path: app/Models/ClassLevel.php
 
 		-
-			message: '#^Property App\\Models\\ClassLevel\:\:\$auditIgnoreDefaults type has no value type specified in iterable type array\.$#'
-			identifier: missingType.iterableValue
-			count: 1
-			path: app/Models/ClassLevel.php
-
-		-
 			message: '#^Call to an undefined method Illuminate\\Database\\Eloquent\\Model\:\:label\(\)\.$#'
 			identifier: method.notFound
 			count: 1
@@ -2049,12 +2043,6 @@ parameters:
 		-
 			message: '#^Method App\\Models\\FeeStructure\:\:termlyFor\(\) should return Illuminate\\Database\\Eloquent\\Collection\<int, App\\Models\\FeeStructure\> but returns Illuminate\\Database\\Eloquent\\Collection\<int, Illuminate\\Database\\Eloquent\\Model\>\.$#'
 			identifier: return.type
-			count: 1
-			path: app/Models/FeeStructure.php
-
-		-
-			message: '#^Property App\\Models\\FeeStructure\:\:\$auditIgnoreDefaults type has no value type specified in iterable type array\.$#'
-			identifier: missingType.iterableValue
 			count: 1
 			path: app/Models/FeeStructure.php
 
@@ -2317,12 +2305,6 @@ parameters:
 			path: app/Models/ResidencyType.php
 
 		-
-			message: '#^Property App\\Models\\ResidencyType\:\:\$auditIgnoreDefaults type has no value type specified in iterable type array\.$#'
-			identifier: missingType.iterableValue
-			count: 1
-			path: app/Models/ResidencyType.php
-
-		-
 			message: '#^Method App\\Models\\SalaryArrear\:\:appliedInPeriod\(\) return type with generic class Illuminate\\Database\\Eloquent\\Relations\\BelongsTo does not specify its types\: TRelatedModel, TDeclaringModel$#'
 			identifier: missingType.generics
 			count: 1
@@ -2383,12 +2365,6 @@ parameters:
 			path: app/Models/School.php
 
 		-
-			message: '#^Property App\\Models\\School\:\:\$auditIgnoreDefaults type has no value type specified in iterable type array\.$#'
-			identifier: missingType.iterableValue
-			count: 1
-			path: app/Models/School.php
-
-		-
 			message: '#^Access to an undefined property Illuminate\\Database\\Eloquent\\Model\:\:\$curriculum\.$#'
 			identifier: property.notFound
 			count: 1
@@ -2427,12 +2403,6 @@ parameters:
 		-
 			message: '#^Method App\\Models\\SchoolClass\:\:subjects\(\) return type with generic class Illuminate\\Database\\Eloquent\\Relations\\BelongsToMany does not specify its types\: TRelatedModel, TDeclaringModel, TPivotModel, TAccessor \(2\-4 required\)$#'
 			identifier: missingType.generics
-			count: 1
-			path: app/Models/SchoolClass.php
-
-		-
-			message: '#^Property App\\Models\\SchoolClass\:\:\$auditIgnoreDefaults type has no value type specified in iterable type array\.$#'
-			identifier: missingType.iterableValue
 			count: 1
 			path: app/Models/SchoolClass.php
 
@@ -2761,12 +2731,6 @@ parameters:
 			path: app/Models/StudentCharge.php
 
 		-
-			message: '#^Property App\\Models\\StudentCharge\:\:\$auditIgnoreDefaults type has no value type specified in iterable type array\.$#'
-			identifier: missingType.iterableValue
-			count: 1
-			path: app/Models/StudentCharge.php
-
-		-
 			message: '#^Access to an undefined property Illuminate\\Database\\Eloquent\\Model\:\:\$name\.$#'
 			identifier: property.notFound
 			count: 1
@@ -2811,12 +2775,6 @@ parameters:
 		-
 			message: '#^Method App\\Models\\StudentDiscount\:\:term\(\) return type with generic class Illuminate\\Database\\Eloquent\\Relations\\BelongsTo does not specify its types\: TRelatedModel, TDeclaringModel$#'
 			identifier: missingType.generics
-			count: 1
-			path: app/Models/StudentDiscount.php
-
-		-
-			message: '#^Property App\\Models\\StudentDiscount\:\:\$auditIgnoreDefaults type has no value type specified in iterable type array\.$#'
-			identifier: missingType.iterableValue
 			count: 1
 			path: app/Models/StudentDiscount.php
 

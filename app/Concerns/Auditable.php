@@ -35,6 +35,8 @@ trait Auditable
     /**
      * Columns never worth logging — they change on every save and tell
      * an auditor nothing.
+     *
+     * @var list<string>
      */
     protected array $auditIgnoreDefaults = [
         'created_at',

@@ -5,12 +5,15 @@ namespace App\Filament\App\Resources\Students\Tables;
 use App\Filament\Pages\ReceivePayment;
 use App\Filament\Pages\StudentAccount;
 use App\Models\Student;
+use App\Models\TransportRoute;
 use App\Support\PrivateFiles;
 use Filament\Actions\Action;
 use Filament\Actions\ActionGroup;
+use Filament\Actions\BulkAction;
 use Filament\Actions\BulkActionGroup;
 use Filament\Actions\DeleteBulkAction;
 use Filament\Actions\EditAction;
+use Filament\Forms\Components\Select;
 use Filament\Notifications\Notification;
 use Filament\Support\Enums\FontWeight;
 use Filament\Tables\Columns\ImageColumn;
@@ -18,6 +21,7 @@ use Filament\Tables\Columns\TextColumn;
 use Filament\Tables\Filters\SelectFilter;
 use Filament\Tables\Table;
 use Illuminate\Database\Eloquent\Builder;
+use Illuminate\Database\Eloquent\Collection;
 
 class StudentsTable
 {
@@ -26,7 +30,7 @@ class StudentsTable
         return $table
             // Eager-load what the combined cells read, so a page of
             // students is a handful of queries, not one per row.
-            ->modifyQueryUsing(fn (Builder $query) => $query->with(['section', 'guardian']))
+            ->modifyQueryUsing(fn (Builder $query) => $query->with(['section', 'guardian', 'transportRoute']))
             ->defaultSort('name')
             ->columns([
                 ImageColumn::make('photo')
@@ -71,6 +75,12 @@ class StudentsTable
                     ->badge()
                     ->color(fn (Student $record) => $record->residencyType?->badgeColor() ?? 'gray')
                     ->placeholder('—')
+                    ->toggleable(),
+
+                TextColumn::make('transportRoute.name')
+                    ->label('Van')
+                    ->placeholder('Parent')
+                    ->description(fn (Student $record): ?string => $record->transport_trip === 'one_way' ? 'One way' : null)
                     ->toggleable(),
 
                 // Guardian, with their phone underneath. Search matches either.
@@ -149,6 +159,14 @@ class StudentsTable
                 SelectFilter::make('status')
                     ->options(Student::STATUSES)
                     ->default('active'),
+                SelectFilter::make('transport_route_id')
+                    ->label('Van')
+                    ->options(fn (): array => ['none' => 'Brought by parent'] + static::routeOptions())
+                    ->query(fn (Builder $query, array $data): Builder => match ($data['value'] ?? null) {
+                        null, '' => $query,
+                        'none' => $query->whereNull('transport_route_id'),
+                        default => $query->where('transport_route_id', $data['value']),
+                    }),
             ])
             ->recordActions([
                 ActionGroup::make([
@@ -210,10 +228,57 @@ class StudentsTable
             ])
             ->toolbarActions([
                 BulkActionGroup::make([
+                    // Put a group on a van route (or take them off) in one go,
+                    // e.g. everyone from Kakiri at the start of term.
+                    BulkAction::make('setVan')
+                        ->label('Set school van')
+                        ->icon('heroicon-o-truck')
+                        ->schema([
+                            Select::make('transport_route_id')
+                                ->label('School van')
+                                ->options(fn (): array => static::routeOptions())
+                                ->placeholder('Brought by parent (no van)'),
+                            Select::make('transport_trip')
+                                ->label('Uses the van')
+                                ->options(TransportRoute::TRIPS)
+                                ->default('both')
+                                ->selectablePlaceholder(false),
+                        ])
+                        ->action(function (Collection $records, array $data): void {
+                            foreach ($records as $student) {
+                                if ($student instanceof Student) {
+                                    $student->update([
+                                        'transport_route_id' => $data['transport_route_id'] ?: null,
+                                        'transport_trip' => $data['transport_trip'] ?? 'both',
+                                    ]);
+                                }
+                            }
+
+                            Notification::make()
+                                ->title($data['transport_route_id'] ? 'Van route set' : 'Taken off the van')
+                                ->body($records->count().' learners updated. The fare is added when the term is billed.')
+                                ->success()
+                                ->send();
+                        })
+                        ->deselectRecordsAfterCompletion(),
                     DeleteBulkAction::make(),
                 ]),
             ])
             ->paginationPageOptions([10, 25, 50, 100])
             ->defaultPaginationPageOption(25);
+    }
+
+    /**
+     * The school's van routes that are in use, as filter and form options.
+     *
+     * @return array<int, string>
+     */
+    protected static function routeOptions(): array
+    {
+        return TransportRoute::where('school_id', auth()->user()?->school_id)
+            ->where('is_active', true)
+            ->orderBy('name')
+            ->pluck('name', 'id')
+            ->all();
     }
 }

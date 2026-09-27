@@ -45,6 +45,14 @@ use Illuminate\Support\Facades\DB;
  *
  * A FULL BURSARY waives every fee outright, whatever it is scoped to.
  *
+ * TRANSPORT
+ *
+ * A learner on a van route (Student::transportRoute) is charged that
+ * route's fare once per term, as its own line linked to the route. It is
+ * not a fee structure and takes no discounts: bursaries cover school fees,
+ * not the van. A learner with no route is brought by the parent and pays
+ * nothing for transport.
+ *
  * Each award also carries a scope — this term, this academic year, or
  * ongoing — and is ignored outside that period, so a lapsed award stops
  * discounting rather than quietly running on.
@@ -67,7 +75,7 @@ class BillingService
     public function billTerm(Term $term, ?array $classIds = null): array
     {
         $students = Student::query()
-            ->with('residencyType')
+            ->with(['residencyType', 'transportRoute'])
             ->where('school_id', $term->school_id)
             ->where('status', 'active')
             ->whereNotNull('school_class_id')
@@ -105,11 +113,13 @@ class BillingService
             ->reject(fn (FeeStructure $fee) => $this->alreadyChargedInTerm($student, $fee, $term))
             ->values();
 
+        $transport = $this->billTransport($student, $term);
+
         if ($fees->isEmpty()) {
-            return 0;
+            return $transport;
         }
 
-        return DB::transaction(function () use ($student, $term, $fees) {
+        return $transport + DB::transaction(function () use ($student, $term, $fees) {
             $lines = $this->resolveDiscounts($student, $term, $fees);
 
             foreach ($lines as $line) {
@@ -130,6 +140,48 @@ class BillingService
 
             return $lines->count();
         });
+    }
+
+    /**
+     * Charge the learner's van fare for the term, once. A learner who joins
+     * a route mid-term is charged when the term is billed again.
+     *
+     * @return int 1 when a transport charge was added, otherwise 0
+     */
+    public function billTransport(Student $student, Term $term): int
+    {
+        $route = $student->transportRoute;
+
+        if (! $route || ! $route->is_active || $this->transportChargedInTerm($student, $term)) {
+            return 0;
+        }
+
+        StudentCharge::create([
+            'school_id' => $student->school_id,
+            'student_id' => $student->getKey(),
+            'term_id' => $term->getKey(),
+            'transport_route_id' => $route->getKey(),
+            'description' => $route->chargeDescription($student->transport_trip),
+            'amount' => $route->fareFor($student->transport_trip),
+            'discount_amount' => 0,
+            'charged_on' => now()->toDateString(),
+            'currency' => 'UGX',
+            'created_by' => auth()->user()?->name,
+        ]);
+
+        return 1;
+    }
+
+    /**
+     * Whether the learner already has a van charge this term, on any route
+     * (a route change mid-term is settled by the bursar, not re-billed).
+     */
+    public function transportChargedInTerm(Student $student, Term $term): bool
+    {
+        return StudentCharge::where('student_id', $student->getKey())
+            ->where('term_id', $term->getKey())
+            ->whereNotNull('transport_route_id')
+            ->exists();
     }
 
     /**

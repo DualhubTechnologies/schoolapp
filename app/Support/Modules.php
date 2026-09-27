@@ -59,6 +59,7 @@ class Modules
         'FeeReminderResource' => 'fees',
         'StudentDiscountResource' => 'fees',
         'FeeStructureResource' => 'fees',
+        'TransportRouteResource' => 'fees',
         'FeeStructureSheet' => 'fees',
         // Finance
         'IncomeExpenditure' => 'finance',

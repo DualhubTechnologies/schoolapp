@@ -1,7 +1,8 @@
 {{--
     Live password checklist under a password field (App\Support\PasswordStrength::meter).
     Reads the field's value from Livewire as the person types; nothing is sent
-    to the server until the form is saved, where the same rules are enforced.
+    to the server until the form is saved. Only the minimum length is enforced
+    there; the other items are advice.
 --}}
 <div
     x-data="{
@@ -42,7 +43,7 @@
         </template>
     </ul>
 
-    @if ($breachCheck)
-        <p class="sh-pw-note">When you save, we also make sure this password hasn't appeared in a known data leak.</p>
-    @endif
+    <p class="sh-pw-note" x-show="level !== 'strong' && value.length >= @js($minLength)">
+        You can still use this password, but mixing letters and numbers makes it harder to guess.
+    </p>
 </div>

@@ -8,7 +8,6 @@ use Database\Seeders\RoleSeeder;
 use Filament\Facades\Filament;
 use Illuminate\Support\Facades\Notification;
 use Illuminate\Support\Facades\Validator;
-use Illuminate\Validation\Rules\Password;
 use Livewire\Livewire;
 
 beforeEach(function () {
@@ -55,18 +54,26 @@ it('accepts a six-character password and rejects a shorter one', function () {
     expect(User::where('email', 'head@hope.test')->exists())->toBeFalse();
 });
 
-it('asks production passwords for six characters with a letter and a number, no capital or symbol', function () {
+it('only enforces six characters in production; letters and numbers are advice', function () {
     app()->detectEnvironment(fn () => 'production');
 
-    // Without the data-leak lookup, which needs the internet.
-    $rule = Password::min(PasswordStrength::MIN_LENGTH)->letters()->numbers();
-    $passes = fn (string $password): bool => Validator::make(['password' => $password], ['password' => $rule])->passes();
+    $passes = fn (string $password): bool => Validator::make(['password' => $password], ['password' => PasswordStrength::rule()])->passes();
 
     expect($passes('abc123'))->toBeTrue()
-        ->and($passes('Abc123'))->toBeTrue()
-        ->and($passes('abcdef'))->toBeFalse()
-        ->and($passes('123456'))->toBeFalse()
+        ->and($passes('abcdef'))->toBeTrue()
+        ->and($passes('123456'))->toBeTrue()
+        ->and($passes('abc12'))->toBeFalse()
         ->and(PasswordStrength::MIN_LENGTH)->toBe(6)
         ->and(collect(PasswordStrength::requirements())->pluck('label')->all())
         ->toBe(['At least 6 characters', 'A letter', 'A number']);
+});
+
+it('lets someone who insists register with a weak six-character password', function () {
+    Livewire::test(RegisterSchool::class)
+        ->fillForm(registrationData(['password' => '123456', 'passwordConfirmation' => '123456']))
+        ->call('register')
+        ->assertHasNoFormErrors()
+        ->assertRedirect(Filament::getLoginUrl());
+
+    expect(User::where('email', 'head@hope.test')->exists())->toBeTrue();
 });

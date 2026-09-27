@@ -9,11 +9,16 @@ use App\Notifications\WelcomeToSchoolHub;
 use App\Services\Subscriptions\SubscriptionManager;
 use App\Support\EmailCheck;
 use App\Support\PasswordStrength;
+use DanHarrin\LivewireRateLimiting\Exceptions\TooManyRequestsException;
 use Filament\Actions\Action;
+use Filament\Auth\Events\Registered;
+use Filament\Auth\Http\Responses\Contracts\RegistrationResponse;
 use Filament\Auth\Pages\Register;
+use Filament\Facades\Filament;
 use Filament\Forms\Components\Checkbox;
 use Filament\Forms\Components\Select;
 use Filament\Forms\Components\TextInput;
+use Filament\Notifications\Notification as FilamentNotification;
 use Filament\Schemas\Components\Component;
 use Filament\Schemas\Components\Grid;
 use Filament\Schemas\Components\Section;
@@ -134,8 +139,58 @@ class RegisterSchool extends Register
     }
 
     /**
+     * Filament's registration, except the new administrator is not signed
+     * in: they land on the sign-in page with a confirmation and sign in
+     * with the details they just chose. The setup offer then greets them
+     * on the dashboard.
+     */
+    public function register(): ?RegistrationResponse
+    {
+        try {
+            $this->rateLimit(2);
+        } catch (TooManyRequestsException $exception) {
+            $this->getRateLimitedNotification($exception)?->send();
+
+            return null;
+        }
+
+        if ($this->isRegisterRateLimited($this->data['email'] ?? '')) {
+            return null;
+        }
+
+        $user = $this->wrapInDatabaseTransaction(function (): Model {
+            $this->callHook('beforeValidate');
+            $data = $this->form->getState();
+            $this->callHook('afterValidate');
+
+            $data = $this->mutateFormDataBeforeRegister($data);
+
+            $this->callHook('beforeRegister');
+            $user = $this->handleRegistration($data);
+            $this->form->model($user)->saveRelationships();
+            $this->callHook('afterRegister');
+
+            return $user;
+        });
+
+        event(new Registered($user));
+
+        $this->sendEmailVerificationNotification($user);
+
+        FilamentNotification::make()
+            ->title('Your school account is ready')
+            ->body('Sign in with the email and password you just chose to get started.')
+            ->success()
+            ->persistent()
+            ->send();
+
+        $this->redirect(Filament::getLoginUrl());
+
+        return null;
+    }
+
+    /**
      * Create the school, its administrator's login and the free trial.
-     * Filament then signs the new administrator in.
      */
     protected function handleRegistration(#[SensitiveParameter] array $data): Model
     {

@@ -15,24 +15,23 @@ use Illuminate\Validation\Rules\Password;
  */
 class PasswordStrength
 {
-    public const MIN_LENGTH = 12;
+    public const MIN_LENGTH = 6;
 
-    /** Production demands strong passwords; local and testing keep Laravel's 8-character minimum. */
+    /** Production adds the letter, number and data-leak checks; local and testing only need the length. */
     public static function strict(): bool
     {
         return app()->isProduction();
     }
 
-    public static function rule(): ?Password
+    public static function rule(): Password
     {
         return static::strict()
             ? Password::min(static::MIN_LENGTH)
                 ->mixedCase()
                 ->letters()
                 ->numbers()
-                ->symbols()
                 ->uncompromised()
-            : null;
+            : Password::min(static::MIN_LENGTH);
     }
 
     /**
@@ -44,7 +43,7 @@ class PasswordStrength
     public static function requirements(): array
     {
         if (! static::strict()) {
-            return [['label' => 'At least 8 characters', 'pattern' => '^[\\s\\S]{8,}$']];
+            return [['label' => 'At least '.static::MIN_LENGTH.' characters', 'pattern' => '^[\\s\\S]{'.static::MIN_LENGTH.',}$']];
         }
 
         return [
@@ -52,7 +51,6 @@ class PasswordStrength
             ['label' => 'An uppercase letter', 'pattern' => '\\p{Lu}'],
             ['label' => 'A lowercase letter', 'pattern' => '\\p{Ll}'],
             ['label' => 'A number', 'pattern' => '\\p{N}'],
-            ['label' => 'A symbol, e.g. ! @ # ?', 'pattern' => '[\\p{Z}\\p{S}\\p{P}]'],
         ];
     }
 

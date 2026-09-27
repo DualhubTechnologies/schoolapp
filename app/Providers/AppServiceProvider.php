@@ -139,7 +139,7 @@ class AppServiceProvider extends ServiceProvider
 
         // Defined in PasswordStrength so the live checklist on password
         // fields shows exactly these rules.
-        Password::defaults(fn (): ?Password => PasswordStrength::rule());
+        Password::defaults(fn (): Password => PasswordStrength::rule());
     }
 
     /**

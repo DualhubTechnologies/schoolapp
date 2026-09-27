@@ -160,7 +160,7 @@ class TransportLearnerResource extends Resource
                 ]),
             ])
             ->emptyStateHeading('No learners on the van yet')
-            ->emptyStateDescription('Press "Add to route" to put learners on a van route.')
+            ->emptyStateDescription('Press "Add learners" to put learners on a van route.')
             ->emptyStateIcon('heroicon-o-truck');
     }
 

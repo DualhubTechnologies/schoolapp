@@ -5,6 +5,7 @@ namespace App\Providers\Filament;
 use App\Filament\Admin\Resources\ActivationCodes\ActivationCodeResource;
 use App\Filament\Admin\Resources\ActivityLogs\ActivityLogResource;
 use App\Filament\Admin\Resources\DemoRequests\DemoRequestResource;
+use App\Filament\Admin\Resources\OnlineUsers\OnlineUserResource;
 use App\Filament\Admin\Resources\Plans\PlanResource;
 use App\Filament\Admin\Resources\Schools\SchoolResource;
 use App\Filament\App\Pages\Dashboard;
@@ -157,6 +158,7 @@ class AppPanelProvider extends PanelProvider
                 [DemoRequestResource::class, 'Demo requests', Heroicon::OutlinedCalendarDays, 3],
                 [ActivationCodeResource::class, 'Activation codes', Heroicon::OutlinedKey, 4],
                 [ActivityLogResource::class, 'Activity logs', Heroicon::OutlinedClipboardDocumentList, 5],
+                [OnlineUserResource::class, 'Online users', Heroicon::OutlinedSignal, 6],
             ])->map(fn (array $item) => NavigationItem::make($item[1])
                 ->url(fn (): string => $item[0]::getUrl(panel: 'admin'))
                 ->icon($item[2])

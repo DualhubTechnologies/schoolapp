@@ -46,7 +46,7 @@ class ProcessStudentImport implements ShouldQueue
                 Notification::make()
                     ->title('Student import completed')
                     ->body(
-                        "{$success} students imported" .
+                        "{$success} students imported".
                         ($failed > 0 ? ", {$failed} rows skipped." : '.')
                     )
                     ->icon(
@@ -73,7 +73,7 @@ class ProcessStudentImport implements ShouldQueue
             ]);
 
             $this->studentImport->appendLog(
-                'Import failed: ' . $e->getMessage()
+                'Import failed: '.$e->getMessage()
             );
 
             Log::error('Student import job failed', [

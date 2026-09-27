@@ -41,17 +41,17 @@ class FinanceSnapshot extends StatsOverviewWidget
         $link = IncomeExpenditure::getUrl();
 
         return [
-            Stat::make('Received', 'UGX ' . number_format($t['income']))
-                ->description($t['income_budget'] > 0 ? round($t['income'] / $t['income_budget'] * 100) . '% of budgeted income' : 'Fees + other income')
+            Stat::make('Received', 'UGX '.number_format($t['income']))
+                ->description($t['income_budget'] > 0 ? round($t['income'] / $t['income_budget'] * 100).'% of budgeted income' : 'Fees + other income')
                 ->icon('heroicon-o-arrow-down-tray')
                 ->color('success')
                 ->url($link),
-            Stat::make('Spent', 'UGX ' . number_format($t['expense']))
-                ->description($t['expense_budget'] > 0 ? round($t['expense'] / $t['expense_budget'] * 100) . '% of budgeted spending' : 'Expenses + salaries')
+            Stat::make('Spent', 'UGX '.number_format($t['expense']))
+                ->description($t['expense_budget'] > 0 ? round($t['expense'] / $t['expense_budget'] * 100).'% of budgeted spending' : 'Expenses + salaries')
                 ->icon('heroicon-o-arrow-up-tray')
                 ->color($t['expense_budget'] > 0 && $t['expense'] > $t['expense_budget'] ? 'danger' : 'warning')
                 ->url($link),
-            Stat::make($t['balance'] >= 0 ? 'Surplus' : 'Deficit', 'UGX ' . number_format(abs($t['balance'])))
+            Stat::make($t['balance'] >= 0 ? 'Surplus' : 'Deficit', 'UGX '.number_format(abs($t['balance'])))
                 ->description($term->label())
                 ->icon('heroicon-o-scale')
                 ->color($t['balance'] >= 0 ? 'success' : 'danger')

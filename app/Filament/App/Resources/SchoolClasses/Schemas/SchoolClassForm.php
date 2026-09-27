@@ -2,6 +2,7 @@
 
 namespace App\Filament\App\Resources\SchoolClasses\Schemas;
 
+use App\Support\SchoolType;
 use Filament\Forms\Components\Select;
 use Filament\Forms\Components\TextInput;
 use Filament\Schemas\Components\Section;
@@ -21,7 +22,7 @@ class SchoolClassForm
                     ->schema([
                         TextInput::make('name')
                             ->label('Class name')
-                            ->placeholder(fn () => \App\Support\SchoolType::isPrimary() ? 'e.g. P.4, Primary Five, Baby Class' : ('e.g. S1, Senior 5'))
+                            ->placeholder(fn () => SchoolType::isPrimary() ? 'e.g. P.4, Primary Five, Baby Class' : ('e.g. S1, Senior 5'))
                             ->required()
                             ->unique(ignoreRecord: true, modifyRuleUsing: fn (Unique $rule, Get $get) => $rule->where('school_id', $get('school_id') ?? auth()->user()?->school_id))
                             ->validationMessages(['unique' => 'A class with this name already exists.']),

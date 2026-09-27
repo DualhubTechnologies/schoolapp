@@ -41,12 +41,12 @@ class SmsSender
 
         $digits = match (true) {
             str_starts_with($digits, $cc) => $digits,
-            str_starts_with($digits, '0') => $cc . substr($digits, 1),
-            strlen($digits) === 9 => $cc . $digits,
+            str_starts_with($digits, '0') => $cc.substr($digits, 1),
+            strlen($digits) === 9 => $cc.$digits,
             default => $digits,
         };
 
-        return preg_match('/^' . $cc . '7\d{8}$/', $digits) ? '+' . $digits : null;
+        return preg_match('/^'.$cc.'7\d{8}$/', $digits) ? '+'.$digits : null;
     }
 
     protected function viaLog(string $to, string $message): array

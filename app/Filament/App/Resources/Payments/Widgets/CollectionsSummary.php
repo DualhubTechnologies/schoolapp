@@ -30,7 +30,7 @@ class CollectionsSummary extends StatsOverviewWidget
             ->selectRaw('method, SUM(amount) as total')
             ->groupBy('method')
             ->pluck('total', 'method')
-            ->map(fn ($v, $m) => (StudentPayment::METHODS[$m] ?? $m) . ' ' . number_format((float) $v))
+            ->map(fn ($v, $m) => (StudentPayment::METHODS[$m] ?? $m).' '.number_format((float) $v))
             ->implode(' · ');
 
         $week = (float) $base()->whereBetween('paid_on', [now()->startOfWeek(), now()->endOfWeek()])->sum('amount');
@@ -44,17 +44,17 @@ class CollectionsSummary extends StatsOverviewWidget
             : 0.0;
 
         return [
-            Stat::make('Collected today', 'UGX ' . number_format($todayTotal))
-                ->description($todayCount . ' ' . str('receipt')->plural($todayCount))
+            Stat::make('Collected today', 'UGX '.number_format($todayTotal))
+                ->description($todayCount.' '.str('receipt')->plural($todayCount))
                 ->icon('heroicon-o-banknotes')
                 ->color('success'),
             Stat::make('Today by method', $byMethod ?: '—')
                 ->description('Match against cash in hand and statements')
                 ->icon('heroicon-o-scale'),
-            Stat::make('This week', 'UGX ' . number_format($week))
-                ->description(now()->startOfWeek()->format('j M') . ' – ' . now()->endOfWeek()->format('j M'))
+            Stat::make('This week', 'UGX '.number_format($week))
+                ->description(now()->startOfWeek()->format('j M').' – '.now()->endOfWeek()->format('j M'))
                 ->icon('heroicon-o-calendar-days'),
-            Stat::make('This term', 'UGX ' . number_format($termTotal))
+            Stat::make('This term', 'UGX '.number_format($termTotal))
                 ->description($term?->label() ?? 'No current term')
                 ->icon('heroicon-o-academic-cap')
                 ->color('primary'),

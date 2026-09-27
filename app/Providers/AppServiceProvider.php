@@ -2,15 +2,20 @@
 
 namespace App\Providers;
 
+use App\Exceptions\PlanLimitReached;
 use App\Models\School;
 use App\Observers\SchoolObserver;
 use App\Support\PasswordStrength;
 use Carbon\CarbonImmutable;
+use Filament\Actions\CreateAction;
+use Filament\Actions\EditAction;
 use Filament\Notifications\Notification;
-use Illuminate\Database\UniqueConstraintViolationException;
+use Filament\Support\Enums\Width;
+use Filament\Tables\Table;
 use Illuminate\Auth\Events\Failed;
 use Illuminate\Auth\Events\Login;
 use Illuminate\Auth\Events\Logout;
+use Illuminate\Database\UniqueConstraintViolationException;
 use Illuminate\Support\Facades\Date;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Event;
@@ -47,11 +52,11 @@ class AppServiceProvider extends ServiceProvider
     protected function configureFilamentDefaults(): void
     {
         // Add/edit pop-ups sized like a dialog, not stretched across the screen.
-        \Filament\Actions\CreateAction::configureUsing(fn ($action) => $action->modalWidth(\Filament\Support\Enums\Width::TwoExtraLarge));
-        \Filament\Actions\EditAction::configureUsing(fn ($action) => $action->modalWidth(\Filament\Support\Enums\Width::TwoExtraLarge));
+        CreateAction::configureUsing(fn ($action) => $action->modalWidth(Width::TwoExtraLarge));
+        EditAction::configureUsing(fn ($action) => $action->modalWidth(Width::TwoExtraLarge));
 
         // Empty lists show a neutral "nothing here yet" icon, not an "X".
-        \Filament\Tables\Table::configureUsing(fn ($table) => $table->emptyStateIcon('heroicon-o-inbox'));
+        Table::configureUsing(fn ($table) => $table->emptyStateIcon('heroicon-o-inbox'));
     }
 
     /**
@@ -67,7 +72,7 @@ class AppServiceProvider extends ServiceProvider
     {
         \Livewire\on('exception', function ($component, \Throwable $e, callable $stopPropagation): void {
             // Adding past the school's plan: explain instead of an error page.
-            if ($e instanceof \App\Exceptions\PlanLimitReached) {
+            if ($e instanceof PlanLimitReached) {
                 Notification::make()->title('Plan limit reached')->body($e->getMessage())->warning()->persistent()->send();
                 $stopPropagation();
 
@@ -115,7 +120,7 @@ class AppServiceProvider extends ServiceProvider
 
         // MySQL: "... for key 'sections.sections_school_class_id_name_unique'"
         if (preg_match("/for key '([a-z_]+)\\./", $e->getMessage(), $m) && isset($messages[$m[1]])) {
-            return $messages[$m[1]] . ' Please use a different value.';
+            return $messages[$m[1]].' Please use a different value.';
         }
 
         return 'A record with the same details already exists. Please change the details and try again.';

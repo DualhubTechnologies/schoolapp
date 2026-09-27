@@ -4,6 +4,7 @@ namespace App\Filament\App\Resources\Billing;
 
 use App\Filament\App\Resources\Billing\Pages\ListBilling;
 use App\Filament\App\Resources\Billing\Tables\BillingTable;
+use App\Filament\Concerns\GatedByModule;
 use App\Models\StudentCharge;
 use BackedEnum;
 use Filament\Resources\Resource;
@@ -20,7 +21,7 @@ use Illuminate\Database\Eloquent\Builder;
  */
 class BillingResource extends Resource
 {
-    use \App\Filament\Concerns\GatedByModule;
+    use GatedByModule;
 
     protected static ?string $model = StudentCharge::class;
 

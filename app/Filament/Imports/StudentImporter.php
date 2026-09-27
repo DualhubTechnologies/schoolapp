@@ -49,7 +49,6 @@ class StudentImporter extends Importer
                 ->label('Guardian phone')
                 ->example('0775449733'),
 
-
             ImportColumn::make('status')
                 ->rules(['nullable', Rule::in(array_keys(Student::STATUSES))])
                 ->default('active')
@@ -92,10 +91,10 @@ class StudentImporter extends Importer
 
     public static function getCompletedNotificationBody(Import $import): string
     {
-        $body = number_format($import->successful_rows) . ' student(s) imported successfully.';
+        $body = number_format($import->successful_rows).' student(s) imported successfully.';
 
         if ($failedCount = $import->getFailedRowsCount()) {
-            $body .= ' ' . number_format($failedCount) . ' row(s) failed to import.';
+            $body .= ' '.number_format($failedCount).' row(s) failed to import.';
         }
 
         return $body;

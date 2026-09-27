@@ -23,9 +23,7 @@ use Illuminate\Support\Facades\Notification;
  */
 class SubscriptionReminders
 {
-    public function __construct(protected SmsSender $sms)
-    {
-    }
+    public function __construct(protected SmsSender $sms) {}
 
     /**
      * The reminder a school is due today, or null.
@@ -115,7 +113,7 @@ class SubscriptionReminders
         } elseif ($due['sms']) {
             $result = $this->sms->send($school->phone, SubscriptionEnding::smsText($school, $due));
             $sms = $result['ok'];
-            $note = $result['ok'] ? null : 'SMS failed: ' . $result['error'];
+            $note = $result['ok'] ? null : 'SMS failed: '.$result['error'];
         }
 
         SubscriptionReminder::create([

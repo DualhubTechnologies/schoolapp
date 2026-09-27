@@ -230,8 +230,8 @@ class ResultsCalculator
 
         return [
             'points' => $principals->isEmpty() && $subs->isEmpty() ? null : (int) ($principals->sum('value') + $subs->sum('value')),
-            'principal_grades' => $principals->map(fn ($r) => $r['subject']->label() . ' ' . $r['grade'])->implode(', '),
-            'result_code' => $principals->pluck('grade')->implode('') . ($subs->isNotEmpty() ? '/' . $subs->map(fn ($r) => (int) $r['value'])->implode('') : ''),
+            'principal_grades' => $principals->map(fn ($r) => $r['subject']->label().' '.$r['grade'])->implode(', '),
+            'result_code' => $principals->pluck('grade')->implode('').($subs->isNotEmpty() ? '/'.$subs->map(fn ($r) => (int) $r['value'])->implode('') : ''),
             'counted_subject_ids' => $principals->keys()->merge($subs->keys())->all(),
         ];
     }
@@ -315,7 +315,7 @@ class ResultsCalculator
             'class_average' => $ranked->isEmpty() ? null : round($ranked->avg('average'), 1),
             'distribution' => match ($curriculum) {
                 'primary' => $ranked->countBy(fn ($r) => $r['division'] ?? '—')->all(),
-                'a_level' => $ranked->countBy(fn ($r) => $r['points'] === null ? '—' : $r['points'] . ' pts')->sortKeysDesc()->all(),
+                'a_level' => $ranked->countBy(fn ($r) => $r['points'] === null ? '—' : $r['points'].' pts')->sortKeysDesc()->all(),
                 default => $ranked->countBy(fn ($r) => $r['overall_grade'] ?? '—')->sortKeys()->all(),
             },
         ];

@@ -2,8 +2,9 @@
 
 namespace App\Http\Controllers;
 
-use App\Models\PayrollPeriod;
 use App\Exports\NssfScheduleExport;
+use App\Models\PayrollPeriod;
+use App\Support\PayrollAccess;
 use Barryvdh\DomPDF\Facade\Pdf;
 use Maatwebsite\Excel\Facades\Excel;
 
@@ -11,7 +12,7 @@ class NssfScheduleController extends Controller
 {
     public function downloadPdf(PayrollPeriod $period)
     {
-        \App\Support\PayrollAccess::authorize($period->school_id);
+        PayrollAccess::authorize($period->school_id);
 
         $period->load(['school', 'entries.staff']);
 
@@ -31,7 +32,7 @@ class NssfScheduleController extends Controller
 
     public function downloadExcel(PayrollPeriod $period)
     {
-        \App\Support\PayrollAccess::authorize($period->school_id);
+        PayrollAccess::authorize($period->school_id);
 
         $filename = "NSSF-Schedule-{$period->period_label}.xlsx";
 

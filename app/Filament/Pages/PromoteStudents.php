@@ -6,11 +6,12 @@ use App\Models\AcademicYear;
 use App\Models\Promotion;
 use App\Models\PromotionRule;
 use App\Models\SchoolClass;
+use App\Models\Section;
 use App\Models\Term;
 use App\Services\Academics\PromotionAdvisor;
 use App\Services\Academics\PromotionService;
 use App\Services\Academics\ResultsCalculator;
-use App\Support\AcademicAccess;
+use App\Support\Modules;
 use BackedEnum;
 use Filament\Actions\Action;
 use Filament\Forms\Components\Select;
@@ -55,7 +56,7 @@ class PromoteStudents extends Page
 
     public static function canAccess(): bool
     {
-        return \App\Support\Modules::allows('promotion');
+        return Modules::allows('promotion');
     }
 
     protected function service(): PromotionService
@@ -90,7 +91,7 @@ class PromoteStudents extends Page
                     ->where('academic_year_id', $this->year?->getKey())
                     ->whereNull('reversed_at')
                     ->count(),
-                'default' => $final ? 'Completed' . ($next ? " (or on to {$next->name})" : '') : ($next ? "→ {$next->name}" : 'No next class'),
+                'default' => $final ? 'Completed'.($next ? " (or on to {$next->name})" : '') : ($next ? "→ {$next->name}" : 'No next class'),
             ];
         });
     }
@@ -136,7 +137,7 @@ class PromoteStudents extends Page
                 ->label('Promotion rules')
                 ->icon('heroicon-o-adjustments-horizontal')
                 ->color('gray')
-                ->modalHeading(fn () => 'Promotion rules — ' . (config('academics.curricula')[$this->rulesCurriculum()] ?? 'Primary'))
+                ->modalHeading(fn () => 'Promotion rules — '.(config('academics.curricula')[$this->rulesCurriculum()] ?? 'Primary'))
                 ->modalDescription('How the system recommends each student. You always make the final decision per student.')
                 ->modalSubmitActionLabel('Save rules')
                 ->fillForm(fn () => PromotionRule::for(auth()->user()->school_id, $this->rulesCurriculum())->only([
@@ -229,14 +230,14 @@ class PromoteStudents extends Page
             ->filter(fn ($student) => $this->show === 'all'
                 || in_array($this->advice[$student->id]['recommendation'] ?? 'promote', ['probation', 'repeat', 'no_results'], true))
             ->map(fn ($student) => [
-            'student' => $student,
-            'advice' => $this->advice[$student->id] ?? null,
-            'average' => $results->get($student->id)['average'] ?? null,
-            'position' => $results->get($student->id)['position'] ?? null,
-            'to_section' => $target && $student->section
-                ? (\App\Models\Section::find($this->service()->matchingSection($student->section, $target))?->name ?? 'no stream')
-                : null,
-        ]);
+                'student' => $student,
+                'advice' => $this->advice[$student->id] ?? null,
+                'average' => $results->get($student->id)['average'] ?? null,
+                'position' => $results->get($student->id)['position'] ?? null,
+                'to_section' => $target && $student->section
+                    ? (Section::find($this->service()->matchingSection($student->section, $target))?->name ?? 'no stream')
+                    : null,
+            ]);
     }
 
     /** @return Collection<int, string> */
@@ -271,7 +272,7 @@ class PromoteStudents extends Page
                 $counts['repeat'] ? "{$counts['repeat']} repeating" : null,
                 $counts['complete'] ? "{$counts['complete']} completed" : null,
                 $counts['leave'] ? "{$counts['leave']} left" : null,
-            ])->filter()->implode(', ') . '. You can undo this under History below.')
+            ])->filter()->implode(', ').'. You can undo this under History below.')
             ->success()
             ->send();
 

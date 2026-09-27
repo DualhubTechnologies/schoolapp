@@ -4,7 +4,9 @@ namespace App\Filament\App\Resources\Payments;
 
 use App\Filament\App\Resources\Payments\Pages\ListPayments;
 use App\Filament\App\Resources\Payments\Tables\PaymentsTable;
+use App\Filament\Concerns\GatedByModule;
 use App\Models\StudentPayment;
+use App\Support\Modules;
 use BackedEnum;
 use Filament\Resources\Resource;
 use Filament\Support\Icons\Heroicon;
@@ -19,7 +21,7 @@ use Illuminate\Database\Eloquent\Model;
  */
 class PaymentResource extends Resource
 {
-    use \App\Filament\Concerns\GatedByModule;
+    use GatedByModule;
 
     protected static ?string $model = StudentPayment::class;
 
@@ -59,7 +61,7 @@ class PaymentResource extends Resource
 
     public static function canViewAny(): bool
     {
-        return \App\Support\Modules::allows('fees');
+        return Modules::allows('fees');
     }
 
     // Payments are taken on the Receive Payment page and never edited or

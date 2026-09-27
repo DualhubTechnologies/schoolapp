@@ -3,8 +3,10 @@
 namespace App\Filament\App\Resources\Subjects;
 
 use App\Filament\App\Resources\Subjects\Pages\ManageSubjects;
+use App\Filament\Concerns\GatedByModule;
 use App\Models\Subject;
-use App\Support\AcademicAccess;
+use App\Support\Modules;
+use App\Support\SchoolType;
 use BackedEnum;
 use Filament\Actions\DeleteAction;
 use Filament\Actions\EditAction;
@@ -29,7 +31,7 @@ use Illuminate\Validation\Rules\Unique;
  */
 class SubjectResource extends Resource
 {
-    use \App\Filament\Concerns\GatedByModule;
+    use GatedByModule;
 
     protected static ?string $model = Subject::class;
 
@@ -45,7 +47,7 @@ class SubjectResource extends Resource
     {
         return parent::getEloquentQuery()
             ->where('school_id', auth()->user()?->school_id)
-            ->whereIn('curriculum', \App\Support\SchoolType::keys())
+            ->whereIn('curriculum', SchoolType::keys())
             ->withCount('classes');
     }
 
@@ -53,7 +55,7 @@ class SubjectResource extends Resource
     {
         return $schema->columns(2)->components([
             Select::make('curriculum')
-                ->options(fn () => \App\Support\SchoolType::curricula())
+                ->options(fn () => SchoolType::curricula())
                 ->required()
                 ->native(false)
                 ->live(),
@@ -98,7 +100,7 @@ class SubjectResource extends Resource
             ->defaultSort(fn (Builder $query) => $query->orderBy('sort_order')->orderBy('name'))
             ->columns([
                 TextColumn::make('name')->searchable()->weight('semibold')
-                    ->description(fn (Subject $s) => $s->code ? 'UNEB ' . $s->code : null),
+                    ->description(fn (Subject $s) => $s->code ? 'UNEB '.$s->code : null),
                 TextColumn::make('short_name')->label('Short')->badge()->color('gray'),
                 TextColumn::make('category')
                     ->badge()
@@ -112,7 +114,7 @@ class SubjectResource extends Resource
                 IconColumn::make('is_active')->label('Active')->boolean(),
             ])
             ->filters([
-                SelectFilter::make('curriculum')->options(fn () => \App\Support\SchoolType::curricula()),
+                SelectFilter::make('curriculum')->options(fn () => SchoolType::curricula()),
             ])
             ->recordActions([
                 EditAction::make(),
@@ -127,7 +129,7 @@ class SubjectResource extends Resource
 
     public static function canViewAny(): bool
     {
-        return \App\Support\Modules::allows('academics');
+        return Modules::allows('academics');
     }
 
     public static function getPages(): array

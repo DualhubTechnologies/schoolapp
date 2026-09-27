@@ -16,7 +16,7 @@ return new class extends Migration
             Schema::table('fee_structures', function (Blueprint $table) {
                 $table->dropUnique('fee_struct_unique');
             });
-        } catch (\Throwable $e) {
+        } catch (Throwable $e) {
             // Already dropped by an earlier migration. Nothing to do.
         }
 

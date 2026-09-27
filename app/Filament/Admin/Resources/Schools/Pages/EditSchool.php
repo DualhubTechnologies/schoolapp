@@ -3,6 +3,7 @@
 namespace App\Filament\Admin\Resources\Schools\Pages;
 
 use App\Filament\Admin\Resources\Schools\SchoolResource;
+use App\Filament\Admin\Resources\Schools\SubscriptionActions;
 use Filament\Actions\DeleteAction;
 use Filament\Resources\Pages\EditRecord;
 use Filament\Support\Enums\Width;
@@ -23,7 +24,7 @@ class EditSchool extends EditRecord
     protected function getHeaderActions(): array
     {
         return [
-            ...\App\Filament\Admin\Resources\Schools\SubscriptionActions::all(),
+            ...SubscriptionActions::all(),
             DeleteAction::make(),
         ];
     }

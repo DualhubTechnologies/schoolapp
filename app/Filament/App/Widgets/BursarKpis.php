@@ -22,14 +22,14 @@ class BursarKpis extends KpiCards
 
         return [
             static::card('emerald', 'heroicon-o-banknotes', 'Collected today', static::shortMoney($today['amount']),
-                $today['count'] ? $today['count'] . ' ' . str('receipt')->plural($today['count']) . ' issued' : 'No payments yet today', $payments),
+                $today['count'] ? $today['count'].' '.str('receipt')->plural($today['count']).' issued' : 'No payments yet today', $payments),
             static::card('blue', 'heroicon-o-calendar-days', 'This week', static::shortMoney($week['amount']),
-                $week['count'] . ' ' . str('payment')->plural($week['count']) . ' since Monday', $payments),
+                $week['count'].' '.str('payment')->plural($week['count']).' since Monday', $payments),
             static::card('violet', 'heroicon-o-chart-pie', 'This term', static::shortMoney($fees['collected']),
-                $fees['billed'] > 0 ? static::percentText($fees['collected'], $fees['billed']) . ' of ' . static::shortMoney($fees['billed']) . ' billed' : 'Nothing billed yet this term',
+                $fees['billed'] > 0 ? static::percentText($fees['collected'], $fees['billed']).' of '.static::shortMoney($fees['billed']).' billed' : 'Nothing billed yet this term',
                 $payments, $rate),
             static::card('rose', 'heroicon-o-exclamation-triangle', 'Outstanding', static::shortMoney($owed),
-                $debtors ? number_format($debtors) . ' ' . str('student')->plural($debtors) . ' with balances' : 'Everyone is paid up',
+                $debtors ? number_format($debtors).' '.str('student')->plural($debtors).' with balances' : 'Everyone is paid up',
                 FeeBalanceResource::getUrl()),
         ];
     }

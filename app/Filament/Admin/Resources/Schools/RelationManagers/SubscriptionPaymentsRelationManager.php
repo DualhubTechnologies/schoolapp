@@ -4,6 +4,7 @@ namespace App\Filament\Admin\Resources\Schools\RelationManagers;
 
 use App\Models\SubscriptionPayment;
 use Filament\Resources\RelationManagers\RelationManager;
+use Filament\Tables\Columns\Summarizers\Sum;
 use Filament\Tables\Columns\TextColumn;
 use Filament\Tables\Table;
 
@@ -20,7 +21,7 @@ class SubscriptionPaymentsRelationManager extends RelationManager
             ->columns([
                 TextColumn::make('paid_on')->label('Date')->date('j M Y'),
                 TextColumn::make('amount')->numeric()->prefix('UGX ')->weight('bold')
-                    ->summarize(\Filament\Tables\Columns\Summarizers\Sum::make()->label('Total')->numeric()->prefix('UGX ')),
+                    ->summarize(Sum::make()->label('Total')->numeric()->prefix('UGX ')),
                 TextColumn::make('method')->formatStateUsing(fn ($state) => SubscriptionPayment::METHODS[$state] ?? $state),
                 TextColumn::make('reference')->placeholder('—')->searchable(),
                 TextColumn::make('subscription.plan.name')->label('For')

@@ -4,9 +4,12 @@ namespace App\Http\Controllers;
 
 use App\Models\FeeStructure;
 use App\Models\GradingScale;
+use App\Models\Promotion;
 use App\Models\SchoolClass;
 use App\Models\Staff;
 use App\Models\Term;
+use App\Services\Academics\PromotionAdvisor;
+use App\Services\Academics\PromotionService;
 use App\Services\Academics\ResultsCalculator;
 use App\Support\AcademicAccess;
 use Illuminate\Http\Request;
@@ -56,17 +59,17 @@ class ReportCardController extends Controller
         // has been promoted, otherwise the rules' recommendation.
         $promotionText = [];
         $isFinalTerm = ! $nextTerm || $nextTerm->academic_year_id !== $term->academic_year_id;
-        $promotions = app(\App\Services\Academics\PromotionService::class);
+        $promotions = app(PromotionService::class);
 
         if ($isFinalTerm && ! $promotions->isFinalClass($class)) {
             $nextClass = $promotions->nextClass($class)?->name ?? 'the next class';
-            $made = \App\Models\Promotion::where('academic_year_id', $term->academic_year_id)
+            $made = Promotion::where('academic_year_id', $term->academic_year_id)
                 ->whereIn('student_id', $rows->pluck('student.id'))
                 ->whereNull('reversed_at')
                 ->with('toClass')
                 ->get()
                 ->keyBy('student_id');
-            $advice = app(\App\Services\Academics\PromotionAdvisor::class)->advise($class, $term->academicYear);
+            $advice = app(PromotionAdvisor::class)->advise($class, $term->academicYear);
 
             foreach ($rows as $row) {
                 $id = $row['student']->id;

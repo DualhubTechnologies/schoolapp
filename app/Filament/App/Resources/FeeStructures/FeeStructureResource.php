@@ -7,6 +7,7 @@ use App\Filament\App\Resources\FeeStructures\Pages\EditFeeStructure;
 use App\Filament\App\Resources\FeeStructures\Pages\ListFeeStructures;
 use App\Filament\App\Resources\FeeStructures\Schemas\FeeStructureForm;
 use App\Filament\App\Resources\FeeStructures\Tables\FeeStructureTable;
+use App\Filament\Concerns\GatedByModule;
 use App\Models\FeeStructure;
 use BackedEnum;
 use Filament\Resources\Resource;
@@ -19,7 +20,7 @@ use Illuminate\Database\Eloquent\Model;
 
 class FeeStructureResource extends Resource
 {
-    use \App\Filament\Concerns\GatedByModule;
+    use GatedByModule;
 
     protected static ?string $model = FeeStructure::class;
 

@@ -7,6 +7,7 @@ use App\Filament\App\Resources\Terms\Pages\EditTerm;
 use App\Filament\App\Resources\Terms\Pages\ListTerms;
 use App\Filament\App\Resources\Terms\Schemas\TermForm;
 use App\Filament\App\Resources\Terms\Tables\TermsTable;
+use App\Filament\Concerns\GatedByModule;
 use App\Models\Term;
 use BackedEnum;
 use Filament\Resources\Resource;
@@ -17,7 +18,7 @@ use Illuminate\Database\Eloquent\Builder;
 
 class TermResource extends Resource
 {
-    use \App\Filament\Concerns\GatedByModule;
+    use GatedByModule;
 
     protected static ?string $model = Term::class;
 

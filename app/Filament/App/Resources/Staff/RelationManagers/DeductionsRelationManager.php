@@ -171,24 +171,33 @@ class DeductionsRelationManager extends RelationManager
     private static function isFixedType(Get $get): bool
     {
         $typeId = $get('deduction_type_id');
-        if (! $typeId) return true;
-        $type = \App\Models\DeductionType::find($typeId);
+        if (! $typeId) {
+            return true;
+        }
+        $type = DeductionType::find($typeId);
+
         return $type && $type->calculation_method === 'fixed';
     }
 
     private static function isPercentageType(Get $get): bool
     {
         $typeId = $get('deduction_type_id');
-        if (! $typeId) return false;
-        $type = \App\Models\DeductionType::find($typeId);
+        if (! $typeId) {
+            return false;
+        }
+        $type = DeductionType::find($typeId);
+
         return $type && $type->calculation_method === 'percentage';
     }
 
     private static function isLoanType(Get $get): bool
     {
         $typeId = $get('deduction_type_id');
-        if (! $typeId) return false;
-        $type = \App\Models\DeductionType::find($typeId);
+        if (! $typeId) {
+            return false;
+        }
+        $type = DeductionType::find($typeId);
+
         return $type && in_array($type->name, ['Staff Loan', 'Salary Advance', 'Damage/Loss Recovery']);
     }
 }

@@ -26,7 +26,7 @@ class HrKpis extends KpiCards
                 'Active staff by category', StaffResource::getUrl()),
             static::card('violet', 'heroicon-o-calculator', 'Latest payroll',
                 $latest ? static::shortMoney((float) $latest->total_net) : '—',
-                $latest ? "{$latest->period_label} · " . (PayrollPeriod::STATUSES[$latest->status] ?? $latest->status) : 'No payroll run yet',
+                $latest ? "{$latest->period_label} · ".(PayrollPeriod::STATUSES[$latest->status] ?? $latest->status) : 'No payroll run yet',
                 PayrollPeriodResource::getUrl()),
             static::card($arrears ? 'rose' : 'emerald', 'heroicon-o-exclamation-circle', 'Salary arrears', number_format($arrears),
                 $arrears ? 'Pending review' : 'Nothing pending', SalaryArrearResource::getUrl()),

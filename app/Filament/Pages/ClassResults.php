@@ -9,9 +9,9 @@ use App\Services\Academics\ResultsCalculator;
 use App\Support\AcademicAccess;
 use BackedEnum;
 use Filament\Pages\Page;
-use Livewire\Attributes\Computed;
 use Filament\Support\Icons\Heroicon;
 use Illuminate\Support\Collection;
+use Livewire\Attributes\Computed;
 use Symfony\Component\HttpFoundation\StreamedResponse;
 
 /**
@@ -99,7 +99,7 @@ class ClassResults extends Page
 
         $subjects = $r['subjects']->filter(fn ($s) => isset($r['subject_stats'][$s->id]));
         $overall = $this->overallColumns($r['curriculum']);
-        $filename = str($r['class']->name . ' ' . $r['term']->label() . ' results')->slug() . '.csv';
+        $filename = str($r['class']->name.' '.$r['term']->label().' results')->slug().'.csv';
 
         return response()->streamDownload(function () use ($r, $subjects, $overall) {
             $out = fopen('php://output', 'w');
@@ -108,7 +108,7 @@ class ClassResults extends Page
             foreach ($r['rows'] as $row) {
                 fputcsv($out, array_merge(
                     [$row['position'], $row['student']->admission_no, $row['student']->name, $row['student']->section?->name],
-                    $subjects->map(fn ($s) => isset($row['subjects'][$s->id]) ? $row['subjects'][$s->id]['final'] . ' ' . $row['subjects'][$s->id]['grade'] : '')->all(),
+                    $subjects->map(fn ($s) => isset($row['subjects'][$s->id]) ? $row['subjects'][$s->id]['final'].' '.$row['subjects'][$s->id]['grade'] : '')->all(),
                     [$row['total'], $row['average']],
                     collect(array_keys($overall))->map(fn ($k) => $row[$k] ?? '')->all(),
                 ));

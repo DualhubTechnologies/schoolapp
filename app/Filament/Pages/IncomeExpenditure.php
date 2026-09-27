@@ -90,7 +90,7 @@ class IncomeExpenditure extends Page
         }
 
         return app(FinanceReport::class)->build($schoolId, $from->startOfDay(), $to->endOfDay(), $terms)
-            + ['label' => $label ?? ($from->format('j M Y') . ' – ' . $to->format('j M Y'))];
+            + ['label' => $label ?? ($from->format('j M Y').' – '.$to->format('j M Y'))];
     }
 
     protected function termRange(int $schoolId): array
@@ -110,7 +110,7 @@ class IncomeExpenditure extends Page
         $from = $year?->start_date ?? $terms->min('start_date');
         $to = $year?->end_date ?? $terms->max('end_date');
 
-        return $from && $to ? [Carbon::parse($from), Carbon::parse($to), $terms, 'Academic year ' . $year->name] : [null, null, null, null];
+        return $from && $to ? [Carbon::parse($from), Carbon::parse($to), $terms, 'Academic year '.$year->name] : [null, null, null, null];
     }
 
     public function exportCsv(): ?StreamedResponse
@@ -130,11 +130,11 @@ class IncomeExpenditure extends Page
                 foreach ($r[$type] as $row) {
                     fputcsv($out, [$row['category']->name, $row['budget'], $row['actual'], $row['variance'], $row['percent']]);
                 }
-                fputcsv($out, ['Total', $r['totals'][$type . '_budget'], $r['totals'][$type]]);
+                fputcsv($out, ['Total', $r['totals'][$type.'_budget'], $r['totals'][$type]]);
             }
             fputcsv($out, []);
             fputcsv($out, [$r['totals']['balance'] >= 0 ? 'Surplus' : 'Deficit', '', abs($r['totals']['balance'])]);
             fclose($out);
-        }, str('income-vs-expenditure ' . $r['label'])->slug() . '.csv', ['Content-Type' => 'text/csv']);
+        }, str('income-vs-expenditure '.$r['label'])->slug().'.csv', ['Content-Type' => 'text/csv']);
     }
 }

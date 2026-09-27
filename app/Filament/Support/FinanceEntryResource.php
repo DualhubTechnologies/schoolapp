@@ -2,6 +2,7 @@
 
 namespace App\Filament\Support;
 
+use App\Filament\Concerns\GatedByModule;
 use App\Models\FinanceCategory;
 use App\Models\FinanceEntry;
 use App\Models\Term;
@@ -35,7 +36,7 @@ use Illuminate\Support\Carbon;
  */
 abstract class FinanceEntryResource extends Resource
 {
-    use \App\Filament\Concerns\GatedByModule;
+    use GatedByModule;
 
     protected static ?string $model = FinanceEntry::class;
 
@@ -88,7 +89,7 @@ abstract class FinanceEntryResource extends Resource
                 ->searchable()
                 ->required()
                 ->helperText('Not in the list? Click + to add a category.')
-                ->createOptionModalHeading('New ' . ($expense ? 'expense' : 'income') . ' category')
+                ->createOptionModalHeading('New '.($expense ? 'expense' : 'income').' category')
                 ->createOptionForm([
                     TextInput::make('name')->label('Category name')->required()->maxLength(100),
                 ])
@@ -145,7 +146,7 @@ abstract class FinanceEntryResource extends Resource
                     ->weight(FontWeight::SemiBold)
                     ->searchable()
                     ->color(fn (FinanceEntry $r) => $r->isVoided() ? 'gray' : null)
-                    ->description(fn (FinanceEntry $r) => $r->isVoided() ? 'VOID — ' . $r->void_reason : null),
+                    ->description(fn (FinanceEntry $r) => $r->isVoided() ? 'VOID — '.$r->void_reason : null),
                 TextColumn::make('entry_date')->label('Date')->date('j M Y')->sortable(),
                 TextColumn::make('category.name')->label('Category')->badge()->color($expense ? 'warning' : 'success')->wrap(),
                 TextColumn::make('description')
@@ -178,7 +179,7 @@ abstract class FinanceEntryResource extends Resource
                         ->when($data['from'] ?? null, fn ($q, $d) => $q->whereDate('entry_date', '>=', $d))
                         ->when($data['until'] ?? null, fn ($q, $d) => $q->whereDate('entry_date', '<=', $d)))
                     ->indicateUsing(fn (array $data) => ($data['from'] ?? null) || ($data['until'] ?? null)
-                        ? trim(($data['from'] ? Carbon::parse($data['from'])->format('j M Y') : '…') . ' – ' . ($data['until'] ? Carbon::parse($data['until'])->format('j M Y') : '…'))
+                        ? trim(($data['from'] ? Carbon::parse($data['from'])->format('j M Y') : '…').' – '.($data['until'] ? Carbon::parse($data['until'])->format('j M Y') : '…'))
                         : null),
                 SelectFilter::make('finance_category_id')->label('Category')->options(fn () => static::categoryOptions()),
                 SelectFilter::make('term_id')->label('Term')

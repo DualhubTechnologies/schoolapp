@@ -7,6 +7,7 @@ use App\Filament\App\Resources\SchoolClasses\Pages\EditSchoolClass;
 use App\Filament\App\Resources\SchoolClasses\Pages\ListSchoolClasses;
 use App\Filament\App\Resources\SchoolClasses\Schemas\SchoolClassForm;
 use App\Filament\App\Resources\SchoolClasses\Tables\SchoolClassesTable;
+use App\Filament\Concerns\GatedByModule;
 use App\Models\SchoolClass;
 use BackedEnum;
 use Filament\Resources\Resource;
@@ -17,7 +18,7 @@ use Illuminate\Database\Eloquent\Builder;
 
 class SchoolClassResource extends Resource
 {
-    use \App\Filament\Concerns\GatedByModule;
+    use GatedByModule;
 
     protected static ?string $model = SchoolClass::class;
 

@@ -79,7 +79,7 @@ class CreateFeeStructure extends CreateRecord
         }
 
         Notification::make()
-            ->title("Created {$created} fee record(s)" . ($skipped ? ", skipped {$skipped} already existing" : ''))
+            ->title("Created {$created} fee record(s)".($skipped ? ", skipped {$skipped} already existing" : ''))
             ->success()
             ->send();
 

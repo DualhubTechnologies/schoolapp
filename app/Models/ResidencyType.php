@@ -17,8 +17,8 @@ use Illuminate\Database\Eloquent\Relations\HasMany;
  */
 class ResidencyType extends Model
 {
-    use HasFactory;
     use Auditable;
+    use HasFactory;
 
     protected $fillable = [
         'school_id',

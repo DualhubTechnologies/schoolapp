@@ -34,7 +34,8 @@ class SalaryArrearsTable
                     ->label('For period')
                     ->formatStateUsing(function ($record) {
                         $months = [1 => 'January', 2 => 'February', 3 => 'March', 4 => 'April', 5 => 'May', 6 => 'June', 7 => 'July', 8 => 'August', 9 => 'September', 10 => 'October', 11 => 'November', 12 => 'December'];
-                        return ($months[$record->month] ?? 'Unknown') . ' ' . $record->year;
+
+                        return ($months[$record->month] ?? 'Unknown').' '.$record->year;
                     })
                     ->sortable(),
                 TextColumn::make('amount')
@@ -53,9 +54,12 @@ class SalaryArrearsTable
                 TextColumn::make('appliedInPeriod.month')
                     ->label('Paid in')
                     ->formatStateUsing(function ($record) {
-                        if (! $record->applied_in_period_id) return null;
+                        if (! $record->applied_in_period_id) {
+                            return null;
+                        }
                         $months = [1 => 'January', 2 => 'February', 3 => 'March', 4 => 'April', 5 => 'May', 6 => 'June', 7 => 'July', 8 => 'August', 9 => 'September', 10 => 'October', 11 => 'November', 12 => 'December'];
-                        return ($months[$record->appliedInPeriod->month] ?? '') . ' ' . $record->appliedInPeriod->year;
+
+                        return ($months[$record->appliedInPeriod->month] ?? '').' '.$record->appliedInPeriod->year;
                     })
                     ->placeholder('—'),
                 TextColumn::make('created_at')
@@ -83,7 +87,7 @@ class SalaryArrearsTable
                         $record->update(['status' => 'approved']);
 
                         Notification::make()
-                            ->title('Arrears approved for ' . $record->staff->name)
+                            ->title('Arrears approved for '.$record->staff->name)
                             ->success()
                             ->send();
                     }),

@@ -113,8 +113,8 @@ class StudentLedger
                 'date' => $row->paid_on,
                 'type' => 'payment',
                 'description' => 'Payment received'
-                    . (($label = StudentPayment::METHODS[$row->method] ?? null) ? " — {$label}" : ''),
-                'reference' => $row->receipt_no . ($row->reference ? " · {$row->reference}" : ''),
+                    .(($label = StudentPayment::METHODS[$row->method] ?? null) ? " — {$label}" : ''),
+                'reference' => $row->receipt_no.($row->reference ? " · {$row->reference}" : ''),
                 'term_id' => $row->term_id,
                 'term_name' => $row->term_name,
                 'debit' => 0.0,

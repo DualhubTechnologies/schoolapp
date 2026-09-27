@@ -5,10 +5,12 @@ namespace App\Filament\Widgets;
 use App\Filament\Widgets\Concerns\SchoolScoped;
 use App\Models\PayrollPeriod;
 use App\Models\SalaryArrear;
+use App\Models\School;
 use App\Models\Staff;
 use App\Models\Student;
 use App\Models\StudentCharge;
 use App\Models\StudentPayment;
+use App\Models\User;
 use Filament\Widgets\StatsOverviewWidget;
 use Filament\Widgets\StatsOverviewWidget\Stat;
 use Illuminate\Support\Carbon;
@@ -47,7 +49,7 @@ class StatsOverview extends StatsOverviewWidget
     protected function superAdminStats(): array
     {
         return [
-            Stat::make('Schools', \App\Models\School::count())
+            Stat::make('Schools', School::count())
                 ->description('Registered on the platform')
                 ->icon('heroicon-o-building-office-2')
                 ->color('primary'),
@@ -55,7 +57,7 @@ class StatsOverview extends StatsOverviewWidget
                 ->description('Active, across all schools')
                 ->icon('heroicon-o-academic-cap')
                 ->color('info'),
-            Stat::make('Users', \App\Models\User::count())
+            Stat::make('Users', User::count())
                 ->description('Across all schools')
                 ->icon('heroicon-o-users')
                 ->color('success'),
@@ -147,7 +149,7 @@ class StatsOverview extends StatsOverviewWidget
                 }),
 
             Stat::make('Outstanding fees', static::shortMoney($owed))
-                ->description($debtors ? number_format($debtors) . ' students owe, all terms' : 'No outstanding balances')
+                ->description($debtors ? number_format($debtors).' students owe, all terms' : 'No outstanding balances')
                 ->icon('heroicon-o-exclamation-circle')
                 ->color($owed > 0 ? 'danger' : 'success'),
         ];
@@ -246,9 +248,9 @@ class StatsOverview extends StatsOverviewWidget
         return [
             Stat::make('Active staff', number_format($activeStaff))
                 ->description(
-                    ((int) ($byCategory['teaching'] ?? 0)) . ' teaching · ' . ((int) ($byCategory['non_teaching'] ?? 0)) . ' non-teaching'
-                    . ($latestPayroll
-                        ? " · Payroll {$latestPayroll->period_label}: " . static::shortMoney((float) $latestPayroll->total_net) . ' net'
+                    ((int) ($byCategory['teaching'] ?? 0)).' teaching · '.((int) ($byCategory['non_teaching'] ?? 0)).' non-teaching'
+                    .($latestPayroll
+                        ? " · Payroll {$latestPayroll->period_label}: ".static::shortMoney((float) $latestPayroll->total_net).' net'
                         : '')
                 )
                 ->icon('heroicon-o-user-group')

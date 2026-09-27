@@ -2,6 +2,8 @@
 
 namespace App\Filament\App\Resources\Users\Tables;
 
+use App\Models\User;
+use App\Support\Modules;
 use Filament\Actions\BulkActionGroup;
 use Filament\Actions\DeleteBulkAction;
 use Filament\Actions\EditAction;
@@ -28,14 +30,14 @@ class UsersTable
                     ->searchable(),
                 TextColumn::make('access')
                     ->label('Can open')
-                    ->state(fn (\App\Models\User $record) => \App\Support\Modules::hasFullAccess($record)
+                    ->state(fn (User $record) => Modules::hasFullAccess($record)
                         ? ['Everything']
-                        : collect(\App\Support\Modules::forUser($record))
-                            ->map(fn ($key) => \App\Support\Modules::LIST[$key][0] ?? $key)
+                        : collect(Modules::forUser($record))
+                            ->map(fn ($key) => Modules::LIST[$key][0] ?? $key)
                             ->values()->all())
                     ->badge()
-                    ->color(fn (\App\Models\User $record) => $record->modules !== null ? 'warning' : 'gray')
-                    ->tooltip(fn (\App\Models\User $record) => $record->modules !== null ? 'Chosen for this user' : 'Role defaults')
+                    ->color(fn (User $record) => $record->modules !== null ? 'warning' : 'gray')
+                    ->tooltip(fn (User $record) => $record->modules !== null ? 'Chosen for this user' : 'Role defaults')
                     ->placeholder('Nothing')
                     ->wrap(),
                 TextColumn::make('staff.name')

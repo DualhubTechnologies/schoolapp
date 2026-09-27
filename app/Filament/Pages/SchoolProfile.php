@@ -3,7 +3,7 @@
 namespace App\Filament\Pages;
 
 use App\Filament\Admin\Resources\Schools\Schemas\SchoolForm;
-use App\Models\School;
+use App\Support\Modules;
 use BackedEnum;
 use Filament\Forms\Concerns\InteractsWithForms;
 use Filament\Forms\Contracts\HasForms;
@@ -65,6 +65,6 @@ class SchoolProfile extends Page implements HasForms
 
     public static function canAccess(): bool
     {
-        return \App\Support\Modules::allows('settings');
+        return Modules::allows('settings');
     }
 }

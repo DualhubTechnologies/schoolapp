@@ -3,13 +3,15 @@
 namespace App\Http\Controllers;
 
 use App\Models\PayrollEntry;
+use App\Models\PayrollPeriod;
+use App\Support\PayrollAccess;
 use Barryvdh\DomPDF\Facade\Pdf;
 
 class PayslipController extends Controller
 {
     public function download(PayrollEntry $entry)
     {
-        \App\Support\PayrollAccess::authorize($entry->payrollPeriod?->school_id);
+        PayrollAccess::authorize($entry->payrollPeriod?->school_id);
 
         $entry->load(['staff', 'payrollPeriod.school', 'items']);
 
@@ -31,9 +33,10 @@ class PayslipController extends Controller
 
         return $pdf->download($filename);
     }
-    public function downloadAll(\App\Models\PayrollPeriod $period)
+
+    public function downloadAll(PayrollPeriod $period)
     {
-        \App\Support\PayrollAccess::authorize($period->school_id);
+        PayrollAccess::authorize($period->school_id);
 
         $period->load(['school', 'entries.staff.bankDetails', 'entries.items']);
 

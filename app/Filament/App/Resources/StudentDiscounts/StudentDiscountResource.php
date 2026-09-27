@@ -7,6 +7,7 @@ use App\Filament\App\Resources\StudentDiscounts\Pages\EditStudentDiscount;
 use App\Filament\App\Resources\StudentDiscounts\Pages\ListStudentDiscounts;
 use App\Filament\App\Resources\StudentDiscounts\Schemas\StudentDiscountForm;
 use App\Filament\App\Resources\StudentDiscounts\Tables\StudentDiscountsTable;
+use App\Filament\Concerns\GatedByModule;
 use App\Models\StudentDiscount;
 use BackedEnum;
 use Filament\Resources\Resource;
@@ -17,7 +18,7 @@ use Illuminate\Database\Eloquent\Builder;
 
 class StudentDiscountResource extends Resource
 {
-    use \App\Filament\Concerns\GatedByModule;
+    use GatedByModule;
 
     protected static ?string $model = StudentDiscount::class;
 

@@ -33,7 +33,7 @@ class PaymentsTable
                     ->searchable()
                     ->sortable(query: fn (Builder $q, string $direction) => $q->orderBy('receipt_seq', $direction))
                     ->color(fn (StudentPayment $record) => $record->isVoided() ? 'gray' : null)
-                    ->description(fn (StudentPayment $record) => $record->isVoided() ? 'VOID — ' . $record->void_reason : null),
+                    ->description(fn (StudentPayment $record) => $record->isVoided() ? 'VOID — '.$record->void_reason : null),
 
                 TextColumn::make('paid_on')
                     ->label('Date')
@@ -106,10 +106,10 @@ class PaymentsTable
                         $until = $data['until'] ?? null;
 
                         return match (true) {
-                            $from && $until && $from === $until => 'On ' . Carbon::parse($from)->format('j M Y'),
-                            $from && $until => Carbon::parse($from)->format('j M') . ' – ' . Carbon::parse($until)->format('j M Y'),
-                            (bool) $from => 'From ' . Carbon::parse($from)->format('j M Y'),
-                            (bool) $until => 'Until ' . Carbon::parse($until)->format('j M Y'),
+                            $from && $until && $from === $until => 'On '.Carbon::parse($from)->format('j M Y'),
+                            $from && $until => Carbon::parse($from)->format('j M').' – '.Carbon::parse($until)->format('j M Y'),
+                            (bool) $from => 'From '.Carbon::parse($from)->format('j M Y'),
+                            (bool) $until => 'Until '.Carbon::parse($until)->format('j M Y'),
                             default => null,
                         };
                     }),

@@ -7,6 +7,7 @@ use App\Models\GradingScale;
 use App\Models\School;
 use App\Models\SchoolClass;
 use App\Models\Subject;
+use App\Support\SchoolType;
 use Illuminate\Support\Facades\DB;
 
 /**
@@ -27,7 +28,7 @@ class CurriculumSetup
         $result = ['subjects' => 0, 'class_subjects' => 0, 'scales' => 0, 'combinations' => 0, 'curricula' => []];
 
         $classes = SchoolClass::where('school_id', $school->getKey())->with('classLevel')->get();
-        $allowed = \App\Support\SchoolType::keys($school);
+        $allowed = SchoolType::keys($school);
         $curricula = $classes->map->curriculum()->filter(fn ($c) => in_array($c, $allowed, true))->unique()->values();
 
         // A school whose levels carry no curriculum yet: go by school type.
@@ -85,7 +86,7 @@ class CurriculumSetup
         foreach (config("academics.grading.{$curriculum}", []) as $purpose => $bands) {
             $scale = GradingScale::firstOrCreate(
                 ['school_id' => $school->getKey(), 'curriculum' => $curriculum, 'purpose' => $purpose],
-                ['name' => (config('academics.curricula')[$curriculum] ?? $curriculum) . ' — ' . (GradingScale::PURPOSES[$purpose] ?? $purpose)],
+                ['name' => (config('academics.curricula')[$curriculum] ?? $curriculum).' — '.(GradingScale::PURPOSES[$purpose] ?? $purpose)],
             );
 
             if (! $scale->wasRecentlyCreated) {

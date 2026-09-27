@@ -2,6 +2,9 @@
 
 namespace App\Filament\App\Widgets;
 
+use App\Filament\Admin\Resources\DemoRequests\DemoRequestResource;
+use App\Filament\Admin\Resources\Plans\PlanResource;
+use App\Filament\Admin\Resources\Schools\SchoolResource;
 use App\Filament\App\Resources\Expenses\ExpenseResource;
 use App\Filament\App\Resources\FeeBalances\FeeBalanceResource;
 use App\Filament\App\Resources\FeeReminders\FeeReminderResource;
@@ -104,9 +107,9 @@ class WelcomeBanner extends Widget
         // The platform owner's shortcuts live in the admin panel.
         if (DashboardProfile::for() === DashboardProfile::PLATFORM) {
             return [
-                ['url' => \App\Filament\Admin\Resources\Schools\SchoolResource::getUrl(panel: 'admin'), 'label' => 'Manage schools', 'icon' => 'heroicon-o-building-office-2', 'primary' => true],
-                ['url' => \App\Filament\Admin\Resources\DemoRequests\DemoRequestResource::getUrl(panel: 'admin'), 'label' => 'Demo requests', 'icon' => 'heroicon-o-calendar-days', 'primary' => false],
-                ['url' => \App\Filament\Admin\Resources\Plans\PlanResource::getUrl(panel: 'admin'), 'label' => 'Plans & pricing', 'icon' => 'heroicon-o-rectangle-stack', 'primary' => false],
+                ['url' => SchoolResource::getUrl(panel: 'admin'), 'label' => 'Manage schools', 'icon' => 'heroicon-o-building-office-2', 'primary' => true],
+                ['url' => DemoRequestResource::getUrl(panel: 'admin'), 'label' => 'Demo requests', 'icon' => 'heroicon-o-calendar-days', 'primary' => false],
+                ['url' => PlanResource::getUrl(panel: 'admin'), 'label' => 'Plans & pricing', 'icon' => 'heroicon-o-rectangle-stack', 'primary' => false],
             ];
         }
 

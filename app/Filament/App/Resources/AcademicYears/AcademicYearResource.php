@@ -7,6 +7,7 @@ use App\Filament\App\Resources\AcademicYears\Pages\EditAcademicYear;
 use App\Filament\App\Resources\AcademicYears\Pages\ListAcademicYears;
 use App\Filament\App\Resources\AcademicYears\Schemas\AcademicYearForm;
 use App\Filament\App\Resources\AcademicYears\Tables\AcademicYearsTable;
+use App\Filament\Concerns\GatedByModule;
 use App\Models\AcademicYear;
 use BackedEnum;
 use Filament\Resources\Resource;
@@ -17,7 +18,7 @@ use Illuminate\Database\Eloquent\Builder;
 
 class AcademicYearResource extends Resource
 {
-    use \App\Filament\Concerns\GatedByModule;
+    use GatedByModule;
 
     protected static ?string $model = AcademicYear::class;
 

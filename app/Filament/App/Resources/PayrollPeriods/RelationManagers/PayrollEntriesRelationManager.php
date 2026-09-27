@@ -2,10 +2,10 @@
 
 namespace App\Filament\App\Resources\PayrollPeriods\RelationManagers;
 
+use App\Services\Payroll\PayrollService;
 use Filament\Actions\Action;
 use Filament\Notifications\Notification;
 use Filament\Resources\RelationManagers\RelationManager;
-use Filament\Schemas\Schema;
 use Filament\Tables\Columns\Summarizers\Sum;
 use Filament\Tables\Columns\TextColumn;
 use Filament\Tables\Table;
@@ -102,7 +102,7 @@ class PayrollEntriesRelationManager extends RelationManager
                         self::recalculatePeriodTotals($record->payrollPeriod);
 
                         Notification::make()
-                            ->title($record->staff->name . ' excluded from payroll')
+                            ->title($record->staff->name.' excluded from payroll')
                             ->warning()
                             ->send();
                     }),
@@ -118,7 +118,7 @@ class PayrollEntriesRelationManager extends RelationManager
                         self::recalculatePeriodTotals($record->payrollPeriod);
 
                         Notification::make()
-                            ->title($record->staff->name . ' re-included in payroll')
+                            ->title($record->staff->name.' re-included in payroll')
                             ->success()
                             ->send();
                     }),
@@ -135,6 +135,6 @@ class PayrollEntriesRelationManager extends RelationManager
 
     protected static function recalculatePeriodTotals($period): void
     {
-        app(\App\Services\Payroll\PayrollService::class)->refreshTotals($period);
+        app(PayrollService::class)->refreshTotals($period);
     }
 }

@@ -14,9 +14,7 @@ class WelcomeToSchoolHub extends Notification implements ShouldQueue
 {
     use Queueable;
 
-    public function __construct(public School $school, public CarbonInterface $trialEndsOn)
-    {
-    }
+    public function __construct(public School $school, public CarbonInterface $trialEndsOn) {}
 
     public function via(object $notifiable): array
     {

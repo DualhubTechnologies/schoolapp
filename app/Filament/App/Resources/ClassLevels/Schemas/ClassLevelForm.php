@@ -2,6 +2,7 @@
 
 namespace App\Filament\App\Resources\ClassLevels\Schemas;
 
+use App\Support\SchoolType;
 use Filament\Forms\Components\Select;
 use Filament\Forms\Components\Textarea;
 use Filament\Forms\Components\TextInput;
@@ -33,7 +34,7 @@ class ClassLevelForm
                         // aggregates & divisions, A–E levels, or A-Level points.
                         Select::make('curriculum')
                             ->label('Curriculum')
-                            ->options(fn () => \App\Support\SchoolType::curricula())
+                            ->options(fn () => SchoolType::curricula())
                             ->native(false)
                             ->helperText('Decides the subjects, grading and report cards for classes in this level.'),
 

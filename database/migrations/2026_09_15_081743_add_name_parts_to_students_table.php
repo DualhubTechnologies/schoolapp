@@ -14,9 +14,9 @@ return new class extends Migration
         });
 
         // Backfill existing rows: split existing `name` into parts.
-        foreach (\DB::table('students')->select('id', 'name')->get() as $row) {
+        foreach (DB::table('students')->select('id', 'name')->get() as $row) {
             $parts = preg_split('/\s+/', trim((string) $row->name), 2);
-            \DB::table('students')->where('id', $row->id)->update([
+            DB::table('students')->where('id', $row->id)->update([
                 'first_name' => $parts[0] ?? null,
                 'last_name' => $parts[1] ?? null,
             ]);

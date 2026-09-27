@@ -3,6 +3,7 @@
 namespace App\Filament\App\Resources\SchoolClasses\RelationManagers;
 
 use App\Models\Staff;
+use App\Support\Modules;
 use Filament\Actions\AttachAction;
 use Filament\Actions\DetachAction;
 use Filament\Actions\EditAction;
@@ -28,7 +29,7 @@ class SubjectsRelationManager extends RelationManager
 
     public static function canViewForRecord(Model $ownerRecord, string $pageClass): bool
     {
-        return \App\Support\Modules::allows('academics');
+        return Modules::allows('academics');
     }
 
     public function form(Schema $schema): Schema

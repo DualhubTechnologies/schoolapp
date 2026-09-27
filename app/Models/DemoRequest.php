@@ -54,9 +54,9 @@ class DemoRequest extends Model
         $digits = preg_replace('/\D/', '', $this->phone);
 
         if (str_starts_with($digits, '0')) {
-            $digits = '256' . substr($digits, 1);
+            $digits = '256'.substr($digits, 1);
         }
 
-        return 'https://wa.me/' . $digits . '?text=' . rawurlencode("Hello {$this->name}, thank you for your interest in SchoolHub for {$this->school_name}.");
+        return 'https://wa.me/'.$digits.'?text='.rawurlencode("Hello {$this->name}, thank you for your interest in SchoolHub for {$this->school_name}.");
     }
 }

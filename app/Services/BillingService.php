@@ -97,7 +97,7 @@ class BillingService
      * Charge one student every fee that applies to them and is not already
      * on their account, resolving discounts across the whole set.
      *
-     * @return int  how many charges were added
+     * @return int how many charges were added
      */
     public function billStudent(Student $student, Term $term): int
     {
@@ -151,7 +151,7 @@ class BillingService
             ->filter(fn (StudentDiscount $d) => $d->type === 'fixed' && $d->fee_structure_id === null)
             ->mapWithKeys(fn (StudentDiscount $d) => [$d->getKey() => (float) $d->value]);
 
-        return $fees->map(function (FeeStructure $fee) use ($student, $term, $discounts, &$pools) {
+        return $fees->map(function (FeeStructure $fee) use ($term, $discounts, &$pools) {
             $amount = (float) $fee->amount;
             $discountTotal = 0.0;
             $reasons = [];

@@ -74,16 +74,16 @@ class PromotionRule extends Model
             $parts[] = "automatic up to class {$this->auto_promote_upto}";
         }
         if ((float) $this->min_average > 0) {
-            $parts[] = (self::BASES[$this->basis] === self::BASES['annual'] ? 'annual' : 'final-term') . ' average ' . (float) $this->min_average . '%';
+            $parts[] = (self::BASES[$this->basis] === self::BASES['annual'] ? 'annual' : 'final-term').' average '.(float) $this->min_average.'%';
         }
         if ($this->required_subjects) {
-            $parts[] = 'pass ' . implode(' & ', $this->required_subjects) . ' (' . (float) $this->subject_pass_mark . '%)';
+            $parts[] = 'pass '.implode(' & ', $this->required_subjects).' ('.(float) $this->subject_pass_mark.'%)';
         }
         if ($this->min_points) {
             $parts[] = "at least {$this->min_points} points";
         }
         if ((float) $this->probation_margin > 0) {
-            $parts[] = 'probation within ' . (float) $this->probation_margin . '% of the line';
+            $parts[] = 'probation within '.(float) $this->probation_margin.'% of the line';
         }
 
         return ucfirst(implode(', ', $parts)) ?: 'Everyone is promoted';

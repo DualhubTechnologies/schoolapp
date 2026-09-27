@@ -7,7 +7,9 @@ use App\Filament\App\Resources\SalaryArrears\Pages\EditSalaryArrear;
 use App\Filament\App\Resources\SalaryArrears\Pages\ListSalaryArrears;
 use App\Filament\App\Resources\SalaryArrears\Schemas\SalaryArrearForm;
 use App\Filament\App\Resources\SalaryArrears\Tables\SalaryArrearsTable;
+use App\Filament\Concerns\GatedByModule;
 use App\Models\SalaryArrear;
+use App\Support\PayrollAccess;
 use BackedEnum;
 use Filament\Resources\Resource;
 use Filament\Schemas\Schema;
@@ -17,7 +19,7 @@ use Illuminate\Database\Eloquent\Builder;
 
 class SalaryArrearResource extends Resource
 {
-    use \App\Filament\Concerns\GatedByModule;
+    use GatedByModule;
 
     protected static ?string $model = SalaryArrear::class;
 
@@ -26,7 +28,6 @@ class SalaryArrearResource extends Resource
     protected static ?string $navigationLabel = 'Salary Arrears';
 
     protected static ?string $modelLabel = 'Salary Arrear';
-
 
     public static function getNavigationBadge(): ?string
     {
@@ -82,13 +83,16 @@ class SalaryArrearResource extends Resource
 
     public static function shouldRegisterNavigation(): bool
     {
-        return \App\Support\PayrollAccess::allowed();
+        return PayrollAccess::allowed();
     }
+
     protected static ?int $navigationSort = 3;
+
     public static function getNavigationGroup(): ?string
     {
         return 'Human Resources';
     }
+
     public static function getPages(): array
     {
         return [
@@ -103,6 +107,6 @@ class SalaryArrearResource extends Resource
      */
     public static function canViewAny(): bool
     {
-        return \App\Support\PayrollAccess::allowed();
+        return PayrollAccess::allowed();
     }
 }

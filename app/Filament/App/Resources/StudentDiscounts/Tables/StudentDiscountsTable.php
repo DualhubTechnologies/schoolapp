@@ -54,8 +54,8 @@ class StudentDiscountsTable
                     ->state(fn (StudentDiscount $record): string => $record->award_level === 'full'
                         ? '100%'
                         : ($record->type === 'percentage'
-                            ? rtrim(rtrim(number_format((float) $record->value, 2), '0'), '.') . '%'
-                            : 'UGX ' . number_format((float) $record->value, 0)))
+                            ? rtrim(rtrim(number_format((float) $record->value, 2), '0'), '.').'%'
+                            : 'UGX '.number_format((float) $record->value, 0)))
                     ->weight('bold'),
 
                 TextColumn::make('feeStructure.name')

@@ -9,6 +9,7 @@ use App\Models\StaffAllowance;
 use App\Models\StaffDeduction;
 use App\Models\StaffSalary;
 use Illuminate\Support\Carbon;
+use Illuminate\Support\Collection;
 
 /**
  * Works out one staff member's pay for one month under Ugandan rules.
@@ -30,8 +31,8 @@ use Illuminate\Support\Carbon;
 class PayrollCalculator
 {
     /**
-     * @return array{entry: array<string, float>, items: list<array<string, mixed>>, arrears: \Illuminate\Support\Collection, deductions: \Illuminate\Support\Collection}|null
-     *         null when the staff member has no salary for the month
+     * @return array{entry: array<string, float>, items: list<array<string, mixed>>, arrears: Collection, deductions: Collection}|null
+     *                                                                                                                                 null when the staff member has no salary for the month
      */
     public function forMonth(Staff $staff, int $month, int $year, string $country = 'UG'): ?array
     {
@@ -77,7 +78,7 @@ class PayrollCalculator
         foreach ($arrears as $arrear) {
             $amount = $this->whole($arrear->amount);
             $arrearsTotal += $amount;
-            $items[] = $this->item('arrears', 'Arrears: ' . $arrear->reason, $amount, 'salary_arrear', $arrear->getKey());
+            $items[] = $this->item('arrears', 'Arrears: '.$arrear->reason, $amount, 'salary_arrear', $arrear->getKey());
         }
 
         $arrearsTaxable = (bool) config('payroll.arrears_are_taxable', true);
@@ -98,7 +99,7 @@ class PayrollCalculator
         $lst = $staff->pays_lst ? $this->lstInstalment($regularPay, $month) : 0;
 
         if ($nssfEmployee > 0) {
-            $items[] = $this->item('statutory', 'NSSF (' . config('payroll.nssf.employee_rate', 5) . '%)', $nssfEmployee);
+            $items[] = $this->item('statutory', 'NSSF ('.config('payroll.nssf.employee_rate', 5).'%)', $nssfEmployee);
         }
         if ($paye > 0) {
             $items[] = $this->item('statutory', 'PAYE', $paye);
@@ -130,7 +131,7 @@ class PayrollCalculator
             $label = $deduction->deductionType?->name ?? 'Deduction';
             if ($deduction->total_amount) {
                 $left = max((float) $deduction->total_amount - (float) $deduction->amount_recovered - $amount, 0);
-                $label .= ' (balance after: ' . number_format($left) . ')';
+                $label .= ' (balance after: '.number_format($left).')';
             }
 
             $items[] = $this->item('deduction', $label, $amount, 'staff_deduction', $deduction->getKey());

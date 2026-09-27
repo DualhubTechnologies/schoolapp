@@ -14,10 +14,10 @@ use App\Support\AcademicAccess;
 use BackedEnum;
 use Filament\Notifications\Notification;
 use Filament\Pages\Page;
-use Livewire\Attributes\Computed;
 use Filament\Support\Icons\Heroicon;
 use Illuminate\Support\Collection;
 use Illuminate\Support\Facades\DB;
+use Livewire\Attributes\Computed;
 
 /**
  * Mark sheet: one exam, one class (or stream), one subject. Teachers see
@@ -128,7 +128,7 @@ class EnterMarks extends Page
                 fn ($a, $b) => ($b->term?->sortKey() ?? '') <=> ($a->term?->sortKey() ?? ''),
                 fn ($a, $b) => $a->sort_order <=> $b->sort_order,
             ])
-            ->mapWithKeys(fn (Assessment $a) => [$a->id => $a->name . ' — ' . ($a->term?->label() ?? '') . ($a->isLocked() ? ' (locked)' : '')]);
+            ->mapWithKeys(fn (Assessment $a) => [$a->id => $a->name.' — '.($a->term?->label() ?? '').($a->isLocked() ? ' (locked)' : '')]);
     }
 
     #[Computed]
@@ -304,13 +304,13 @@ class EnterMarks extends Page
             $raw = trim((string) ($this->scores[$id] ?? ''));
 
             if ($raw !== '' && (! is_numeric($raw) || (float) $raw < 0 || (float) $raw > $max)) {
-                $errors["scores.{$id}"] = 'Enter a number from 0 to ' . (float) $max . '.';
+                $errors["scores.{$id}"] = 'Enter a number from 0 to '.(float) $max.'.';
             }
         }
 
         if ($errors) {
             $this->setErrorBag($errors);
-            Notification::make()->title(count($errors) . ' ' . str('score')->plural(count($errors)) . ' need fixing')->body('Scores must be from 0 to ' . (float) $max . '.')->danger()->send();
+            Notification::make()->title(count($errors).' '.str('score')->plural(count($errors)).' need fixing')->body('Scores must be from 0 to '.(float) $max.'.')->danger()->send();
 
             return;
         }

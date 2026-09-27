@@ -7,6 +7,7 @@ use App\Filament\App\Resources\ResidencyTypes\Pages\EditResidencyType;
 use App\Filament\App\Resources\ResidencyTypes\Pages\ListResidencyTypes;
 use App\Filament\App\Resources\ResidencyTypes\Schemas\ResidencyTypeForm;
 use App\Filament\App\Resources\ResidencyTypes\Tables\ResidencyTypesTable;
+use App\Filament\Concerns\GatedByModule;
 use App\Models\ResidencyType;
 use BackedEnum;
 use Filament\Resources\Resource;
@@ -17,7 +18,7 @@ use Illuminate\Database\Eloquent\Builder;
 
 class ResidencyTypeResource extends Resource
 {
-    use \App\Filament\Concerns\GatedByModule;
+    use GatedByModule;
 
     protected static ?string $model = ResidencyType::class;
 

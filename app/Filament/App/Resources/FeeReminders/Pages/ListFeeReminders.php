@@ -75,7 +75,7 @@ class ListFeeReminders extends ListRecords
                         ->maxLength(459)
                         ->required(fn (Get $get) => $get('channel') === 'sms')
                         ->visible(fn (Get $get) => $get('channel') === 'sms')
-                        ->helperText('Placeholders: ' . implode('  ', array_keys(FeeReminderService::PLACEHOLDERS))),
+                        ->helperText('Placeholders: '.implode('  ', array_keys(FeeReminderService::PLACEHOLDERS))),
 
                     DatePicker::make('deadline')
                         ->label('Ask parents to pay by')
@@ -108,7 +108,7 @@ class ListFeeReminders extends ListRecords
                             'deadline' => $data['deadline'] ?? null,
                             'print' => 1,
                         ]);
-                        $this->js('window.open(' . json_encode($url) . ', "_blank")');
+                        $this->js('window.open('.json_encode($url).', "_blank")');
 
                         return;
                     }
@@ -127,7 +127,7 @@ class ListFeeReminders extends ListRecords
                     ])->filter()->implode(', ');
 
                     Notification::make()
-                        ->title("{$result['sent']} " . str('reminder')->plural($result['sent']) . ' sent')
+                        ->title("{$result['sent']} ".str('reminder')->plural($result['sent']).' sent')
                         ->body($skipped ? "Skipped: {$skipped}." : null)
                         ->{$result['failed'] ? 'warning' : 'success'}()
                         ->send();
@@ -153,8 +153,8 @@ class ListFeeReminders extends ListRecords
             ->where('status', 'active')
             ->when($classIds, fn (Builder $q) => $q->whereIn('school_class_id', $classIds))
             ->select('students.*')
-            ->selectRaw('(' . FeeBalanceResource::chargedSql() . ' - ' . FeeBalanceResource::paidSql() . ') as balance_owing')
-            ->whereRaw('(' . FeeBalanceResource::chargedSql() . ' - ' . FeeBalanceResource::paidSql() . ') >= ?', [max($minBalance, 1)])
+            ->selectRaw('('.FeeBalanceResource::chargedSql().' - '.FeeBalanceResource::paidSql().') as balance_owing')
+            ->whereRaw('('.FeeBalanceResource::chargedSql().' - '.FeeBalanceResource::paidSql().') >= ?', [max($minBalance, 1)])
             ->with(['guardian', 'schoolClass', 'school'])
             ->get();
     }
@@ -168,10 +168,10 @@ class ListFeeReminders extends ListRecords
 
         return new HtmlString(
             '<div style="padding:.65rem .85rem;border-radius:8px;background:#eff6ff;color:#1e3a5f;font-size:.875rem">'
-            . '<strong>' . number_format($students->count()) . '</strong> ' . str('student')->plural($students->count()) . ' owe a total of '
-            . '<strong>UGX ' . number_format($owed) . '</strong>. '
-            . number_format($withPhone) . ' have a guardian phone number for SMS.'
-            . '</div>'
+            .'<strong>'.number_format($students->count()).'</strong> '.str('student')->plural($students->count()).' owe a total of '
+            .'<strong>UGX '.number_format($owed).'</strong>. '
+            .number_format($withPhone).' have a guardian phone number for SMS.'
+            .'</div>'
         );
     }
 }

@@ -7,6 +7,7 @@ use App\Models\SchoolClass;
 use App\Models\Section;
 use App\Models\Student;
 use App\Models\StudentImport;
+use App\Services\Subscriptions\SubscriptionManager;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Log;
 use Illuminate\Support\Facades\Storage;
@@ -69,6 +70,7 @@ class StudentCsvImporter
     protected const ERROR_DISPLAY_LIMIT = 100;
 
     protected StudentImport $import;
+
     protected int $schoolId;
 
     /** @var array<string, int> upper-cased class name => id */
@@ -151,7 +153,7 @@ class StudentCsvImporter
         }
 
         if (! empty($missing)) {
-            return $this->failValidation('Missing required columns: ' . implode(', ', $missing), 'header');
+            return $this->failValidation('Missing required columns: '.implode(', ', $missing), 'header');
         }
 
         // Unrecognised columns are ignored, not fatal.
@@ -210,7 +212,7 @@ class StudentCsvImporter
             'preview' => $preview,
             'unknown_columns' => $unknown,
             // How many more active students the school's plan allows (null = no limit).
-            'plan_room' => \App\Services\Subscriptions\SubscriptionManager::roomForStudents($this->schoolId),
+            'plan_room' => SubscriptionManager::roomForStudents($this->schoolId),
         ];
     }
 
@@ -257,7 +259,7 @@ class StudentCsvImporter
             } else {
                 try {
                     $this->importRow($data);
-                    $this->existingAdmissionNos[$this->key($data['admission_no'])] = trim("{$data['first_name']} {$data['last_name']}") . ", {$data['class']}";
+                    $this->existingAdmissionNos[$this->key($data['admission_no'])] = trim("{$data['first_name']} {$data['last_name']}").", {$data['class']}";
                     $successCount++;
                 } catch (\Throwable $e) {
                     $skipCount++;
@@ -345,7 +347,7 @@ class StudentCsvImporter
 
         $section = $data['section'] ?? '';
 
-        if ($section !== '' && $classId && ! isset($this->sectionCache[$classId . ':' . $this->key($section)])) {
+        if ($section !== '' && $classId && ! isset($this->sectionCache[$classId.':'.$this->key($section)])) {
             $fail('section', "Section '{$section}' not found under class '{$class}'.");
         }
 
@@ -368,7 +370,7 @@ class StudentCsvImporter
         $validStatuses = array_keys(Student::STATUSES);
 
         if (($data['status'] ?? '') !== '' && ! in_array(strtolower($data['status']), $validStatuses, true)) {
-            $fail('status', 'Status must be one of: ' . implode(', ', $validStatuses) . '.');
+            $fail('status', 'Status must be one of: '.implode(', ', $validStatuses).'.');
         }
 
         return $errors;
@@ -383,7 +385,7 @@ class StudentCsvImporter
             $classId = $this->classCache[$this->key($data['class'])];
 
             $sectionId = ($data['section'] ?? '') !== ''
-                ? $this->sectionCache[$classId . ':' . $this->key($data['section'])]
+                ? $this->sectionCache[$classId.':'.$this->key($data['section'])]
                 : null;
 
             // Resolve or create guardian
@@ -521,7 +523,7 @@ class StudentCsvImporter
         foreach (['phone', 'guardian_phone'] as $field) {
             // 771234567 -> 0771234567 (Excel drops the zero on numbers).
             if (preg_match('/^7\d{8}$/', $data[$field] ?? '')) {
-                $data[$field] = '0' . $data[$field];
+                $data[$field] = '0'.$data[$field];
             }
         }
 
@@ -570,7 +572,7 @@ class StudentCsvImporter
         Section::where('school_id', $this->schoolId)
             ->get(['id', 'school_class_id', 'name'])
             ->each(function ($section) {
-                $this->sectionCache[$section->school_class_id . ':' . $this->key($section->name)] = $section->id;
+                $this->sectionCache[$section->school_class_id.':'.$this->key($section->name)] = $section->id;
             });
 
         $this->existingAdmissionNos = [];
@@ -596,7 +598,7 @@ class StudentCsvImporter
         }
 
         foreach (['Y-m-d', 'd/m/Y', 'd-m-Y', 'Y/m/d', 'm/d/Y'] as $format) {
-            $d = \DateTime::createFromFormat('!' . $format, $date);
+            $d = \DateTime::createFromFormat('!'.$format, $date);
 
             if ($d && $d->format($format) === $date) {
                 return $d->format('Y-m-d');
@@ -620,7 +622,7 @@ class StudentCsvImporter
             ? Section::where('school_class_id', $class->id)->orderBy('name')->value('name')
             : null;
 
-        $file = 'student-import-template' . ($schoolId ? "-{$schoolId}" : '') . '.csv';
+        $file = 'student-import-template'.($schoolId ? "-{$schoolId}" : '').'.csv';
         $path = Storage::disk('local')->path($file);
 
         $handle = fopen($path, 'w');

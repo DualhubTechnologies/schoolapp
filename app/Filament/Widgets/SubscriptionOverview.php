@@ -32,16 +32,16 @@ class SubscriptionOverview extends StatsOverviewWidget
 
         return [
             Stat::make('Paying schools', $count('active'))
-                ->description($count('trial') . ' on trial')
+                ->description($count('trial').' on trial')
                 ->color('success'),
             Stat::make('Need attention', $expiring)
-                ->description('ending within ' . config('subscriptions.warn_days') . ' days or overdue')
+                ->description('ending within '.config('subscriptions.warn_days').' days or overdue')
                 ->color($expiring ? 'warning' : 'gray'),
             Stat::make('Locked', $count('expired', 'none', 'suspended'))
                 ->description('expired, no plan or suspended')
                 ->color($count('expired', 'none', 'suspended') ? 'danger' : 'gray'),
-            Stat::make('Received this year', 'UGX ' . number_format($thisYear))
-                ->description('UGX ' . number_format($thisMonth) . ' this month'),
+            Stat::make('Received this year', 'UGX '.number_format($thisYear))
+                ->description('UGX '.number_format($thisMonth).' this month'),
         ];
     }
 }

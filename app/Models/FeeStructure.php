@@ -11,8 +11,8 @@ use Illuminate\Support\Collection;
 
 class FeeStructure extends Model
 {
-    use HasFactory;
     use Auditable;
+    use HasFactory;
 
     protected $fillable = [
         'school_id',
@@ -69,7 +69,7 @@ class FeeStructure extends Model
 
     public function formattedAmount(): string
     {
-        return $this->currency . ' ' . number_format((float) $this->amount, 0);
+        return $this->currency.' '.number_format((float) $this->amount, 0);
     }
 
     public function isRecurring(): bool

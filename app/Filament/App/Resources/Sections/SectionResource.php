@@ -7,6 +7,7 @@ use App\Filament\App\Resources\Sections\Pages\EditSection;
 use App\Filament\App\Resources\Sections\Pages\ListSections;
 use App\Filament\App\Resources\Sections\Schemas\SectionForm;
 use App\Filament\App\Resources\Sections\Tables\SectionsTable;
+use App\Filament\Concerns\GatedByModule;
 use App\Models\Section;
 use BackedEnum;
 use Filament\Resources\Resource;
@@ -17,7 +18,7 @@ use Illuminate\Database\Eloquent\Builder;
 
 class SectionResource extends Resource
 {
-    use \App\Filament\Concerns\GatedByModule;
+    use GatedByModule;
 
     protected static ?string $model = Section::class;
 

@@ -7,7 +7,9 @@ use App\Filament\App\Resources\DeductionTypes\Pages\EditDeductionType;
 use App\Filament\App\Resources\DeductionTypes\Pages\ListDeductionTypes;
 use App\Filament\App\Resources\DeductionTypes\Schemas\DeductionTypeForm;
 use App\Filament\App\Resources\DeductionTypes\Tables\DeductionTypesTable;
+use App\Filament\Concerns\GatedByModule;
 use App\Models\DeductionType;
+use App\Support\PayrollAccess;
 use BackedEnum;
 use Filament\Resources\Resource;
 use Filament\Schemas\Schema;
@@ -17,10 +19,9 @@ use Illuminate\Database\Eloquent\Builder;
 
 class DeductionTypeResource extends Resource
 {
-    use \App\Filament\Concerns\GatedByModule;
+    use GatedByModule;
 
     protected static ?string $model = DeductionType::class;
-
 
     protected static string|BackedEnum|null $navigationIcon = Heroicon::OutlinedMinusCircle;
 
@@ -28,10 +29,10 @@ class DeductionTypeResource extends Resource
 
     protected static ?string $recordTitleAttribute = 'name';
 
-public static function getNavigationGroup(): ?string
-{
-    return 'Human Resources';
-}
+    public static function getNavigationGroup(): ?string
+    {
+        return 'Human Resources';
+    }
 
     public static function form(Schema $schema): Schema
     {
@@ -55,9 +56,10 @@ public static function getNavigationGroup(): ?string
 
         return $query;
     }
+
     public static function shouldRegisterNavigation(): bool
     {
-        return \App\Support\PayrollAccess::allowed();
+        return PayrollAccess::allowed();
     }
 
     public static function getRelations(): array
@@ -81,6 +83,6 @@ public static function getNavigationGroup(): ?string
      */
     public static function canViewAny(): bool
     {
-        return \App\Support\PayrollAccess::allowed();
+        return PayrollAccess::allowed();
     }
 }

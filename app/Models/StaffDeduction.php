@@ -104,12 +104,14 @@ class StaffDeduction extends Model
 
         if ($deductionType->calculation_method === 'percentage') {
             $rate = $this->rate ?? $deductionType->default_rate;
+
             return round($grossSalary * ($rate / 100), 2);
         }
 
         // For loans: don't exceed remaining balance
         if ($this->total_amount) {
             $remaining = $this->total_amount - $this->amount_recovered;
+
             return min($this->amount, $remaining);
         }
 

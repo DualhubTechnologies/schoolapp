@@ -4,6 +4,8 @@ namespace App\Filament\App\Resources\Users\Pages;
 
 use App\Filament\App\Resources\Users\Pages\Concerns\SyncsUserAccess;
 use App\Filament\App\Resources\Users\UserResource;
+use App\Services\Subscriptions\SubscriptionManager;
+use Filament\Notifications\Notification;
 use Filament\Resources\Pages\CreateRecord;
 
 class CreateUser extends CreateRecord
@@ -17,8 +19,8 @@ class CreateUser extends CreateRecord
     {
         $schoolId = auth()->user()->school_id;
 
-        if ($schoolId && \App\Services\Subscriptions\SubscriptionManager::roomForUsers($schoolId) === 0) {
-            \Filament\Notifications\Notification::make()
+        if ($schoolId && SubscriptionManager::roomForUsers($schoolId) === 0) {
+            Notification::make()
                 ->title('Plan limit reached')
                 ->body('The school has as many staff logins as its plan allows. Delete logins that are no longer used, or ask for a bigger plan on the Subscription page.')
                 ->warning()

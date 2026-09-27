@@ -146,7 +146,7 @@ class Staff extends Model
 
         return collect(preg_split('/\s+/', trim((string) $this->name)))
             ->filter()
-            ->map(fn ($part) => mb_strtoupper(mb_substr($part, 0, 1)) . '.')
+            ->map(fn ($part) => mb_strtoupper(mb_substr($part, 0, 1)).'.')
             ->implode('');
     }
 }

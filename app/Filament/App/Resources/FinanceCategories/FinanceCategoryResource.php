@@ -3,6 +3,7 @@
 namespace App\Filament\App\Resources\FinanceCategories;
 
 use App\Filament\App\Resources\FinanceCategories\Pages\ManageFinanceCategories;
+use App\Filament\Concerns\GatedByModule;
 use App\Models\FinanceCategory;
 use App\Support\FinanceAccess;
 use BackedEnum;
@@ -25,7 +26,7 @@ use Illuminate\Database\Eloquent\Model;
  */
 class FinanceCategoryResource extends Resource
 {
-    use \App\Filament\Concerns\GatedByModule;
+    use GatedByModule;
 
     protected static ?string $model = FinanceCategory::class;
 

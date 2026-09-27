@@ -3,6 +3,7 @@
 namespace App\Models;
 
 // use Illuminate\Contracts\Auth\MustVerifyEmail;
+use App\Services\Subscriptions\SubscriptionManager;
 use Database\Factories\UserFactory;
 use Filament\Models\Contracts\FilamentUser;
 use Filament\Panel;
@@ -10,6 +11,7 @@ use Illuminate\Database\Eloquent\Attributes\Fillable;
 use Illuminate\Database\Eloquent\Attributes\Hidden;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
+use Illuminate\Database\Eloquent\Relations\HasOne;
 use Illuminate\Foundation\Auth\User as Authenticatable;
 use Illuminate\Notifications\Notifiable;
 use Illuminate\Support\Carbon;
@@ -32,7 +34,7 @@ use Spatie\Permission\Traits\HasRoles;
 class User extends Authenticatable implements FilamentUser
 {
     /** @use HasFactory<UserFactory> */
-    use HasFactory, Notifiable, HasRoles;
+    use HasFactory, HasRoles, Notifiable;
 
     /**
      * Get the attributes that should be cast.
@@ -56,7 +58,7 @@ class User extends Authenticatable implements FilamentUser
     {
         static::creating(function (User $user): void {
             if ($user->school_id) {
-                \App\Services\Subscriptions\SubscriptionManager::ensureRoomForUsers((int) $user->school_id);
+                SubscriptionManager::ensureRoomForUsers((int) $user->school_id);
             }
         });
     }
@@ -64,7 +66,7 @@ class User extends Authenticatable implements FilamentUser
     /**
      * The staff record this login belongs to (teachers, bursars...).
      */
-    public function staff(): \Illuminate\Database\Eloquent\Relations\HasOne
+    public function staff(): HasOne
     {
         return $this->hasOne(Staff::class);
     }
@@ -76,7 +78,7 @@ class User extends Authenticatable implements FilamentUser
     {
         return match ($panel->getId()) {
             'admin' => $this->hasRole('Super Admin'),   // /admin — owner only
-            'app'   => true,                             // root — everyone else (super admin allowed too)
+            'app' => true,                             // root — everyone else (super admin allowed too)
             default => false,
         };
     }

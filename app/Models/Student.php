@@ -3,10 +3,12 @@
 namespace App\Models;
 
 use App\Concerns\HasFeeAccount;
+use App\Services\Subscriptions\SubscriptionManager;
 use App\Support\PrivateFiles;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
+use Illuminate\Database\Eloquent\Relations\BelongsToMany;
 use Illuminate\Database\Eloquent\Relations\HasMany;
 use Spatie\Activitylog\Models\Concerns\LogsActivity;
 use Spatie\Activitylog\Support\LogOptions;
@@ -14,8 +16,8 @@ use Spatie\Activitylog\Support\LogOptions;
 class Student extends Model
 {
     use HasFactory;
-    use LogsActivity;
     use HasFeeAccount;
+    use LogsActivity;
 
     protected $fillable = [
         'school_id',
@@ -68,7 +70,7 @@ class Student extends Model
                 && (! $student->exists || $student->getOriginal('status') !== 'active' || $student->isDirty('school_id'));
 
             if ($becomesActive && $student->school_id) {
-                \App\Services\Subscriptions\SubscriptionManager::ensureRoomForStudents((int) $student->school_id);
+                SubscriptionManager::ensureRoomForStudents((int) $student->school_id);
             }
         });
 
@@ -163,7 +165,7 @@ class Student extends Model
      * Subjects the student has chosen: O-Level electives, and the A-Level
      * subsidiary when it differs from the combination's.
      */
-    public function electives(): \Illuminate\Database\Eloquent\Relations\BelongsToMany
+    public function electives(): BelongsToMany
     {
         return $this->belongsToMany(Subject::class, 'student_subject')->withTimestamps();
     }

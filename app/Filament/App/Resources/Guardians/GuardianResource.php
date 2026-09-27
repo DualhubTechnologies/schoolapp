@@ -7,6 +7,7 @@ use App\Filament\App\Resources\Guardians\Pages\EditGuardian;
 use App\Filament\App\Resources\Guardians\Pages\ListGuardians;
 use App\Filament\App\Resources\Guardians\Schemas\GuardianForm;
 use App\Filament\App\Resources\Guardians\Tables\GuardiansTable;
+use App\Filament\Concerns\GatedByModule;
 use App\Models\Guardian;
 use BackedEnum;
 use Filament\Resources\Resource;
@@ -17,7 +18,7 @@ use Illuminate\Database\Eloquent\Builder;
 
 class GuardianResource extends Resource
 {
-    use \App\Filament\Concerns\GatedByModule;
+    use GatedByModule;
 
     protected static ?string $model = Guardian::class;
 

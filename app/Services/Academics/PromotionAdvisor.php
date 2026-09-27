@@ -5,6 +5,7 @@ namespace App\Services\Academics;
 use App\Models\AcademicYear;
 use App\Models\PromotionRule;
 use App\Models\SchoolClass;
+use App\Models\Student;
 use App\Models\Term;
 use Illuminate\Support\Collection;
 
@@ -35,7 +36,7 @@ class PromotionAdvisor
     {
         $rule = PromotionRule::for($class->school_id, $class->curriculum());
         $terms = $this->terms($class, $year, $rule);
-        $students = \App\Models\Student::where('school_class_id', $class->getKey())->where('status', 'active')->pluck('id');
+        $students = Student::where('school_class_id', $class->getKey())->where('status', 'active')->pluck('id');
 
         $advice = [];
 

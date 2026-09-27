@@ -2,6 +2,7 @@
 
 namespace App\Filament\Widgets;
 
+use App\Filament\Pages\ReceivePayment;
 use App\Filament\Widgets\Concerns\SchoolScoped;
 use App\Models\StudentPayment;
 use Filament\Tables\Columns\TextColumn;
@@ -39,7 +40,7 @@ class RecentPaymentsTable extends TableWidget
                 TextColumn::make('receipt_no')
                     ->label('Receipt')
                     ->weight('semibold')
-                    ->url(fn (StudentPayment $record) => \App\Filament\Pages\ReceivePayment::receiptUrl($record), shouldOpenInNewTab: true),
+                    ->url(fn (StudentPayment $record) => ReceivePayment::receiptUrl($record), shouldOpenInNewTab: true),
                 TextColumn::make('paid_on')
                     ->label('Date')
                     ->date('j M Y'),

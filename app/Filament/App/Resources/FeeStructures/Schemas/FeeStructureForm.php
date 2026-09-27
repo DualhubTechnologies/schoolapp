@@ -201,25 +201,25 @@ class FeeStructureForm
         $e = fn ($value) => e((string) $value);
 
         $name = trim((string) $get('name')) ?: 'This fee';
-        $amount = is_numeric($get('amount')) ? 'UGX ' . number_format((float) $get('amount')) : 'an amount not yet set';
+        $amount = is_numeric($get('amount')) ? 'UGX '.number_format((float) $get('amount')) : 'an amount not yet set';
 
         $classIds = $operation === 'create' ? (array) $get('class_ids') : array_filter([$get('school_class_id')]);
         $classNames = SchoolClass::whereKey($classIds)->orderBy('name')->pluck('name')->all();
         $classes = match (count($classNames)) {
             0 => 'the classes you choose',
             1 => $classNames[0],
-            default => implode(', ', array_slice($classNames, 0, -1)) . ' and ' . last($classNames),
+            default => implode(', ', array_slice($classNames, 0, -1)).' and '.last($classNames),
         };
 
         $residency = $get('residency_type_id')
-            ? mb_strtolower((string) ResidencyType::whereKey($get('residency_type_id'))->value('name')) . ' students'
+            ? mb_strtolower((string) ResidencyType::whereKey($get('residency_type_id'))->value('name')).' students'
             : 'students';
 
-        $who = ($get('applies_to') === 'new_only' ? 'new ' : 'all ') . $residency;
+        $who = ($get('applies_to') === 'new_only' ? 'new ' : 'all ').$residency;
 
         $when = match ($get('frequency')) {
             'per_term' => ($termId = $get('term_id'))
-                ? 'every term from <strong>' . $e(Term::with('academicYear')->find($termId)?->label()) . '</strong> onwards'
+                ? 'every term from <strong>'.$e(Term::with('academicYear')->find($termId)?->label()).'</strong> onwards'
                 : 'every term (choose the starting term)',
             'once' => 'once per student, the first time they are billed',
             'on_demand' => 'only when you bill it to a class or student from Bill Students',
@@ -227,8 +227,8 @@ class FeeStructureForm
         };
 
         $html = '<p class="text-sm leading-6 text-gray-700 dark:text-gray-300">'
-            . '<strong>' . $e($name) . '</strong> — <strong>' . $e($amount) . '</strong>, charged '
-            . $when . ' to ' . $e($who) . ' in <strong>' . $e($classes) . '</strong>.</p>';
+            .'<strong>'.$e($name).'</strong> — <strong>'.$e($amount).'</strong>, charged '
+            .$when.' to '.$e($who).' in <strong>'.$e($classes).'</strong>.</p>';
 
         if (! $get('is_active')) {
             $html .= '<p class="mt-2 text-sm text-amber-700 dark:text-amber-400">Inactive — it won\'t be billed until switched on.</p>';

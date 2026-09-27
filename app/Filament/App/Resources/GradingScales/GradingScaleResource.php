@@ -3,8 +3,10 @@
 namespace App\Filament\App\Resources\GradingScales;
 
 use App\Filament\App\Resources\GradingScales\Pages\ManageGradingScales;
+use App\Filament\Concerns\GatedByModule;
 use App\Models\GradingScale;
-use App\Support\AcademicAccess;
+use App\Support\Modules;
+use App\Support\SchoolType;
 use BackedEnum;
 use Filament\Actions\EditAction;
 use Filament\Forms\Components\Repeater;
@@ -22,7 +24,7 @@ use Illuminate\Database\Eloquent\Builder;
  */
 class GradingScaleResource extends Resource
 {
-    use \App\Filament\Concerns\GatedByModule;
+    use GatedByModule;
 
     protected static ?string $model = GradingScale::class;
 
@@ -38,7 +40,7 @@ class GradingScaleResource extends Resource
     {
         return parent::getEloquentQuery()
             ->where('school_id', auth()->user()?->school_id)
-            ->whereIn('curriculum', \App\Support\SchoolType::keys())
+            ->whereIn('curriculum', SchoolType::keys())
             ->with('bands');
     }
 
@@ -77,7 +79,7 @@ class GradingScaleResource extends Resource
                 TextColumn::make('bands')
                     ->label('Grades')
                     ->state(fn (GradingScale $record) => $record->bands
-                        ->map(fn ($b) => $b->grade . ' ' . (float) $b->min_score . '–' . (float) $b->max_score)
+                        ->map(fn ($b) => $b->grade.' '.(float) $b->min_score.'–'.(float) $b->max_score)
                         ->implode('  ·  '))
                     ->wrap(),
             ])
@@ -89,7 +91,7 @@ class GradingScaleResource extends Resource
 
     public static function canViewAny(): bool
     {
-        return \App\Support\Modules::allows('academics');
+        return Modules::allows('academics');
     }
 
     public static function canCreate(): bool

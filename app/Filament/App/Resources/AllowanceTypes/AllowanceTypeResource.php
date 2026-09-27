@@ -7,7 +7,9 @@ use App\Filament\App\Resources\AllowanceTypes\Pages\EditAllowanceType;
 use App\Filament\App\Resources\AllowanceTypes\Pages\ListAllowanceTypes;
 use App\Filament\App\Resources\AllowanceTypes\Schemas\AllowanceTypeForm;
 use App\Filament\App\Resources\AllowanceTypes\Tables\AllowanceTypesTable;
+use App\Filament\Concerns\GatedByModule;
 use App\Models\AllowanceType;
+use App\Support\PayrollAccess;
 use BackedEnum;
 use Filament\Resources\Resource;
 use Filament\Schemas\Schema;
@@ -17,10 +19,9 @@ use Illuminate\Database\Eloquent\Builder;
 
 class AllowanceTypeResource extends Resource
 {
-    use \App\Filament\Concerns\GatedByModule;
+    use GatedByModule;
 
     protected static ?string $model = AllowanceType::class;
-
 
     protected static string|BackedEnum|null $navigationIcon = Heroicon::OutlinedGift;
 
@@ -28,10 +29,10 @@ class AllowanceTypeResource extends Resource
 
     protected static ?string $recordTitleAttribute = 'name';
 
-public static function getNavigationGroup(): ?string
-{
-    return 'Human Resources';
-}
+    public static function getNavigationGroup(): ?string
+    {
+        return 'Human Resources';
+    }
 
     public static function form(Schema $schema): Schema
     {
@@ -74,7 +75,7 @@ public static function getNavigationGroup(): ?string
 
     public static function shouldRegisterNavigation(): bool
     {
-        return \App\Support\PayrollAccess::allowed();
+        return PayrollAccess::allowed();
     }
 
     /**
@@ -82,6 +83,6 @@ public static function getNavigationGroup(): ?string
      */
     public static function canViewAny(): bool
     {
-        return \App\Support\PayrollAccess::allowed();
+        return PayrollAccess::allowed();
     }
 }

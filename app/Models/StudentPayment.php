@@ -134,6 +134,6 @@ class StudentPayment extends Model
 
     public function formattedAmount(): string
     {
-        return $this->currency . ' ' . number_format((float) $this->amount, 0);
+        return $this->currency.' '.number_format((float) $this->amount, 0);
     }
 }

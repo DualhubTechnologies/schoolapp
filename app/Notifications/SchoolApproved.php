@@ -13,9 +13,7 @@ class SchoolApproved extends Notification implements ShouldQueue
 {
     use Queueable;
 
-    public function __construct(public School $school, public int $trialDays)
-    {
-    }
+    public function __construct(public School $school, public int $trialDays) {}
 
     public function via(object $notifiable): array
     {

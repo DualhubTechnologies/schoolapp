@@ -44,6 +44,6 @@ class Combination extends Model
     /** "PCM / SICT" */
     public function label(): string
     {
-        return $this->name . ($this->subsidiary ? ' / ' . $this->subsidiary->label() : '');
+        return $this->name.($this->subsidiary ? ' / '.$this->subsidiary->label() : '');
     }
 }

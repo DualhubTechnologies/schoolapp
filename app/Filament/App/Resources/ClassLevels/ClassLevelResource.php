@@ -7,6 +7,7 @@ use App\Filament\App\Resources\ClassLevels\Pages\EditClassLevel;
 use App\Filament\App\Resources\ClassLevels\Pages\ListClassLevels;
 use App\Filament\App\Resources\ClassLevels\Schemas\ClassLevelForm;
 use App\Filament\App\Resources\ClassLevels\Tables\ClassLevelsTable;
+use App\Filament\Concerns\GatedByModule;
 use App\Models\ClassLevel;
 use BackedEnum;
 use Filament\Resources\Resource;
@@ -17,7 +18,7 @@ use Illuminate\Database\Eloquent\Builder;
 
 class ClassLevelResource extends Resource
 {
-    use \App\Filament\Concerns\GatedByModule;
+    use GatedByModule;
 
     protected static ?string $model = ClassLevel::class;
 

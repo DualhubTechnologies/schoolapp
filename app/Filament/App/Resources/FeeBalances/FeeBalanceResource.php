@@ -4,6 +4,7 @@ namespace App\Filament\App\Resources\FeeBalances;
 
 use App\Filament\App\Resources\FeeBalances\Pages\ListFeeBalances;
 use App\Filament\App\Resources\FeeBalances\Tables\FeeBalancesTable;
+use App\Filament\Concerns\GatedByModule;
 use App\Models\Student;
 use BackedEnum;
 use Filament\Resources\Resource;
@@ -20,7 +21,7 @@ use Illuminate\Database\Eloquent\Builder;
  */
 class FeeBalanceResource extends Resource
 {
-    use \App\Filament\Concerns\GatedByModule;
+    use GatedByModule;
 
     protected static ?string $model = Student::class;
 
@@ -69,9 +70,9 @@ class FeeBalanceResource extends Resource
         $query = parent::getEloquentQuery()
             ->with(['schoolClass', 'section', 'residencyType'])
             ->select('students.*')
-            ->selectRaw(static::chargedSql() . ' as total_charged')
-            ->selectRaw(static::paidSql() . ' as total_paid')
-            ->selectRaw('(' . static::chargedSql() . ' - ' . static::paidSql() . ') as balance_owing');
+            ->selectRaw(static::chargedSql().' as total_charged')
+            ->selectRaw(static::paidSql().' as total_paid')
+            ->selectRaw('('.static::chargedSql().' - '.static::paidSql().') as balance_owing');
 
         $user = auth()->user();
 

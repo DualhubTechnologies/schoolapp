@@ -2,10 +2,11 @@
 
 namespace App\Models;
 
+use App\Services\Payroll\PayrollService;
+use Carbon\Carbon;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
 use Illuminate\Database\Eloquent\Relations\HasMany;
-use Illuminate\Support\Facades\DB;
 
 class PayrollPeriod extends Model
 {
@@ -83,7 +84,7 @@ class PayrollPeriod extends Model
             9 => 'September', 10 => 'October', 11 => 'November', 12 => 'December',
         ];
 
-        return ($months[$this->month] ?? 'Unknown') . ' ' . $this->year;
+        return ($months[$this->month] ?? 'Unknown').' '.$this->year;
     }
 
     /**
@@ -127,7 +128,7 @@ class PayrollPeriod extends Model
             ->toArray();
 
         // Get all staff who SHOULD have been paid (active, employed before the previous period ended)
-        $previousMonthEnd = \Carbon\Carbon::create($previousPeriod->year, $previousPeriod->month)->endOfMonth();
+        $previousMonthEnd = Carbon::create($previousPeriod->year, $previousPeriod->month)->endOfMonth();
 
         $shouldHaveBeenPaid = Staff::where('school_id', $this->school_id)
             ->where('status', 'active')
@@ -144,7 +145,7 @@ class PayrollPeriod extends Model
             9 => 'September', 10 => 'October', 11 => 'November', 12 => 'December',
         ];
 
-        $previousMonthName = ($months[$previousPeriod->month] ?? 'Unknown') . ' ' . $previousPeriod->year;
+        $previousMonthName = ($months[$previousPeriod->month] ?? 'Unknown').' '.$previousPeriod->year;
         $count = 0;
 
         foreach ($shouldHaveBeenPaid as $staff) {
@@ -193,7 +194,7 @@ class PayrollPeriod extends Model
      */
     public function generateEntries(): int
     {
-        return app(\App\Services\Payroll\PayrollService::class)->generate($this)['staff'];
+        return app(PayrollService::class)->generate($this)['staff'];
     }
 
     public const STATUSES = [

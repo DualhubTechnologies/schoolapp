@@ -1,9 +1,8 @@
 <?php
 
-use Illuminate\Support\Facades\Route;
-use App\Http\Controllers\PayslipController;
 use App\Http\Controllers\NssfScheduleController;
-
+use App\Http\Controllers\PayslipController;
+use Illuminate\Support\Facades\Route;
 
 Route::get('/payslip/{entry}/download', [PayslipController::class, 'download'])
     ->name('payslip.download')

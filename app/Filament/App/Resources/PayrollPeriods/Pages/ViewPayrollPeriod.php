@@ -27,7 +27,7 @@ class ViewPayrollPeriod extends ViewRecord
         return match ($this->record->status) {
             'draft' => 'Draft: check the payslips below, fix any salary set-up and recalculate, then approve.',
             'approved' => 'Approved: figures are locked. Pay staff, then mark the payroll as paid.',
-            'paid' => 'Paid' . ($this->record->payment_date ? ' on ' . $this->record->payment_date->format('j M Y') : '') . '. File PAYE, NSSF and LST using the documents menu.',
+            'paid' => 'Paid'.($this->record->payment_date ? ' on '.$this->record->payment_date->format('j M Y') : '').'. File PAYE, NSSF and LST using the documents menu.',
             default => null,
         };
     }
@@ -51,7 +51,7 @@ class ViewPayrollPeriod extends ViewRecord
                     $this->refreshFormData([]);
 
                     $notes = collect([
-                        $result['skipped_no_salary'] ? count($result['skipped_no_salary']) . ' skipped with no salary set: ' . implode(', ', array_slice($result['skipped_no_salary'], 0, 5)) : null,
+                        $result['skipped_no_salary'] ? count($result['skipped_no_salary']).' skipped with no salary set: '.implode(', ', array_slice($result['skipped_no_salary'], 0, 5)) : null,
                         $result['missed_last_month'] ? "{$result['missed_last_month']} staff were not paid last month — pending arrears were created under Salary Arrears." : null,
                     ])->filter()->implode(' ');
 
@@ -73,8 +73,8 @@ class ViewPayrollPeriod extends ViewRecord
                 ->color('warning')
                 ->visible(fn () => $this->record->isDraft() && $this->record->staff_count > 0)
                 ->requiresConfirmation()
-                ->modalHeading(fn () => 'Approve ' . $this->record->period_label . ' payroll?')
-                ->modalDescription(fn () => 'Net pay UGX ' . number_format((float) $this->record->total_net) . ' for ' . $this->record->staff_count . ' staff. Approving locks the figures, records loan repayments and marks arrears as paid.')
+                ->modalHeading(fn () => 'Approve '.$this->record->period_label.' payroll?')
+                ->modalDescription(fn () => 'Net pay UGX '.number_format((float) $this->record->total_net).' for '.$this->record->staff_count.' staff. Approving locks the figures, records loan repayments and marks arrears as paid.')
                 ->action(function (PayrollService $payroll) {
                     $payroll->approve($this->record);
                     $this->record->refresh();

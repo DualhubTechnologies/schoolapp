@@ -9,8 +9,8 @@ use Filament\Actions\DeleteAction;
 use Filament\Actions\DeleteBulkAction;
 use Filament\Actions\EditAction;
 use Filament\Forms\Components\Select;
-use Filament\Forms\Components\TextInput;
 use Filament\Forms\Components\Textarea;
+use Filament\Forms\Components\TextInput;
 use Filament\Notifications\Notification;
 use Filament\Resources\RelationManagers\RelationManager;
 use Filament\Schemas\Schema;
@@ -67,7 +67,8 @@ class ArrearsRelationManager extends RelationManager
                     ->label('For period')
                     ->formatStateUsing(function ($record) {
                         $months = [1 => 'January', 2 => 'February', 3 => 'March', 4 => 'April', 5 => 'May', 6 => 'June', 7 => 'July', 8 => 'August', 9 => 'September', 10 => 'October', 11 => 'November', 12 => 'December'];
-                        return ($months[$record->month] ?? 'Unknown') . ' ' . $record->year;
+
+                        return ($months[$record->month] ?? 'Unknown').' '.$record->year;
                     })
                     ->sortable(),
                 TextColumn::make('amount')
@@ -86,9 +87,12 @@ class ArrearsRelationManager extends RelationManager
                 TextColumn::make('appliedInPeriod.month')
                     ->label('Paid in')
                     ->formatStateUsing(function ($record) {
-                        if (! $record->applied_in_period_id) return null;
+                        if (! $record->applied_in_period_id) {
+                            return null;
+                        }
                         $months = [1 => 'January', 2 => 'February', 3 => 'March', 4 => 'April', 5 => 'May', 6 => 'June', 7 => 'July', 8 => 'August', 9 => 'September', 10 => 'October', 11 => 'November', 12 => 'December'];
-                        return ($months[$record->appliedInPeriod->month] ?? '') . ' ' . $record->appliedInPeriod->year;
+
+                        return ($months[$record->appliedInPeriod->month] ?? '').' '.$record->appliedInPeriod->year;
                     })
                     ->placeholder('Not yet applied'),
             ])
@@ -105,6 +109,7 @@ class ArrearsRelationManager extends RelationManager
                     ->mutateFormDataUsing(function (array $data): array {
                         $data['school_id'] = $this->getOwnerRecord()->school_id;
                         $data['status'] = 'pending';
+
                         return $data;
                     }),
             ])

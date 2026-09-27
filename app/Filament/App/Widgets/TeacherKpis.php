@@ -29,17 +29,17 @@ class TeacherKpis extends KpiCards
         $rate = static::percent($entered, $expected);
         $streams = Section::whereIn('id', array_keys(AcademicAccess::classTeacherStreams()))
             ->with('schoolClass')->get()
-            ->map(fn (Section $s) => trim(($s->schoolClass?->name ?? '') . ' ' . $s->name));
+            ->map(fn (Section $s) => trim(($s->schoolClass?->name ?? '').' '.$s->name));
 
         return [
             static::card('blue', 'heroicon-o-book-open', 'Subjects I teach', (string) $rows->count(),
-                $rows->pluck('class.name')->unique()->count() . ' ' . str('class')->plural($rows->pluck('class.name')->unique()->count()) . ' this term',
+                $rows->pluck('class.name')->unique()->count().' '.str('class')->plural($rows->pluck('class.name')->unique()->count()).' this term',
                 EnterMarks::getUrl()),
             static::card('violet', 'heroicon-o-users', 'My learners', number_format($learners),
                 'Across all my classes', ClassResults::canAccess() ? ClassResults::getUrl() : null),
             static::card($rate === 100 ? 'emerald' : 'amber', 'heroicon-o-pencil-square', 'Marks entered',
                 $rate === null ? '—' : static::percentText($entered, $expected),
-                $expected ? number_format($entered) . ' of ' . number_format($expected) . ' for the current exam' : 'No open exam this term',
+                $expected ? number_format($entered).' of '.number_format($expected).' for the current exam' : 'No open exam this term',
                 EnterMarks::getUrl(), $rate),
             static::card('teal', 'heroicon-o-home-modern', 'Class teacher of',
                 $streams->isEmpty() ? '—' : (string) $streams->count(),

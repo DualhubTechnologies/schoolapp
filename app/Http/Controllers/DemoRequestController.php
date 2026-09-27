@@ -19,7 +19,7 @@ class DemoRequestController extends Controller
     {
         // Honeypot: people never see this field, bots fill it in.
         if (filled($request->input('website'))) {
-            return redirect()->to(url('/') . '#demo')->with('demo_sent', true);
+            return redirect()->to(url('/').'#demo')->with('demo_sent', true);
         }
 
         $validator = Validator::make($request->all(), [
@@ -27,9 +27,9 @@ class DemoRequestController extends Controller
             'school_name' => ['required', 'string', 'max:150'],
             'phone' => ['required', 'regex:/^[\d\s\+\-\(\)]{9,20}$/'],
             'email' => ['nullable', 'email', 'max:255'],
-            'learners' => ['nullable', 'in:' . implode(',', array_keys(DemoRequest::LEARNERS))],
+            'learners' => ['nullable', 'in:'.implode(',', array_keys(DemoRequest::LEARNERS))],
             'preferred_date' => ['nullable', 'date', 'after_or_equal:today'],
-            'preferred_contact' => ['required', 'in:' . implode(',', array_keys(DemoRequest::CONTACT_METHODS))],
+            'preferred_contact' => ['required', 'in:'.implode(',', array_keys(DemoRequest::CONTACT_METHODS))],
             'message' => ['nullable', 'string', 'max:2000'],
         ], [
             'phone.regex' => 'Enter a valid phone number.',
@@ -41,7 +41,7 @@ class DemoRequestController extends Controller
 
         // Back to the form itself, not the top of the page.
         if ($validator->fails()) {
-            return redirect()->to(url('/') . '#demo')->withErrors($validator, 'demo')->withInput();
+            return redirect()->to(url('/').'#demo')->withErrors($validator, 'demo')->withInput();
         }
 
         $data = $validator->validated();
@@ -54,6 +54,6 @@ class DemoRequestController extends Controller
             report($e);   // saved already; it shows in Platform Management → Demo requests
         }
 
-        return redirect()->to(url('/') . '#demo')->with('demo_sent', $demo->name);
+        return redirect()->to(url('/').'#demo')->with('demo_sent', $demo->name);
     }
 }

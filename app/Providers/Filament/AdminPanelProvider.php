@@ -2,6 +2,13 @@
 
 namespace App\Providers\Filament;
 
+use App\Filament\App\Resources\Users\UserResource;
+use App\Filament\App\Widgets\PlatformActivityKpis;
+use App\Filament\App\Widgets\PlatformKpis;
+use App\Filament\App\Widgets\WelcomeBanner;
+use App\Filament\Pages\Auth\Login;
+use App\Filament\Pages\Auth\ResetPassword;
+use App\Filament\Widgets\StatsOverview;
 use Filafly\LogoTools\LogoToolsPlugin;
 use Filament\Http\Middleware\Authenticate;
 use Filament\Http\Middleware\AuthenticateSession;
@@ -13,6 +20,7 @@ use Filament\PanelProvider;
 use Filament\Support\Colors\Color;
 use Filament\Support\Enums\Width;
 use Filament\Support\Icons\Heroicon;
+use Filament\View\PanelsRenderHook;
 use Illuminate\Cookie\Middleware\AddQueuedCookiesToResponse;
 use Illuminate\Cookie\Middleware\EncryptCookies;
 use Illuminate\Foundation\Http\Middleware\PreventRequestForgery;
@@ -27,9 +35,9 @@ class AdminPanelProvider extends PanelProvider
         return $panel
             ->id('admin')
             ->path('admin')                   // Super Admin only — gated in User::canAccessPanel()
-            ->login(\App\Filament\Pages\Auth\Login::class)
+            ->login(Login::class)
 
-            ->passwordReset(resetAction: \App\Filament\Pages\Auth\ResetPassword::class)
+            ->passwordReset(resetAction: ResetPassword::class)
             ->viteTheme('resources/css/filament/admin/theme.css')
 
             // --- Branding ---
@@ -41,10 +49,10 @@ class AdminPanelProvider extends PanelProvider
             // --- Colors ---
             ->colors([
                 'primary' => Color::Blue,
-                'danger'  => Color::Red,
+                'danger' => Color::Red,
                 'success' => Color::Green,
                 'warning' => Color::Amber,
-                'info'    => Color::Sky,
+                'info' => Color::Sky,
             ])
 
             // --- Layout ---
@@ -73,20 +81,20 @@ class AdminPanelProvider extends PanelProvider
             // hidden in CSS, and this custom bar renders at the top of
             // the page content instead.
             ->renderHook(
-                \Filament\View\PanelsRenderHook::HEAD_END,
-                fn () => '<link rel="stylesheet" href="' . asset('css/filament-custom.css') . '?v=' . filemtime(public_path('css/filament-custom.css')) . '">'
-                    . '<link rel="stylesheet" href="' . asset('css/dashboard.css') . '?v=' . filemtime(public_path('css/dashboard.css')) . '">'
+                PanelsRenderHook::HEAD_END,
+                fn () => '<link rel="stylesheet" href="'.asset('css/filament-custom.css').'?v='.filemtime(public_path('css/filament-custom.css')).'">'
+                    .'<link rel="stylesheet" href="'.asset('css/dashboard.css').'?v='.filemtime(public_path('css/dashboard.css')).'">'
             )
             ->renderHook(
-                \Filament\View\PanelsRenderHook::PAGE_START,
+                PanelsRenderHook::PAGE_START,
                 fn () => view('filament.partials.topbar')
             )
             ->renderHook(
-                \Filament\View\PanelsRenderHook::FOOTER,
+                PanelsRenderHook::FOOTER,
                 fn () => view('filament.partials.footer')
             )
             ->renderHook(
-                \Filament\View\PanelsRenderHook::SIMPLE_PAGE_START,
+                PanelsRenderHook::SIMPLE_PAGE_START,
                 fn () => view('filament.partials.login-brand')
             )
 
@@ -95,7 +103,7 @@ class AdminPanelProvider extends PanelProvider
             // shared with the app panel — one class, registered on both.
             ->discoverResources(in: app_path('Filament/Admin/Resources'), for: 'App\Filament\Admin\Resources')
             ->resources([
-                \App\Filament\App\Resources\Users\UserResource::class,
+                UserResource::class,
             ])
             ->discoverPages(in: app_path('Filament/Pages'), for: 'App\Filament\Pages')
             ->pages([
@@ -106,10 +114,10 @@ class AdminPanelProvider extends PanelProvider
             // platform cards and today's activity first, then the subscription
             // figures.
             ->widgets([
-                \App\Filament\App\Widgets\WelcomeBanner::class,
-                \App\Filament\App\Widgets\PlatformKpis::class,
-                \App\Filament\App\Widgets\PlatformActivityKpis::class,
-                \App\Filament\Widgets\StatsOverview::class,
+                WelcomeBanner::class,
+                PlatformKpis::class,
+                PlatformActivityKpis::class,
+                StatsOverview::class,
             ])
 
             // --- Middleware ---

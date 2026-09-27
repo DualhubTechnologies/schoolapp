@@ -7,7 +7,9 @@ use App\Filament\App\Resources\PayrollPeriods\Pages\ListPayrollPeriods;
 use App\Filament\App\Resources\PayrollPeriods\Pages\ViewPayrollPeriod;
 use App\Filament\App\Resources\PayrollPeriods\Schemas\PayrollPeriodForm;
 use App\Filament\App\Resources\PayrollPeriods\Tables\PayrollPeriodsTable;
+use App\Filament\Concerns\GatedByModule;
 use App\Models\PayrollPeriod;
+use App\Support\PayrollAccess;
 use BackedEnum;
 use Filament\Infolists\Components\TextEntry;
 use Filament\Resources\Resource;
@@ -27,7 +29,7 @@ use Illuminate\Database\Eloquent\Model;
  */
 class PayrollPeriodResource extends Resource
 {
-    use \App\Filament\Concerns\GatedByModule;
+    use GatedByModule;
 
     protected static ?string $model = PayrollPeriod::class;
 
@@ -46,7 +48,7 @@ class PayrollPeriodResource extends Resource
      */
     public static function getRecordTitle(?Model $record): string|Htmlable|null
     {
-        return $record ? 'Payroll — ' . $record->period_label : null;
+        return $record ? 'Payroll — '.$record->period_label : null;
     }
 
     public static function form(Schema $schema): Schema
@@ -60,7 +62,7 @@ class PayrollPeriodResource extends Resource
      */
     public static function infolist(Schema $schema): Schema
     {
-        $money = fn ($state) => 'UGX ' . number_format((float) $state);
+        $money = fn ($state) => 'UGX '.number_format((float) $state);
 
         return $schema->components([
             Section::make()
@@ -97,7 +99,7 @@ class PayrollPeriodResource extends Resource
                             ->label('NSSF → NSSF (15%)')
                             ->state(fn (PayrollPeriod $record) => (float) $record->total_nssf_employee + (float) $record->total_employer_nssf)
                             ->formatStateUsing($money)
-                            ->helperText(fn (PayrollPeriod $record) => 'Staff 5%: ' . number_format((float) $record->total_nssf_employee) . ' · School 10%: ' . number_format((float) $record->total_employer_nssf)),
+                            ->helperText(fn (PayrollPeriod $record) => 'Staff 5%: '.number_format((float) $record->total_nssf_employee).' · School 10%: '.number_format((float) $record->total_employer_nssf)),
                         TextEntry::make('total_lst')->label('LST → Local government')->formatStateUsing($money),
                         TextEntry::make('employer_cost')
                             ->label('Total cost to school')
@@ -174,7 +176,7 @@ class PayrollPeriodResource extends Resource
 
     public static function shouldRegisterNavigation(): bool
     {
-        return \App\Support\PayrollAccess::allowed();
+        return PayrollAccess::allowed();
     }
 
     public static function getNavigationGroup(): ?string
@@ -187,6 +189,6 @@ class PayrollPeriodResource extends Resource
      */
     public static function canViewAny(): bool
     {
-        return \App\Support\PayrollAccess::allowed();
+        return PayrollAccess::allowed();
     }
 }

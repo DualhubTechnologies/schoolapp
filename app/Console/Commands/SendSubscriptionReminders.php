@@ -41,7 +41,7 @@ class SendSubscriptionReminders extends Command
                 }
 
                 if ($dry) {
-                    $rows[] = [$school->name, $due['kind'], $due['ends_on']->format('j M Y'), 'would send' . ($due['sms'] ? ' + SMS' : '')];
+                    $rows[] = [$school->name, $due['kind'], $due['ends_on']->format('j M Y'), 'would send'.($due['sms'] ? ' + SMS' : '')];
 
                     return;
                 }
@@ -49,11 +49,11 @@ class SendSubscriptionReminders extends Command
                 try {
                     $sent = $reminders->send($school, $due);
                     $rows[] = [$school->name, $due['kind'], $due['ends_on']->format('j M Y'),
-                        "{$sent['emails']} email(s)" . ($sent['sms'] ? ' + SMS' : '') . ($sent['note'] ? " ({$sent['note']})" : '')];
+                        "{$sent['emails']} email(s)".($sent['sms'] ? ' + SMS' : '').($sent['note'] ? " ({$sent['note']})" : '')];
                 } catch (\Throwable $e) {
                     // One school's mail problem must not stop the others.
                     report($e);
-                    $rows[] = [$school->name, $due['kind'], $due['ends_on']->format('j M Y'), 'FAILED: ' . $e->getMessage()];
+                    $rows[] = [$school->name, $due['kind'], $due['ends_on']->format('j M Y'), 'FAILED: '.$e->getMessage()];
                 }
             });
 

@@ -4,7 +4,6 @@ namespace App\Services;
 
 use App\Filament\Admin\Resources\DemoRequests\DemoRequestResource;
 use App\Filament\Admin\Resources\Schools\SchoolResource;
-use App\Filament\App\Pages\Dashboard;
 use App\Filament\App\Resources\FeeBalances\FeeBalanceResource;
 use App\Filament\App\Resources\PayrollPeriods\PayrollPeriodResource;
 use App\Filament\App\Resources\SalaryArrears\SalaryArrearResource;
@@ -102,8 +101,8 @@ class AttentionItems
 
             if ($debtors > 0) {
                 $items[] = static::item('fees', 'info', 'heroicon-o-banknotes',
-                    number_format($debtors) . ' ' . str('student')->plural($debtors) . ' with fee balances',
-                    'UGX ' . number_format($owed) . ' outstanding in total', FeeBalanceResource::getUrl(panel: 'app'));
+                    number_format($debtors).' '.str('student')->plural($debtors).' with fee balances',
+                    'UGX '.number_format($owed).' outstanding in total', FeeBalanceResource::getUrl(panel: 'app'));
             }
         }
 
@@ -123,12 +122,12 @@ class AttentionItems
         if ($st['state'] === 'grace') {
             $items[] = static::item('subscription', 'danger', 'heroicon-o-exclamation-triangle',
                 'Subscription has ended',
-                'Renew before ' . $st['grace_ends_on']->format('j M') . ' to avoid the system locking.', $url);
+                'Renew before '.$st['grace_ends_on']->format('j M').' to avoid the system locking.', $url);
         } elseif ($st['expiring']) {
             $what = $st['state'] === 'trial' ? 'Free trial' : 'Subscription';
             $items[] = static::item('subscription', $st['days_left'] <= 3 ? 'danger' : 'warning', 'heroicon-o-clock',
-                "{$what} ends in {$st['days_left']} " . str('day')->plural($st['days_left']),
-                'Ends ' . $st['ends_on']->format('j M Y') . '. Choose a plan to keep going.', $url);
+                "{$what} ends in {$st['days_left']} ".str('day')->plural($st['days_left']),
+                'Ends '.$st['ends_on']->format('j M Y').'. Choose a plan to keep going.', $url);
         }
 
         foreach (SubscriptionManager::usage($schoolId) as $key => $u) {
@@ -167,7 +166,7 @@ class AttentionItems
             && Staff::where('school_id', $schoolId)->where('status', 'active')->exists()
             && ! PayrollPeriod::where('school_id', $schoolId)->where('year', today()->year)->where('month', today()->month)->exists()) {
             $items[] = static::item('payroll-due', 'info', 'heroicon-o-calendar-days',
-                today()->format('F') . ' payroll has not been prepared', 'Salaries are due at the end of the month.',
+                today()->format('F').' payroll has not been prepared', 'Salaries are due at the end of the month.',
                 PayrollPeriodResource::getUrl(panel: 'app'));
         }
 
@@ -175,7 +174,7 @@ class AttentionItems
 
         if ($arrears > 0) {
             $items[] = static::item('arrears', 'warning', 'heroicon-o-exclamation-circle',
-                $arrears . ' salary ' . str('arrear')->plural($arrears) . ' pending review', null,
+                $arrears.' salary '.str('arrear')->plural($arrears).' pending review', null,
                 SalaryArrearResource::getUrl(panel: 'app'));
         }
 
@@ -194,8 +193,8 @@ class AttentionItems
         if ($newDemos > 0) {
             $latest = DemoRequest::where('status', 'new')->latest()->first();
             $items[] = static::item('demos', 'warning', 'heroicon-o-calendar-days',
-                $newDemos . ' new demo ' . str('request')->plural($newDemos),
-                'Latest: ' . $latest->school_name . ' · ' . $latest->created_at->diffForHumans(),
+                $newDemos.' new demo '.str('request')->plural($newDemos),
+                'Latest: '.$latest->school_name.' · '.$latest->created_at->diffForHumans(),
                 DemoRequestResource::getUrl(panel: 'admin'));
         }
 
@@ -205,28 +204,28 @@ class AttentionItems
         $grace = $states->where('state', 'grace');
         if ($grace->isNotEmpty()) {
             $items[] = static::item('schools-grace', 'danger', 'heroicon-o-exclamation-triangle',
-                $grace->count() . ' ' . str('school')->plural($grace->count()) . ' overdue',
+                $grace->count().' '.str('school')->plural($grace->count()).' overdue',
                 $grace->take(3)->map(fn ($s) => $s['school']->name)->implode(', '), $schoolsUrl);
         }
 
         $expiring = $states->filter(fn ($s) => $s['expiring']);
         if ($expiring->isNotEmpty()) {
             $items[] = static::item('schools-expiring', 'warning', 'heroicon-o-clock',
-                $expiring->count() . ' ' . str('school')->plural($expiring->count()) . ' ending within ' . config('subscriptions.warn_days') . ' days',
+                $expiring->count().' '.str('school')->plural($expiring->count()).' ending within '.config('subscriptions.warn_days').' days',
                 $expiring->take(3)->map(fn ($s) => $s['school']->name)->implode(', '), $schoolsUrl);
         }
 
         $locked = $states->whereIn('state', ['expired', 'none']);
         if ($locked->isNotEmpty()) {
             $items[] = static::item('schools-locked', 'info', 'heroicon-o-lock-closed',
-                $locked->count() . ' ' . str('school')->plural($locked->count()) . ' locked (not renewed)',
+                $locked->count().' '.str('school')->plural($locked->count()).' locked (not renewed)',
                 $locked->take(3)->map(fn ($s) => $s['school']->name)->implode(', '), $schoolsUrl);
         }
 
         $newSchools = School::where('created_at', '>=', now()->subDays(7))->count();
         if ($newSchools > 0) {
             $items[] = static::item('schools-new', 'info', 'heroicon-o-building-office-2',
-                $newSchools . ' new ' . str('school')->plural($newSchools) . ' this week',
+                $newSchools.' new '.str('school')->plural($newSchools).' this week',
                 'Registered themselves and started a trial.', $schoolsUrl);
         }
 

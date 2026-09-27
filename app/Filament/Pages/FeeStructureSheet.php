@@ -2,10 +2,10 @@
 
 namespace App\Filament\Pages;
 
-use App\Models\ClassLevel;
 use App\Models\FeeStructure;
 use App\Models\ResidencyType;
 use App\Models\Term;
+use App\Support\Modules;
 use BackedEnum;
 use Filament\Pages\Page;
 use Filament\Support\Icons\Heroicon;
@@ -172,7 +172,7 @@ class FeeStructureSheet extends Page
 
     public static function shouldRegisterNavigation(): bool
     {
-        return \App\Support\Modules::allows('fees');
+        return Modules::allows('fees');
     }
 
     public static function canAccess(): bool

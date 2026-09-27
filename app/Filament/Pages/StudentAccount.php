@@ -6,6 +6,7 @@ use App\Filament\Support\FeeReminderActions;
 use App\Models\Student;
 use App\Models\Term;
 use App\Services\StudentLedger;
+use App\Support\Modules;
 use BackedEnum;
 use Filament\Actions\Action;
 use Filament\Forms\Components\Select;
@@ -100,7 +101,7 @@ class StudentAccount extends Page
     protected static function label(?Student $student): ?string
     {
         return $student
-            ? trim(($student->name ?: 'No name') . " — {$student->admission_no}" . ($student->schoolClass ? " ({$student->schoolClass->name})" : ''))
+            ? trim(($student->name ?: 'No name')." — {$student->admission_no}".($student->schoolClass ? " ({$student->schoolClass->name})" : ''))
             : null;
     }
 
@@ -193,6 +194,6 @@ class StudentAccount extends Page
 
     public static function canAccess(): bool
     {
-        return \App\Support\Modules::allows('fees');
+        return Modules::allows('fees');
     }
 }

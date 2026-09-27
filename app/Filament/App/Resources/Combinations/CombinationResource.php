@@ -3,9 +3,12 @@
 namespace App\Filament\App\Resources\Combinations;
 
 use App\Filament\App\Resources\Combinations\Pages\ManageCombinations;
+use App\Filament\Concerns\GatedByModule;
 use App\Models\Combination;
+use App\Models\SchoolClass;
 use App\Models\Subject;
-use App\Support\AcademicAccess;
+use App\Support\Modules;
+use App\Support\SchoolType;
 use BackedEnum;
 use Filament\Actions\DeleteAction;
 use Filament\Actions\EditAction;
@@ -27,7 +30,7 @@ use Illuminate\Validation\Rules\Unique;
  */
 class CombinationResource extends Resource
 {
-    use \App\Filament\Concerns\GatedByModule;
+    use GatedByModule;
 
     protected static ?string $model = Combination::class;
 
@@ -109,13 +112,13 @@ class CombinationResource extends Resource
 
     public static function canViewAny(): bool
     {
-        return \App\Support\Modules::allows('academics') && \App\Support\SchoolType::allows('a_level');
+        return Modules::allows('academics') && SchoolType::allows('a_level');
     }
 
     public static function shouldRegisterNavigation(): bool
     {
         return static::canViewAny()
-            && \App\Models\SchoolClass::where('school_id', auth()->user()?->school_id)
+            && SchoolClass::where('school_id', auth()->user()?->school_id)
                 ->whereHas('classLevel', fn ($q) => $q->where('curriculum', 'a_level'))
                 ->exists();
     }

@@ -3,10 +3,12 @@
 namespace App\Filament\App\Resources\Assessments;
 
 use App\Filament\App\Resources\Assessments\Pages\ManageAssessments;
+use App\Filament\Concerns\GatedByModule;
 use App\Filament\Pages\EnterMarks;
 use App\Models\Assessment;
 use App\Models\Term;
 use App\Support\AcademicAccess;
+use App\Support\SchoolType;
 use BackedEnum;
 use Filament\Actions\Action;
 use Filament\Actions\ActionGroup;
@@ -31,7 +33,7 @@ use Illuminate\Database\Eloquent\Builder;
  */
 class AssessmentResource extends Resource
 {
-    use \App\Filament\Concerns\GatedByModule;
+    use GatedByModule;
 
     protected static ?string $model = Assessment::class;
 
@@ -82,7 +84,7 @@ class AssessmentResource extends Resource
                 ->native(false),
             Select::make('curriculum')
                 ->label('For')
-                ->options(fn () => \App\Support\SchoolType::curricula())
+                ->options(fn () => SchoolType::curricula())
                 ->placeholder('All classes')
                 ->native(false)
                 ->live()

@@ -3,8 +3,10 @@
 namespace App\Filament\App\Resources\FeeReminders;
 
 use App\Filament\App\Resources\FeeReminders\Pages\ListFeeReminders;
+use App\Filament\Concerns\GatedByModule;
 use App\Filament\Pages\StudentAccount;
 use App\Models\FeeReminder;
+use App\Support\Modules;
 use BackedEnum;
 use Filament\Actions\Action;
 use Filament\Resources\Resource;
@@ -21,7 +23,7 @@ use Illuminate\Database\Eloquent\Model;
  */
 class FeeReminderResource extends Resource
 {
-    use \App\Filament\Concerns\GatedByModule;
+    use GatedByModule;
 
     protected static ?string $model = FeeReminder::class;
 
@@ -114,7 +116,7 @@ class FeeReminderResource extends Resource
 
     public static function canViewAny(): bool
     {
-        return \App\Support\Modules::allows('fees');
+        return Modules::allows('fees');
     }
 
     public static function canCreate(): bool

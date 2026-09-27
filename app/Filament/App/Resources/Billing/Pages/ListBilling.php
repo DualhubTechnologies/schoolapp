@@ -132,9 +132,9 @@ class ListBilling extends ListRecords
                         ->orderBy('name')
                         ->get()
                         ->mapWithKeys(fn (FeeStructure $f) => [
-                            $f->id => $f->name . ' — ' . $f->formattedAmount()
-                                . ($f->schoolClass?->name ? " ({$f->schoolClass->name}" : '')
-                                . ($f->residencyType?->name ? ", {$f->residencyType->name})" : ($f->schoolClass?->name ? ')' : '')),
+                            $f->id => $f->name.' — '.$f->formattedAmount()
+                                .($f->schoolClass?->name ? " ({$f->schoolClass->name}" : '')
+                                .($f->residencyType?->name ? ", {$f->residencyType->name})" : ($f->schoolClass?->name ? ')' : '')),
                         ])
                         ->toArray())
                     ->searchable()

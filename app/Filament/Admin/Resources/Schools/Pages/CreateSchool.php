@@ -3,6 +3,7 @@
 namespace App\Filament\Admin\Resources\Schools\Pages;
 
 use App\Filament\Admin\Resources\Schools\SchoolResource;
+use App\Services\Subscriptions\SubscriptionManager;
 use Filament\Resources\Pages\CreateRecord;
 use Filament\Support\Enums\Width;
 
@@ -17,7 +18,7 @@ class CreateSchool extends CreateRecord
     /** Every new school starts on the free trial. */
     protected function afterCreate(): void
     {
-        \App\Services\Subscriptions\SubscriptionManager::startTrial($this->record);
+        SubscriptionManager::startTrial($this->record);
     }
 
     public function getMaxContentWidth(): Width

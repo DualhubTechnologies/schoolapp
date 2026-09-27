@@ -3,6 +3,7 @@
 namespace App\Filament\App\Resources\Payments\Pages;
 
 use App\Filament\App\Resources\Payments\PaymentResource;
+use App\Filament\App\Resources\Payments\Widgets\CollectionsSummary;
 use App\Filament\Pages\ReceivePayment;
 use Filament\Actions\Action;
 use Filament\Resources\Pages\ListRecords;
@@ -14,7 +15,7 @@ class ListPayments extends ListRecords
     protected function getHeaderWidgets(): array
     {
         return [
-            \App\Filament\App\Resources\Payments\Widgets\CollectionsSummary::class,
+            CollectionsSummary::class,
         ];
     }
 

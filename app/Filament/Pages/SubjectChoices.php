@@ -213,7 +213,7 @@ class SubjectChoices extends Page
     /** @return array{min: int, max: int}|null */
     public function electiveRange(): ?array
     {
-        return config('academics.electives.' . $this->schoolClass?->curriculum());
+        return config('academics.electives.'.$this->schoolClass?->curriculum());
     }
 
     protected function load(): void
@@ -263,7 +263,7 @@ class SubjectChoices extends Page
             }
         }
 
-        Notification::make()->title("Combination set for {$n} " . str('learner')->plural($n))->body('Click Save to keep it.')->info()->send();
+        Notification::make()->title("Combination set for {$n} ".str('learner')->plural($n))->body('Click Save to keep it.')->info()->send();
     }
 
     // ── Save ──
@@ -308,6 +308,6 @@ class SubjectChoices extends Page
         });
 
         $this->load();
-        Notification::make()->title('Subject choices saved')->body($students->count() . ' learners updated.')->success()->send();
+        Notification::make()->title('Subject choices saved')->body($students->count().' learners updated.')->success()->send();
     }
 }

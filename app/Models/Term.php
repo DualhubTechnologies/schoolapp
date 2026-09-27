@@ -164,7 +164,7 @@ class Term extends Model
     {
         $yearStart = $this->academicYear?->start_date ?? $this->start_date;
 
-        return ($yearStart?->format('Ymd') ?? '00000000') . '-' . str_pad((string) $this->sequence, 3, '0', STR_PAD_LEFT);
+        return ($yearStart?->format('Ymd') ?? '00000000').'-'.str_pad((string) $this->sequence, 3, '0', STR_PAD_LEFT);
     }
 
     /**

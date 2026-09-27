@@ -5,6 +5,7 @@ namespace App\Filament\Pages;
 use App\Models\Student;
 use App\Models\StudentPayment;
 use App\Models\Term;
+use App\Support\Modules;
 use BackedEnum;
 use Filament\Forms\Components\DatePicker;
 use Filament\Forms\Components\Select;
@@ -19,6 +20,7 @@ use Filament\Schemas\Components\Utilities\Get;
 use Filament\Schemas\Components\Utilities\Set;
 use Filament\Schemas\Schema;
 use Filament\Support\Icons\Heroicon;
+use Illuminate\Support\Collection;
 use Illuminate\Support\Facades\DB;
 
 /**
@@ -189,7 +191,7 @@ class ReceivePayment extends Page
 
         Notification::make()
             ->title("Receipt {$payment->receipt_no} issued")
-            ->body('UGX ' . number_format((float) $payment->amount) . " from {$student->name}.")
+            ->body('UGX '.number_format((float) $payment->amount)." from {$student->name}.")
             ->success()
             ->send();
 
@@ -239,7 +241,7 @@ class ReceivePayment extends Page
     }
 
     /**
-     * @return array{balance: float, term_billed: float, term_paid: float, recent: \Illuminate\Support\Collection}
+     * @return array{balance: float, term_billed: float, term_paid: float, recent: Collection}
      */
     public function getAccountProperty(): array
     {
@@ -261,7 +263,7 @@ class ReceivePayment extends Page
     public static function receiptUrl(StudentPayment|int $payment, bool $print = false): string
     {
         return route('filament.app.fees.receipt', ['payment' => $payment instanceof StudentPayment ? $payment->getKey() : $payment])
-            . ($print ? '?print=1' : '');
+            .($print ? '?print=1' : '');
     }
 
     protected function searchStudents(string $search): array
@@ -286,11 +288,11 @@ class ReceivePayment extends Page
             return null;
         }
 
-        return trim(($student->name ?: 'No name') . " — {$student->admission_no}" . ($student->schoolClass ? " ({$student->schoolClass->name})" : ''));
+        return trim(($student->name ?: 'No name')." — {$student->admission_no}".($student->schoolClass ? " ({$student->schoolClass->name})" : ''));
     }
 
     public static function canAccess(): bool
     {
-        return \App\Support\Modules::allows('fees');
+        return Modules::allows('fees');
     }
 }

@@ -82,13 +82,13 @@ class FeeBalancesTable
                     ->weight(FontWeight::Bold)
                     ->color(fn ($state): string => (float) $state > 0 ? 'danger' : 'success')
                     ->formatStateUsing(fn ($state) => (float) $state < 0
-                        ? number_format(abs((float) $state)) . ' CR'
+                        ? number_format(abs((float) $state)).' CR'
                         : number_format((float) $state))
                     ->sortable(),
 
                 TextColumn::make('percent_paid')
                     ->label('Paid')
-                    ->state(fn (Student $record) => $percent($record) === null ? '—' : $percent($record) . '%')
+                    ->state(fn (Student $record) => $percent($record) === null ? '—' : $percent($record).'%')
                     ->badge()
                     ->alignEnd()
                     ->color(fn (Student $record): string => match (true) {

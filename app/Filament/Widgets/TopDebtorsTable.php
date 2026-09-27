@@ -42,12 +42,12 @@ class TopDebtorsTable extends TableWidget
                     ->where('school_id', $this->schoolId())
                     ->where('status', 'active')
                     ->select('students.*')
-                    ->selectRaw(self::CHARGED . ' as charged_total')
-                    ->selectRaw(self::PAID . ' as paid_total')
-                    ->whereRaw(self::CHARGED . ' > ' . self::PAID)
+                    ->selectRaw(self::CHARGED.' as charged_total')
+                    ->selectRaw(self::PAID.' as paid_total')
+                    ->whereRaw(self::CHARGED.' > '.self::PAID)
                     ->with(['schoolClass', 'section'])
             )
-            ->defaultSort(fn ($query) => $query->orderByRaw('(' . self::CHARGED . ' - ' . self::PAID . ') desc'))
+            ->defaultSort(fn ($query) => $query->orderByRaw('('.self::CHARGED.' - '.self::PAID.') desc'))
             ->columns([
                 TextColumn::make('name')
                     ->label('Student')
@@ -77,7 +77,7 @@ class TopDebtorsTable extends TableWidget
                 TextColumn::make('paid_percent')
                     ->label('Paid')
                     ->state(fn (Student $record) => (float) $record->charged_total > 0
-                        ? round((float) $record->paid_total / (float) $record->charged_total * 100) . '%'
+                        ? round((float) $record->paid_total / (float) $record->charged_total * 100).'%'
                         : '—')
                     ->badge()
                     ->color(fn (string $state) => match (true) {

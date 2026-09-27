@@ -66,6 +66,7 @@ class SalariesRelationManager extends RelationManager
                 CreateAction::make()
                     ->mutateFormDataUsing(function (array $data): array {
                         $data['school_id'] = $this->getOwnerRecord()->school_id;
+
                         return $data;
                     }),
             ])

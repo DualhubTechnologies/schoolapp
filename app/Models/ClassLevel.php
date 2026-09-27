@@ -21,8 +21,8 @@ use Illuminate\Database\Eloquent\Relations\HasMany;
  */
 class ClassLevel extends Model
 {
-    use HasFactory;
     use Auditable;
+    use HasFactory;
 
     protected $fillable = [
         'school_id',

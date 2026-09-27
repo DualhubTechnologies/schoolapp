@@ -3,6 +3,7 @@
 namespace App\Filament\Widgets\Concerns;
 
 use App\Models\Term;
+use App\Support\Modules;
 
 /**
  * Shared by the dashboard widgets: every figure is for the signed-in
@@ -27,12 +28,12 @@ trait SchoolScoped
     {
         $user = auth()->user();
 
-        return $user?->school_id !== null && \App\Support\Modules::allows('fees');
+        return $user?->school_id !== null && Modules::allows('fees');
     }
 
     protected static function money(float $amount): string
     {
-        return 'UGX ' . number_format($amount, 0);
+        return 'UGX '.number_format($amount, 0);
     }
 
     /**
@@ -42,10 +43,10 @@ trait SchoolScoped
     protected static function shortMoney(float $amount): string
     {
         return match (true) {
-            abs($amount) >= 1_000_000_000 => 'UGX ' . round($amount / 1_000_000_000, 2) . 'B',
-            abs($amount) >= 1_000_000 => 'UGX ' . round($amount / 1_000_000, 2) . 'M',
-            abs($amount) >= 10_000 => 'UGX ' . round($amount / 1_000) . 'K',
-            default => 'UGX ' . number_format($amount, 0),
+            abs($amount) >= 1_000_000_000 => 'UGX '.round($amount / 1_000_000_000, 2).'B',
+            abs($amount) >= 1_000_000 => 'UGX '.round($amount / 1_000_000, 2).'M',
+            abs($amount) >= 10_000 => 'UGX '.round($amount / 1_000).'K',
+            default => 'UGX '.number_format($amount, 0),
         };
     }
 }

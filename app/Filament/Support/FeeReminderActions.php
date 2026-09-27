@@ -88,7 +88,7 @@ class FeeReminderActions
                     'print' => 1,
                 ]);
 
-                $livewire->js('window.open(' . json_encode($url) . ', "_blank")');
+                $livewire->js('window.open('.json_encode($url).', "_blank")');
             });
     }
 
@@ -101,7 +101,7 @@ class FeeReminderActions
                 ->rows(4)
                 ->required()
                 ->maxLength(459) // three SMS parts
-                ->helperText('Placeholders: ' . implode('  ', array_keys(FeeReminderService::PLACEHOLDERS)) . '. Keep it under 160 characters for a single SMS.'),
+                ->helperText('Placeholders: '.implode('  ', array_keys(FeeReminderService::PLACEHOLDERS)).'. Keep it under 160 characters for a single SMS.'),
 
             DatePicker::make('deadline')
                 ->label('Pay-by date ({deadline})')
@@ -137,7 +137,7 @@ class FeeReminderActions
         ])->filter()->implode(', ');
 
         Notification::make()
-            ->title($result['sent'] . ' ' . str('reminder')->plural($result['sent']) . ' sent')
+            ->title($result['sent'].' '.str('reminder')->plural($result['sent']).' sent')
             ->body($skipped ? "Skipped: {$skipped}. See Fee Reminders for details." : null)
             ->{$result['failed'] ? 'warning' : 'success'}()
             ->send();

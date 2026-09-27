@@ -18,7 +18,7 @@ use Illuminate\Support\Collection;
 class FeeReminderService
 {
     public const DEFAULT_TEMPLATE = 'Dear {guardian}, {student} ({class}) has a school fees balance of UGX {balance}. '
-        . 'Kindly clear it by {deadline}. Thank you. {school}';
+        .'Kindly clear it by {deadline}. Thank you. {school}';
 
     public const PLACEHOLDERS = [
         '{guardian}' => 'Guardian\'s name',

@@ -4,13 +4,13 @@ namespace App\Exports;
 
 use App\Models\PayrollPeriod;
 use Maatwebsite\Excel\Concerns\FromArray;
-use Maatwebsite\Excel\Concerns\WithHeadings;
-use Maatwebsite\Excel\Concerns\WithTitle;
-use Maatwebsite\Excel\Concerns\WithStyles;
 use Maatwebsite\Excel\Concerns\WithColumnWidths;
+use Maatwebsite\Excel\Concerns\WithHeadings;
+use Maatwebsite\Excel\Concerns\WithStyles;
+use Maatwebsite\Excel\Concerns\WithTitle;
 use PhpOffice\PhpSpreadsheet\Worksheet\Worksheet;
 
-class NssfScheduleExport implements FromArray, WithHeadings, WithTitle, WithStyles, WithColumnWidths
+class NssfScheduleExport implements FromArray, WithColumnWidths, WithHeadings, WithStyles, WithTitle
 {
     protected PayrollPeriod $period;
 

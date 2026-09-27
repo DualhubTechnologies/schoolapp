@@ -3,6 +3,8 @@
 namespace App\Filament\App\Resources\AuditTrail;
 
 use App\Filament\App\Resources\AuditTrail\Pages\ListActivities;
+use App\Filament\Concerns\GatedByModule;
+use App\Models\User;
 use BackedEnum;
 use Filament\Forms\Components\DatePicker;
 use Filament\Resources\Resource;
@@ -16,7 +18,7 @@ use Spatie\Activitylog\Models\Activity;
 
 class AuditTrailResource extends Resource
 {
-    use \App\Filament\Concerns\GatedByModule;
+    use GatedByModule;
 
     protected static ?string $model = Activity::class;
 
@@ -135,7 +137,7 @@ class AuditTrailResource extends Resource
         if ($user && ! $user->hasRole('Super Admin')) {
             $query->whereHasMorph(
                 'causer',
-                [\App\Models\User::class],
+                [User::class],
                 fn (Builder $q) => $q->where('school_id', $user->school_id)
             );
         }

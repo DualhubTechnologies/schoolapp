@@ -25,7 +25,7 @@ class PlatformKpis extends KpiCards
                 $newSchools ? "{$newSchools} joined in the last 30 days" : 'None joined in the last 30 days', $schoolsUrl,
                 trend: $newSchools ? 'up' : null),
             static::card('emerald', 'heroicon-o-credit-card', 'Paying schools', number_format($states['active'] ?? 0),
-                number_format($states['trial'] ?? 0) . ' on free trial', $schoolsUrl,
+                number_format($states['trial'] ?? 0).' on free trial', $schoolsUrl,
                 static::percent($states['active'] ?? 0, $schools)),
             static::card($newDemos ? 'amber' : 'violet', 'heroicon-o-calendar-days', 'New demo requests', number_format($newDemos),
                 $newDemos ? 'Waiting for a reply' : 'All followed up', DemoRequestResource::getUrl(panel: 'admin')),

@@ -13,9 +13,7 @@ class SchoolRejected extends Notification implements ShouldQueue
 {
     use Queueable;
 
-    public function __construct(public School $school)
-    {
-    }
+    public function __construct(public School $school) {}
 
     public function via(object $notifiable): array
     {
@@ -30,7 +28,7 @@ class SchoolRejected extends Notification implements ShouldQueue
             ->subject("Your SchoolHub registration for {$this->school->name}")
             ->greeting("Hello {$notifiable->name},")
             ->line("We could not approve the registration for **{$this->school->name}**.")
-            ->when($this->school->rejection_reason, fn ($m) => $m->line('Reason: ' . $this->school->rejection_reason))
+            ->when($this->school->rejection_reason, fn ($m) => $m->line('Reason: '.$this->school->rejection_reason))
             ->line($contact ? "If you think this is a mistake, contact us on {$contact}." : 'If you think this is a mistake, reply to this email.');
     }
 }

@@ -4,6 +4,7 @@ namespace App\Notifications;
 
 use App\Filament\Pages\SchoolSubscription;
 use App\Models\School;
+use Carbon\CarbonImmutable;
 use Illuminate\Notifications\Messages\MailMessage;
 use Illuminate\Notifications\Notification;
 
@@ -14,10 +15,8 @@ use Illuminate\Notifications\Notification;
  */
 class SubscriptionEnding extends Notification
 {
-    /** @param  array{kind: string, state: string, ends_on: \Carbon\CarbonImmutable, days_left: int, lock_on: \Carbon\CarbonImmutable, locks_in: int}  $due */
-    public function __construct(public School $school, public array $due)
-    {
-    }
+    /** @param  array{kind: string, state: string, ends_on: CarbonImmutable, days_left: int, lock_on: CarbonImmutable, locks_in: int}  $due */
+    public function __construct(public School $school, public array $due) {}
 
     public function via(object $notifiable): array
     {
@@ -32,19 +31,19 @@ class SubscriptionEnding extends Notification
         $what = $trial ? 'free trial' : 'subscription';
         $ends = $d['ends_on']->format('l, j F Y');
         $lock = $d['lock_on']->format('l, j F Y');
-        $days = fn (int $n) => $n . ' ' . str('day')->plural($n);
+        $days = fn (int $n) => $n.' '.str('day')->plural($n);
 
-        $mail = (new MailMessage)->greeting('Hello' . (isset($notifiable->name) ? ' ' . $notifiable->name : '') . ',');
+        $mail = (new MailMessage)->greeting('Hello'.(isset($notifiable->name) ? ' '.$notifiable->name : '').',');
 
         $mail = match ($d['kind']) {
             'ended' => $mail
                 ->subject("Your SchoolHub {$what} has ended — {$school}")
                 ->line("The SchoolHub {$what} for **{$school}** ended on {$ends}.")
-                ->line("Everything keeps working for now, but the system will lock on **{$lock}** unless " . ($trial ? 'you choose a plan.' : 'it is renewed.')),
+                ->line("Everything keeps working for now, but the system will lock on **{$lock}** unless ".($trial ? 'you choose a plan.' : 'it is renewed.')),
             'locks-soon' => $mail
                 ->subject("{$school} will be locked in {$days($d['locks_in'])}")
                 ->line("The SchoolHub {$what} for **{$school}** ended on {$ends}.")
-                ->line("The system will lock on **{$lock}**. Staff will not be able to receive fees, enter marks or run payroll until " . ($trial ? 'a plan is paid for.' : 'it is renewed.')),
+                ->line("The system will lock on **{$lock}**. Staff will not be able to receive fees, enter marks or run payroll until ".($trial ? 'a plan is paid for.' : 'it is renewed.')),
             'locked' => $mail
                 ->subject("SchoolHub is locked for {$school}")
                 ->line($trial
@@ -71,7 +70,7 @@ class SubscriptionEnding extends Notification
 
         return $mail
             ->action($trial ? 'Choose a plan' : 'Renew subscription', SchoolSubscription::getUrl(panel: 'app'))
-            ->line('Questions? Call or WhatsApp ' . config('contact.phone') . ' or email ' . config('contact.email') . '.');
+            ->line('Questions? Call or WhatsApp '.config('contact.phone').' or email '.config('contact.email').'.');
     }
 
     /** Short enough for one or two SMS. */
@@ -87,7 +86,7 @@ class SubscriptionEnding extends Notification
             'locks-soon' => "SchoolHub: {$name} will be LOCKED on {$due['lock_on']->format('j M')}. {$act} to keep receiving fees and entering marks. Call {$contact}.",
             'locked' => "SchoolHub: {$name} is now locked. Your data is safe. Pay to unlock. Call {$contact}.",
             'ends-today' => "SchoolHub: {$name} {$what} ends TODAY. {$act} to avoid interruption. Call {$contact}.",
-            default => "SchoolHub: {$name} {$what} ends on {$due['ends_on']->format('j M')} ({$due['days_left']} " . str('day')->plural($due['days_left']) . "). {$act} to keep using SchoolHub. Call {$contact}.",
+            default => "SchoolHub: {$name} {$what} ends on {$due['ends_on']->format('j M')} ({$due['days_left']} ".str('day')->plural($due['days_left'])."). {$act} to keep using SchoolHub. Call {$contact}.",
         };
     }
 
@@ -97,11 +96,11 @@ class SubscriptionEnding extends Notification
         $pay = config('subscriptions.payment', []);
 
         $ways = array_filter([
-            filled($pay['mobile_money'] ?? null) ? 'MTN Mobile Money: ' . $pay['mobile_money'] : null,
-            filled($pay['airtel_money'] ?? null) ? 'Airtel Money: ' . $pay['airtel_money'] : null,
-            filled($pay['bank'] ?? null) ? 'Bank: ' . $pay['bank'] : null,
+            filled($pay['mobile_money'] ?? null) ? 'MTN Mobile Money: '.$pay['mobile_money'] : null,
+            filled($pay['airtel_money'] ?? null) ? 'Airtel Money: '.$pay['airtel_money'] : null,
+            filled($pay['bank'] ?? null) ? 'Bank: '.$pay['bank'] : null,
         ]);
 
-        return $ways ? ['**How to pay:** ' . implode(' · ', $ways)] : [];
+        return $ways ? ['**How to pay:** '.implode(' · ', $ways)] : [];
     }
 }

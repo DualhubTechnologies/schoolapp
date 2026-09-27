@@ -9,8 +9,8 @@ use Illuminate\Database\Eloquent\Relations\BelongsTo;
 
 class StudentDiscount extends Model
 {
-    use HasFactory;
     use Auditable;
+    use HasFactory;
 
     protected $fillable = [
         'school_id',
@@ -175,7 +175,7 @@ class StudentDiscount extends Model
         }
 
         $value = $this->type === 'percentage'
-            ? rtrim(rtrim(number_format((float) $this->value, 2), '0'), '.') . '%'
+            ? rtrim(rtrim(number_format((float) $this->value, 2), '0'), '.').'%'
             : number_format((float) $this->value, 0);
 
         $reason = self::REASONS[$this->reason] ?? $this->reason;

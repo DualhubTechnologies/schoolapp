@@ -16,8 +16,8 @@ use Illuminate\Database\Eloquent\Relations\BelongsTo;
  */
 class StudentCharge extends Model
 {
-    use HasFactory;
     use Auditable;
+    use HasFactory;
 
     protected $fillable = [
         'school_id',
@@ -73,6 +73,6 @@ class StudentCharge extends Model
 
     public function formattedAmount(): string
     {
-        return $this->currency . ' ' . number_format($this->netAmount(), 0);
+        return $this->currency.' '.number_format($this->netAmount(), 0);
     }
 }

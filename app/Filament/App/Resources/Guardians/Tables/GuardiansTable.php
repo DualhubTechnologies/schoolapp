@@ -15,6 +15,8 @@ class GuardiansTable
     public static function configure(Table $table): Table
     {
         return $table
+            ->emptyStateHeading('No parents or guardians yet')
+            ->emptyStateDescription('They are added with each learner, or here. Their phone numbers receive receipts and fee reminders.')
             ->columns([
                 TextColumn::make('name')
                     ->searchable()

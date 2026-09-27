@@ -47,6 +47,10 @@ class StudentResource extends Resource
     /** @return array<string, string> */
     public static function getGlobalSearchResultDetails(Model $record): array
     {
+        if (! $record instanceof Student) {
+            return [];
+        }
+
         return array_filter([
             'Class' => $record->schoolClass?->name,
             'Parent' => $record->guardian ? trim("{$record->guardian->name} {$record->guardian->phone}") : null,

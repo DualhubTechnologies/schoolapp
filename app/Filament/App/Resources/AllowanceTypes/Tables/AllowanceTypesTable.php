@@ -14,6 +14,8 @@ class AllowanceTypesTable
     public static function configure(Table $table): Table
     {
         return $table
+            ->emptyStateHeading('No allowance types')
+            ->emptyStateDescription('Add the allowances you pay staff, e.g. transport, housing, responsibility.')
             ->columns([
                 TextColumn::make('name')
                     ->searchable()

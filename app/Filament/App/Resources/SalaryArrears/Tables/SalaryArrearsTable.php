@@ -18,6 +18,8 @@ class SalaryArrearsTable
     public static function configure(Table $table): Table
     {
         return $table
+            ->emptyStateHeading('No salary arrears')
+            ->emptyStateDescription('Unpaid salary owed to staff from earlier months shows here, to be paid with a later payroll.')
             ->defaultSort('created_at', 'desc')
             ->columns([
                 TextColumn::make('staff.name')

@@ -24,6 +24,8 @@ class StudentsTable
     public static function configure(Table $table): Table
     {
         return $table
+            ->emptyStateHeading('No learners yet')
+            ->emptyStateDescription('Add learners one at a time with “New student”, or all at once: download the CSV template, fill it in Excel and use “Import students”.')
             // Eager-load what the combined cells read, so a page of
             // students is a handful of queries, not one per row.
             ->modifyQueryUsing(fn (Builder $query) => $query->with(['section', 'guardian']))

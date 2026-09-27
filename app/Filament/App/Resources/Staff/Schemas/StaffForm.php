@@ -112,10 +112,12 @@ class StaffForm
                     ->columnSpanFull()
                     ->schema([
                         TextInput::make('tin_number')
+                            ->hintIcon('heroicon-m-question-mark-circle', tooltip: 'Tax Identification Number from URA, needed on the monthly PAYE return.')
                             ->label('TIN')
                             ->placeholder('e.g. 1001234567')
                             ->maxLength(20),
                         TextInput::make('nssf_number')
+                            ->hintIcon('heroicon-m-question-mark-circle', tooltip: "The staff member's NSSF membership number, printed on the monthly NSSF schedule. Contributions are 5% of salary from them and 10% from the school.")
                             ->label('NSSF number')
                             ->placeholder('e.g. NF12345678901')
                             ->maxLength(30),
@@ -124,6 +126,7 @@ class StaffForm
                             ->helperText('5% from salary, plus 10% paid by the school.')
                             ->default(true),
                         Toggle::make('pays_lst')
+                            ->hintIcon('heroicon-m-question-mark-circle', tooltip: 'Local Service Tax: a yearly tax for local government, taken from salary in July to October. The amount depends on the monthly pay band (none below UGX 100,000).')
                             ->label('Pays Local Service Tax')
                             ->helperText('Deducted July–October, by pay band.')
                             ->default(true),

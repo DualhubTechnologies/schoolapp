@@ -15,6 +15,8 @@ class TermsTable
     public static function configure(Table $table): Table
     {
         return $table
+            ->emptyStateHeading('No terms yet')
+            ->emptyStateDescription("Add this year's terms and mark the one you are in as current. Fees and marks are recorded against it.")
             ->columns([
                 TextColumn::make('academicYear.name')
                     ->label('Year')

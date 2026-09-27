@@ -15,6 +15,7 @@ use Filament\Tables\Table;
 use Illuminate\Contracts\Support\Htmlable;
 use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Database\Eloquent\Model;
+use Illuminate\Support\Carbon;
 
 /**
  * The receipt book: every payment received, including voided receipts
@@ -51,15 +52,23 @@ class PaymentResource extends Resource
 
     public static function getGlobalSearchResultTitle(Model $record): string|Htmlable
     {
+        if (! $record instanceof StudentPayment) {
+            return '';
+        }
+
         return "Receipt {$record->receipt_no} · UGX ".number_format((float) $record->amount).($record->isVoided() ? ' (void)' : '');
     }
 
     /** @return array<string, string> */
     public static function getGlobalSearchResultDetails(Model $record): array
     {
+        if (! $record instanceof StudentPayment) {
+            return [];
+        }
+
         return array_filter([
             'Learner' => $record->student?->name,
-            'Paid' => $record->paid_on?->format('j M Y'),
+            'Paid' => Carbon::parse($record->paid_on)->format('j M Y'),
         ]);
     }
 
@@ -70,7 +79,7 @@ class PaymentResource extends Resource
 
     public static function getRecordTitle(?Model $record): string|Htmlable|null
     {
-        return $record ? "Receipt {$record->receipt_no}" : null;
+        return $record instanceof StudentPayment ? "Receipt {$record->receipt_no}" : null;
     }
 
     public static function table(Table $table): Table

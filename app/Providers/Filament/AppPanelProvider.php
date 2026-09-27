@@ -34,6 +34,7 @@ use App\Http\Controllers\ReportCardController;
 use App\Http\Controllers\StudentDocumentController;
 use App\Http\Controllers\TransportDocumentController;
 use App\Http\Middleware\EnsureSchoolSubscribed;
+use App\Support\UndoDelete;
 use Filafly\LogoTools\LogoToolsPlugin;
 use Filament\Http\Middleware\Authenticate;
 use Filament\Http\Middleware\AuthenticateSession;
@@ -41,6 +42,7 @@ use Filament\Http\Middleware\DisableBladeIconComponents;
 use Filament\Http\Middleware\DispatchServingFilamentEvent;
 use Filament\Navigation\NavigationGroup;
 use Filament\Navigation\NavigationItem;
+use Filament\Notifications\Notification;
 use Filament\Panel;
 use Filament\PanelProvider;
 use Filament\Support\Colors\Color;
@@ -128,6 +130,18 @@ class AppPanelProvider extends PanelProvider
                 // point it at the dashboard.
                 Route::get('/home', fn () => redirect(Dashboard::getUrl()))
                     ->name('home');
+                // "Undo" on the notification after deleting a record.
+                Route::get('/undo-delete/{token}', function (string $token) {
+                    $label = UndoDelete::restore($token);
+
+                    Notification::make()
+                        ->title($label ? "{$label} restored" : 'Too late to undo')
+                        ->body($label ? null : 'Undo is available for a minute after deleting.')
+                        ->{$label ? 'success' : 'warning'}()
+                        ->send();
+
+                    return redirect()->back(fallback: Dashboard::getUrl());
+                })->name('undo-delete');
                 Route::get('/fees/receipts/{payment}', [FeeDocumentController::class, 'receipt'])
                     ->whereNumber('payment')
                     ->name('fees.receipt');
@@ -207,7 +221,7 @@ class AppPanelProvider extends PanelProvider
                     .'<meta name="theme-color" content="#0d1f38">'
                     .'<meta name="mobile-web-app-capable" content="yes">'
                     .'<meta name="apple-mobile-web-app-capable" content="yes">'
-                    .'<meta name="apple-mobile-web-app-title" content="'.e(auth()->user()?->school?->name ?? 'SchoolHub').'">'
+                    .'<meta name="apple-mobile-web-app-title" content="'.e(auth()->user()->school->name ?? 'SchoolHub').'">'
                     .'<link rel="apple-touch-icon" href="'.route('filament.app.app.icon', ['size' => 180]).'">'
                     .'<script src="'.asset('js/schoolhub-mobile.js').'?v='.filemtime(public_path('js/schoolhub-mobile.js')).'"></script>'
             )

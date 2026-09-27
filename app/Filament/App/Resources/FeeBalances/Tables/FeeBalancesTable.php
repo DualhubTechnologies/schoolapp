@@ -32,6 +32,8 @@ class FeeBalancesTable
             : null;
 
         return $table
+            ->emptyStateHeading('Nobody owes fees')
+            ->emptyStateDescription('Balances appear here once learners have been billed for the term under Fees → Billing.')
             ->recordUrl(fn (Student $record) => StudentAccount::getUrl(['student' => $record->getKey()]))
             ->modifyQueryUsing(fn (Builder $query) => $query->with('guardian'))
             ->columns([

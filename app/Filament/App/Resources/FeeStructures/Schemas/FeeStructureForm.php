@@ -90,6 +90,7 @@ class FeeStructureForm
                         ->columns(2)
                         ->schema([
                             ToggleButtons::make('frequency')
+                                ->hintIcon('heroicon-m-question-mark-circle', tooltip: 'Every term: billed each term. Once: billed a single time, e.g. admission. On demand: charged to a learner only when you add it, e.g. a lost textbook.')
                                 ->label('How often')
                                 ->options(FeeStructure::FREQUENCIES)
                                 ->icons([

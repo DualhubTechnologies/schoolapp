@@ -14,6 +14,8 @@ class ResidencyTypesTable
     public static function configure(Table $table): Table
     {
         return $table
+            ->emptyStateHeading('No residency types')
+            ->emptyStateDescription('Add Day and/or Boarding so fees can differ between day scholars and boarders.')
             ->columns([
                 TextColumn::make('name')
                     ->label('Type')

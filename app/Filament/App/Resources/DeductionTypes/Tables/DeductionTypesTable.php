@@ -14,6 +14,8 @@ class DeductionTypesTable
     public static function configure(Table $table): Table
     {
         return $table
+            ->emptyStateHeading('No deduction types')
+            ->emptyStateDescription('Add deductions taken from salaries besides PAYE and NSSF, e.g. salary advance, SACCO.')
             ->columns([
                 TextColumn::make('name')
                     ->searchable()

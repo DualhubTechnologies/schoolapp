@@ -6,15 +6,20 @@ use App\Exceptions\PlanLimitReached;
 use App\Models\School;
 use App\Observers\SchoolObserver;
 use App\Support\PasswordStrength;
+use App\Support\UndoDelete;
 use Carbon\CarbonImmutable;
+use Filament\Actions\Action as NotificationAction;
 use Filament\Actions\CreateAction;
+use Filament\Actions\DeleteAction;
 use Filament\Actions\EditAction;
+use Filament\Facades\Filament;
 use Filament\Notifications\Notification;
 use Filament\Support\Enums\Width;
 use Filament\Tables\Table;
 use Illuminate\Auth\Events\Failed;
 use Illuminate\Auth\Events\Login;
 use Illuminate\Auth\Events\Logout;
+use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\UniqueConstraintViolationException;
 use Illuminate\Support\Facades\Date;
 use Illuminate\Support\Facades\DB;
@@ -56,6 +61,34 @@ class AppServiceProvider extends ServiceProvider
         // no "save & add another" that leaves the form open.
         CreateAction::configureUsing(fn ($action) => $action->modalWidth(Width::TwoExtraLarge)->createAnother(false));
         EditAction::configureUsing(fn ($action) => $action->modalWidth(Width::TwoExtraLarge));
+
+        // "Deleted. Undo" for a minute after deleting a record that took
+        // nothing else with it (App\Support\UndoDelete).
+        DeleteAction::configureUsing(function (DeleteAction $action): void {
+            $snapshot = null;
+
+            $action
+                ->before(function (Model $record) use (&$snapshot, $action): void {
+                    $snapshot = Filament::getCurrentPanel()?->getId() === 'app'
+                        ? UndoDelete::snapshot($record, (string) ($action->getRecordTitle() ?? 'Record'))
+                        : null;
+                })
+                ->successNotification(function (Notification $notification) use (&$snapshot): Notification {
+                    if (! $snapshot) {
+                        return $notification;
+                    }
+
+                    return $notification
+                        ->title("{$snapshot['label']} deleted")
+                        ->duration(UndoDelete::SECONDS * 1000)
+                        ->actions([
+                            NotificationAction::make('undo')
+                                ->label('Undo')
+                                ->button()
+                                ->url(route('filament.app.undo-delete', ['token' => UndoDelete::remember($snapshot)])),
+                        ]);
+                });
+        });
 
         // Empty lists show a neutral "nothing here yet" icon, not an "X".
         // On phones each row becomes a card with the column names beside

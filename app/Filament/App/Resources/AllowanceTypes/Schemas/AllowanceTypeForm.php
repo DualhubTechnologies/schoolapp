@@ -27,6 +27,7 @@ class AllowanceTypeForm
                     ->dehydrated()
                     ->required(),
                 Toggle::make('is_taxable')
+                    ->hintIcon('heroicon-m-question-mark-circle', tooltip: 'Taxable allowances are added to salary before PAYE is worked out. Most allowances are taxable in Uganda.')
                     ->default(true)
                     ->helperText('Taxable allowances are included in PAYE calculation.'),
                 Toggle::make('is_active')

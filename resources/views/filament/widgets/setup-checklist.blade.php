@@ -8,7 +8,7 @@
 <x-filament-widgets::widget>
     <x-filament::section>
         <x-slot name="heading">Finish setting up {{ auth()->user()->school?->name }}</x-slot>
-        <x-slot name="description">{{ $done }} of {{ $total }} done. This list goes away once every step is complete.</x-slot>
+        <x-slot name="description">{{ round($done / $total * 100) }}% ready — {{ $done }} of {{ $total }} steps done.{{ $next ? ' Next: ' . $next['title'] . '.' : '' }} This list goes away once every step is complete.</x-slot>
 
         <div class="sh-setup-bar"><span style="width: {{ round($done / $total * 100) }}%"></span></div>
 

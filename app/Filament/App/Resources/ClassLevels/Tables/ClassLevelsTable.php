@@ -14,6 +14,8 @@ class ClassLevelsTable
     public static function configure(Table $table): Table
     {
         return $table
+            ->emptyStateHeading('No class levels')
+            ->emptyStateDescription('Levels group classes by curriculum: Nursery, Primary, O-Level, A-Level.')
             ->columns([
                 TextColumn::make('sort_order')
                     ->label('Order')

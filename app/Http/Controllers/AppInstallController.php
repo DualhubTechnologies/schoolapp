@@ -66,6 +66,8 @@ class AppInstallController extends Controller
     /**
      * The logo centred on white with a margin, as a square PNG: home screen
      * icons are cut to a circle or rounded square on many phones.
+     *
+     * @param  int<1, max>  $size  one of ICON_SIZES
      */
     protected function squareIcon(string $path, int $size): ?string
     {

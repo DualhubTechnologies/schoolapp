@@ -70,6 +70,7 @@ class TransportRouteResource extends Resource
                 ->required()
                 ->placeholder('e.g. 15000'),
             TextInput::make('one_way_fare')
+                ->hintIcon('heroicon-m-question-mark-circle', tooltip: 'For learners who ride the van only in the morning or only in the evening. Leave blank to charge them the full fare.')
                 ->label('One-way fare per term (UGX)')
                 ->numeric()
                 ->minValue(0)

@@ -49,6 +49,7 @@ class AllowancesRelationManager extends RelationManager
                             ->required()
                             ->maxLength(100),
                         Toggle::make('is_taxable')
+                            ->hintIcon('heroicon-m-question-mark-circle', tooltip: 'Taxable allowances are added to salary before PAYE is worked out. Most allowances are taxable in Uganda.')
                             ->label('Taxable (PAYE applies)')
                             ->helperText('Most allowances are taxable employment income in Uganda.')
                             ->default(true),

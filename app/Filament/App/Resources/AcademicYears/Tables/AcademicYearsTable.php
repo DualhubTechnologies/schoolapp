@@ -14,6 +14,8 @@ class AcademicYearsTable
     public static function configure(Table $table): Table
     {
         return $table
+            ->emptyStateHeading('No academic years yet')
+            ->emptyStateDescription('Add the year you are in (e.g. 2026), then its terms.')
             ->columns([
                 TextColumn::make('name')
                     ->label('Year')

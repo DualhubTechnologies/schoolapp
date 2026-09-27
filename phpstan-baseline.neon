@@ -409,12 +409,6 @@ parameters:
 			path: app/Filament/App/Resources/GradingScales/GradingScaleResource.php
 
 		-
-			message: '#^Access to an undefined property Illuminate\\Database\\Eloquent\\Model\:\:\$receipt_no\.$#'
-			identifier: property.notFound
-			count: 1
-			path: app/Filament/App/Resources/Payments/PaymentResource.php
-
-		-
 			message: '#^Parameter \#2 \$direction of method Illuminate\\Database\\Eloquent\\Builder\<Illuminate\\Database\\Eloquent\\Model\>\:\:orderBy\(\) expects ''asc''\|''desc''\|SortDirection, string given\.$#'
 			identifier: argument.type
 			count: 1
@@ -1329,30 +1323,6 @@ parameters:
 		-
 			message: '#^Access to an undefined property App\\Filament\\Pages\\ReceivePayment\:\:\$form\.$#'
 			identifier: property.notFound
-			count: 3
-			path: app/Filament/Pages/ReceivePayment.php
-
-		-
-			message: '#^Access to an undefined property App\\Models\\Student\|Illuminate\\Database\\Eloquent\\Collection\<int, App\\Models\\Student\>\:\:\$guardian\.$#'
-			identifier: property.notFound
-			count: 2
-			path: app/Filament/Pages/ReceivePayment.php
-
-		-
-			message: '#^Access to an undefined property App\\Models\\Student\|Illuminate\\Database\\Eloquent\\Collection\<int, App\\Models\\Student\>\:\:\$name\.$#'
-			identifier: property.notFound
-			count: 1
-			path: app/Filament/Pages/ReceivePayment.php
-
-		-
-			message: '#^Access to an undefined property App\\Models\\Student\|Illuminate\\Database\\Eloquent\\Collection\<int, App\\Models\\Student\>\:\:\$school_id\.$#'
-			identifier: property.notFound
-			count: 1
-			path: app/Filament/Pages/ReceivePayment.php
-
-		-
-			message: '#^Call to an undefined method App\\Models\\Student\|Illuminate\\Database\\Eloquent\\Collection\<int, App\\Models\\Student\>\:\:getKey\(\)\.$#'
-			identifier: method.notFound
 			count: 3
 			path: app/Filament/Pages/ReceivePayment.php
 
@@ -2575,12 +2545,6 @@ parameters:
 			path: app/Models/Student.php
 
 		-
-			message: '#^Method App\\Models\\Student\:\:school\(\) return type with generic class Illuminate\\Database\\Eloquent\\Relations\\BelongsTo does not specify its types\: TRelatedModel, TDeclaringModel$#'
-			identifier: missingType.generics
-			count: 1
-			path: app/Models/Student.php
-
-		-
 			message: '#^Method App\\Models\\Student\:\:user\(\) return type with generic class Illuminate\\Database\\Eloquent\\Relations\\BelongsTo does not specify its types\: TRelatedModel, TDeclaringModel$#'
 			identifier: missingType.generics
 			count: 1
@@ -3329,12 +3293,6 @@ parameters:
 			identifier: argument.type
 			count: 1
 			path: app/Services/Dashboard/TeacherLoad.php
-
-		-
-			message: '#^Access to an undefined property Illuminate\\Database\\Eloquent\\Model\:\:\$name\.$#'
-			identifier: property.notFound
-			count: 1
-			path: app/Services/FeeReminderService.php
 
 		-
 			message: '#^Method App\\Services\\FeeReminderService\:\:letters\(\) should return Illuminate\\Support\\Collection\<int, array\{student\: App\\Models\\Student, balance\: float, message\: string\}\> but returns Illuminate\\Support\\Collection\<int, array\{student\: App\\Models\\Student, balance\: float, deadline\: string, term\: App\\Models\\Term\|null\}\>\.$#'

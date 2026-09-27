@@ -17,6 +17,8 @@ class FeeStructureTable
     public static function configure(Table $table): Table
     {
         return $table
+            ->emptyStateHeading('No fees set yet')
+            ->emptyStateDescription('Set what each class pays this term (tuition, development, boarding…). Balances, receipts and reminders all work from these.')
             ->defaultSort('name')
             ->columns([
                 TextColumn::make('name')

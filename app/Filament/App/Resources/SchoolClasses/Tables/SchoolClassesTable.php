@@ -13,6 +13,8 @@ class SchoolClassesTable
     public static function configure(Table $table): Table
     {
         return $table
+            ->emptyStateHeading('No classes yet')
+            ->emptyStateDescription('Add a class for each year group, e.g. P.1 to P.7 or S.1 to S.6. Streams are optional.')
             ->defaultSort('level')
             ->columns([
                 TextColumn::make('level')

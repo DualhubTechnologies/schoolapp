@@ -213,11 +213,13 @@ class StudentForm
                         ->default(now()),
 
                     TextInput::make('lin')
+                        ->hintIcon('heroicon-m-question-mark-circle', tooltip: "Learner Identification Number from the Ministry of Education's EMIS system.")
                         ->label('LIN')
                         ->placeholder('Learner Identification Number')
                         ->maxLength(100),
 
                     TextInput::make('nin')
+                        ->hintIcon('heroicon-m-question-mark-circle', tooltip: 'National Identification Number, if the learner has a national ID.')
                         ->label('National ID')
                         ->maxLength(100),
 

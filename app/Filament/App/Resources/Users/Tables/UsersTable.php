@@ -15,6 +15,8 @@ class UsersTable
     public static function configure(Table $table): Table
     {
         return $table
+            ->emptyStateHeading('Only you so far')
+            ->emptyStateDescription('Give your bursar, teachers and director of studies their own logins, each seeing only their part of the system.')
             ->columns([
                 TextColumn::make('name')
                     ->searchable(),

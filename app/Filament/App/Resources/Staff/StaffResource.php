@@ -38,6 +38,10 @@ class StaffResource extends Resource
     /** @return array<string, string> */
     public static function getGlobalSearchResultDetails(Model $record): array
     {
+        if (! $record instanceof Staff) {
+            return [];
+        }
+
         return array_filter(['Position' => $record->position, 'Phone' => $record->phone]);
     }
 

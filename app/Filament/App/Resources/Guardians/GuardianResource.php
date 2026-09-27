@@ -36,6 +36,10 @@ class GuardianResource extends Resource
     /** @return array<string, string> */
     public static function getGlobalSearchResultDetails(Model $record): array
     {
+        if (! $record instanceof Guardian) {
+            return [];
+        }
+
         return array_filter(['Phone' => $record->phone, 'Relationship' => $record->relationship ? ucfirst($record->relationship) : null]);
     }
 

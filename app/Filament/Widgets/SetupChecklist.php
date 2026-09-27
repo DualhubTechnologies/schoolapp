@@ -77,6 +77,12 @@ class SetupChecklist extends Widget
                     'done' => FeeStructure::where('school_id', $id)->exists(),
                 ],
                 [
+                    'title' => 'Tell parents how to pay',
+                    'text' => 'Your bank account or mobile money number. Parents see it on receipts, statements and their fees page.',
+                    'url' => SchoolProfile::getUrl(),
+                    'done' => filled($school?->fee_payment_bank) || filled($school?->fee_payment_mobile_money) || filled($school?->fee_payment_instructions),
+                ],
+                [
                     'title' => 'Add or import your learners',
                     'text' => 'One at a time, or all at once from an Excel/CSV file.',
                     'url' => StudentResource::getUrl(),

@@ -2,6 +2,7 @@
 
 namespace App\Models;
 
+use App\Concerns\Auditable;
 use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
@@ -18,6 +19,8 @@ use Illuminate\Support\Facades\DB;
  */
 class StudentPayment extends Model
 {
+    use Auditable;
+
     protected $fillable = [
         'school_id',
         'student_id',

@@ -14,6 +14,8 @@ class HousesTable
     public static function configure(Table $table): Table
     {
         return $table
+            ->emptyStateHeading('No houses')
+            ->emptyStateDescription('Houses are optional. Add them if your school groups learners into houses for sports and competitions.')
             ->columns([
                 TextColumn::make('name')
                     ->label('House')

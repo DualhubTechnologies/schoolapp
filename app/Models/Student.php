@@ -142,6 +142,9 @@ class Student extends Model
 
     // ── Relationships ──
 
+    /**
+     * @return BelongsTo<School, $this>
+     */
     public function school(): BelongsTo
     {
         return $this->belongsTo(School::class);

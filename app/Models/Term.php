@@ -142,7 +142,7 @@ class Term extends Model
         }
 
         // Without a start date there is no telling which year comes next.
-        if (! $this->academicYear?->start_date) {
+        if (! $this->academicYear->start_date) {
             return null;
         }
 

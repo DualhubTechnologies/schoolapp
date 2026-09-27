@@ -107,6 +107,7 @@ class AssessmentResource extends Resource
                 ->required()
                 ->helperText('New curriculum Activities of Integration are usually scored out of 3.'),
             TextInput::make('weight')
+                ->hintIcon('heroicon-m-question-mark-circle', tooltip: "How much this exam counts in the term's final mark, e.g. BOT 20%, MOT 30%, EOT 50%.")
                 ->label('Weight in term result')
                 ->numeric()
                 ->suffix('%')

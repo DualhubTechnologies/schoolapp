@@ -14,6 +14,8 @@ class SectionsTable
     public static function configure(Table $table): Table
     {
         return $table
+            ->emptyStateHeading('No streams')
+            ->emptyStateDescription('Streams are optional. Add them only if you split a class, e.g. S.1 East and S.1 West.')
             ->columns([
                 TextColumn::make('schoolClass.name')
                     ->label('Class')

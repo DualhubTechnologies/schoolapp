@@ -18,6 +18,8 @@ class StudentDiscountsTable
     public static function configure(Table $table): Table
     {
         return $table
+            ->emptyStateHeading('No discounts or bursaries')
+            ->emptyStateDescription('Give a learner a bursary, staff-child or sibling discount; it is taken off their fees when they are billed.')
             ->columns([
                 TextColumn::make('student.name')
                     ->label('Student')

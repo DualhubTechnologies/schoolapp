@@ -53,7 +53,7 @@ class ReceivePayment extends Page
     public function mount(): void
     {
         $studentId = request()->integer('student') ?: null;
-        $balance = $studentId ? (Student::where('school_id', auth()->user()?->school_id)->find($studentId)?->balance() ?? 0) : 0;
+        $balance = $studentId ? (Student::where('school_id', auth()->user()?->school_id)->whereKey($studentId)->first()?->balance() ?? 0) : 0;
 
         $this->form->fill([
             'student_id' => $studentId,
@@ -82,7 +82,7 @@ class ReceivePayment extends Page
                             ->live()
                             ->afterStateUpdated(function ($state, Set $set) {
                                 $this->issuedPaymentId = null;
-                                $student = $state ? Student::with('guardian')->find($state) : null;
+                                $student = $state ? Student::with('guardian')->whereKey($state)->first() : null;
                                 $set('paid_by', $student?->guardian?->name);
                                 $set('payer_phone', $student?->guardian?->phone);
                                 // Most parents clear the balance: start from it.
@@ -177,7 +177,7 @@ class ReceivePayment extends Page
     {
         $data = $this->form->getState();
 
-        $student = Student::where('school_id', auth()->user()->school_id)->findOrFail($data['student_id']);
+        $student = Student::where('school_id', auth()->user()->school_id)->whereKey($data['student_id'])->firstOrFail();
 
         // Guard against a double click saving the same payment twice.
         $duplicate = StudentPayment::where('student_id', $student->getKey())

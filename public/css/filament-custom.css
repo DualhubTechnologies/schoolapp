@@ -3492,6 +3492,12 @@ html .fi-body {
     --sh-form-max: 1180px;
 }
 
+/* The school form lays four fields to a row, so it uses the whole width. */
+.fi-resource-create-record-page.fi-resource-schools,
+.fi-resource-edit-record-page.fi-resource-schools {
+    --sh-form-max: 100%;
+}
+
 /* ── Page width: comfortable on wide screens, centred ── */
 .fi-resource-create-record-page .fi-page-header-main-ctn,
 .fi-resource-edit-record-page .fi-page-header-main-ctn,

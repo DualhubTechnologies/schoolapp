@@ -2,17 +2,19 @@
  * Helpers for SchoolHub (loaded on every panel page):
  *   1. registers the service worker, so the app can be installed;
  *   2. the "add to home screen" tip (Android install prompt, or iPhone steps);
- *   3. calmer handling of failed background requests (see below).
+ *   3. calmer handling of failed background requests, and a clear notice
+ *      when the phone loses its internet connection (see below).
  */
 (function () {
     /*
      * Filament shows "Error while loading page" for any background request
-     * that fails. Three everyday cases are not real errors:
+     * that fails. These everyday cases are not real errors:
      *   - moving to another page while this one is still loading (common on
      *     phones with slow data): the unfinished request is simply dropped;
      *   - the login has expired after a long idle spell (419): reload, which
      *     leads to the sign-in page;
-     *   - SchoolHub is updating for a minute (503): a plain banner says so.
+     *   - SchoolHub is updating for a minute (503): a plain banner says so;
+     *   - the connection dropped: "You are offline" / "Connection problem".
      */
     let savedNotifications = null;
     const leaving = () => {
@@ -43,28 +45,51 @@
         }
     }, true);
 
-    // A plain banner: unlike Filament's notices it needs no request to the
-    // server, which is exactly what fails while SchoolHub is updating.
+    // Plain banners: unlike Filament's notices they need no request to the
+    // server, which is exactly what fails while SchoolHub is updating or
+    // the phone has lost its connection.
+    const BANNER_TONES = {
+        dark: 'background:#0d1f38;color:#fff',
+        warn: 'background:#fff7ed;color:#9a3412;border:1px solid #fdba74',
+        good: 'background:#f0fdf4;color:#166534;border:1px solid #86efac',
+    };
+    let banner = null;
     let bannerTimer = null;
-    function showUpdatingBanner() {
-        let banner = document.getElementById('sh-updating');
+
+    function showBanner(tone, title, text, hideAfterMs) {
         if (!banner) {
             banner = document.createElement('div');
-            banner.id = 'sh-updating';
+            banner.id = 'sh-status-banner';
             banner.setAttribute('role', 'status');
-            banner.style.cssText = 'position:fixed;left:50%;top:14px;transform:translateX(-50%);z-index:9999;width:min(92vw,26rem);box-sizing:border-box;'
-                + 'padding:.8rem 1rem;border-radius:.8rem;background:#0d1f38;color:#fff;font:600 .88rem/1.4 system-ui,sans-serif;'
-                + 'box-shadow:0 12px 30px -10px rgba(13,31,56,.6);text-align:center';
-            banner.innerHTML = 'SchoolHub is being updated.<br><span style="font-weight:400;color:#cbd5e1">This takes about a minute. Please try again shortly — nothing you entered has been lost.</span>';
+            banner.setAttribute('aria-live', 'polite');
             document.body.appendChild(banner);
         }
+        banner.style.cssText = 'position:fixed;left:50%;top:14px;transform:translateX(-50%);z-index:9999;width:min(92vw,26rem);box-sizing:border-box;'
+            + 'padding:.8rem 1rem;border-radius:.8rem;font:600 .88rem/1.4 system-ui,sans-serif;text-align:center;'
+            + 'box-shadow:0 12px 30px -10px rgba(13,31,56,.45);' + BANNER_TONES[tone];
+        banner.innerHTML = title + (text ? '<br><span style="font-weight:400;opacity:.85">' + text + '</span>' : '');
         banner.style.display = 'block';
         clearTimeout(bannerTimer);
-        bannerTimer = setTimeout(() => { banner.style.display = 'none'; }, 12000);
+        if (hideAfterMs) {
+            bannerTimer = setTimeout(hideBanner, hideAfterMs);
+        }
     }
 
+    function hideBanner() {
+        if (banner) banner.style.display = 'none';
+    }
+
+    const OFFLINE_TITLE = 'You are offline';
+    const OFFLINE_TEXT = 'Check your data or Wi-Fi. Anything you save now will not go through until the connection is back.';
+
+    window.addEventListener('offline', () => showBanner('warn', OFFLINE_TITLE, OFFLINE_TEXT, 0));
+    window.addEventListener('online', () => showBanner('good', 'Back online', 'You can carry on where you left off.', 4000));
+    document.addEventListener('DOMContentLoaded', () => {
+        if (navigator.onLine === false) showBanner('warn', OFFLINE_TITLE, OFFLINE_TEXT, 0);
+    });
+
     document.addEventListener('livewire:init', () => {
-        window.Livewire.interceptRequest(({ onError }) => {
+        window.Livewire.interceptRequest(({ onError, onFailure }) => {
             onError(({ response, preventDefault }) => {
                 const status = response ? response.status : 0;
 
@@ -73,7 +98,26 @@
                     window.location.reload();
                 } else if (status === 503) {
                     preventDefault();
-                    showUpdatingBanner();
+                    showBanner('dark', 'SchoolHub is being updated.', 'This takes about a minute. Please try again shortly — nothing you entered has been lost.', 12000);
+                }
+            });
+
+            // The request never reached SchoolHub (no connection, or it
+            // dropped mid-way). Say so plainly instead of Filament's
+            // "Error while loading page", which itself needs the server.
+            onFailure(() => {
+                if (!window.filamentErrorNotifications) {
+                    return; // leaving the page: nothing to report
+                }
+
+                const notifications = window.filamentErrorNotifications;
+                window.filamentErrorNotifications = undefined;
+                setTimeout(() => { window.filamentErrorNotifications = notifications; }, 0);
+
+                if (navigator.onLine === false) {
+                    showBanner('warn', OFFLINE_TITLE, OFFLINE_TEXT, 0);
+                } else {
+                    showBanner('warn', 'Connection problem', 'That did not reach SchoolHub, so it was not saved. Please try again.', 10000);
                 }
             });
         });

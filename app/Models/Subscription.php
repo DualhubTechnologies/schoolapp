@@ -2,6 +2,7 @@
 
 namespace App\Models;
 
+use Carbon\CarbonImmutable;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
 use Illuminate\Database\Eloquent\Relations\HasMany;
@@ -9,6 +10,9 @@ use Illuminate\Database\Eloquent\Relations\HasMany;
 /**
  * One paid (or trial) period of a school's subscription. Renewals add a
  * new period; history is never overwritten.
+ *
+ * @property CarbonImmutable $starts_on
+ * @property CarbonImmutable $ends_on
  */
 class Subscription extends Model
 {
@@ -46,6 +50,9 @@ class Subscription extends Model
         return $this->belongsTo(School::class);
     }
 
+    /**
+     * @return BelongsTo<Plan, $this>
+     */
     public function plan(): BelongsTo
     {
         return $this->belongsTo(Plan::class);

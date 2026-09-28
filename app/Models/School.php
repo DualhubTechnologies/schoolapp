@@ -110,6 +110,9 @@ class School extends Model
         return $this->hasMany(Student::class);
     }
 
+    /**
+     * @return HasMany<Subscription, $this>
+     */
     public function subscriptions(): HasMany
     {
         return $this->hasMany(Subscription::class)->orderByDesc('starts_on');

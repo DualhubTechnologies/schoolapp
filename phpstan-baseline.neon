@@ -79,24 +79,6 @@ parameters:
 			path: app/Filament/Admin/Resources/Schools/SchoolResource.php
 
 		-
-			message: '#^Access to an undefined property Illuminate\\Database\\Eloquent\\Model\:\:\$is_trial\.$#'
-			identifier: property.notFound
-			count: 2
-			path: app/Filament/Admin/Resources/Schools/SubscriptionActions.php
-
-		-
-			message: '#^Access to an undefined property Illuminate\\Database\\Eloquent\\Model\:\:\$name\.$#'
-			identifier: property.notFound
-			count: 1
-			path: app/Filament/Admin/Resources/Schools/SubscriptionActions.php
-
-		-
-			message: '#^Access to an undefined property Illuminate\\Database\\Eloquent\\Model\:\:\$price_per_term\.$#'
-			identifier: property.notFound
-			count: 4
-			path: app/Filament/Admin/Resources/Schools/SubscriptionActions.php
-
-		-
 			message: '#^Call to an undefined method App\\Models\\Plan\|Illuminate\\Database\\Eloquent\\Collection\<int, App\\Models\\Plan\>\:\:priceFor\(\)\.$#'
 			identifier: method.notFound
 			count: 4
@@ -131,12 +113,6 @@ parameters:
 			identifier: nullsafe.neverNull
 			count: 1
 			path: app/Filament/Admin/Resources/Schools/SubscriptionActions.php
-
-		-
-			message: '#^Access to an undefined property Illuminate\\Database\\Eloquent\\Model\:\:\$name\.$#'
-			identifier: property.notFound
-			count: 1
-			path: app/Filament/Admin/Resources/Schools/Tables/SchoolsTable.php
 
 		-
 			message: '#^Using nullsafe property access "\?\-\>name" on left side of \?\? is unnecessary\. Use \-\> instead\.$#'
@@ -877,12 +853,6 @@ parameters:
 			path: app/Filament/App/Resources/Users/Schemas/UserForm.php
 
 		-
-			message: '#^Access to an undefined property Illuminate\\Database\\Eloquent\\Model\:\:\$parent_student_login\.$#'
-			identifier: property.notFound
-			count: 1
-			path: app/Filament/App/Resources/Users/Schemas/UserForm.php
-
-		-
 			message: '#^Method App\\Filament\\App\\Resources\\Users\\Schemas\\UserForm\:\:roleDefaultsText\(\) has parameter \$roleIds with no value type specified in iterable type array\.$#'
 			identifier: missingType.iterableValue
 			count: 1
@@ -1384,12 +1354,6 @@ parameters:
 			message: '#^Access to an undefined property App\\Filament\\Pages\\SchoolSubscription\:\:\$plans\.$#'
 			identifier: property.notFound
 			count: 1
-			path: app/Filament/Pages/SchoolSubscription.php
-
-		-
-			message: '#^Access to an undefined property App\\Filament\\Pages\\SchoolSubscription\:\:\$school\.$#'
-			identifier: property.notFound
-			count: 4
 			path: app/Filament/Pages/SchoolSubscription.php
 
 		-
@@ -2239,12 +2203,6 @@ parameters:
 			path: app/Models/School.php
 
 		-
-			message: '#^Method App\\Models\\School\:\:subscriptions\(\) return type with generic class Illuminate\\Database\\Eloquent\\Relations\\HasMany does not specify its types\: TRelatedModel, TDeclaringModel$#'
-			identifier: missingType.generics
-			count: 1
-			path: app/Models/School.php
-
-		-
 			message: '#^Access to an undefined property Illuminate\\Database\\Eloquent\\Model\:\:\$curriculum\.$#'
 			identifier: property.notFound
 			count: 1
@@ -2677,19 +2635,7 @@ parameters:
 			path: app/Models/Subject.php
 
 		-
-			message: '#^Cannot call method format\(\) on string\.$#'
-			identifier: method.nonObject
-			count: 2
-			path: app/Models/Subscription.php
-
-		-
 			message: '#^Method App\\Models\\Subscription\:\:payments\(\) return type with generic class Illuminate\\Database\\Eloquent\\Relations\\HasMany does not specify its types\: TRelatedModel, TDeclaringModel$#'
-			identifier: missingType.generics
-			count: 1
-			path: app/Models/Subscription.php
-
-		-
-			message: '#^Method App\\Models\\Subscription\:\:plan\(\) return type with generic class Illuminate\\Database\\Eloquent\\Relations\\BelongsTo does not specify its types\: TRelatedModel, TDeclaringModel$#'
 			identifier: missingType.generics
 			count: 1
 			path: app/Models/Subscription.php
@@ -3547,27 +3493,9 @@ parameters:
 			path: app/Services/StudentLedger.php
 
 		-
-			message: '#^Access to an undefined property Illuminate\\Database\\Eloquent\\Model\:\:\$max_students\.$#'
-			identifier: property.notFound
-			count: 3
-			path: app/Services/Subscriptions/SubscriptionManager.php
-
-		-
-			message: '#^Access to an undefined property Illuminate\\Database\\Eloquent\\Model\:\:\$max_users\.$#'
-			identifier: property.notFound
-			count: 3
-			path: app/Services/Subscriptions/SubscriptionManager.php
-
-		-
 			message: '#^Access to an undefined property Illuminate\\Database\\Eloquent\\Model\:\:\$name\.$#'
 			identifier: property.notFound
-			count: 4
-			path: app/Services/Subscriptions/SubscriptionManager.php
-
-		-
-			message: '#^Cannot call method gte\(\) on string\.$#'
-			identifier: method.nonObject
-			count: 1
+			count: 2
 			path: app/Services/Subscriptions/SubscriptionManager.php
 
 		-
@@ -3577,38 +3505,8 @@ parameters:
 			path: app/Services/Subscriptions/SubscriptionManager.php
 
 		-
-			message: '#^Method App\\Services\\Subscriptions\\SubscriptionManager\:\:roomForStudents\(\) should return int\|null but returns float\|int\<0, max\>\|null\.$#'
-			identifier: return.type
-			count: 1
-			path: app/Services/Subscriptions/SubscriptionManager.php
-
-		-
-			message: '#^Method App\\Services\\Subscriptions\\SubscriptionManager\:\:roomForUsers\(\) should return int\|null but returns float\|int\<0, max\>\|null\.$#'
-			identifier: return.type
-			count: 1
-			path: app/Services/Subscriptions/SubscriptionManager.php
-
-		-
-			message: '#^Method App\\Services\\Subscriptions\\SubscriptionManager\:\:status\(\) should return array\{state\: string, subscription\: App\\Models\\Subscription\|null, plan\: App\\Models\\Plan\|null, ends_on\: Carbon\\CarbonImmutable\|null, days_left\: int\|null, grace_ends_on\: Carbon\\CarbonImmutable\|null, expiring\: bool\} but returns array\{state\: ''active''\|''expired''\|''grace''\|''none''\|''suspended''\|''trial'', subscription\: App\\Models\\Subscription\|null, plan\: Illuminate\\Database\\Eloquent\\Model\|null, ends_on\: Carbon\\CarbonImmutable\|null, days_left\: int\|null, grace_ends_on\: Carbon\\CarbonImmutable\|null, expiring\: bool\}\.$#'
-			identifier: return.type
-			count: 1
-			path: app/Services/Subscriptions/SubscriptionManager.php
-
-		-
 			message: '#^Parameter \#2 \$plan of static method App\\Services\\Subscriptions\\SubscriptionManager\:\:renew\(\) expects App\\Models\\Plan, Illuminate\\Database\\Eloquent\\Model\|null given\.$#'
 			identifier: argument.type
-			count: 1
-			path: app/Services/Subscriptions/SubscriptionManager.php
-
-		-
-			message: '#^Strict comparison using \=\=\= between ''active''\|''inactive''\|''suspended'' and ''pending'' will always evaluate to false\.$#'
-			identifier: identical.alwaysFalse
-			count: 1
-			path: app/Services/Subscriptions/SubscriptionManager.php
-
-		-
-			message: '#^Strict comparison using \=\=\= between ''active''\|''inactive''\|''suspended'' and ''rejected'' will always evaluate to false\.$#'
-			identifier: identical.alwaysFalse
 			count: 1
 			path: app/Services/Subscriptions/SubscriptionManager.php
 

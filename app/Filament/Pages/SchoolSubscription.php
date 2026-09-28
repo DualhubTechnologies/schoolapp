@@ -18,6 +18,8 @@ use Livewire\Attributes\Computed;
 /**
  * The school's own view of its SchoolHub subscription: plan, days left,
  * usage against the plan's limits, how to pay, and payment history.
+ *
+ * @property-read School $school
  */
 class SchoolSubscription extends Page
 {

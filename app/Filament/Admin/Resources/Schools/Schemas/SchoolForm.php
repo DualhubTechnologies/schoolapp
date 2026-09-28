@@ -11,281 +11,257 @@ use Filament\Forms\Components\FileUpload;
 use Filament\Forms\Components\Select;
 use Filament\Forms\Components\Textarea;
 use Filament\Forms\Components\TextInput;
-use Filament\Schemas\Components\Grid;
+use Filament\Infolists\Components\TextEntry;
 use Filament\Schemas\Components\Section;
 use Filament\Schemas\Schema;
 
+/**
+ * A school's profile: the platform owner's Edit school page and the
+ * school's own School Profile page. Full-width sections, one below the
+ * other, so no screen width leaves a blank gap beside a shorter column.
+ */
 class SchoolForm
 {
     public static function configure(Schema $schema): Schema
     {
         $isSuperAdmin = fn (): bool => auth()->user()?->hasRole('Super Admin') ?? false;
 
+        $columns = ['default' => 1, 'md' => 2, 'xl' => 4];
+
         return $schema
             ->components([
 
-                Grid::make([
-                    'default' => 1,
-                    'lg' => 4,
-                ])
-                    // The form itself has two columns; this layout needs all of it.
+                Section::make('School profile')
+                    ->icon('heroicon-o-building-library')
                     ->columnSpanFull()
+                    ->columns($columns)
                     ->schema([
 
-                        /*
-                        |--------------------------------------------------------------------------
-                        | LEFT - SCHOOL INFORMATION
-                        |--------------------------------------------------------------------------
-                        */
+                        TextInput::make('name')
+                            ->label('School name')
+                            ->required()
+                            ->columnSpan(['default' => 1, 'md' => 2])
+                            ->disabled(fn () => ! $isSuperAdmin())
+                            ->dehydrated(fn () => $isSuperAdmin()),
 
-                        Section::make('School Information')
-                            ->description('Manage the school’s main profile information.')
-                            ->icon('heroicon-o-building-library')
-                            ->columnSpan([
-                                'default' => 1,
-                                'lg' => 3,
+                        // Class levels, report cards and grading all branch on this.
+                        Select::make('school_type')
+                            ->label('School type')
+                            ->options(School::TYPES)
+                            ->required()
+                            ->native(false)
+                            ->disabled(fn () => ! $isSuperAdmin())
+                            ->dehydrated(fn () => $isSuperAdmin()),
+
+                        Select::make('boarding_type')
+                            ->label('Day / boarding')
+                            ->options(School::BOARDING_TYPES)
+                            ->native(false),
+
+                        Select::make('ownership')
+                            ->options(School::OWNERSHIP)
+                            ->native(false),
+
+                        TextInput::make('expected_students')
+                            ->label('Number of learners')
+                            ->numeric()
+                            ->minValue(1),
+
+                        TextInput::make('motto')
+                            ->label('School motto')
+                            ->columnSpan(['default' => 1, 'md' => 2]),
+
+                        TextInput::make('contact_person')
+                            ->label('Contact person'),
+
+                        TextInput::make('contact_title')
+                            ->label('Their role'),
+
+                        TextInput::make('phone')
+                            ->label('Telephone number')
+                            ->tel(),
+
+                        EmailCheck::apply(TextInput::make('email'))
+                            ->label('Email address')
+                            ->email()
+                            ->required(),
+
+                        TextInput::make('address')
+                            ->label('Address'),
+
+                        TextInput::make('city')
+                            ->label('City / District'),
+
+                        Select::make('country')
+                            ->label('Country')
+                            ->options([
+                                'Uganda' => 'Uganda',
+                                'Kenya' => 'Kenya',
+                                'Tanzania' => 'Tanzania',
+                                'Rwanda' => 'Rwanda',
+                                'South Sudan' => 'South Sudan',
+                                'Burundi' => 'Burundi',
+                                'Nigeria' => 'Nigeria',
+                                'Ghana' => 'Ghana',
                             ])
-                            ->columns([
-                                'default' => 1,
-                                'md' => 2,
-                                'lg' => 3,
+                            ->searchable()
+                            ->native(false),
+
+                        TextInput::make('website')
+                            ->label('Website')
+                            ->url(),
+
+                        Textarea::make('description')
+                            ->label('Description')
+                            ->rows(2)
+                            ->columnSpanFull(),
+                    ]),
+
+                // The school sees its own code under Payments & settings.
+                Section::make('SchoolHub account')
+                    ->icon('heroicon-o-shield-check')
+                    ->visible($isSuperAdmin)
+                    ->columnSpanFull()
+                    ->columns($columns)
+                    ->schema([
+
+                        Select::make('status')
+                            ->label('Status')
+                            ->options(School::STATUSES)
+                            ->default('active')
+                            ->required()
+                            ->native(false),
+
+                        TextInput::make('unique_code')
+                            ->label('School code'),
+
+                        TextInput::make('slug')
+                            ->label('Slug')
+                            ->required(),
+
+                        TextEntry::make('registered')
+                            ->label('Registered')
+                            ->state(fn (?School $record): ?string => $record?->created_at?->format('j M Y, g:i a'))
+                            ->placeholder('—')
+                            ->visibleOn('edit'),
+
+                        TextEntry::make('approved')
+                            ->label('Approved')
+                            ->state(fn (?School $record): ?string => $record?->approved_at
+                                ? $record->approved_at->format('j M Y').($record->approved_by ? " by {$record->approved_by}" : '')
+                                : null)
+                            ->placeholder('Not yet')
+                            ->visibleOn('edit'),
+
+                        TextEntry::make('terms')
+                            ->label('Terms accepted')
+                            ->state(fn (?School $record): ?string => $record?->terms_accepted_at
+                                ? $record->terms_accepted_at->format('j M Y')." (version {$record->terms_version})"
+                                : null)
+                            ->placeholder('—')
+                            ->visibleOn('edit'),
+
+                        TextEntry::make('rejection_reason')
+                            ->label('Reason for rejecting')
+                            ->columnSpan(['default' => 1, 'md' => 2])
+                            ->visible(fn (?School $record): bool => filled($record?->rejection_reason)),
+                    ]),
+
+                Section::make('Payments & settings')
+                    ->icon('heroicon-o-banknotes')
+                    ->columnSpanFull()
+                    ->columns($columns)
+                    ->schema([
+
+                        TextInput::make('fee_payment_bank')
+                            ->label('Bank details')
+                            ->columnSpan(['default' => 1, 'md' => 2]),
+
+                        TextInput::make('fee_payment_mobile_money')
+                            ->label('Mobile money'),
+
+                        Select::make('parent_sms_language')
+                            ->label('Language of texts to parents')
+                            ->options(ParentMessages::LANGUAGES)
+                            ->default('en')
+                            ->selectablePlaceholder(false),
+
+                        Textarea::make('fee_payment_instructions')
+                            ->label('Payment instructions for parents')
+                            ->rows(2)
+                            ->columnSpanFull(),
+
+                        TextInput::make('unique_code')
+                            ->label('School code')
+                            ->disabled()
+                            ->dehydrated(false)
+                            ->hidden($isSuperAdmin),
+
+                        TextInput::make('nssf_employer_number')
+                            ->label('NSSF employer number'),
+
+                        TextInput::make('tin_number')
+                            ->label('TIN number'),
+
+                        Select::make('timezone')
+                            ->label('Timezone')
+                            ->options([
+                                'Africa/Kampala' => 'Africa/Kampala',
+                                'Africa/Nairobi' => 'Africa/Nairobi',
+                                'Africa/Kigali' => 'Africa/Kigali',
+                                'Africa/Dar_es_Salaam' => 'Africa/Dar es Salaam',
                             ])
-                            ->schema([
+                            ->searchable()
+                            ->native(false)
+                            ->default('Africa/Kampala')
+                            ->required(),
 
-                                TextInput::make('name')
-                                    ->label('School Name')
-                                    ->required()
-                                    ->disabled(fn () => ! $isSuperAdmin())
-                                    ->dehydrated(fn () => $isSuperAdmin()),
-
-                                TextInput::make('unique_code')
-                                    ->label('Unique Code')
-                                    ->disabled(fn () => ! $isSuperAdmin())
-                                    ->dehydrated(fn () => $isSuperAdmin()),
-
-                                TextInput::make('slug')
-                                    ->label('Slug')
-                                    ->required()
-                                    ->disabled(fn () => ! $isSuperAdmin())
-                                    ->dehydrated(fn () => $isSuperAdmin()),
-
-                                // Identity, not configuration: class levels,
-                                // report cards and grading all branch on this.
-                                Select::make('school_type')
-                                    ->label('School type')
-                                    ->options(School::TYPES)
-                                    ->required()
-                                    ->native(false)
-                                    ->disabled(fn () => ! $isSuperAdmin())
-                                    ->dehydrated(fn () => $isSuperAdmin())
-                                    ->helperText('Decides what the school sees everywhere: Primary shows nursery and primary only; Secondary shows O-Level and A-Level only. Set once at signup — changing it later does not convert existing classes.'),
-
-                                Select::make('boarding_type')
-                                    ->label('Day / boarding')
-                                    ->options(School::BOARDING_TYPES)
-                                    ->native(false),
-
-                                Select::make('ownership')
-                                    ->options(School::OWNERSHIP)
-                                    ->native(false),
-
-                                TextInput::make('expected_students')
-                                    ->label('Number of learners (approx.)')
-                                    ->numeric()
-                                    ->minValue(1),
-
-                                Select::make('status')
-                                    ->label('Status')
-                                    ->options(School::STATUSES)
-                                    ->default('active')
-                                    ->required()
-                                    ->native(false)
-                                    ->disabled(fn () => ! $isSuperAdmin())
-                                    ->dehydrated(fn () => $isSuperAdmin()),
-
-                                TextInput::make('motto')
-                                    ->label('School Motto')
-                                    ->placeholder('e.g. Ora et Labora'),
-
-                                Textarea::make('description')
-                                    ->label('Description')
-                                    ->placeholder('e.g., Mixed Day & Boarding School — Secondary, Primary, or Nursery')
-                                    ->rows(3)
-                                    ->columnSpanFull(),
-
-                                TextInput::make('address')
-                                    ->label('Address')
-                                    ->placeholder('e.g. NYAMITANGA, MBARARA'),
-
-                                TextInput::make('city')
-                                    ->label('City / District')
-                                    ->placeholder('e.g. MBARARA'),
-
-                                Select::make('country')
-                                    ->label('Country')
-                                    ->options([
-                                        'Uganda' => 'Uganda',
-                                        'Kenya' => 'Kenya',
-                                        'Tanzania' => 'Tanzania',
-                                        'Rwanda' => 'Rwanda',
-                                        'South Sudan' => 'South Sudan',
-                                        'Burundi' => 'Burundi',
-                                        'Nigeria' => 'Nigeria',
-                                        'Ghana' => 'Ghana',
-                                    ])
-                                    ->searchable()
-                                    ->native(false),
-
-                                EmailCheck::apply(TextInput::make('email'))
-                                    ->label('Email address')
-                                    ->email()
-                                    ->required(),
-
-                                TextInput::make('phone')
-                                    ->label('Telephone Number')
-                                    ->tel(),
-
-                                TextInput::make('website')
-                                    ->label('Website')
-                                    ->url()
-                                    ->placeholder('https://...'),
-                            ]),
-
-                        Section::make('Fee Payment Details')
-                            ->description('Shown to parents on receipts, statements and the admission letter, so they know how to pay.')
-                            ->icon('heroicon-o-banknotes')
-                            ->columnSpan([
-                                'default' => 1,
-                                'lg' => 3,
+                        Select::make('currency')
+                            ->label('Currency')
+                            ->options([
+                                'UGX' => 'UGX',
+                                'KES' => 'KES',
+                                'TZS' => 'TZS',
+                                'RWF' => 'RWF',
+                                'USD' => 'USD',
                             ])
-                            ->columns([
-                                'default' => 1,
-                                'md' => 2,
-                            ])
-                            ->schema([
-                                TextInput::make('fee_payment_bank')
-                                    ->label('Bank details')
-                                    ->placeholder('e.g. Stanbic Bank, A/C 9030012345678, Green Hill School Ltd'),
+                            ->native(false)
+                            ->default('UGX')
+                            ->required(),
+                    ]),
 
-                                TextInput::make('fee_payment_mobile_money')
-                                    ->label('Mobile money')
-                                    ->placeholder('e.g. MTN 0772 000000 (Green Hill School)'),
+                Section::make('Branding')
+                    ->icon('heroicon-o-identification')
+                    ->columnSpanFull()
+                    ->columns(['default' => 1, 'md' => 2])
+                    ->schema([
 
-                                Textarea::make('fee_payment_instructions')
-                                    ->label('Other instructions')
-                                    ->placeholder('e.g. Use the student\'s admission number as the payment reference, then bring the slip to the bursar.')
-                                    ->rows(2)
-                                    ->columnSpanFull(),
+                        // Shrunk on the server, not in the browser: in-browser
+                        // resizing hangs on iPhones for large pictures.
+                        ImageShrinker::noBrowserResize(FileUpload::make('logo')
+                            ->label('School logo')
+                            ->image()
+                            ->avatar()
+                            ->imageEditor()
+                            ->imageEditorAspectRatioOptions(['1:1'])
+                            ->saveUploadedFileUsing(ImageShrinker::saveWithin(600, 600, square: true))
+                            ->disk('public')
+                            ->directory('school-logos')
+                            ->visibility('public')
+                            ->acceptedFileTypes(['image/jpeg', 'image/png', 'image/webp'])
+                            ->maxSize(10240)),
 
-                                Select::make('parent_sms_language')
-                                    ->label('Language of texts to parents')
-                                    ->options(ParentMessages::LANGUAGES)
-                                    ->default('en')
-                                    ->selectablePlaceholder(false)
-                                    ->helperText('Receipts and fee reminders sent by SMS or WhatsApp.'),
-                            ]),
-
-                        /*
-                        |--------------------------------------------------------------------------
-                        | RIGHT - BRANDING & SETTINGS
-                        |--------------------------------------------------------------------------
-                        */
-
-                        Grid::make(1)
-                            ->columnSpan([
-                                'default' => 1,
-                                'lg' => 1,
-                            ])
-                            ->schema([
-
-                                Section::make('Branding')
-                                    ->description('Logo and headteacher signature.')
-                                    ->icon('heroicon-o-identification')
-                                    ->schema([
-
-                                        ImageShrinker::noBrowserResize(FileUpload::make('logo')
-                                            ->label('School Logo')
-                                            ->image()
-                                            ->avatar()
-                                            ->imageEditor()
-                                            ->imageEditorAspectRatioOptions(['1:1'])
-                                            // Shrunk on the server, not in the browser: in-browser
-                                            // resizing hangs on iPhones for large pictures.
-                                            ->saveUploadedFileUsing(ImageShrinker::saveWithin(600, 600, square: true))
-                                            ->disk('public')
-                                            ->directory('school-logos')
-                                            ->visibility('public')
-                                            ->acceptedFileTypes([
-                                                'image/jpeg',
-                                                'image/png',
-                                                'image/webp',
-                                            ])
-                                            ->maxSize(10240)
-                                            ->helperText('Square crop. Appears on reports and documents.')),
-
-                                        FileUpload::make('hm_signature')
-                                            ->label('Headteacher Signature')
-                                            ->image()
-                                            ->imageEditor()
-                                            ->imageEditorAspectRatioOptions([null, '3:1', '4:1'])
-                                            ->saveUploadedFileUsing(ImageShrinker::saveWithin(900, 400))
-                                            ->disk(PrivateFiles::DISK)
-                                            ->directory('school-signatures')
-                                            ->visibility('private')
-                                            ->acceptedFileTypes([
-                                                'image/jpeg',
-                                                'image/png',
-                                                'image/webp',
-                                            ])
-                                            ->maxSize(10240)
-                                            ->helperText('Crop freely — a signature is wider than it is tall.'),
-                                    ]),
-
-                                Section::make('Statutory & Settings')
-                                    ->description('Tax registration and regional defaults.')
-                                    ->icon('heroicon-o-cog-6-tooth')
-                                    ->columns([
-                                        'default' => 1,
-                                        'md' => 2,
-                                        'lg' => 1,
-                                    ])
-                                    ->schema([
-
-                                        TextInput::make('nssf_employer_number')
-                                            ->label('NSSF employer number')
-                                            ->placeholder('e.g. ER/12345'),
-
-                                        TextInput::make('tin_number')
-                                            ->label('TIN number')
-                                            ->placeholder('e.g. 1001234567'),
-
-                                        Select::make('timezone')
-                                            ->label('Timezone')
-                                            ->options([
-                                                'Africa/Kampala' => 'Africa/Kampala',
-                                                'Africa/Nairobi' => 'Africa/Nairobi',
-                                                'Africa/Kigali' => 'Africa/Kigali',
-                                                'Africa/Dar_es_Salaam' => 'Africa/Dar es Salaam',
-                                            ])
-                                            ->searchable()
-                                            ->native(false)
-                                            ->default('Africa/Kampala')
-                                            ->required(),
-
-                                        Select::make('currency')
-                                            ->label('Currency')
-                                            ->options([
-                                                'UGX' => 'UGX',
-                                                'KES' => 'KES',
-                                                'TZS' => 'TZS',
-                                                'RWF' => 'RWF',
-                                                'USD' => 'USD',
-                                            ])
-                                            ->native(false)
-                                            ->default('UGX')
-                                            ->required(),
-                                    ]),
-                            ]),
+                        FileUpload::make('hm_signature')
+                            ->label('Headteacher signature')
+                            ->image()
+                            ->imageEditor()
+                            ->imageEditorAspectRatioOptions([null, '3:1', '4:1'])
+                            ->saveUploadedFileUsing(ImageShrinker::saveWithin(900, 400))
+                            ->disk(PrivateFiles::DISK)
+                            ->directory('school-signatures')
+                            ->visibility('private')
+                            ->acceptedFileTypes(['image/jpeg', 'image/png', 'image/webp'])
+                            ->maxSize(10240),
                     ]),
             ]);
     }

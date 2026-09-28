@@ -4,9 +4,14 @@ namespace App\Models;
 
 use App\Concerns\Auditable;
 use App\Support\PrivateFiles;
+use Carbon\CarbonImmutable;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\HasMany;
 
+/**
+ * @property CarbonImmutable|null $approved_at
+ * @property CarbonImmutable|null $terms_accepted_at
+ */
 class School extends Model
 {
     use Auditable;

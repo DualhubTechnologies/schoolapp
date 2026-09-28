@@ -7,6 +7,7 @@ use App\Models\User;
 use App\Support\PasswordStrength;
 use Database\Seeders\RoleSeeder;
 use Filament\Facades\Filament;
+use Illuminate\Notifications\ChannelManager;
 use Illuminate\Support\Facades\Notification;
 use Illuminate\Support\Facades\Validator;
 use Livewire\Livewire;
@@ -86,4 +87,30 @@ it('does not use a real school as the example name', function () {
         ->assertOk()
         ->assertSee("Your school's full name")
         ->assertDontSee('Kisubi');
+});
+
+it('still creates the account and opens the code page when the mail server is down', function () {
+    User::factory()->create()->assignRole('Super Admin');
+
+    // Real sending (not the fake) to a mail server that refuses the connection.
+    Notification::swap(new ChannelManager(app()));
+    config([
+        'mail.default' => 'smtp',
+        'mail.mailers.smtp.host' => '127.0.0.1',
+        'mail.mailers.smtp.port' => 1,
+        'mail.mailers.smtp.timeout' => 1,
+    ]);
+
+    Livewire::test(RegisterSchool::class)
+        ->fillForm(registrationData())
+        ->call('register')
+        ->assertHasNoFormErrors()
+        ->assertNotified('We could not send the email just now')
+        ->assertRedirect(VerifyEmail::url());
+
+    expect(User::where('email', 'head@hope.test')->sole()->school->status)->toBe('pending');
+});
+
+it('uses a short mail timeout so a dead mail server fails fast', function () {
+    expect(config('mail.mailers.smtp.timeout'))->toBe(10);
 });

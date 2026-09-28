@@ -190,6 +190,10 @@ class RegisterSchool extends Register
             VerifyEmail::notifyNotSent();
         }
 
+        // After the code, so a slow mail server never holds up the person
+        // waiting for it (or the registration's database transaction).
+        $this->askOwnersToApprove($user);
+
         $this->redirect(VerifyEmail::url());
 
         return null;
@@ -238,19 +242,27 @@ class RegisterSchool extends Register
             return $user;
         });
 
-        // The welcome email follows once the email address is confirmed
-        // and the school is approved. Ask the platform owner(s) to approve it.
+        return $user;
+    }
+
+    /**
+     * Ask the platform owner(s) to approve the new school. The welcome
+     * email follows once the email address is confirmed and the school
+     * is approved.
+     */
+    protected function askOwnersToApprove(User $user): void
+    {
         $owners = User::role('Super Admin')->get();
 
-        if ($owners->isNotEmpty()) {
-            try {
-                Notification::send($owners, new SchoolRegistered($user->school));
-            } catch (Throwable $e) {
-                report($e);
-            }
+        if ($owners->isEmpty()) {
+            return;
         }
 
-        return $user;
+        try {
+            Notification::send($owners, new SchoolRegistered($user->school));
+        } catch (Throwable $e) {
+            report($e);
+        }
     }
 
     protected function uniqueSlug(string $name): string

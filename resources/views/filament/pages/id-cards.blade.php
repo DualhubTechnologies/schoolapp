@@ -2,8 +2,10 @@
     $cards = $this->cards;
     $notReady = $this->notReadyCount();
     $explicitSelection = $this->studentId || $this->studentIds !== '';
-    $template = $this->template;
-    $canChoose = $this->canChooseTemplate();
+    $template = $this->cardTemplate;
+    $design = $this->design();
+    $shared = $this->shared();
+    $orientation = $design['orientation'];
 @endphp
 
 <x-filament-panels::page>
@@ -42,24 +44,16 @@
             @endif
         </div>
 
-        <div class="idc-designs">
-            <div class="idc-field-label">Card design</div>
-            <div class="idc-design-options" role="radiogroup" aria-label="Card design">
-                @foreach (\App\Models\School::ID_CARD_TEMPLATES as $key => $label)
-                    <button type="button" role="radio" aria-checked="{{ $template === $key ? 'true' : 'false' }}"
-                        wire:click="chooseTemplate('{{ $key }}')" @disabled(! $canChoose && $template !== $key)
-                        class="idc-design {{ $template === $key ? 'is-active' : '' }}">
-                        <span class="idc-design-shape idc-design-shape--{{ $key }}"><span></span></span>
-                        <span class="idc-design-text">
-                            <strong>{{ Str::before($label, ' (') }}</strong>
-                            <small>{{ Str::between($label, '(', ')') }}</small>
-                        </span>
-                    </button>
-                @endforeach
-            </div>
-            <div class="idc-design-hint">
-                {{ $canChoose ? 'Saved for your school — every print and export uses it.' : 'Chosen by the school administrator.' }}
-            </div>
+        <div class="idc-template">
+            <span class="idc-swatch" style="background: {{ $design['primary'] }}"></span>
+            <span class="idc-swatch" style="background: {{ $design['accent'] }}"></span>
+            <span>
+                <strong>Template:</strong> {{ \App\Models\IdCardTemplate::ORIENTATIONS[$orientation] }},
+                valid {{ $template->validity === 'months' ? 'for '.$template->validity_months.' '.Str::plural('month', $template->validity_months).' from printing' : 'to the end of the academic year' }}
+                @unless ($this->canEditTemplate())
+                    <span class="idc-muted">· set by the school administrator</span>
+                @endunless
+            </span>
         </div>
     </div>
 
@@ -92,57 +86,44 @@
             </div>
         </div>
 
-        <div class="idc-grid idc-grid--{{ $template }}">
-            @foreach ($cards as $card)
-                @php($student = $card['student'])
-                <div class="idc-item {{ $card['ready'] ? '' : 'is-incomplete' }}" wire:key="idc-{{ $template }}-{{ $student->id }}">
-                    <div class="idc-item-cards">
-                        <div class="idc-side">
-                            <div class="idc-scale">@include('id-cards.templates.'.$template.'-front', ['card' => $card])</div>
-                            <span>Front</span>
-                        </div>
-                        <div class="idc-side">
-                            <div class="idc-scale">@include('id-cards.templates.'.$template.'-back', ['card' => $card])</div>
-                            <span>Back</span>
-                        </div>
-                    </div>
+        <div class="idc-layout idc-layout--{{ $orientation }}">
+            <div class="idc-fronts">
+                @foreach ($cards as $card)
+                    <div class="idc-item {{ $card['ready'] ? '' : 'is-incomplete' }}" wire:key="idc-{{ $card['student']->id }}">
+                        <div class="idc-scale">@include('id-cards.templates.'.$orientation.'-front')</div>
 
-                    @if (! $card['ready'])
-                        <div class="idc-missing-note">
-                            <strong>{{ $student->name }}</strong> is missing: {{ implode(', ', $card['missing']) }}.
-                            <a href="{{ \App\Filament\App\Resources\Students\StudentResource::getUrl('edit', ['record' => $student]) }}" target="_blank" class="idc-link">Add it</a>
-                        </div>
-                    @endif
-                </div>
-            @endforeach
+                        @if (! $card['ready'])
+                            <div class="idc-missing-note">
+                                Missing: {{ implode(', ', $card['missing']) }}.
+                                <a href="{{ \App\Filament\App\Resources\Students\StudentResource::getUrl('edit', ['record' => $card['student']]) }}" target="_blank" class="idc-link">Add it</a>
+                            </div>
+                        @endif
+                    </div>
+                @endforeach
+            </div>
+
+            @if ($shared)
+                <aside class="idc-back">
+                    <div class="idc-back-title">Back of every card</div>
+                    <div class="idc-scale">@include('id-cards.templates.'.$orientation.'-back')</div>
+                    <p class="idc-muted">The same on every card: school contacts, rules and signature{{ $this->canEditTemplate() ? ' — change the rules under Template.' : '.' }}</p>
+                </aside>
+            @endif
         </div>
     @endif
 
     <style>
         @include('id-cards._card-css')
 
-        .idc-top { display: flex; flex-wrap: wrap; justify-content: space-between; align-items: flex-start; gap: 1.25rem; margin-bottom: 1.25rem; }
+        .idc-top { display: flex; flex-wrap: wrap; justify-content: space-between; align-items: flex-end; gap: 1rem; margin-bottom: 1.25rem; }
         .idc-filters { flex: 1 1 22rem; max-width: 34rem; }
         .idc-bar { display: flex; gap: .9rem; }
         .idc-bar > div { flex: 1; }
         .idc-field-label { display: block; font-size: .8rem; font-weight: 600; color: #374151; margin-bottom: .3rem; }
         .idc-single-note { padding: .75rem 1rem; background: #eff6ff; border: 1px solid #bfdbfe; border-radius: 10px; color: #1e40af; font-size: .85rem; }
-
-        .idc-designs { flex: 0 1 auto; }
-        .idc-design-options { display: flex; gap: .6rem; }
-        .idc-design { display: flex; align-items: center; gap: .7rem; padding: .55rem .85rem .55rem .6rem; background: #fff; border: 1.5px solid #e2e8f0; border-radius: 10px; cursor: pointer; text-align: left; transition: border-color .15s, box-shadow .15s; }
-        .idc-design:hover:not(:disabled) { border-color: #94a3b8; }
-        .idc-design.is-active { border-color: #13294b; box-shadow: 0 0 0 3px rgba(19, 41, 75, .12); }
-        .idc-design:disabled { opacity: .45; cursor: not-allowed; }
-        .idc-design-shape { display: block; background: #13294b; border-radius: 3px; position: relative; overflow: hidden; }
-        .idc-design-shape span { position: absolute; left: 0; right: 0; background: #fff; }
-        .idc-design-shape--classic { width: 38px; height: 24px; }
-        .idc-design-shape--classic span { top: 8px; bottom: 4px; border-top: 2px solid #c8a24a; }
-        .idc-design-shape--portrait { width: 24px; height: 38px; }
-        .idc-design-shape--portrait span { top: 11px; bottom: 4px; border-top: 2px solid #c8a24a; }
-        .idc-design-text strong { display: block; font-size: .85rem; color: #16233a; }
-        .idc-design-text small { display: block; font-size: .72rem; color: #64748b; }
-        .idc-design-hint { margin-top: .35rem; font-size: .72rem; color: #64748b; }
+        .idc-template { display: flex; align-items: center; gap: .4rem; font-size: .82rem; color: #374151; }
+        .idc-swatch { width: 1rem; height: 1rem; border-radius: 4px; border: 1px solid rgba(0, 0, 0, .12); display: inline-block; }
+        .idc-muted { color: #64748b; font-size: .78rem; }
 
         .idc-empty { padding: 2.5rem 1rem; text-align: center; color: #64748b; border: 1px dashed #cbd5e1; border-radius: 12px; background: #fff; }
         .idc-head { display: flex; flex-wrap: wrap; justify-content: space-between; align-items: center; gap: .75rem; margin-bottom: 1rem; }
@@ -151,18 +132,18 @@
         .idc-ok { color: #15803d; }
         .idc-actions { display: flex; gap: .5rem; }
 
-        .idc-grid { display: grid; gap: 1rem; }
-        .idc-grid--classic { grid-template-columns: repeat(auto-fill, minmax(min(100%, 31rem), 1fr)); }
-        .idc-grid--portrait { grid-template-columns: repeat(auto-fill, minmax(min(100%, 25rem), 1fr)); }
-        .idc-item { background: #f8fafc; border: 1px solid #e4e8f0; border-radius: 12px; padding: 1rem; }
-        .idc-item.is-incomplete { border-color: #fecaca; }
-        .idc-item-cards { display: flex; flex-wrap: wrap; justify-content: center; gap: 1rem; }
-        .idc-side { text-align: center; }
-        .idc-side > span { display: block; margin-top: .35rem; font-size: .7rem; font-weight: 600; letter-spacing: .06em; text-transform: uppercase; color: #94a3b8; }
-        .idc-scale { zoom: .9; }
-        .idc-scale .idc { box-shadow: 0 1px 3px rgba(16, 24, 40, .1); }
-        .idc-grid--portrait .idc-scale { zoom: 1.1; }
-        .idc-missing-note { margin-top: .85rem; padding: .5rem .75rem; background: #fef2f2; border: 1px solid #fecaca; border-radius: 8px; color: #991b1b; font-size: .8rem; }
+        .idc-layout { display: flex; flex-wrap: wrap; align-items: flex-start; gap: 1.25rem; }
+        .idc-fronts { flex: 1 1 36rem; display: grid; gap: 1rem; }
+        .idc-layout--landscape .idc-fronts { grid-template-columns: repeat(auto-fill, minmax(min(100%, 22rem), 1fr)); }
+        .idc-layout--portrait .idc-fronts { grid-template-columns: repeat(auto-fill, minmax(min(100%, 15rem), 1fr)); }
+        .idc-item { background: #f8fafc; border: 1px solid #e4e8f0; border-radius: 12px; padding: .9rem; text-align: center; }
+        .idc-item.is-incomplete { border-color: #fecaca; background: #fffafa; }
+        .idc-scale { zoom: 1.05; display: inline-block; }
+        .idc-scale .idc { box-shadow: 0 1px 4px rgba(16, 24, 40, .12); }
+        .idc-missing-note { margin-top: .7rem; padding: .45rem .65rem; background: #fef2f2; border: 1px solid #fecaca; border-radius: 8px; color: #991b1b; font-size: .78rem; text-align: left; }
+        .idc-back { flex: 0 0 auto; position: sticky; top: 5rem; background: #fff; border: 1px solid #e4e8f0; border-radius: 12px; padding: .9rem; text-align: center; max-width: 100%; }
+        .idc-back-title { font-size: .72rem; font-weight: 700; letter-spacing: .06em; text-transform: uppercase; color: #64748b; margin-bottom: .6rem; }
+        .idc-back .idc-muted { max-width: 20rem; margin: .6rem auto 0; }
         .idc-link { color: #1a5fa8; font-weight: 600; text-decoration: underline; background: none; border: 0; cursor: pointer; padding: 0; font-size: inherit; }
     </style>
 </x-filament-panels::page>

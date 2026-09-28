@@ -2,6 +2,8 @@
 
 namespace App\Http\Controllers;
 
+use App\Models\IdCardTemplate;
+use App\Models\School;
 use App\Models\Student;
 use App\Services\IdCardService;
 use App\Support\Modules;
@@ -12,9 +14,10 @@ use Illuminate\View\View;
 use Symfony\Component\HttpFoundation\Response;
 
 /**
- * Student ID cards, front and back: a plain print view sized for a card
- * printer (one student at a time or a whole class), and a PDF export laid
- * out on A4 sheets for schools that take printing to an outside shop.
+ * Student ID cards from the school's template, front and back: a plain
+ * print view sized for a card printer (one student at a time or a whole
+ * class), and a PDF export laid out on A4 sheets for schools that take
+ * printing to an outside shop.
  *
  * Both refuse a student who is missing something the card needs -- the
  * Id Cards page already disables its Print/Export buttons in that case,
@@ -26,22 +29,12 @@ class IdCardController extends Controller
 
     public function print(Request $request): View
     {
-        $students = $this->resolveStudents($request);
-
-        return view('id-cards.print', [
-            'cards' => $this->cards->cardsFor($students),
-            'template' => $this->templateFor($students),
-        ]);
+        return view('id-cards.print', $this->viewData($this->resolveStudents($request)));
     }
 
     public function export(Request $request): Response
     {
-        $students = $this->resolveStudents($request);
-
-        $pdf = Pdf::loadView('id-cards.pdf', [
-            'cards' => $this->cards->cardsFor($students),
-            'template' => $this->templateFor($students),
-        ]);
+        $pdf = Pdf::loadView('id-cards.pdf', $this->viewData($this->resolveStudents($request)));
 
         $pdf->setPaper('a4');
 
@@ -49,14 +42,26 @@ class IdCardController extends Controller
     }
 
     /**
-     * The design the school saved on the ID Cards page. Every student in a
-     * batch belongs to the signed-in school, so the first one decides.
+     * The fronts, the shared back and the colours, all from the school's
+     * saved template. Every student in a batch belongs to the signed-in
+     * school.
      *
      * @param  Collection<int, Student>  $students
+     * @return array<string, mixed>
      */
-    protected function templateFor(Collection $students): string
+    protected function viewData(Collection $students): array
     {
-        return $students->first()?->school?->idCardTemplate() ?? 'classic';
+        $school = auth()->user()?->school;
+
+        abort_unless($school instanceof School, 403);
+
+        $template = IdCardTemplate::forSchool($school->id);
+
+        return [
+            'cards' => $this->cards->cardsFor($students, $template),
+            'shared' => $this->cards->schoolData($school, $template),
+            'design' => $this->cards->design($template),
+        ];
     }
 
     /**
@@ -80,7 +85,7 @@ class IdCardController extends Controller
         $students = Student::query()
             ->whereKey($ids)
             ->where('school_id', $schoolId)
-            ->with(['school', 'guardian', 'schoolClass', 'section'])
+            ->with(['school', 'guardian', 'schoolClass', 'section', 'house', 'residencyType'])
             ->orderBy('name')
             ->get();
 

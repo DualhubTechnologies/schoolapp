@@ -7,6 +7,7 @@ use App\Support\PrivateFiles;
 use Carbon\CarbonImmutable;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\HasMany;
+use Illuminate\Database\Eloquent\Relations\HasOne;
 
 /**
  * @property CarbonImmutable|null $approved_at
@@ -37,7 +38,6 @@ class School extends Model
         'country',
         'logo',
         'hm_signature',
-        'id_card_template',
         'timezone',
         'currency',
         'status',
@@ -99,12 +99,6 @@ class School extends Model
         self::TYPE_SECONDARY => 'Secondary School',
     ];
 
-    /** Student ID card designs a school can choose between (IdCards page). */
-    public const ID_CARD_TEMPLATES = [
-        'classic' => 'Classic (landscape)',
-        'portrait' => 'Portrait (upright)',
-    ];
-
     // ── Relationships ──
 
     public function classLevels(): HasMany
@@ -148,6 +142,14 @@ class School extends Model
         return $this->hasMany(User::class);
     }
 
+    /**
+     * @return HasOne<IdCardTemplate, $this>
+     */
+    public function idCardTemplate(): HasOne
+    {
+        return $this->hasOne(IdCardTemplate::class);
+    }
+
     // ── Type helpers ──
 
     public function isPrimary(): bool
@@ -163,16 +165,6 @@ class School extends Model
     public function typeLabel(): string
     {
         return self::TYPES[$this->school_type] ?? '—';
-    }
-
-    /**
-     * The ID card design this school prints, falling back to Classic.
-     */
-    public function idCardTemplate(): string
-    {
-        $template = (string) $this->id_card_template;
-
-        return array_key_exists($template, self::ID_CARD_TEMPLATES) ? $template : 'classic';
     }
 
     /**

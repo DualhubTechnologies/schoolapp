@@ -2,19 +2,26 @@
 
 namespace App\Filament\Pages;
 
-use App\Models\School;
+use App\Models\IdCardTemplate;
 use App\Models\SchoolClass;
 use App\Models\Section;
 use App\Models\Student;
 use App\Services\IdCardService;
 use App\Support\Modules;
 use BackedEnum;
+use Filament\Actions\Action;
+use Filament\Forms\Components\ColorPicker;
+use Filament\Forms\Components\Select;
+use Filament\Forms\Components\TextInput;
+use Filament\Forms\Components\Textarea;
+use Filament\Forms\Components\ToggleButtons;
 use Filament\Notifications\Notification;
 use Filament\Pages\Page;
+use Filament\Schemas\Components\Grid;
+use Filament\Schemas\Components\Utilities\Get;
 use Filament\Support\Icons\Heroicon;
 use Illuminate\Support\Collection;
 use Livewire\Attributes\Computed;
-use Livewire\Attributes\Locked;
 
 /**
  * Preview and print student ID cards, front and back: one student, or a
@@ -23,12 +30,14 @@ use Livewire\Attributes\Locked;
  * PDF stay switched off until every card in the batch is complete, so a
  * school never finds out a card is blank on the back only after cutting it.
  *
- * The school picks one of two designs (School::ID_CARD_TEMPLATES); the
- * choice is saved on the school, so every later visit, print and export
- * uses it until someone changes it.
+ * The front carries each learner's details; the back is the same on
+ * every card. How the cards look -- orientation, colours, validity, the
+ * rules on the back -- is the school's Template (IdCardTemplate), edited
+ * here and remembered for every later preview, print and export.
  *
  * @property Collection<int, Student> $students
  * @property Collection<int, array<string, mixed>> $cards
+ * @property IdCardTemplate $cardTemplate
  */
 class IdCards extends Page
 {
@@ -54,13 +63,8 @@ class IdCards extends Page
     /** Set when opened for a chosen set of learners (the bulk action on Students). */
     public string $studentIds = '';
 
-    /** The school's saved card design, shown and printed. Changed only through chooseTemplate(). */
-    #[Locked]
-    public string $template = 'classic';
-
     public function mount(): void
     {
-        $this->template = $this->school()?->idCardTemplate() ?? 'classic';
         $this->studentId = request()->integer('student') ?: null;
         $this->studentIds = (string) request()->query('students', '');
         $this->classId = request()->integer('class') ?: null;
@@ -83,40 +87,116 @@ class IdCards extends Page
         unset($this->students, $this->cards);
     }
 
-    protected function school(): ?School
-    {
-        return auth()->user()?->school;
-    }
-
-    /** Only those who manage the school's settings change its card design. */
-    public function canChooseTemplate(): bool
+    /** Only those who manage the school's settings change its template. */
+    public function canEditTemplate(): bool
     {
         return Modules::allows('settings');
     }
 
-    /** Switch design and remember it for the school. */
-    public function chooseTemplate(string $template): void
+    /**
+     * @return array<Action>
+     */
+    protected function getHeaderActions(): array
     {
-        if (! array_key_exists($template, School::ID_CARD_TEMPLATES) || $template === $this->template) {
-            return;
-        }
+        return [
+            Action::make('template')
+                ->label('Template')
+                ->icon('heroicon-o-swatch')
+                ->color('gray')
+                ->visible(fn (): bool => $this->canEditTemplate())
+                ->modalHeading('ID card template')
+                ->modalDescription('How your school\'s ID cards look. Saved for the school: every preview, print and export uses it until you change it.')
+                ->modalSubmitActionLabel('Save template')
+                ->fillForm(fn (): array => [
+                    ...IdCardTemplate::DEFAULTS,
+                    ...$this->cardTemplate->only(['orientation', 'primary_color', 'accent_color', 'validity', 'validity_months', 'back_notes']),
+                    'back_notes' => $this->cardTemplate->back_notes ?? IdCardTemplate::DEFAULT_BACK_NOTES,
+                ])
+                ->schema([
+                    ToggleButtons::make('orientation')
+                        ->options(IdCardTemplate::ORIENTATIONS)
+                        ->icons(['landscape' => 'heroicon-o-rectangle-group', 'portrait' => 'heroicon-o-device-phone-mobile'])
+                        ->inline()
+                        ->required(),
+                    Grid::make(2)->schema([
+                        ColorPicker::make('primary_color')
+                            ->label('Main colour')
+                            ->helperText('Header, footer and name.')
+                            ->regex('/^#[0-9a-fA-F]{6}$/')
+                            ->required(),
+                        ColorPicker::make('accent_color')
+                            ->label('Accent colour')
+                            ->helperText('Photo frame and trim.')
+                            ->regex('/^#[0-9a-fA-F]{6}$/')
+                            ->required(),
+                    ]),
+                    Grid::make(2)->schema([
+                        Select::make('validity')
+                            ->label('Card valid')
+                            ->options(IdCardTemplate::VALIDITY)
+                            ->native(false)
+                            ->live()
+                            ->required(),
+                        TextInput::make('validity_months')
+                            ->label('Months')
+                            ->numeric()
+                            ->minValue(1)
+                            ->maxValue(60)
+                            ->visible(fn (Get $get): bool => $get('validity') === 'months')
+                            ->required(fn (Get $get): bool => $get('validity') === 'months'),
+                    ]),
+                    Textarea::make('back_notes')
+                        ->label('Rules on the back')
+                        ->helperText('One rule per line; up to five are printed. The back is the same on every card.')
+                        ->rows(4)
+                        ->maxLength(600),
+                ])
+                ->action(function (array $data): void {
+                    $schoolId = auth()->user()?->school_id;
 
-        $school = $this->school();
+                    if (! $schoolId || ! $this->canEditTemplate()) {
+                        return;
+                    }
 
-        if (! $school || ! $this->canChooseTemplate()) {
-            Notification::make()->title('Only the school administrator can change the card design')->warning()->send();
+                    IdCardTemplate::updateOrCreate(['school_id' => $schoolId], [
+                        'orientation' => $data['orientation'],
+                        'primary_color' => strtolower($data['primary_color']),
+                        'accent_color' => strtolower($data['accent_color']),
+                        'validity' => $data['validity'],
+                        'validity_months' => (int) ($data['validity_months'] ?? 12) ?: 12,
+                        'back_notes' => trim((string) ($data['back_notes'] ?? '')) ?: null,
+                    ]);
 
-            return;
-        }
+                    unset($this->cardTemplate, $this->cards);
 
-        $school->update(['id_card_template' => $template]);
-        $this->template = $template;
+                    Notification::make()->title('Template saved')->body('Your school\'s ID cards will use it from now on.')->success()->send();
+                }),
+        ];
+    }
 
-        Notification::make()
-            ->title(School::ID_CARD_TEMPLATES[$template].' design saved')
-            ->body('Your school\'s ID cards will use it from now on.')
-            ->success()
-            ->send();
+    /** The school's saved template, or the defaults until it saves one. */
+    #[Computed]
+    public function cardTemplate(): IdCardTemplate
+    {
+        return IdCardTemplate::forSchool((int) auth()->user()?->school_id);
+    }
+
+    /**
+     * What every card shares: school details for the header and back.
+     *
+     * @return array<string, mixed>|null
+     */
+    public function shared(): ?array
+    {
+        $school = auth()->user()?->school;
+
+        return $school ? app(IdCardService::class)->schoolData($school, $this->cardTemplate) : null;
+    }
+
+    /** @return array<string, string> */
+    public function design(): array
+    {
+        return app(IdCardService::class)->design($this->cardTemplate);
     }
 
     /** Clear the single-student / chosen-set filter to browse by class instead. */
@@ -168,7 +248,7 @@ class IdCards extends Page
         if ($ids = $this->explicitStudentIds()) {
             return Student::where('school_id', $schoolId)
                 ->whereKey($ids)
-                ->with(['guardian', 'schoolClass', 'section'])
+                ->with(['school', 'guardian', 'schoolClass', 'section', 'house', 'residencyType'])
                 ->orderBy('name')
                 ->get();
         }
@@ -181,7 +261,7 @@ class IdCards extends Page
             ->where('status', 'active')
             ->where('school_class_id', $this->classId)
             ->when($this->sectionId, fn ($q) => $q->where('section_id', $this->sectionId))
-            ->with(['guardian', 'schoolClass', 'section'])
+            ->with(['school', 'guardian', 'schoolClass', 'section', 'house', 'residencyType'])
             ->orderBy('name')
             ->get();
     }
@@ -194,7 +274,7 @@ class IdCards extends Page
     #[Computed]
     public function cards(): Collection
     {
-        return app(IdCardService::class)->cardsFor($this->students);
+        return app(IdCardService::class)->cardsFor($this->students, $this->cardTemplate);
     }
 
     public function notReadyCount(): int

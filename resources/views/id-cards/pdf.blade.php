@@ -1,13 +1,13 @@
 {{--
     ID cards on A4 for an outside print shop: fronts first, then backs.
-    Each back sheet mirrors its front sheet left-to-right, so printing
-    double-sided (flip on the long edge) puts every back behind its own
-    front, ready to cut out along the card outlines.
+    The back is the same on every card, but there is one behind each front
+    so double-sided printing (flip on the long edge) backs every card, ready
+    to cut out along the card outlines.
 --}}
 @php
-    $portrait = $template === 'portrait';
-    $columns = $portrait ? 3 : 2;
-    $pages = $cards->chunk($portrait ? 9 : 8)->values();
+    $orientation = $design['orientation'];
+    $columns = $orientation === 'portrait' ? 3 : 2;
+    $pages = $cards->chunk($orientation === 'portrait' ? 9 : 8)->values();
     $rowsOf = fn ($page) => $page->values()->chunk($columns)->map(fn ($row) => $row->values()->pad($columns, null));
 @endphp
 <!DOCTYPE html>
@@ -33,7 +33,7 @@
                 @foreach ($rowsOf($page) as $row)
                     <tr>
                         @foreach ($row as $card)
-                            <td>@if ($card)@include('id-cards.templates.'.$template.'-front', ['card' => $card])@endif</td>
+                            <td>@if ($card)@include('id-cards.templates.'.$orientation.'-front')@endif</td>
                         @endforeach
                     </tr>
                 @endforeach
@@ -48,7 +48,7 @@
                 @foreach ($rowsOf($page) as $row)
                     <tr>
                         @foreach ($row->reverse() as $card)
-                            <td>@if ($card)@include('id-cards.templates.'.$template.'-back', ['card' => $card])@endif</td>
+                            <td>@if ($card)@include('id-cards.templates.'.$orientation.'-back')@endif</td>
                         @endforeach
                     </tr>
                 @endforeach

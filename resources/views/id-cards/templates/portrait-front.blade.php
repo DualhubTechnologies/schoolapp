@@ -1,55 +1,29 @@
-{{-- Portrait (upright) front. $card: one entry from IdCardService::cardsFor(). --}}
-@php
-    $student = $card['student'];
-    $school = $card['school'];
-@endphp
+{{--
+    Portrait front: the learner's own details. $card from
+    IdCardService::cardsFor(), $shared from schoolData(), $design from design().
+--}}
+@php($school = $shared['school'])
 <div class="idc idc-portrait">
-    <div class="p-head">
-        @if ($card['logoPath'])
-            <div class="idc-crest"><img src="{{ $card['logoPath'] }}" alt=""></div>
+    <div class="idc-band p-head">
+        @if ($shared['logoPath'])
+            <div class="idc-crest"><img src="{{ $shared['logoPath'] }}" alt=""></div>
         @endif
-        <div class="p-school">{{ Str::limit($school?->name ?? '', 48) }}</div>
-        @if ($school?->motto)
-            <div class="p-motto">{{ Str::limit($school->motto, 48) }}</div>
+        <div class="idc-school">{{ Str::limit($school->name, 44) }}</div>
+        @if ($school->motto)
+            <div class="idc-sub">{{ Str::limit($school->motto, 46) }}</div>
         @endif
     </div>
-    <div class="idc-rule"></div>
+    <div class="idc-wave p-wave-top"><img src="{{ $design['waveTop'] }}" alt=""></div>
 
-    <div class="p-photo-wrap">
-        <div class="idc-photo">
-            @if ($card['photoPath'])
-                <img src="{{ $card['photoPath'] }}" alt="">
-            @else
-                <div class="idc-initial">{{ Str::upper(Str::substr($student->name ?: '?', 0, 1)) }}</div>
-            @endif
-        </div>
-    </div>
+    <div class="p-photo-wrap">@include('id-cards.templates._photo')</div>
+    <div class="idc-name">{{ Str::limit($card['student']->name, 38) }}</div>
+    <div class="p-fields">@include('id-cards.templates._fields')</div>
 
-    <div class="p-name">{{ Str::limit(Str::upper($student->name ?? ''), 40) }}</div>
-    <div class="p-class"><span>{{ Str::limit(($student->schoolClass?->name ?? '—').($student->section ? ' · '.$student->section->name : ''), 22) }}</span></div>
-
-    <div class="p-fields">
-        <table>
-            <tr>
-                <td><div class="idc-label">Adm. No.</div></td>
-                <td><div class="idc-value">{{ $student->admission_no ?: '—' }}</div></td>
-            </tr>
-            <tr>
-                <td><div class="idc-label">Date of birth</div></td>
-                <td><div class="idc-value">{{ $student->date_of_birth?->format('d M Y') ?? '—' }}</div></td>
-            </tr>
-            <tr>
-                <td><div class="idc-label">Sex</div></td>
-                <td><div class="idc-value">{{ \App\Models\Student::GENDERS[$student->gender] ?? '—' }}</div></td>
-            </tr>
-        </table>
-    </div>
-
-    <div class="p-foot">
-        <table>
-            <tr>
-                <td>Student ID @if ($card['validYear'])<span>&nbsp;·&nbsp; Valid {{ $card['validYear'] }}</span>@endif</td>
-            </tr>
+    <div class="idc-wave p-wave-bottom"><img src="{{ $design['waveBottom'] }}" alt=""></div>
+    <div class="idc-band p-foot">
+        <table class="idc-foot">
+            <tr><td>Card No. <b>{{ $card['cardNumber'] }}</b></td></tr>
+            <tr><td>Issued <b>{{ $card['issuedOn']->format('d/m/Y') }}</b> &nbsp;·&nbsp; Expires <b>{{ $card['expiresOn']->format('d/m/Y') }}</b></td></tr>
         </table>
     </div>
 </div>

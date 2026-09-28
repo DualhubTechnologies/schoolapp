@@ -63,15 +63,19 @@ class EmailVerificationCode
 
         RateLimiter::clear(self::attemptsKey($user));
 
-        try {
-            $user->notify(new ConfirmYourEmail($code, self::EXPIRES_AFTER_MINUTES));
-        } catch (Throwable $e) {
-            report($e);
+        // One retry: a connection to the mail server that drops or times
+        // out once usually goes through straight after.
+        for ($try = 1; $try <= 2; $try++) {
+            try {
+                $user->notify(new ConfirmYourEmail($code, self::EXPIRES_AFTER_MINUTES));
 
-            return false;
+                return true;
+            } catch (Throwable $e) {
+                report($e);
+            }
         }
 
-        return true;
+        return false;
     }
 
     /**

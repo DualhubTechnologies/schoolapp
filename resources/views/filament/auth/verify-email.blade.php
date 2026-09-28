@@ -12,7 +12,8 @@
 
         <div class="shv-help">
             <span>Didn't get it? Check Spam or Promotions, or</span>
-            {{ $this->resendAction }}
+            <span wire:loading.remove wire:target="mountAction">{{ $this->resendAction }}</span>
+            <span wire:loading wire:target="mountAction" class="shv-sending">Sending a new code…</span>
         </div>
 
         <div class="shv-foot">
@@ -34,6 +35,7 @@
     .shv .fi-one-time-code-input-ctn { gap: .6rem; justify-content: space-between; }
     .shv .fi-one-time-code-input-digit { width: 100%; max-width: 3.4rem; height: 3.6rem; font-size: 1.5rem; font-weight: 700; text-align: center; color: var(--sha-ink, #0f172a); border-radius: .7rem; }
     .shv-help { display: flex; flex-wrap: wrap; align-items: center; gap: .35rem; font-size: .88rem; color: var(--sha-muted, #64748b); }
+    .shv-sending { font-weight: 600; color: var(--sha-blue, #2563eb); }
     .shv-foot { padding-top: 1rem; border-top: 1px solid var(--sha-line, #e2e8f0); font-size: .85rem; color: var(--sha-muted, #64748b); }
     .shv-foot a { color: var(--sha-blue, #2563eb); font-weight: 600; text-decoration: none; }
     .shv-foot a:hover { text-decoration: underline; }

@@ -50,6 +50,7 @@ class Modules
         // Students
         'StudentResource' => 'students',
         'GuardianResource' => 'students',
+        'IdCards' => 'students',
         'PromoteStudents' => 'promotion',
         // Fees
         'ReceivePayment' => 'fees',

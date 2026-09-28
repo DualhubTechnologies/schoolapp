@@ -28,6 +28,7 @@ use App\Http\Controllers\AppInstallController;
 use App\Http\Controllers\DemoRequestController;
 use App\Http\Controllers\FeeDocumentController;
 use App\Http\Controllers\FinanceDocumentController;
+use App\Http\Controllers\IdCardController;
 use App\Http\Controllers\LandingController;
 use App\Http\Controllers\PayrollDocumentController;
 use App\Http\Controllers\ReportCardController;
@@ -168,6 +169,10 @@ class AppPanelProvider extends PanelProvider
                 Route::get('/students/{student}/profile', [StudentDocumentController::class, 'profile'])
                     ->whereNumber('student')
                     ->name('students.profile');
+                Route::get('/students/id-cards/print', [IdCardController::class, 'print'])
+                    ->name('students.id-cards.print');
+                Route::get('/students/id-cards/export', [IdCardController::class, 'export'])
+                    ->name('students.id-cards.export');
             })
 
             // --- Navigation ---

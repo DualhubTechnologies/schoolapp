@@ -2,14 +2,16 @@
 
 namespace App\Services;
 
+use App\Concerns\EmbedsImages;
 use App\Models\Student;
 use App\Models\Term;
 use App\Support\PrivateFiles;
 use Barryvdh\DomPDF\Facade\Pdf;
-use Illuminate\Support\Facades\Storage;
 
 class StudentDocumentService
 {
+    use EmbedsImages;
+
     /**
      * Generate the admission letter PDF for a student and return the
      * Dompdf instance (caller decides stream/download). Fees shown are
@@ -57,34 +59,5 @@ class StudentDocumentService
         $pdf->setPaper('a4');
 
         return $pdf;
-    }
-
-    /**
-     * Convert the school logo (public disk) into a base64 data URI that
-     * dompdf can embed. Returns null if missing/unreadable. Private files
-     * such as the student's photo go through PrivateFiles::dataUri().
-     *
-     * dompdf cannot fetch web URLs reliably and http fetching is disabled
-     * by default for security, so we embed the raw bytes instead.
-     */
-    protected function embeddableImage(?string $path): ?string
-    {
-        if (! $path) {
-            return null;
-        }
-
-        // Logos are stored on the 'public' disk.
-        if (! Storage::disk('public')->exists($path)) {
-            return null;
-        }
-
-        try {
-            $contents = Storage::disk('public')->get($path);
-            $mime = Storage::disk('public')->mimeType($path) ?: 'image/jpeg';
-
-            return 'data:'.$mime.';base64,'.base64_encode($contents);
-        } catch (\Throwable $e) {
-            return null;
-        }
     }
 }

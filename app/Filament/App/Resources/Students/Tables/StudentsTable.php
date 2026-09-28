@@ -2,12 +2,14 @@
 
 namespace App\Filament\App\Resources\Students\Tables;
 
+use App\Filament\Pages\IdCards;
 use App\Filament\Pages\ReceivePayment;
 use App\Filament\Pages\StudentAccount;
 use App\Models\Student;
 use App\Support\PrivateFiles;
 use Filament\Actions\Action;
 use Filament\Actions\ActionGroup;
+use Filament\Actions\BulkAction;
 use Filament\Actions\BulkActionGroup;
 use Filament\Actions\DeleteBulkAction;
 use Filament\Actions\EditAction;
@@ -18,6 +20,7 @@ use Filament\Tables\Columns\TextColumn;
 use Filament\Tables\Filters\SelectFilter;
 use Filament\Tables\Table;
 use Illuminate\Database\Eloquent\Builder;
+use Illuminate\Support\Collection;
 
 class StudentsTable
 {
@@ -180,6 +183,16 @@ class StudentsTable
                         ->url(fn ($record) => route('filament.app.students.profile', $record))
                         ->openUrlInNewTab(),
 
+                    // ── ID card preview -- opens the ID Cards page for this
+                    //    one learner rather than printing straight away, so
+                    //    missing details are caught before anything is cut ──
+                    Action::make('idCard')
+                        ->label('ID card')
+                        ->icon('heroicon-o-credit-card')
+                        ->color('gray')
+                        ->url(fn ($record) => IdCards::getUrl(['student' => $record->getKey()]))
+                        ->openUrlInNewTab(),
+
                     // ── Payments go through Receive Payment, which issues a
                     //    numbered receipt (and auto-confirms enrolment) ──
                     Action::make('recordPayment')
@@ -218,6 +231,13 @@ class StudentsTable
             ])
             ->toolbarActions([
                 BulkActionGroup::make([
+                    // ->url() does not receive the selected records reliably
+                    // on a bulk action, so this redirects instead.
+                    BulkAction::make('idCards')
+                        ->label('Print ID cards')
+                        ->icon('heroicon-o-credit-card')
+                        ->color('gray')
+                        ->action(fn (Collection $records) => redirect(IdCards::getUrl(['students' => $records->pluck('id')->implode(',')]))),
                     DeleteBulkAction::make(),
                 ]),
             ])

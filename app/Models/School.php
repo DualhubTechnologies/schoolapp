@@ -37,6 +37,7 @@ class School extends Model
         'country',
         'logo',
         'hm_signature',
+        'id_card_template',
         'timezone',
         'currency',
         'status',
@@ -98,6 +99,12 @@ class School extends Model
         self::TYPE_SECONDARY => 'Secondary School',
     ];
 
+    /** Student ID card designs a school can choose between (IdCards page). */
+    public const ID_CARD_TEMPLATES = [
+        'classic' => 'Classic (landscape)',
+        'portrait' => 'Portrait (upright)',
+    ];
+
     // ── Relationships ──
 
     public function classLevels(): HasMany
@@ -156,6 +163,16 @@ class School extends Model
     public function typeLabel(): string
     {
         return self::TYPES[$this->school_type] ?? '—';
+    }
+
+    /**
+     * The ID card design this school prints, falling back to Classic.
+     */
+    public function idCardTemplate(): string
+    {
+        $template = (string) $this->id_card_template;
+
+        return array_key_exists($template, self::ID_CARD_TEMPLATES) ? $template : 'classic';
     }
 
     /**

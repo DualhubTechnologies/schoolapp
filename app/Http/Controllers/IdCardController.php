@@ -26,20 +26,37 @@ class IdCardController extends Controller
 
     public function print(Request $request): View
     {
+        $students = $this->resolveStudents($request);
+
         return view('id-cards.print', [
-            'cards' => $this->cards->cardsFor($this->resolveStudents($request)),
+            'cards' => $this->cards->cardsFor($students),
+            'template' => $this->templateFor($students),
         ]);
     }
 
     public function export(Request $request): Response
     {
+        $students = $this->resolveStudents($request);
+
         $pdf = Pdf::loadView('id-cards.pdf', [
-            'cards' => $this->cards->cardsFor($this->resolveStudents($request)),
+            'cards' => $this->cards->cardsFor($students),
+            'template' => $this->templateFor($students),
         ]);
 
         $pdf->setPaper('a4');
 
         return $pdf->download('id-cards-'.now()->format('Y-m-d').'.pdf');
+    }
+
+    /**
+     * The design the school saved on the ID Cards page. Every student in a
+     * batch belongs to the signed-in school, so the first one decides.
+     *
+     * @param  Collection<int, Student>  $students
+     */
+    protected function templateFor(Collection $students): string
+    {
+        return $students->first()?->school?->idCardTemplate() ?? 'classic';
     }
 
     /**

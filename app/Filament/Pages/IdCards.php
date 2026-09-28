@@ -2,16 +2,19 @@
 
 namespace App\Filament\Pages;
 
+use App\Models\School;
 use App\Models\SchoolClass;
 use App\Models\Section;
 use App\Models\Student;
 use App\Services\IdCardService;
 use App\Support\Modules;
 use BackedEnum;
+use Filament\Notifications\Notification;
 use Filament\Pages\Page;
 use Filament\Support\Icons\Heroicon;
 use Illuminate\Support\Collection;
 use Livewire\Attributes\Computed;
+use Livewire\Attributes\Locked;
 
 /**
  * Preview and print student ID cards, front and back: one student, or a
@@ -19,6 +22,10 @@ use Livewire\Attributes\Computed;
  * a card missing something it needs is flagged here, and Print / Export
  * PDF stay switched off until every card in the batch is complete, so a
  * school never finds out a card is blank on the back only after cutting it.
+ *
+ * The school picks one of two designs (School::ID_CARD_TEMPLATES); the
+ * choice is saved on the school, so every later visit, print and export
+ * uses it until someone changes it.
  *
  * @property Collection<int, Student> $students
  * @property Collection<int, array<string, mixed>> $cards
@@ -47,8 +54,13 @@ class IdCards extends Page
     /** Set when opened for a chosen set of learners (the bulk action on Students). */
     public string $studentIds = '';
 
+    /** The school's saved card design, shown and printed. Changed only through chooseTemplate(). */
+    #[Locked]
+    public string $template = 'classic';
+
     public function mount(): void
     {
+        $this->template = $this->school()?->idCardTemplate() ?? 'classic';
         $this->studentId = request()->integer('student') ?: null;
         $this->studentIds = (string) request()->query('students', '');
         $this->classId = request()->integer('class') ?: null;
@@ -69,6 +81,42 @@ class IdCards extends Page
     public function updatedSectionId(): void
     {
         unset($this->students, $this->cards);
+    }
+
+    protected function school(): ?School
+    {
+        return auth()->user()?->school;
+    }
+
+    /** Only those who manage the school's settings change its card design. */
+    public function canChooseTemplate(): bool
+    {
+        return Modules::allows('settings');
+    }
+
+    /** Switch design and remember it for the school. */
+    public function chooseTemplate(string $template): void
+    {
+        if (! array_key_exists($template, School::ID_CARD_TEMPLATES) || $template === $this->template) {
+            return;
+        }
+
+        $school = $this->school();
+
+        if (! $school || ! $this->canChooseTemplate()) {
+            Notification::make()->title('Only the school administrator can change the card design')->warning()->send();
+
+            return;
+        }
+
+        $school->update(['id_card_template' => $template]);
+        $this->template = $template;
+
+        Notification::make()
+            ->title(School::ID_CARD_TEMPLATES[$template].' design saved')
+            ->body('Your school\'s ID cards will use it from now on.')
+            ->success()
+            ->send();
     }
 
     /** Clear the single-student / chosen-set filter to browse by class instead. */

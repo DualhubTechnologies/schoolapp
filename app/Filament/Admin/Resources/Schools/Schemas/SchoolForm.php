@@ -262,6 +262,13 @@ class SchoolForm
                             ->visibility('private')
                             ->acceptedFileTypes(['image/jpeg', 'image/png', 'image/webp'])
                             ->maxSize(10240),
+
+                        Select::make('id_card_template')
+                            ->label('Student ID card design')
+                            ->options(School::ID_CARD_TEMPLATES)
+                            ->native(false)
+                            ->default('classic')
+                            ->selectablePlaceholder(false),
                     ]),
             ]);
     }

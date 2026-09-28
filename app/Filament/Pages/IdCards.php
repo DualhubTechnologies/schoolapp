@@ -19,6 +19,9 @@ use Livewire\Attributes\Computed;
  * a card missing something it needs is flagged here, and Print / Export
  * PDF stay switched off until every card in the batch is complete, so a
  * school never finds out a card is blank on the back only after cutting it.
+ *
+ * @property Collection<int, Student> $students
+ * @property Collection<int, array<string, mixed>> $cards
  */
 class IdCards extends Page
 {
@@ -76,7 +79,7 @@ class IdCards extends Page
         unset($this->students, $this->cards);
     }
 
-    /** @return list<int> */
+    /** @return array<int, int> */
     protected function explicitStudentIds(): array
     {
         return collect(explode(',', $this->studentIds))
@@ -135,7 +138,11 @@ class IdCards extends Page
             ->get();
     }
 
-    /** Each student paired with its card data and readiness. */
+    /**
+     * Each student paired with its card data and readiness.
+     *
+     * @return Collection<int, array<string, mixed>>
+     */
     #[Computed]
     public function cards(): Collection
     {

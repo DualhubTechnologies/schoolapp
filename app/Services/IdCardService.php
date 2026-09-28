@@ -18,7 +18,11 @@ class IdCardService
 {
     use EmbedsImages;
 
-    /** school_id => current academic year's name, memoised for a whole class print. */
+    /**
+     * school_id => current academic year's name, memoised for a whole class print.
+     *
+     * @var array<int, string|null>
+     */
     protected array $currentYearNames = [];
 
     /**

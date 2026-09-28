@@ -1,7 +1,9 @@
 <?php
 
 use App\Filament\Admin\Resources\Schools\Pages\ListSchools;
+use App\Filament\App\Resources\Students\StudentResource;
 use App\Filament\Pages\Auth\RegisterSchool;
+use App\Filament\Pages\SchoolSubscription;
 use App\Models\School;
 use App\Models\User;
 use App\Notifications\SchoolRegistered;
@@ -115,4 +117,28 @@ it('offers approval only to schools that are waiting or were turned down', funct
     Livewire::test(ListSchools::class)
         ->assertTableActionHidden('approve', $school)
         ->assertTableActionHidden('reject', $school);
+});
+
+it('shows a school awaiting approval only its Subscription page, with no menu of links', function () {
+    [$school, $admin] = pendingSchool();
+
+    $this->actingAs($admin)
+        ->get(StudentResource::getUrl(panel: 'app'))
+        ->assertRedirect(SchoolSubscription::getUrl(panel: 'app'));
+
+    $this->actingAs($admin)
+        ->get(SchoolSubscription::getUrl(panel: 'app'))
+        ->assertOk()
+        ->assertSee('Your school is waiting for SchoolHub')
+        ->assertSee('Awaiting approval')
+        ->assertDontSee('Toggle sidebar')
+        ->assertDontSee('Enter Marks')
+        ->assertDontSee('Free Trial');
+
+    SubscriptionManager::approve($school);
+
+    $this->actingAs($admin->fresh())
+        ->get(SchoolSubscription::getUrl(panel: 'app'))
+        ->assertOk()
+        ->assertSee('Toggle sidebar');
 });

@@ -755,6 +755,10 @@ html .fi-body {
 
 .sh-chip-plan-red svg, .sh-chip-plan-red .sh-chip-value { color: #dc2626; }
 
+.sh-chip-plan-amber { border-color: #fde68a; background: #fffbeb; }
+
+.sh-chip-plan-amber svg, .sh-chip-plan-amber .sh-chip-value { color: #b45309; }
+
 .sh-chip-link { text-decoration: none; cursor: pointer; transition: border-color .15s, box-shadow .15s; }
 
 .sh-chip-link:hover { border-color: var(--sh-blue-600); box-shadow: 0 0 0 1px rgba(26, 95, 168, .15); }

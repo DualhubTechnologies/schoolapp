@@ -9,6 +9,7 @@ use App\Filament\App\Resources\PayrollPeriods\PayrollPeriodResource;
 use App\Filament\App\Resources\Students\StudentResource;
 use App\Filament\Pages\EnterMarks;
 use App\Filament\Pages\ReceivePayment;
+use App\Http\Middleware\EnsureSchoolSubscribed;
 
 /**
  * The bar along the bottom of the screen on phones: Home, the three or
@@ -35,7 +36,7 @@ class MobileNav
     {
         $user = auth()->user();
 
-        if (! $user?->school_id) {
+        if (! $user?->school_id || EnsureSchoolSubscribed::locks($user)) {
             return [];
         }
 

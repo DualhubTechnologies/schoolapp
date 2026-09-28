@@ -24,13 +24,22 @@
     $subStatus = $user?->school_id ? \App\Services\Subscriptions\SubscriptionManager::status($user->school_id) : null;
     $plan      = $subStatus['plan'] ?? null;
     $planState = $subStatus['state'] ?? null;
-    $planLabel = $planState === 'trial' ? 'Trial' : $plan?->name;
+    // Before approval there is no trial yet, whatever plan is on file.
+    $planLabel = match ($planState) {
+        'trial' => 'Trial',
+        'pending' => 'Awaiting approval',
+        'rejected' => 'Not approved',
+        default => $plan?->name,
+    };
     $planTone  = match ($planState) {
         'trial' => 'blue',
         'active' => 'green',
-        default => 'red', // grace, expired, none, suspended
+        'pending' => 'amber',
+        default => 'red', // grace, expired, none, suspended, rejected
     };
     $canManageSub = $plan && \App\Support\Modules::hasFullAccess($user);
+    // No sidebar for a school held on its Subscription page (AppPanelProvider).
+    $hasSidebar = filament()->hasNavigation();
 @endphp
 
 <div class="sh-topbar">
@@ -39,6 +48,7 @@
     <div class="sh-topbar-left">
 
         {{-- Sidebar collapse toggle. --}}
+        @if ($hasSidebar)
         <button type="button"
                 class="sh-icon-btn"
                 title="Toggle sidebar"
@@ -49,6 +59,7 @@
                       d="M3.75 6.75h16.5M3.75 12h16.5m-16.5 5.25h16.5" />
             </svg>
         </button>
+        @endif
 
         {{-- Date + live clock --}}
         <div class="sh-chip" x-data="{

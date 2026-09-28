@@ -185,6 +185,10 @@ class AppPanelProvider extends PanelProvider
                 NavigationGroup::make('Settings')->collapsed(),
                 NavigationGroup::make('Platform Management'),
             ])
+            // A locked school (awaiting approval, suspended, expired) can
+            // only open its Subscription page, so it gets no sidebar of
+            // links that would all lead back there.
+            ->navigation(fn (): bool => ! EnsureSchoolSubscribed::locks(auth()->user()))
             // The platform owner's own pages live in the admin panel
             // (/admin); link them here so the Super Admin's sidebar isn't
             // just Dashboard and Users.

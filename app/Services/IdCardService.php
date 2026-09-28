@@ -9,6 +9,7 @@ use App\Models\School;
 use App\Models\Student;
 use App\Support\PrivateFiles;
 use Carbon\CarbonInterface;
+use Illuminate\Support\Carbon;
 use Illuminate\Support\Collection;
 
 /**
@@ -82,9 +83,9 @@ class IdCardService
             'Student No.' => (string) $student->admission_no,
             'Class' => $class ? $class.($student->section ? ' '.$student->section->name : '') : '',
             'Sex' => Student::GENDERS[$student->gender] ?? '',
-            'Date of Birth' => $student->date_of_birth?->format('d/m/Y') ?? '',
-            'House' => (string) $student->house?->name,
-            'Residence' => (string) $student->residencyType?->name,
+            'Date of Birth' => $student->date_of_birth ? Carbon::parse($student->date_of_birth)->format('d/m/Y') : '',
+            'House' => (string) $student->house?->getAttribute('name'),
+            'Residence' => (string) $student->residencyType?->getAttribute('name'),
             'LIN' => (string) $student->lin,
             'Parent Tel.' => (string) $student->guardian?->phone,
         ], fn (string $value): bool => $value !== '');

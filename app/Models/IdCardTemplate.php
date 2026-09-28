@@ -6,6 +6,7 @@ use App\Concerns\Auditable;
 use Carbon\CarbonInterface;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
+use Illuminate\Support\Carbon;
 
 /**
  * A school's student ID card template: which way up the card is, its two
@@ -93,7 +94,7 @@ class IdCardTemplate extends Model
     public function expiresOn(CarbonInterface $issuedOn, ?AcademicYear $year): CarbonInterface
     {
         if ($this->validity === 'academic_year' && $year?->end_date) {
-            return $year->end_date;
+            return Carbon::parse($year->end_date);
         }
 
         return $issuedOn->copy()->addMonths(max(1, $this->validity_months ?: 12));

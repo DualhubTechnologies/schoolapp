@@ -48,7 +48,7 @@ return new class extends Migration
         });
 
         DB::table('id_card_templates')->where('orientation', 'portrait')->pluck('school_id')
-            ->each(fn ($schoolId) => DB::table('schools')->whereKey($schoolId)->update(['id_card_template' => 'portrait']));
+            ->each(fn ($schoolId) => DB::table('schools')->where('id', $schoolId)->update(['id_card_template' => 'portrait']));
 
         Schema::dropIfExists('id_card_templates');
     }

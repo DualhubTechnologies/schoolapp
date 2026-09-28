@@ -72,7 +72,7 @@ it('emails a 6-digit code to a new school administrator and holds the welcome em
     Notification::assertNotSentTo($user, WelcomeToSchoolHub::class);
 });
 
-it('confirms the email with the right code, then sends the welcome email and the sign-in page', function () {
+it('confirms the email with the right code and sends the sign-in page, holding the welcome until approval', function () {
     [$user, $code] = registerAndGetCode();
 
     Livewire::test(VerifyEmail::class)
@@ -90,7 +90,7 @@ it('confirms the email with the right code, then sends the welcome email and the
         ->and(session()->has(EmailVerificationCode::SESSION_KEY))->toBeFalse()
         ->and(auth()->check())->toBeFalse();
 
-    Notification::assertSentTo($user, WelcomeToSchoolHub::class);
+    Notification::assertNotSentTo($user, WelcomeToSchoolHub::class);
 });
 
 it('rejects a wrong code and stops guessing after five tries', function () {

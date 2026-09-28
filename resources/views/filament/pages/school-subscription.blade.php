@@ -12,13 +12,30 @@
         'expired' => ['Expired', 'sub-red'],
         'none' => ['No subscription', 'sub-red'],
         'suspended' => ['Suspended', 'sub-red'],
+        'pending' => ['Awaiting approval', 'sub-blue'],
+        'rejected' => ['Not approved', 'sub-red'],
     ][$st['state']];
     $locked = in_array($st['state'], \App\Services\Subscriptions\SubscriptionManager::LOCKED, true);
     $suggested = $this->suggestedPlanId();
 @endphp
 
 <x-filament-panels::page>
-    @if ($locked)
+    @if ($st['state'] === 'pending')
+        <div class="sub-alert sub-alert-amber">
+            <strong>Your school is waiting for SchoolHub's approval.</strong>
+            <div>We check every new school before opening it, usually the same day. We will email {{ auth()->user()->email }} as soon as it is approved; your free trial starts then.</div>
+        </div>
+    @elseif ($st['state'] === 'rejected')
+        <div class="sub-alert sub-alert-red">
+            <strong>SchoolHub could not approve this school's registration.</strong>
+            @if ($this->school->rejection_reason)
+                <div>Reason: {{ $this->school->rejection_reason }}</div>
+            @endif
+            @if ($pay['contact_phone'] || $pay['contact_email'])
+                <div>If you think this is a mistake, contact us on {{ collect([$pay['contact_phone'], $pay['contact_email']])->filter()->implode(' or ') }}.</div>
+            @endif
+        </div>
+    @elseif ($locked)
         <div class="sub-alert sub-alert-red">
             <strong>
                 @if ($st['state'] === 'suspended')
@@ -58,6 +75,7 @@
         </div>
     @endif
 
+    @unless (in_array($st['state'], ['pending', 'rejected'], true))
     <div class="sub-grid">
         <div class="sub-card">
             <div class="sub-label">Current plan</div>
@@ -94,6 +112,7 @@
             </div>
         @endforeach
     </div>
+    @endunless
 
     @if ($isManager)
         <div class="sub-section">

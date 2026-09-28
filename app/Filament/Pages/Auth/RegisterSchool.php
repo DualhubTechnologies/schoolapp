@@ -34,8 +34,10 @@ use Throwable;
 /**
  * A school signs itself up with only the essentials: its name, level and
  * town, and the person registering, who becomes its School Admin. The
- * free trial starts at once; everything else (logo, motto, address,
- * TIN...) is filled in later under Settings → School Profile.
+ * school then waits for the platform owner to approve it (Schools list
+ * in the admin panel), which starts its free trial; everything else
+ * (logo, motto, address, TIN...) is filled in later under Settings →
+ * School Profile.
  */
 class RegisterSchool extends Register
 {
@@ -181,7 +183,7 @@ class RegisterSchool extends Register
         if (EmailVerificationCode::send($user)) {
             FilamentNotification::make()
                 ->title('Your school account has been created')
-                ->body('We have emailed you a 6-digit code. Enter it to confirm your email, then sign in.')
+                ->body('We have emailed you a 6-digit code. Enter it to confirm your email. SchoolHub will then check and approve your school.')
                 ->success()
                 ->send();
         } else {
@@ -212,7 +214,8 @@ class RegisterSchool extends Register
                 'currency' => 'UGX',
                 'timezone' => 'Africa/Kampala',
                 'contact_person' => $data['name'],
-                'status' => 'active',
+                // Locked until the platform owner approves it (SubscriptionManager::approve).
+                'status' => 'pending',
                 // Which terms were accepted, when and by whom (config/legal.php).
                 'terms_version' => config('legal.terms_version'),
                 'terms_accepted_at' => now(),
@@ -220,7 +223,8 @@ class RegisterSchool extends Register
                 'terms_accepted_ip' => request()->ip(),
             ]);
 
-            // The trial must exist before the user: its plan sets the login limit.
+            // The trial must exist before the user: its plan sets the login
+            // limit. Approval re-dates it to start that day.
             SubscriptionManager::startTrial($school);
 
             $user = User::create([
@@ -235,7 +239,7 @@ class RegisterSchool extends Register
         });
 
         // The welcome email follows once the email address is confirmed
-        // (VerifyEmail). Let the platform owner(s) know a new school has joined.
+        // and the school is approved. Ask the platform owner(s) to approve it.
         $owners = User::role('Super Admin')->get();
 
         if ($owners->isNotEmpty()) {

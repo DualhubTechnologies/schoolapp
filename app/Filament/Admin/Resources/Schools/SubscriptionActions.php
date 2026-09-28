@@ -2,19 +2,24 @@
 
 namespace App\Filament\Admin\Resources\Schools;
 
+use App\Filament\Pages\Auth\VerifyEmail;
 use App\Models\Plan;
 use App\Models\School;
 use App\Models\Subscription;
 use App\Models\SubscriptionPayment;
+use App\Models\User;
+use App\Notifications\SchoolRejected;
 use App\Services\Subscriptions\SubscriptionManager;
 use Filament\Actions\Action;
 use Filament\Forms\Components\DatePicker;
 use Filament\Forms\Components\Select;
+use Filament\Forms\Components\Textarea;
 use Filament\Forms\Components\TextInput;
 use Filament\Notifications\Notification;
 use Filament\Schemas\Components\Grid;
 use Filament\Schemas\Components\Utilities\Get;
 use Filament\Schemas\Components\Utilities\Set;
+use Throwable;
 
 /**
  * The platform owner's subscription actions on a school, shared by the
@@ -25,7 +30,68 @@ class SubscriptionActions
     /** @return list<Action> */
     public static function all(): array
     {
-        return [static::renew(), static::activationCode(), static::changePlan(), static::extend(), static::suspend()];
+        return [static::approve(), static::reject(), static::renew(), static::activationCode(), static::changePlan(), static::extend(), static::suspend()];
+    }
+
+    /**
+     * Let in a school that registered itself. Its trial starts today and
+     * its administrator gets the welcome email (or gets it on confirming
+     * their email, if they have not yet).
+     */
+    public static function approve(): Action
+    {
+        return Action::make('approve')
+            ->label('Approve')
+            ->icon('heroicon-o-check-circle')
+            ->color('success')
+            ->visible(fn (School $record): bool => in_array($record->status, ['pending', 'rejected'], true))
+            ->requiresConfirmation()
+            ->modalHeading(fn (School $record) => "Approve {$record->name}?")
+            ->modalDescription(fn (School $record) => "Registered by {$record->contact_person}, {$record->phone}, {$record->email}. "
+                .'Approving opens SchoolHub to the school and starts its '.config('subscriptions.trial_days', 30).'-day free trial today.')
+            ->action(function (School $record): void {
+                SubscriptionManager::approve($record);
+
+                $record->users()
+                    ->whereNotNull('email_verified_at')
+                    ->get()
+                    ->filter(fn (User $user) => $user->hasRole('School Admin'))
+                    ->each(fn (User $user) => VerifyEmail::welcome($user));
+
+                Notification::make()->title("{$record->name} approved — its free trial has started")->success()->send();
+            });
+    }
+
+    /** Turn down a school that registered itself, telling its administrator why. */
+    public static function reject(): Action
+    {
+        return Action::make('reject')
+            ->label('Reject')
+            ->icon('heroicon-o-x-circle')
+            ->color('danger')
+            ->visible(fn (School $record): bool => $record->status === 'pending')
+            ->modalHeading(fn (School $record) => "Reject {$record->name}?")
+            ->modalDescription('The school stays locked out and its administrator is emailed the reason. You can still approve it later.')
+            ->schema([
+                Textarea::make('reason')
+                    ->label('Reason (sent to the school)')
+                    ->placeholder('e.g. We could not confirm this school exists.')
+                    ->maxLength(255)
+                    ->rows(3),
+            ])
+            ->action(function (School $record, array $data): void {
+                SubscriptionManager::reject($record, $data['reason'] ?? null);
+
+                try {
+                    $record->users()->get()
+                        ->filter(fn (User $user) => $user->hasRole('School Admin'))
+                        ->each(fn (User $user) => $user->notify(new SchoolRejected($record)));
+                } catch (Throwable $e) {
+                    report($e);
+                }
+
+                Notification::make()->title("{$record->name} rejected")->success()->send();
+            });
     }
 
     /** Record a payment and add the period it pays for. */
@@ -307,6 +373,7 @@ class SubscriptionActions
             ->label(fn (School $record) => $record->status === 'suspended' ? 'Reactivate' : 'Suspend')
             ->icon(fn (School $record) => $record->status === 'suspended' ? 'heroicon-o-play' : 'heroicon-o-pause')
             ->color(fn (School $record) => $record->status === 'suspended' ? 'success' : 'danger')
+            ->hidden(fn (School $record): bool => in_array($record->status, ['pending', 'rejected'], true))
             ->requiresConfirmation()
             ->modalDescription(fn (School $record) => $record->status === 'suspended'
                 ? 'The school can use SchoolHub again straight away.'
@@ -323,7 +390,7 @@ class SubscriptionActions
         return match ($state) {
             'active' => 'success',
             'trial' => 'info',
-            'grace' => 'warning',
+            'grace', 'pending' => 'warning',
             default => 'danger',
         };
     }
@@ -337,6 +404,8 @@ class SubscriptionActions
             'expired' => 'Expired',
             'none' => 'No plan',
             'suspended' => 'Suspended',
+            'pending' => 'Awaiting approval',
+            'rejected' => 'Rejected',
         ][$state] ?? $state;
     }
 }

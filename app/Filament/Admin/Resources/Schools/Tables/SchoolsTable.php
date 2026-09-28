@@ -103,10 +103,11 @@ class SchoolsTable
 
                 TextColumn::make('status')
                     ->badge()
+                    ->formatStateUsing(fn (?string $state): string => School::STATUSES[$state] ?? (string) $state)
                     ->color(fn (?string $state): string => match ($state) {
                         'active' => 'success',
-                        'suspended' => 'warning',
-                        'inactive' => 'danger',
+                        'suspended', 'pending' => 'warning',
+                        'inactive', 'rejected' => 'danger',
                         default => 'gray',
                     }),
 
@@ -141,13 +142,11 @@ class SchoolsTable
                     ->options(School::TYPES),
 
                 SelectFilter::make('status')
-                    ->options([
-                        'active' => 'Active',
-                        'suspended' => 'Suspended',
-                        'inactive' => 'Inactive',
-                    ]),
+                    ->options(School::STATUSES),
             ])
             ->recordActions([
+                SubscriptionActions::approve()->iconButton()->tooltip('Approve'),
+                SubscriptionActions::reject()->iconButton()->tooltip('Reject'),
                 SubscriptionActions::renew()->iconButton()->tooltip('Record payment'),
                 SubscriptionActions::activationCode()->iconButton()->tooltip('Generate activation code'),
                 ActionGroup::make([

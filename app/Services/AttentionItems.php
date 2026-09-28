@@ -198,7 +198,14 @@ class AttentionItems
                 DemoRequestResource::getUrl(panel: 'admin'));
         }
 
-        $states = School::where('status', '!=', 'rejected')->get()
+        $pending = School::where('status', 'pending')->oldest()->get();
+        if ($pending->isNotEmpty()) {
+            $items[] = static::item('schools-pending', 'warning', 'heroicon-o-shield-check',
+                $pending->count().' '.str('school')->plural($pending->count()).' awaiting your approval',
+                $pending->take(3)->pluck('name')->implode(', '), $schoolsUrl);
+        }
+
+        $states = School::whereNotIn('status', ['pending', 'rejected'])->get()
             ->map(fn (School $s) => SubscriptionManager::status($s) + ['school' => $s]);
 
         $grace = $states->where('state', 'grace');
@@ -226,7 +233,7 @@ class AttentionItems
         if ($newSchools > 0) {
             $items[] = static::item('schools-new', 'info', 'heroicon-o-building-office-2',
                 $newSchools.' new '.str('school')->plural($newSchools).' this week',
-                'Registered themselves and started a trial.', $schoolsUrl);
+                'Registered themselves on SchoolHub.', $schoolsUrl);
         }
 
         return $items;

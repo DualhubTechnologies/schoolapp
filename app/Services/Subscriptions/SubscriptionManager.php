@@ -171,6 +171,39 @@ class SubscriptionManager
 
     // ── Changes (platform owner) ──
 
+    /**
+     * Let a school that registered itself in. Its trial is re-dated to
+     * start today, so days spent waiting for approval are not lost.
+     */
+    public static function approve(School $school): void
+    {
+        DB::transaction(function () use ($school) {
+            $school->update([
+                'status' => 'active',
+                'approved_at' => now(),
+                'approved_by' => auth()->user()?->name,
+                'rejection_reason' => null,
+            ]);
+
+            $trial = $school->subscriptions()->where('cycle', 'trial')->where('is_cancelled', false)->first();
+
+            if (! $trial) {
+                static::startTrial($school);
+
+                return;
+            }
+
+            $days = (int) $trial->starts_on->diffInDays($trial->ends_on);
+            $trial->update(['starts_on' => today(), 'ends_on' => today()->addDays($days)]);
+        });
+    }
+
+    /** Turn down a school that registered itself; its records are kept. */
+    public static function reject(School $school, ?string $reason = null): void
+    {
+        $school->update(['status' => 'rejected', 'rejection_reason' => $reason]);
+    }
+
     public static function startTrial(School $school, ?Plan $plan = null): Subscription
     {
         $plan ??= Plan::where('is_trial', true)->where('is_active', true)->orderBy('sort_order')->firstOrFail();

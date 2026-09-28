@@ -151,7 +151,9 @@ class VerifyEmail extends SimplePage
 
         Notification::make()
             ->title('Email confirmed')
-            ->body('Thank you. Sign in with your email and password to set up your school.')
+            ->body($user->school?->status === 'pending'
+                ? 'Thank you. SchoolHub will now check and approve your school; we will email you as soon as it is ready.'
+                : 'Thank you. Sign in with your email and password to set up your school.')
             ->success()
             ->persistent()
             ->send();
@@ -236,9 +238,21 @@ class VerifyEmail extends SimplePage
 
     /**
      * The welcome email (trial dates, how to start) follows confirmation.
-     * A courtesy: a mail failure must not stop the sign-up.
+     * A school still awaiting approval gets it when it is approved instead.
      */
     protected function sendWelcome(User $user): void
+    {
+        if ($user->school?->status === 'pending') {
+            return;
+        }
+
+        static::welcome($user);
+    }
+
+    /**
+     * A courtesy: a mail failure must not stop the sign-up or the approval.
+     */
+    public static function welcome(User $user): void
     {
         $school = $user->school;
         $trialEndsOn = $school?->subscriptions()->latest('ends_on')->value('ends_on');

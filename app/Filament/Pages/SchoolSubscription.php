@@ -57,9 +57,11 @@ class SchoolSubscription extends Page
         return Modules::hasFullAccess(auth()->user()) && static::canAccess();
     }
 
+    /** Plans and payment are held back until SchoolHub has approved the school. */
     public function isManager(): bool
     {
-        return Modules::hasFullAccess(auth()->user());
+        return Modules::hasFullAccess(auth()->user())
+            && ! in_array($this->school->status, ['pending', 'rejected'], true);
     }
 
     public ?int $codeModalPlanId = null;

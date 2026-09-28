@@ -2,6 +2,7 @@
 
 namespace App\Http\Middleware;
 
+use App\Filament\Pages\AwaitingApproval;
 use App\Filament\Pages\SchoolSubscription;
 use App\Models\User;
 use App\Services\Subscriptions\SubscriptionManager;
@@ -10,10 +11,10 @@ use Illuminate\Http\Request;
 use Symfony\Component\HttpFoundation\Response;
 
 /**
- * A school whose subscription has run out (after the grace days), that
- * the platform owner has suspended, or that is still awaiting approval
- * can only see its Subscription page until that changes. Its data is
- * untouched.
+ * A school whose subscription has run out (after the grace days), or that
+ * the platform owner has suspended, can only see its Subscription page
+ * until that changes; one awaiting approval (or turned down) only its
+ * Awaiting approval page. Its data is untouched.
  */
 class EnsureSchoolSubscribed
 {
@@ -21,16 +22,21 @@ class EnsureSchoolSubscribed
     {
         $user = $request->user();
 
-        $route = $request->route()?->getName() ?? '';
-
-        $allowed = str_ends_with($route, '.auth.logout')
-            || $route === SchoolSubscription::getRouteName();
-
-        if ($allowed || ! static::locks($user)) {
+        if (! static::locks($user)) {
             return $next($request);
         }
 
-        return redirect()->to(SchoolSubscription::getUrl());
+        // A school awaiting approval has nothing to pay yet: it waits on
+        // its own page. Every other locked school goes to Subscription.
+        $page = AwaitingApproval::isWaiting($user) ? AwaitingApproval::class : SchoolSubscription::class;
+
+        $route = $request->route()?->getName() ?? '';
+
+        if (str_ends_with($route, '.auth.logout') || $route === $page::getRouteName()) {
+            return $next($request);
+        }
+
+        return redirect()->to($page::getUrl());
     }
 
     /**

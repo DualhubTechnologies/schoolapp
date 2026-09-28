@@ -37,7 +37,8 @@
         'pending' => 'amber',
         default => 'red', // grace, expired, none, suspended, rejected
     };
-    $canManageSub = $plan && \App\Support\Modules::hasFullAccess($user);
+    $canManageSub = $plan && \App\Support\Modules::hasFullAccess($user)
+        && ! in_array($planState, \App\Filament\Pages\AwaitingApproval::STATUSES, true);
     // No sidebar for a school held on its Subscription page (AppPanelProvider).
     $hasSidebar = filament()->hasNavigation();
 @endphp

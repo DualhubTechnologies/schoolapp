@@ -1,8 +1,10 @@
 <?php
 
 use App\Filament\Admin\Resources\Schools\Pages\ListSchools;
+use App\Filament\App\Pages\Dashboard;
 use App\Filament\App\Resources\Students\StudentResource;
 use App\Filament\Pages\Auth\RegisterSchool;
+use App\Filament\Pages\AwaitingApproval;
 use App\Filament\Pages\SchoolSubscription;
 use App\Models\School;
 use App\Models\User;
@@ -119,17 +121,19 @@ it('offers approval only to schools that are waiting or were turned down', funct
         ->assertTableActionHidden('reject', $school);
 });
 
-it('shows a school awaiting approval only its Subscription page, with no menu of links', function () {
+it('keeps a school awaiting approval on its own page, with no menu of links', function () {
     [$school, $admin] = pendingSchool();
 
-    $this->actingAs($admin)
-        ->get(StudentResource::getUrl(panel: 'app'))
-        ->assertRedirect(SchoolSubscription::getUrl(panel: 'app'));
+    foreach ([StudentResource::getUrl(panel: 'app'), SchoolSubscription::getUrl(panel: 'app')] as $url) {
+        $this->actingAs($admin)->get($url)->assertRedirect(AwaitingApproval::getUrl(panel: 'app'));
+    }
 
     $this->actingAs($admin)
-        ->get(SchoolSubscription::getUrl(panel: 'app'))
+        ->get(AwaitingApproval::getUrl(panel: 'app'))
         ->assertOk()
-        ->assertSee('Your school is waiting for SchoolHub')
+        ->assertSee('Thank you, Hope Primary is registered')
+        ->assertSee('What happens next')
+        ->assertSee('WhatsApp us')
         ->assertSee('Awaiting approval')
         ->assertDontSee('Toggle sidebar')
         ->assertDontSee('Enter Marks')
@@ -138,7 +142,33 @@ it('shows a school awaiting approval only its Subscription page, with no menu of
     SubscriptionManager::approve($school);
 
     $this->actingAs($admin->fresh())
+        ->get(AwaitingApproval::getUrl(panel: 'app'))
+        ->assertRedirect(Dashboard::getUrl(panel: 'app'));
+
+    $this->actingAs($admin->fresh())
         ->get(SchoolSubscription::getUrl(panel: 'app'))
         ->assertOk()
         ->assertSee('Toggle sidebar');
+});
+
+it('tells a turned-down school why, on the same page', function () {
+    [$school, $admin] = pendingSchool();
+    SubscriptionManager::reject($school, 'We could not confirm the school exists.');
+
+    $this->actingAs($admin)
+        ->get(AwaitingApproval::getUrl(panel: 'app'))
+        ->assertOk()
+        ->assertSee('We could not approve Hope Primary')
+        ->assertSee('We could not confirm the school exists.')
+        ->assertSee('Not approved');
+});
+
+it('still sends a school whose subscription ran out to Subscription', function () {
+    [$school, $admin] = pendingSchool();
+    SubscriptionManager::approve($school);
+    $school->update(['status' => 'suspended']);
+
+    $this->actingAs($admin->fresh())
+        ->get(StudentResource::getUrl(panel: 'app'))
+        ->assertRedirect(SchoolSubscription::getUrl(panel: 'app'));
 });

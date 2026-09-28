@@ -15,7 +15,9 @@ self.addEventListener('activate', (event) => {
 });
 
 self.addEventListener('fetch', (event) => {
-    if (event.request.mode !== 'navigate') {
+    // Only whole-page GET loads: everything else (forms, background
+    // requests) goes straight to the network untouched.
+    if (event.request.mode !== 'navigate' || event.request.method !== 'GET') {
         return;
     }
 

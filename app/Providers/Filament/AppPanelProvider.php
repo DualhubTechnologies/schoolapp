@@ -114,6 +114,11 @@ class AppPanelProvider extends PanelProvider
             ->sidebarCollapsibleOnDesktop()
             ->darkMode(false)
             ->breadcrumbs(false)
+            // Updating (503) and an expired sign-in (419) are not errors:
+            // public/js/schoolhub-mobile.js shows a banner or reloads instead
+            // of "Error while loading page".
+            ->hiddenErrorNotification(503)
+            ->hiddenErrorNotification(419)
             // Find a learner, receipt, staff member or parent from any page: Ctrl+K.
             ->globalSearchKeyBindings(['command+k', 'ctrl+k'])
             ->globalSearchFieldKeyBindingSuffix()

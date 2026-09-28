@@ -61,6 +61,11 @@ class AdminPanelProvider extends PanelProvider
             ->sidebarCollapsibleOnDesktop()
             ->darkMode(false)
             ->breadcrumbs(false)
+            // Updating (503) and an expired sign-in (419) are not errors:
+            // public/js/schoolhub-mobile.js shows a banner or reloads instead
+            // of "Error while loading page".
+            ->hiddenErrorNotification(503)
+            ->hiddenErrorNotification(419)
 
             // After saving a new or edited record, go back to its table.
             ->resourceCreatePageRedirect('index')
@@ -85,6 +90,8 @@ class AdminPanelProvider extends PanelProvider
                 PanelsRenderHook::HEAD_END,
                 fn () => '<link rel="stylesheet" href="'.asset('css/filament-custom.css').'?v='.filemtime(public_path('css/filament-custom.css')).'">'
                     .'<link rel="stylesheet" href="'.asset('css/dashboard.css').'?v='.filemtime(public_path('css/dashboard.css')).'">'
+                    // Calmer handling of expired sign-ins and dropped requests.
+                    .'<script src="'.asset('js/schoolhub-mobile.js').'?v='.filemtime(public_path('js/schoolhub-mobile.js')).'"></script>'
             )
             ->renderHook(
                 PanelsRenderHook::PAGE_START,

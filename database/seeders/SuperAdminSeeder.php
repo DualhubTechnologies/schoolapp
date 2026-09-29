@@ -35,8 +35,8 @@ class SuperAdminSeeder extends Seeder
             ]);
 
             if ($generated) {
-                $this->command?->warn("Platform owner {$email} created with password: {$password}");
-                $this->command?->warn('Write it down now: it is not shown again. Change it after signing in.');
+                $this->command->warn("Platform owner {$email} created with password: {$password}");
+                $this->command->warn('Write it down now: it is not shown again. Change it after signing in.');
             }
         }
 

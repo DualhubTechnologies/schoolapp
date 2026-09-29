@@ -5,6 +5,7 @@ namespace App\Providers;
 use App\Exceptions\PlanLimitReached;
 use App\Models\School;
 use App\Observers\SchoolObserver;
+use App\Support\ErrorRecorder;
 use App\Support\PasswordStrength;
 use App\Support\UndoDelete;
 use Carbon\CarbonImmutable;
@@ -35,7 +36,9 @@ class AppServiceProvider extends ServiceProvider
      */
     public function register(): void
     {
-        //
+        // One per request, so the error page can show the reference of the
+        // error recorded during that request.
+        $this->app->scoped(ErrorRecorder::class);
     }
 
     /**

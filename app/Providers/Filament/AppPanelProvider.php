@@ -5,6 +5,7 @@ namespace App\Providers\Filament;
 use App\Filament\Admin\Resources\ActivationCodes\ActivationCodeResource;
 use App\Filament\Admin\Resources\ActivityLogs\ActivityLogResource;
 use App\Filament\Admin\Resources\DemoRequests\DemoRequestResource;
+use App\Filament\Admin\Resources\ErrorReports\ErrorReportResource;
 use App\Filament\Admin\Resources\OnlineUsers\OnlineUserResource;
 use App\Filament\Admin\Resources\Plans\PlanResource;
 use App\Filament\Admin\Resources\Schools\SchoolResource;
@@ -22,6 +23,7 @@ use App\Filament\Pages\Auth\Login;
 use App\Filament\Pages\Auth\RegisterSchool;
 use App\Filament\Pages\Auth\ResetPassword;
 use App\Filament\Pages\Auth\VerifyEmail;
+use App\Filament\Support\ErrorNotices;
 use App\Filament\Support\Pages\RecordFormScope;
 use App\Filament\Widgets\StatsOverview;
 use App\Http\Controllers\AppInstallController;
@@ -62,7 +64,7 @@ class AppPanelProvider extends PanelProvider
 {
     public function panel(Panel $panel): Panel
     {
-        return $panel
+        return ErrorNotices::register($panel)
             ->default()
             ->id('app')
             ->path('/')                       // Serves at http://schoolapp.test
@@ -207,6 +209,7 @@ class AppPanelProvider extends PanelProvider
                 [ActivationCodeResource::class, 'Activation codes', Heroicon::OutlinedKey, 4],
                 [ActivityLogResource::class, 'Activity logs', Heroicon::OutlinedClipboardDocumentList, 5],
                 [OnlineUserResource::class, 'Online users', Heroicon::OutlinedSignal, 6],
+                [ErrorReportResource::class, 'Error reports', Heroicon::OutlinedExclamationTriangle, 7],
             ])->map(fn (array $item) => NavigationItem::make($item[1])
                 ->url(fn (): string => $item[0]::getUrl(panel: 'admin'))
                 ->icon($item[2])

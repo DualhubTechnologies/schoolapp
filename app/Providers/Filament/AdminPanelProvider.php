@@ -8,6 +8,7 @@ use App\Filament\App\Widgets\PlatformKpis;
 use App\Filament\App\Widgets\WelcomeBanner;
 use App\Filament\Pages\Auth\Login;
 use App\Filament\Pages\Auth\ResetPassword;
+use App\Filament\Support\ErrorNotices;
 use App\Filament\Support\Pages\RecordFormScope;
 use App\Filament\Widgets\StatsOverview;
 use Filafly\LogoTools\LogoToolsPlugin;
@@ -33,7 +34,7 @@ class AdminPanelProvider extends PanelProvider
 {
     public function panel(Panel $panel): Panel
     {
-        return $panel
+        return ErrorNotices::register($panel)
             ->id('admin')
             ->path('admin')                   // Super Admin only — gated in User::canAccessPanel()
             ->login(Login::class)

@@ -1,5 +1,6 @@
 <?php
 
+use App\Models\ErrorOccurrence;
 use Illuminate\Foundation\Inspiring;
 use Illuminate\Support\Facades\Artisan;
 use Illuminate\Support\Facades\Schedule;
@@ -15,4 +16,9 @@ Schedule::command('subscriptions:remind')
     ->dailyAt(config('subscriptions.reminder_time', '08:00'))
     ->timezone(config('subscriptions.reminder_timezone', 'Africa/Kampala'))
     ->withoutOverlapping()
+    ->onOneServer();
+
+// Error occurrences older than 60 days (the reports keep their counts).
+Schedule::command('model:prune', ['--model' => [ErrorOccurrence::class]])
+    ->dailyAt('02:30')
     ->onOneServer();

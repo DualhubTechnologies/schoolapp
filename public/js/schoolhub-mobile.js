@@ -79,6 +79,16 @@
         if (banner) banner.style.display = 'none';
     }
 
+    // A banner that stays until dismissed (one with a reference to note down).
+    function addBannerClose() {
+        const close = document.createElement('button');
+        close.type = 'button';
+        close.textContent = 'OK';
+        close.style.cssText = 'display:block;margin:.55rem auto 0;padding:.35rem 1.2rem;border:0;border-radius:.5rem;background:#9a3412;color:#fff;font:600 .82rem system-ui,sans-serif;cursor:pointer';
+        close.addEventListener('click', hideBanner);
+        banner.appendChild(close);
+    }
+
     const OFFLINE_TITLE = 'You are offline';
     const OFFLINE_TEXT = 'Check your data or Wi-Fi. Anything you save now will not go through until the connection is back.';
 
@@ -99,6 +109,17 @@
                 } else if (status === 503) {
                     preventDefault();
                     showBanner('dark', 'SchoolHub is being updated.', 'This takes about a minute. Please try again shortly — nothing you entered has been lost.', 12000);
+                } else if (status >= 500) {
+                    // A server error the SchoolHub team has already been
+                    // told about (App\Support\ErrorRecorder): show the
+                    // reference, so the user can quote it if it repeats.
+                    const reference = response.headers && response.headers.get('X-Error-Reference');
+
+                    if (reference) {
+                        preventDefault();
+                        showBanner('warn', 'Something went wrong on our side', 'It was not your fault, and the SchoolHub team has been told. Please try again. Reference: <b style="font-family:ui-monospace,monospace;letter-spacing:.04em">' + reference.replace(/[^A-Z0-9-]/g, '') + '</b>', 0);
+                        addBannerClose();
+                    }
                 }
             });
 

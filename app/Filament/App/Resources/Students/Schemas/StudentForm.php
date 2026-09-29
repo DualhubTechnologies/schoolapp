@@ -134,7 +134,10 @@ class StudentForm
                 ->image()
                 ->avatar()
                 ->imageEditor()
-                ->circleCropper()
+                // Square crop, saved in the photo's own format. The circle
+                // cropper saved a full-size PNG, often too big to upload, and
+                // a round picture does not fill the square frame on ID cards.
+                ->imageEditorAspectRatioOptions(['1:1'])
                 ->saveUploadedFileUsing(ImageShrinker::saveWithin(800, 800, square: true))
                 ->maxSize(10240)
                 ->disk(PrivateFiles::DISK)

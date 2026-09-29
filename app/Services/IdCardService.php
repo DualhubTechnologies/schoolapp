@@ -6,6 +6,7 @@ use App\Concerns\EmbedsImages;
 use App\Models\AcademicYear;
 use App\Models\IdCardTemplate;
 use App\Models\School;
+use App\Models\Staff;
 use App\Models\Student;
 use App\Support\PrivateFiles;
 use Carbon\CarbonInterface;
@@ -13,11 +14,11 @@ use Illuminate\Support\Carbon;
 use Illuminate\Support\Collection;
 
 /**
- * Builds student ID cards from the school's template: the front carries
- * the learner's own details, the back is the same for every card (school
- * contacts, rules, signature). Preview, the card-printer view and the PDF
- * all read from here, so they always agree on what a card shows and on
- * whether it is ready to print.
+ * Builds student and staff ID cards from the school's template: the front
+ * carries the holder's own details, the back is the same for every card
+ * (school contacts, rules, signature). Preview, the card-printer view and
+ * the PDF all read from here, so they always agree on what a card shows
+ * and on whether it is ready to print.
  */
 class IdCardService
 {
@@ -27,103 +28,136 @@ class IdCardService
     protected array $currentYears = [];
 
     /**
-     * What the front needs and cannot do without. Nothing here is required
-     * to create a student, so a card is often not printable the day a
-     * learner is admitted -- the preview says why, and printing stays
+     * What the front needs and cannot do without. None of it is required to
+     * create a student or staff record, so a card is often not printable
+     * the day someone joins -- the preview says why, and printing stays
      * blocked until it is.
      *
      * @return array<string, bool> label => present
      */
-    public function checklist(Student $student): array
+    public function checklist(Student|Staff $holder): array
     {
+        if ($holder instanceof Staff) {
+            return [
+                'photo' => filled($holder->photo),
+                'staff number' => filled($holder->staff_no),
+                'designation' => filled($holder->position),
+                'sex' => filled($holder->gender),
+                'phone' => filled($holder->phone),
+            ];
+        }
+
         return [
-            'photo' => filled($student->photo),
-            'student number' => filled($student->admission_no),
-            'class' => filled($student->school_class_id),
-            'date of birth' => filled($student->date_of_birth),
-            'sex' => filled($student->gender),
-            'parent / guardian phone' => filled($student->guardian?->phone),
+            'photo' => filled($holder->photo),
+            'student number' => filled($holder->admission_no),
+            'class' => filled($holder->school_class_id),
+            'date of birth' => filled($holder->date_of_birth),
+            'sex' => filled($holder->gender),
+            'parent / guardian phone' => filled($holder->guardian?->phone),
         ];
     }
 
     /** @return list<string> the still-missing labels, in checklist order */
-    public function missing(Student $student): array
+    public function missing(Student|Staff $holder): array
     {
-        return array_keys(array_filter($this->checklist($student), fn (bool $present): bool => ! $present));
+        return array_keys(array_filter($this->checklist($holder), fn (bool $present): bool => ! $present));
     }
 
-    public function isReady(Student $student): bool
+    public function isReady(Student|Staff $holder): bool
     {
-        return $this->missing($student) === [];
+        return $this->missing($holder) === [];
     }
 
     /**
-     * The card number: school code / year of printing / learner, e.g.
-     * "SH84914/26/00142". The same learner keeps the same number all
-     * year, so a reprinted card matches the one it replaces.
+     * The card number: school code / year of printing / holder, e.g.
+     * "SH84914/26/00142" for a learner and "SH84914/26/S0042" for staff.
+     * The same person keeps the same number all year, so a reprinted card
+     * matches the one it replaces.
      */
-    public function cardNumber(Student $student, CarbonInterface $issuedOn): string
+    public function cardNumber(Student|Staff $holder, CarbonInterface $issuedOn): string
     {
-        $code = $student->school?->unique_code ?: 'SCH'.$student->school_id;
+        $code = (string) $holder->school?->getAttribute('unique_code') ?: 'SCH'.$holder->school_id;
+        $serial = $holder instanceof Staff
+            ? 'S'.str_pad((string) $holder->id, 4, '0', STR_PAD_LEFT)
+            : str_pad((string) $holder->id, 5, '0', STR_PAD_LEFT);
 
-        return strtoupper($code).'/'.$issuedOn->format('y').'/'.str_pad((string) $student->id, 5, '0', STR_PAD_LEFT);
+        return strtoupper($code).'/'.$issuedOn->format('y').'/'.$serial;
     }
 
     /**
-     * The learner's details for the front, label => value, in print order.
-     * Optional details (house, residence, LIN) appear only when recorded.
+     * The holder's details for the front, label => value, in print order.
+     * Optional details appear only when recorded.
      *
      * @return array<string, string>
      */
-    public function frontFields(Student $student): array
+    public function frontFields(Student|Staff $holder): array
     {
-        $class = $student->schoolClass?->name;
+        $dateOfBirth = $holder->date_of_birth ? Carbon::parse($holder->date_of_birth)->format('d/m/Y') : '';
 
-        return array_filter([
-            'Student No.' => (string) $student->admission_no,
-            'Class' => $class ? $class.($student->section ? ' '.$student->section->name : '') : '',
-            'Sex' => Student::GENDERS[$student->gender] ?? '',
-            'Date of Birth' => $student->date_of_birth ? Carbon::parse($student->date_of_birth)->format('d/m/Y') : '',
-            'House' => (string) $student->house?->getAttribute('name'),
-            'Residence' => (string) $student->residencyType?->getAttribute('name'),
-            'LIN' => (string) $student->lin,
-            'Parent Tel.' => (string) $student->guardian?->phone,
-        ], fn (string $value): bool => $value !== '');
+        if ($holder instanceof Staff) {
+            $fields = [
+                'Staff No.' => (string) $holder->staff_no,
+                'Designation' => (string) $holder->position,
+                'Department' => (string) $holder->department,
+                'Sex' => Staff::GENDERS[$holder->gender] ?? '',
+                'Date of Birth' => $dateOfBirth,
+                'NIN' => (string) $holder->nin,
+                'Tel.' => (string) $holder->phone,
+            ];
+        } else {
+            $class = $holder->schoolClass?->name;
+            $fields = [
+                'Student No.' => (string) $holder->admission_no,
+                'Class' => $class ? $class.($holder->section ? ' '.$holder->section->name : '') : '',
+                'Sex' => Student::GENDERS[$holder->gender] ?? '',
+                'Date of Birth' => $dateOfBirth,
+                'House' => (string) $holder->house?->getAttribute('name'),
+                'Residence' => (string) $holder->residencyType?->getAttribute('name'),
+                'LIN' => (string) $holder->lin,
+                'Parent Tel.' => (string) $holder->guardian?->phone,
+            ];
+        }
+
+        return array_filter($fields, fn (string $value): bool => $value !== '');
     }
 
     /**
-     * Everything the front template reads for one learner.
+     * Everything the front template reads for one card holder.
      *
      * @return array<string, mixed>
      */
-    public function cardData(Student $student, IdCardTemplate $template, ?CarbonInterface $issuedOn = null): array
+    public function cardData(Student|Staff $holder, IdCardTemplate $template, ?CarbonInterface $issuedOn = null): array
     {
-        $student->loadMissing(['school', 'guardian', 'schoolClass', 'section', 'house', 'residencyType']);
+        $holder->loadMissing($holder instanceof Staff
+            ? ['school']
+            : ['school', 'guardian', 'schoolClass', 'section', 'house', 'residencyType']);
         $issuedOn ??= now();
 
         return [
-            'student' => $student,
-            'fields' => $this->frontFields($student),
-            'cardNumber' => $this->cardNumber($student, $issuedOn),
+            'holder' => $holder,
+            'name' => (string) $holder->name,
+            'role' => $holder instanceof Staff ? 'STAFF' : 'STUDENT',
+            'fields' => $this->frontFields($holder),
+            'cardNumber' => $this->cardNumber($holder, $issuedOn),
             'issuedOn' => $issuedOn,
-            'expiresOn' => $template->expiresOn($issuedOn, $this->currentYear($student->school_id)),
-            'photoPath' => PrivateFiles::dataUri($student->photo),
-            'missing' => $this->missing($student),
-            'ready' => $this->isReady($student),
+            'expiresOn' => $template->expiresOn($issuedOn, $this->currentYear($holder->school_id)),
+            'photoPath' => PrivateFiles::dataUri($holder->photo),
+            'missing' => $this->missing($holder),
+            'ready' => $this->isReady($holder),
         ];
     }
 
     /**
-     * Front data for a set of learners, in the order given.
+     * Front data for a set of card holders, in the order given.
      *
-     * @param  Collection<int, Student>  $students
+     * @param  Collection<int, Student>|Collection<int, Staff>  $holders
      * @return Collection<int, array<string, mixed>>
      */
-    public function cardsFor(Collection $students, IdCardTemplate $template): Collection
+    public function cardsFor(Collection $holders, IdCardTemplate $template): Collection
     {
         $issuedOn = now();
 
-        return $students->map(fn (Student $student) => $this->cardData($student, $template, $issuedOn));
+        return $holders->map(fn (Student|Staff $holder) => $this->cardData($holder, $template, $issuedOn));
     }
 
     /**

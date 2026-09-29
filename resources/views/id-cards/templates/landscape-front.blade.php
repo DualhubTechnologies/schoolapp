@@ -24,10 +24,10 @@
             <tr>
                 <td class="l-photo-cell">
                     @include('id-cards.templates._photo')
-                    <div class="l-role">STUDENT</div>
+                    <div class="l-role">{{ $card['role'] }}</div>
                 </td>
                 <td>
-                    <div class="idc-name">{{ Str::limit($card['student']->name, 40) }}</div>
+                    <div class="idc-name">{{ Str::limit($card['name'], 40) }}</div>
                     @include('id-cards.templates._fields')
                 </td>
             </tr>

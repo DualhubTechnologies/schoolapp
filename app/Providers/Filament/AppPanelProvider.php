@@ -169,10 +169,12 @@ class AppPanelProvider extends PanelProvider
                 Route::get('/students/{student}/profile', [StudentDocumentController::class, 'profile'])
                     ->whereNumber('student')
                     ->name('students.profile');
-                Route::get('/students/id-cards/print', [IdCardController::class, 'print'])
-                    ->name('students.id-cards.print');
-                Route::get('/students/id-cards/export', [IdCardController::class, 'export'])
-                    ->name('students.id-cards.export');
+                Route::get('/id-cards/{type}/print', [IdCardController::class, 'print'])
+                    ->whereIn('type', ['students', 'staff'])
+                    ->name('id-cards.print');
+                Route::get('/id-cards/{type}/export', [IdCardController::class, 'export'])
+                    ->whereIn('type', ['students', 'staff'])
+                    ->name('id-cards.export');
             })
 
             // --- Navigation ---
@@ -181,6 +183,7 @@ class AppPanelProvider extends PanelProvider
             // is rarely opened once the school is configured.
             ->navigationGroups([
                 NavigationGroup::make('Students'),
+                NavigationGroup::make('ID Cards'),
                 NavigationGroup::make('Fees'),
                 NavigationGroup::make('Transport'),
                 NavigationGroup::make('Finance'),

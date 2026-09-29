@@ -2,10 +2,11 @@
 
 namespace App\Filament\App\Resources\Students\Tables;
 
-use App\Filament\Pages\IdCards;
 use App\Filament\Pages\ReceivePayment;
 use App\Filament\Pages\StudentAccount;
+use App\Filament\Pages\StudentIdCards;
 use App\Models\Student;
+use App\Support\Modules;
 use App\Support\PrivateFiles;
 use Filament\Actions\Action;
 use Filament\Actions\ActionGroup;
@@ -183,14 +184,15 @@ class StudentsTable
                         ->url(fn ($record) => route('filament.app.students.profile', $record))
                         ->openUrlInNewTab(),
 
-                    // ── ID card preview -- opens the ID Cards page for this
+                    // ── ID card preview -- opens Student ID Cards for this
                     //    one learner rather than printing straight away, so
                     //    missing details are caught before anything is cut ──
                     Action::make('idCard')
                         ->label('ID card')
                         ->icon('heroicon-o-credit-card')
                         ->color('gray')
-                        ->url(fn ($record) => IdCards::getUrl(['student' => $record->getKey()]))
+                        ->visible(fn (): bool => Modules::allows('id_cards'))
+                        ->url(fn ($record) => StudentIdCards::getUrl(['id' => $record->getKey()]))
                         ->openUrlInNewTab(),
 
                     // ── Payments go through Receive Payment, which issues a
@@ -237,7 +239,8 @@ class StudentsTable
                         ->label('Print ID cards')
                         ->icon('heroicon-o-credit-card')
                         ->color('gray')
-                        ->action(fn (Collection $records) => redirect(IdCards::getUrl(['students' => $records->pluck('id')->implode(',')]))),
+                        ->visible(fn (): bool => Modules::allows('id_cards'))
+                        ->action(fn (Collection $records) => redirect(StudentIdCards::getUrl(['ids' => $records->pluck('id')->implode(',')]))),
                     DeleteBulkAction::make(),
                 ]),
             ])

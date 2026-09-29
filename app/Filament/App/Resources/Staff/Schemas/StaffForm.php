@@ -4,7 +4,10 @@ namespace App\Filament\App\Resources\Staff\Schemas;
 
 use App\Models\Staff;
 use App\Support\EmailCheck;
+use App\Support\ImageShrinker;
+use App\Support\PrivateFiles;
 use Filament\Forms\Components\DatePicker;
+use Filament\Forms\Components\FileUpload;
 use Filament\Forms\Components\Select;
 use Filament\Forms\Components\TextInput;
 use Filament\Forms\Components\Toggle;
@@ -28,6 +31,22 @@ class StaffForm
                     ->icon('heroicon-o-user')
                     ->columns(2)
                     ->schema([
+                        // Printed on the staff ID card. Shrunk on the server,
+                        // not in the browser: in-browser resizing hangs on
+                        // iPhones for large pictures.
+                        ImageShrinker::noBrowserResize(FileUpload::make('photo')
+                            ->label('Staff photo')
+                            ->image()
+                            ->avatar()
+                            ->imageEditor()
+                            ->circleCropper()
+                            ->saveUploadedFileUsing(ImageShrinker::saveWithin(800, 800, square: true))
+                            ->maxSize(10240)
+                            ->disk(PrivateFiles::DISK)
+                            ->visibility('private')
+                            ->directory('staff')
+                            ->alignCenter()
+                            ->columnSpanFull()),
                         TextInput::make('name')
                             ->label('Full name')
                             ->required()
@@ -36,6 +55,9 @@ class StaffForm
                         Select::make('gender')
                             ->options(Staff::GENDERS)
                             ->native(false),
+                        DatePicker::make('date_of_birth')
+                            ->label('Date of birth')
+                            ->maxDate(now()),
                         TextInput::make('nin')
                             ->label('National ID (NIN)')
                             ->placeholder('e.g. CM90012345ABCD')

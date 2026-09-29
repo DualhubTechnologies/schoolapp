@@ -1,11 +1,13 @@
 <?php
 
-use App\Filament\Pages\IdCards;
+use App\Filament\Pages\StaffIdCards;
+use App\Filament\Pages\StudentIdCards;
 use App\Models\AcademicYear;
 use App\Models\Guardian;
 use App\Models\IdCardTemplate;
 use App\Models\School;
 use App\Models\SchoolClass;
+use App\Models\Staff;
 use App\Models\Student;
 use App\Models\User;
 use App\Services\IdCardService;
@@ -40,7 +42,7 @@ beforeEach(function () {
 });
 
 it('previews a class and names what each incomplete card is missing', function () {
-    Livewire::test(IdCards::class)
+    Livewire::test(StudentIdCards::class)
         ->set('classId', $this->class->id)
         ->assertOk()
         ->assertSee('Nakato Grace')
@@ -72,7 +74,7 @@ it('uses the defaults until the school saves a template', function () {
 });
 
 it('saves the school\'s template and uses it from then on', function () {
-    Livewire::test(IdCards::class)
+    Livewire::test(StudentIdCards::class)
         ->callAction('template', data: [
             'orientation' => 'portrait',
             'primary_color' => '#0F6B3A',
@@ -93,7 +95,7 @@ it('saves the school\'s template and uses it from then on', function () {
         ->and($template->noteLines())->toBe(['Carry this card at all times.', 'Return it to the bursar if found.'])
         ->and($template->expiresOn(CarbonImmutable::parse('2026-09-28'), $this->year)->format('Y-m-d'))->toBe('2028-03-28');
 
-    $this->get(route('filament.app.students.id-cards.print', ['students' => $this->ready->id]))
+    $this->get(route('filament.app.id-cards.print', ['type' => 'students', 'ids' => $this->ready->id]))
         ->assertOk()
         ->assertSee('idc-portrait')
         ->assertSee('#0f6b3a')
@@ -101,19 +103,28 @@ it('saves the school\'s template and uses it from then on', function () {
 });
 
 it('rejects a colour that is not a hex code', function () {
-    Livewire::test(IdCards::class)
+    Livewire::test(StudentIdCards::class)
         ->callAction('template', data: ['orientation' => 'landscape', 'primary_color' => 'red', 'accent_color' => '#f2c230', 'validity' => 'academic_year'])
         ->assertHasActionErrors(['primary_color']);
 
     expect(IdCardTemplate::where('school_id', $this->school->id)->exists())->toBeFalse();
 });
 
-it('lets staff without settings access print but not edit the template', function () {
-    $this->actingAs(User::factory()->create(['school_id' => $this->school->id])->assignRole('Teacher'));
+it('lets staff with the ID cards module print but not edit the template', function () {
+    $this->actingAs(User::factory()->create(['school_id' => $this->school->id, 'modules' => ['id_cards']])->assignRole('Teacher'));
 
-    Livewire::test(IdCards::class)
+    Livewire::test(StudentIdCards::class)
         ->assertOk()
         ->assertActionHidden('template');
+});
+
+it('keeps ID cards from staff without the module', function () {
+    $this->actingAs(User::factory()->create(['school_id' => $this->school->id])->assignRole('Teacher'));
+
+    expect(StudentIdCards::canAccess())->toBeFalse()
+        ->and(StaffIdCards::canAccess())->toBeFalse();
+
+    $this->get(route('filament.app.id-cards.print', ['type' => 'students', 'ids' => $this->ready->id]))->assertForbidden();
 });
 
 it('keeps text readable on any colour', function () {
@@ -125,12 +136,12 @@ it('keeps text readable on any colour', function () {
 it('refuses to print or export a batch with a card missing details', function () {
     $ids = $this->ready->id.','.$this->incomplete->id;
 
-    $this->get(route('filament.app.students.id-cards.print', ['students' => $ids]))->assertStatus(422);
-    $this->get(route('filament.app.students.id-cards.export', ['students' => $ids]))->assertStatus(422);
+    $this->get(route('filament.app.id-cards.print', ['type' => 'students', 'ids' => $ids]))->assertStatus(422);
+    $this->get(route('filament.app.id-cards.export', ['type' => 'students', 'ids' => $ids]))->assertStatus(422);
 });
 
 it('prints the front with the card number and dates, and the shared back', function () {
-    $this->get(route('filament.app.students.id-cards.print', ['students' => $this->ready->id]))
+    $this->get(route('filament.app.id-cards.print', ['type' => 'students', 'ids' => $this->ready->id]))
         ->assertOk()
         ->assertSee('idc-landscape')
         ->assertSee('Nakato Grace')
@@ -144,7 +155,7 @@ it('prints the front with the card number and dates, and the shared back', funct
 it('exports complete cards as a PDF in either orientation', function (string $orientation) {
     IdCardTemplate::create(['school_id' => $this->school->id, 'orientation' => $orientation]);
 
-    $this->get(route('filament.app.students.id-cards.export', ['students' => $this->ready->id]))
+    $this->get(route('filament.app.id-cards.export', ['type' => 'students', 'ids' => $this->ready->id]))
         ->assertOk()
         ->assertHeader('content-type', 'application/pdf');
 })->with(['landscape', 'portrait']);
@@ -153,5 +164,57 @@ it('does not print another school\'s students', function () {
     $other = School::create(['name' => 'Other', 'slug' => 'other', 'email' => 'o@example.com', 'school_type' => 'primary']);
     $stranger = Student::create(['school_id' => $other->id, 'first_name' => 'Other', 'last_name' => 'Child', 'admission_no' => 'X-1', 'status' => 'active']);
 
-    $this->get(route('filament.app.students.id-cards.print', ['students' => $stranger->id]))->assertNotFound();
+    $this->get(route('filament.app.id-cards.print', ['type' => 'students', 'ids' => $stranger->id]))->assertNotFound();
+});
+
+it('builds a staff card with the staff member\'s details', function () {
+    $staff = Staff::create([
+        'school_id' => $this->school->id, 'name' => 'Musoma Emmanuel', 'staff_no' => '100003522', 'position' => 'Head Teacher',
+        'department' => 'Administration', 'gender' => 'male', 'date_of_birth' => '1986-12-25', 'phone' => '0776269977',
+        'photo' => 'staff/musoma.jpg', 'status' => 'active', 'category' => 'teaching', 'employment_date' => '2018-01-15',
+    ]);
+
+    $card = app(IdCardService::class)->cardData($staff, IdCardTemplate::forSchool($this->school->id), CarbonImmutable::parse('2026-09-28'));
+
+    expect($card['role'])->toBe('STAFF')
+        ->and($card['ready'])->toBeTrue()
+        ->and($card['fields'])->toBe([
+            'Staff No.' => '100003522',
+            'Designation' => 'Head Teacher',
+            'Department' => 'Administration',
+            'Sex' => 'Male',
+            'Date of Birth' => '25/12/1986',
+            'Tel.' => '0776269977',
+        ])
+        ->and($card['cardNumber'])->toBe('SH12345/26/S'.str_pad((string) $staff->id, 4, '0', STR_PAD_LEFT));
+
+    $this->get(route('filament.app.id-cards.print', ['type' => 'staff', 'ids' => $staff->id]))
+        ->assertOk()
+        ->assertSee('Musoma Emmanuel')
+        ->assertSee('STAFF')
+        ->assertSee('Head Teacher');
+
+    $this->get(route('filament.app.id-cards.export', ['type' => 'staff', 'ids' => $staff->id]))
+        ->assertOk()
+        ->assertHeader('content-type', 'application/pdf');
+});
+
+it('lists active staff and names what their cards are missing', function () {
+    Staff::create(['school_id' => $this->school->id, 'name' => 'Nabirye Ruth', 'staff_no' => 'ST-2', 'position' => 'Bursar', 'employment_date' => '2020-01-06', 'status' => 'active', 'category' => 'non_teaching']);
+    Staff::create(['school_id' => $this->school->id, 'name' => 'Former Teacher', 'staff_no' => 'ST-3', 'position' => 'Teacher', 'employment_date' => '2015-01-06', 'status' => 'terminated', 'category' => 'teaching']);
+
+    Livewire::test(StaffIdCards::class)
+        ->assertOk()
+        ->assertSee('Nabirye Ruth')
+        ->assertDontSee('Former Teacher')
+        ->assertSee('Missing: photo, sex, phone.')
+        ->set('category', 'teaching')
+        ->assertDontSee('Nabirye Ruth');
+});
+
+it('does not print another school\'s staff', function () {
+    $other = School::create(['name' => 'Other', 'slug' => 'other2', 'email' => 'o2@example.com', 'school_type' => 'primary']);
+    $stranger = Staff::create(['school_id' => $other->id, 'name' => 'Someone Else', 'staff_no' => 'OT-1', 'position' => 'Teacher', 'employment_date' => '2020-01-06', 'status' => 'active']);
+
+    $this->get(route('filament.app.id-cards.print', ['type' => 'staff', 'ids' => $stranger->id]))->assertNotFound();
 });

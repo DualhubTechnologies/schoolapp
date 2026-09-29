@@ -2,11 +2,14 @@
 
 namespace App\Filament\App\Resources\Staff\Tables;
 
+use App\Filament\Pages\StaffIdCards;
 use App\Models\Staff;
 use App\Models\User;
 use App\Support\EmailCheck;
+use App\Support\Modules;
 use App\Support\PasswordStrength;
 use Filament\Actions\Action;
+use Filament\Actions\BulkAction;
 use Filament\Actions\EditAction;
 use Filament\Forms\Components\Select;
 use Filament\Forms\Components\TextInput;
@@ -15,6 +18,7 @@ use Filament\Tables\Columns\IconColumn;
 use Filament\Tables\Columns\TextColumn;
 use Filament\Tables\Filters\SelectFilter;
 use Filament\Tables\Table;
+use Illuminate\Support\Collection;
 use Illuminate\Support\Facades\Hash;
 use Illuminate\Validation\Rules\Password;
 use Spatie\Permission\Models\Role;
@@ -158,7 +162,26 @@ class StaffTable
                             ->success()
                             ->send();
                     }),
+                // Opens Staff ID Cards for this one person, where missing
+                // details are caught before anything is printed.
+                Action::make('idCard')
+                    ->label('ID card')
+                    ->icon('heroicon-o-credit-card')
+                    ->color('gray')
+                    ->visible(fn (): bool => Modules::allows('id_cards'))
+                    ->url(fn (Staff $record): string => StaffIdCards::getUrl(['id' => $record->getKey()]))
+                    ->openUrlInNewTab(),
                 EditAction::make(),
+            ])
+            ->toolbarActions([
+                // ->url() does not receive the selected records reliably on a
+                // bulk action, so this redirects instead.
+                BulkAction::make('idCards')
+                    ->label('Print ID cards')
+                    ->icon('heroicon-o-credit-card')
+                    ->color('gray')
+                    ->visible(fn (): bool => Modules::allows('id_cards'))
+                    ->action(fn (Collection $records) => redirect(StaffIdCards::getUrl(['ids' => $records->pluck('id')->implode(',')]))),
             ])
             ->emptyStateHeading('No staff yet')
             ->emptyStateDescription('Add staff, then set each person\'s salary in their record.')

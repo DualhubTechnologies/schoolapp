@@ -29,6 +29,6 @@
 
     <div class="idc-wave l-wave-bottom"><img src="{{ $design['waveBottom'] }}" alt=""></div>
     <div class="idc-band l-back-foot">
-        <table class="idc-foot"><tr><td>Student Identity Card</td></tr></table>
+        <table class="idc-foot"><tr><td>Identity Card</td></tr></table>
     </div>
 </div>

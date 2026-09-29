@@ -16,7 +16,8 @@
     <div class="idc-wave p-wave-top"><img src="{{ $design['waveTop'] }}" alt=""></div>
 
     <div class="p-photo-wrap">@include('id-cards.templates._photo')</div>
-    <div class="idc-name">{{ Str::limit($card['student']->name, 38) }}</div>
+    <div class="p-role"><span>{{ $card['role'] }} ID CARD</span></div>
+    <div class="idc-name">{{ Str::limit($card['name'], 38) }}</div>
     <div class="p-fields">@include('id-cards.templates._fields')</div>
 
     <div class="idc-wave p-wave-bottom"><img src="{{ $design['waveBottom'] }}" alt=""></div>

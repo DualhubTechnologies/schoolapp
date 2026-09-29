@@ -20,6 +20,7 @@ class Modules
     public const LIST = [
         'students' => ['Students', 'Student records, guardians'],
         'promotion' => ['Year-end promotion', 'Promote, repeat or complete students'],
+        'id_cards' => ['Identity cards', 'Student and staff ID cards, and the card template'],
         'fees' => ['Fees', 'Receive payments, receipts, billing, balances, reminders, fee set-up'],
         'transport' => ['Transport', 'Van routes and fares, learners on the van, route lists'],
         'finance' => ['Finance & budget', 'Expenses, other income, budget, income vs expenditure'],
@@ -50,8 +51,10 @@ class Modules
         // Students
         'StudentResource' => 'students',
         'GuardianResource' => 'students',
-        'IdCards' => 'students',
         'PromoteStudents' => 'promotion',
+        // Identity cards
+        'StudentIdCards' => 'id_cards',
+        'StaffIdCards' => 'id_cards',
         // Fees
         'ReceivePayment' => 'fees',
         'PaymentResource' => 'fees',

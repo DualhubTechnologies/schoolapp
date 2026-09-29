@@ -16,6 +16,7 @@ class Staff extends Model
         'school_id',
         'user_id',
         'name',
+        'photo',
         'email',
         'nssf_number',
         'tin_number',
@@ -27,6 +28,7 @@ class Staff extends Model
         'employment_date',
         'status',
         'gender',
+        'date_of_birth',
         'nin',
         'employment_type',
         'category',
@@ -63,6 +65,7 @@ class Staff extends Model
     {
         return [
             'employment_date' => 'date',
+            'date_of_birth' => 'date',
             'pays_nssf' => 'boolean',
             'pays_lst' => 'boolean',
         ];

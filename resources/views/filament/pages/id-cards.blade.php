@@ -1,7 +1,7 @@
 @php
     $cards = $this->cards;
     $notReady = $this->notReadyCount();
-    $explicitSelection = $this->studentId || $this->studentIds !== '';
+    $explicitSelection = $this->hasExplicitSelection();
     $template = $this->cardTemplate;
     $design = $this->design();
     $shared = $this->shared();
@@ -13,34 +13,11 @@
         <div class="idc-filters">
             @if ($explicitSelection)
                 <div class="idc-single-note">
-                    {{ $this->studentId ? 'Showing the ID card for one student.' : 'Showing ID cards for the students you selected.' }}
-                    <button type="button" wire:click="clearStudent" class="idc-link">Browse by class instead</button>
+                    {{ $this->holderId ? 'Showing one ID card.' : 'Showing ID cards for the people you selected.' }}
+                    <button type="button" wire:click="clearSelection" class="idc-link">Show everyone instead</button>
                 </div>
             @else
-                <div class="idc-bar">
-                    <div>
-                        <label class="idc-field-label">Class</label>
-                        <x-filament::input.wrapper>
-                            <x-filament::input.select wire:model.live="classId">
-                                <option value="">Choose a class…</option>
-                                @foreach ($this->classOptions() as $id => $label)
-                                    <option value="{{ $id }}">{{ $label }}</option>
-                                @endforeach
-                            </x-filament::input.select>
-                        </x-filament::input.wrapper>
-                    </div>
-                    <div>
-                        <label class="idc-field-label">Stream</label>
-                        <x-filament::input.wrapper>
-                            <x-filament::input.select wire:model.live="sectionId" :disabled="! $this->classId">
-                                <option value="">Whole class</option>
-                                @foreach ($this->sectionOptions() as $id => $label)
-                                    <option value="{{ $id }}">{{ $label }}</option>
-                                @endforeach
-                            </x-filament::input.select>
-                        </x-filament::input.wrapper>
-                    </div>
-                </div>
+                @include($this->filtersView())
             @endif
         </div>
 
@@ -59,7 +36,7 @@
 
     @if ($cards->isEmpty())
         <div class="idc-empty">
-            {{ $explicitSelection ? 'No matching students found.' : 'Choose a class to preview its ID cards.' }}
+            {{ $explicitSelection ? 'No matching records found.' : $this->emptyHint() }}
         </div>
     @else
         <div class="idc-head">
@@ -89,13 +66,13 @@
         <div class="idc-layout idc-layout--{{ $orientation }}">
             <div class="idc-fronts">
                 @foreach ($cards as $card)
-                    <div class="idc-item {{ $card['ready'] ? '' : 'is-incomplete' }}" wire:key="idc-{{ $card['student']->id }}">
+                    <div class="idc-item {{ $card['ready'] ? '' : 'is-incomplete' }}" wire:key="idc-{{ $card['holder']->id }}">
                         <div class="idc-scale">@include('id-cards.templates.'.$orientation.'-front')</div>
 
                         @if (! $card['ready'])
                             <div class="idc-missing-note">
                                 Missing: {{ implode(', ', $card['missing']) }}.
-                                <a href="{{ \App\Filament\App\Resources\Students\StudentResource::getUrl('edit', ['record' => $card['student']]) }}" target="_blank" class="idc-link">Add it</a>
+                                <a href="{{ $this->editUrl($card['holder']) }}" target="_blank" class="idc-link">Add it</a>
                             </div>
                         @endif
                     </div>

@@ -82,11 +82,13 @@
     .idc-portrait .idc-crest img { width: 6.8mm; height: 6.8mm; margin: 0.8mm; }
     .idc-portrait .idc-school { font-size: 6pt; margin-top: 0.9mm; text-align: center; }
     .idc-portrait .idc-sub { font-size: 4.3pt; margin-top: 0.3mm; text-align: center; }
-    .idc-portrait .p-wave-top { height: 3.6mm; }
-    .idc-portrait .p-photo-wrap { height: 24.2mm; padding-top: 0.6mm; }
-    .idc-portrait .idc-photo { width: 22mm; height: 22mm; margin: 0 auto; border-radius: 2mm; }
+    .idc-portrait .p-wave-top { height: 3.2mm; }
+    .idc-portrait .p-photo-wrap { height: 22mm; padding-top: 0.4mm; }
+    .idc-portrait .idc-photo { width: 20.5mm; height: 20.5mm; margin: 0 auto; border-radius: 2mm; }
+    .idc-portrait .p-role { height: 3.6mm; padding-top: 0.6mm; font-size: 4.3pt; line-height: 1; text-align: center; overflow: hidden; }
+    .idc-portrait .p-role span { display: inline-block; background: {{ $accent }}; color: {{ $onAccent }}; font-size: 4.3pt; line-height: 1.2; font-weight: bold; letter-spacing: 0.6pt; padding: 0.3mm 2mm; border-radius: 1mm; }
     .idc-portrait .idc-initial { font-size: 20pt; padding-top: 5.5mm; }
-    .idc-portrait .idc-name { height: 6.4mm; padding: 0.4mm 2.5mm 0; font-size: 7.2pt; text-align: center; }
+    .idc-portrait .idc-name { height: 6mm; padding: 0.2mm 2.5mm 0; font-size: 7.2pt; text-align: center; }
     .idc-portrait .p-fields { height: 22.6mm; padding: 0 4mm; overflow: hidden; }
     .idc-portrait .idc-fields { font-size: 5.3pt; }
     .idc-portrait .idc-fields .f-label { width: 15mm; }

@@ -65,7 +65,7 @@ class ErrorOccurrence extends Model
     }
 
     /**
-     * @return Builder<static>
+     * @return Builder<self>
      */
     public function prunable(): Builder
     {

@@ -31,6 +31,7 @@ push to main ──► "tests" workflow ──(passes)──► "deploy" workflo
    php artisan migrate --force
    php artisan optimize:clear
    php artisan optimize
+   php artisan queue:restart            # workers reload the new code
    chown -R www-data:www-data storage bootstrap/cache public/build
    php artisan up                        # always, even if a step failed
    ```
@@ -75,22 +76,24 @@ stopwaitsecs=3600
 stdout_logfile=/var/www/schoolapp/storage/logs/queue.log
 ```
 
-**Scheduler**: subscription reminders (08:00 Kampala) and the nightly
-error-log clean-up. One cron entry for `www-data`:
+**Scheduler**: subscription reminders (08:00 Kampala), the nightly
+backup (01:30), the error-log clean-up (02:30) and a heartbeat every
+minute that System health watches. One cron entry for `www-data`:
 
 ```cron
 * * * * * cd /var/www/schoolapp && php artisan schedule:run >> /dev/null 2>&1
 ```
 
-> **Recommended addition to the deploy script:** `php artisan queue:restart`
-> after `php artisan optimize`, so the queue worker picks up the new code.
-> The current script does not do this.
+After setting these up, open **System health** (platform owner menu): it
+shows whether email, SMS, the queue worker, the scheduler and backups are
+really working, and what to change if not.
 
 ## Checks after a deploy
 
 1. Open the site and sign in.
 2. GitHub → Actions: both **tests** and **deploy** are green for the commit.
-3. Platform owner: open **Error reports**; no new errors since the deploy.
+3. Platform owner: open **Error reports** (no new errors since the deploy)
+   and **System health** (everything "Working").
 4. If the change touched emails, SMS or PDFs, try one of each.
 
 ## When a deploy goes wrong
@@ -128,12 +131,16 @@ A rollback does not undo migrations. If a migration must be reversed, run
 
 ## Backups
 
-The repository does not configure database backups. Production needs at
-least:
+`php artisan backup:run` runs nightly at 01:30 (needs the scheduler). It
+writes a compressed MySQL dump and an archive of `storage/app/private/uploads`
+(photos, signatures) and `storage/app/public` (logos) to
+`storage/app/backups`, keeps 14 days, and reports any failure to Error
+reports. The server needs `mysqldump`, `gzip` and `tar`.
 
-- a nightly MySQL dump kept off the server, for 30 days or more
-- a copy of `storage/app/private/uploads` (photos, signatures) and
-  `storage/app/public` (logos)
-- a restore tested on a spare server at least once a term
+Still needed on the server:
+
+- copy `storage/app/backups` **off the server** every day (e.g. rclone or
+  rsync to another machine or cloud storage), keeping 30 days or more
+- test a restore on a spare server at least once a term
 
 See [Operations](operations.md).

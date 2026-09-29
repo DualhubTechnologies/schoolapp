@@ -47,10 +47,10 @@ php artisan queue:work          # in another terminal: emails and imports
 - School app: `/` (sign in, or register a school at `/register`)
 - Platform owner: `/admin` (Super Admin only)
 
-The platform owner (Super Admin) account is created by `SuperAdminSeeder`.
-Its starting password is currently written in that file: change the
-password straight after seeding, and see [Security](docs/security.md)
-for the planned fix.
+The platform owner (Super Admin) account is created by `SuperAdminSeeder`
+from `SUPER_ADMIN_EMAIL` and `SUPER_ADMIN_PASSWORD` in `.env`. Leave the
+password empty and a random one is generated and shown once in the
+console. No password is kept in the code.
 
 ## Everyday commands
 

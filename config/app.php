@@ -123,4 +123,20 @@ return [
         'store' => env('APP_MAINTENANCE_STORE', 'database'),
     ],
 
+    /*
+    |--------------------------------------------------------------------------
+    | Platform owner
+    |--------------------------------------------------------------------------
+    |
+    | The Super Admin account created by `php artisan db:seed`
+    | (Database\Seeders\SuperAdminSeeder). Leave the password empty to have
+    | a random one generated and shown once. Never put a password in code.
+    |
+    */
+
+    'super_admin' => [
+        'email' => env('SUPER_ADMIN_EMAIL') ?: 'adrianmugizi8@gmail.com',
+        'password' => env('SUPER_ADMIN_PASSWORD'),
+    ],
+
 ];

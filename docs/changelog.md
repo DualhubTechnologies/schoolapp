@@ -6,6 +6,14 @@ folded into the change they belong to. Add an entry with every release.
 
 ## 29 September 2026
 
+- **System health** page for the platform owner: shows whether email, SMS,
+  the queue worker, the scheduler and backups are really working, and what
+  to change on the server if not.
+- **Nightly backups** (`backup:run`) of the database and uploaded files,
+  kept 14 days; failures are reported.
+- The platform owner's password is no longer kept in the code.
+- Deploys now restart the queue worker so it runs the new code.
+- Development documentation (README and `docs/`).
 - **Error management.** Friendly error pages for missing pages, no access,
   timed-out sessions, too many attempts, server errors and updates, with
   Back/Home buttons and a WhatsApp help link. Every unexpected error gets a

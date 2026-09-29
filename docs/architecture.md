@@ -143,7 +143,9 @@ Two layers:
 | Welcome, approval, registration emails | Queued notifications (`QUEUE_CONNECTION=database`) |
 | Student CSV import | `App\Jobs\ProcessStudentImport` on the queue |
 | Subscription reminders | `subscriptions:remind`, daily at 08:00 Kampala time |
+| Backup (database + files) | `backup:run`, daily at 01:30 Kampala time |
 | Error occurrence clean-up | `model:prune`, daily at 02:30 |
+| Scheduler heartbeat | Every minute; watched by System health |
 | Error alert email | Sent after the response (`defer`), not queued |
 
 ## Errors

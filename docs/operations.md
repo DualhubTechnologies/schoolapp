@@ -7,12 +7,13 @@ Commands run on the server in `/var/www/schoolapp` unless stated.
 
 | When | Check | Where |
 |---|---|---|
+| Daily | Background services working | **System health** (red count = problems) |
 | Daily | New or returning errors | Admin → **Error reports** (red count = open errors) |
 | Daily | Schools awaiting approval | Admin → **Schools** (status: Awaiting approval) |
 | Daily | New demo requests | Admin → **Demo requests** |
 | Weekly | Failed queue jobs | `php artisan queue:failed` |
 | Weekly | Disk space (photos grow) | `df -h`, `du -sh storage/app/private/uploads` |
-| Weekly | Backups ran and are off-server | Your backup tool |
+| Weekly | Backups ran and were copied off-server | **System health** → Backups, and your off-server copy |
 | Each term | Test a restore | Spare server |
 
 ## Errors reported by users
@@ -82,18 +83,21 @@ sudo supervisorctl restart schoolhub-queue
 
 ## Backups and restore
 
-Back up nightly, off the server:
+A backup runs every night at 01:30 (`php artisan backup:run`) into
+`storage/app/backups`, keeping 14 days:
 
-```bash
-mysqldump --single-transaction --routines schoolhub_db | gzip > schoolhub-$(date +%F).sql.gz
-tar czf uploads-$(date +%F).tgz storage/app/private/uploads storage/app/public
-```
+- `schoolhub-db-YYYY-MM-DD-HHMMSS.sql.gz`: the whole database
+- `schoolhub-files-YYYY-MM-DD-HHMMSS.tar.gz`: photos, signatures, logos
+
+Run one by hand at any time with `php artisan backup:run`. A failed backup
+appears in Error reports and on System health. Copy the folder off the
+server every day; a backup on the same disk is lost with the server.
 
 Restore on a spare server:
 
 ```bash
-gunzip < schoolhub-YYYY-MM-DD.sql.gz | mysql schoolhub_db
-tar xzf uploads-YYYY-MM-DD.tgz -C /var/www/schoolapp
+gunzip < schoolhub-db-YYYY-MM-DD-HHMMSS.sql.gz | mysql schoolhub_db
+tar xzf schoolhub-files-YYYY-MM-DD-HHMMSS.tar.gz -C /var/www/schoolapp/storage/app
 php artisan optimize:clear
 ```
 

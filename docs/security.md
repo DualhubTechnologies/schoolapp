@@ -79,10 +79,10 @@ the link can see that one child's page, so it is treated like a password.
 
 | Issue | Risk | Fix |
 |---|---|---|
-| The platform owner's starting password is written in `database/seeders/SuperAdminSeeder.php` and is in the Git history. | Anyone with access to the code knows the owner password if it was never changed. | Change the live password now. Then read the seeder password from an environment variable (or generate a random one and print it once), and treat the old value as exposed. |
+| An earlier version of `SuperAdminSeeder` had the owner's starting password in the code, and it remains in the Git history. | Anyone with access to the code knows that old password. | **Fixed in code** (the password now comes from `.env` or is generated). **Still to do:** change the live owner password if it was never changed. |
 | Scoping by school is done by hand in each query. | A missed filter could show one school's data to another. | Keep the tests; consider a shared scope or policy for new models; review every new query. |
-| No database backup is configured in the repository. | Data loss if the server fails. | Set up nightly off-server backups and test restores ([Operations](operations.md)). |
-| The queue worker is not restarted on deploy. | Workers can run old code after a deploy. | Add `php artisan queue:restart` to the deploy script. |
+| Backups stay on the same server. | A nightly backup now runs (`backup:run`), but it dies with the server. | Copy `storage/app/backups` off the server daily and test restores ([Operations](operations.md)). |
+| ~~The queue worker was not restarted on deploy.~~ | | **Fixed:** the deploy runs `php artisan queue:restart`. |
 
 ## Reporting a security problem
 

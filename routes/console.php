@@ -1,8 +1,10 @@
 <?php
 
 use App\Models\ErrorOccurrence;
+use App\Support\SystemHealth;
 use Illuminate\Foundation\Inspiring;
 use Illuminate\Support\Facades\Artisan;
+use Illuminate\Support\Facades\Cache;
 use Illuminate\Support\Facades\Schedule;
 
 Artisan::command('inspire', function () {
@@ -21,4 +23,17 @@ Schedule::command('subscriptions:remind')
 // Error occurrences older than 60 days (the reports keep their counts).
 Schedule::command('model:prune', ['--model' => [ErrorOccurrence::class]])
     ->dailyAt('02:30')
+    ->onOneServer();
+
+// Nightly backup of the database and uploaded files (storage/app/backups).
+Schedule::command('backup:run')
+    ->dailyAt('01:30')
+    ->timezone('Africa/Kampala')
+    ->withoutOverlapping()
+    ->onOneServer();
+
+// Proof the scheduler is running, shown on System health.
+Schedule::call(fn () => Cache::forever(SystemHealth::SCHEDULER_HEARTBEAT, now()->getTimestamp()))
+    ->everyMinute()
+    ->name('scheduler-heartbeat')
     ->onOneServer();

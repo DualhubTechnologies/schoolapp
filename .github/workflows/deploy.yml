@@ -94,4 +94,8 @@ jobs:
             php artisan optimize:clear
             php artisan optimize
 
+            # Queue workers keep the old code in memory: ask them to
+            # finish their current job and restart on the new code.
+            php artisan queue:restart
+
             chown -R www-data:www-data storage bootstrap/cache public/build

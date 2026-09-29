@@ -18,6 +18,8 @@ without it.
 | `APP_LOCALE` / `APP_FALLBACK_LOCALE` | `en` | |
 | `APP_MAINTENANCE_DRIVER` | `file` | `php artisan down` / `up`. |
 | `BCRYPT_ROUNDS` | `12` | Password hashing cost. |
+| `SUPER_ADMIN_EMAIL` | owner's email | Platform owner account created by `db:seed` (default `adrianmugizi8@gmail.com`). |
+| `SUPER_ADMIN_PASSWORD` | empty | Starting password for that account. Empty: a random one is generated and shown once. Only used when the account does not exist yet. |
 
 ## Database, sessions, cache, queue
 

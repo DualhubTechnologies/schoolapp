@@ -57,10 +57,13 @@ class SchoolClass extends Model
     /**
      * Subjects taught in this class, with whether each is compulsory
      * here and who teaches it.
+     *
+     * @return BelongsToMany<Subject, $this, ClassSubject>
      */
     public function subjects(): BelongsToMany
     {
         return $this->belongsToMany(Subject::class, 'class_subject')
+            ->using(ClassSubject::class)
             ->withPivot(['id', 'is_compulsory', 'teacher_id'])
             ->withTimestamps()
             ->orderBy('subjects.sort_order')

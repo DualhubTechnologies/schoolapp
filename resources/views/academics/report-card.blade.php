@@ -13,6 +13,7 @@
         'o_level' => "Learner's Achievement Report",
         'a_level' => "Student's Progress Report",
     ][$curriculum] ?? 'Progress Report';
+    $exam = $results['exam'] ?? null;
 @endphp
 
 @section('title', "Report cards — {$class->name} — {$term->label()}")
@@ -75,7 +76,7 @@
 
             <div class="rc-title">
                 <h2>{{ $title }}</h2>
-                <p>{{ $term->label() }}</p>
+                <p>{{ $term->label() }}{{ $exam ? ' — '.$exam->name : '' }}</p>
             </div>
 
             <div class="info">
@@ -98,7 +99,7 @@
                         @foreach ($assessments as $a)
                             <th class="c" title="{{ $a->name }}">{{ $a->shortLabel() }}<br><span style="font-weight:500">/{{ $a->max_score + 0 }}</span></th>
                         @endforeach
-                        <th class="c">Term %</th>
+                        <th class="c">{{ $exam ? '%' : 'Term %' }}</th>
                         <th class="c">Grade</th>
                         <th style="text-align:left">{{ $curriculum === 'o_level' ? 'Achievement' : 'Remark' }}</th>
                         <th class="c">Teacher</th>

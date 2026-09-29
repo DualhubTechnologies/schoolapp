@@ -18,6 +18,17 @@
                 </x-filament::input.wrapper>
             </div>
             <div>
+                <label class="cr-label">Results for</label>
+                <x-filament::input.wrapper>
+                    <x-filament::input.select wire:model.live="examId">
+                        <option value="">Whole term</option>
+                        @foreach ($this->examOptions() as $id => $label)
+                            <option value="{{ $id }}">{{ $label }} only</option>
+                        @endforeach
+                    </x-filament::input.select>
+                </x-filament::input.wrapper>
+            </div>
+            <div>
                 <label class="cr-label">Class</label>
                 <x-filament::input.wrapper>
                     <x-filament::input.select wire:model.live="classId">
@@ -158,7 +169,7 @@
 
     <style>
         .cr-bar { display: flex; flex-wrap: wrap; justify-content: space-between; align-items: flex-end; gap: 1rem; }
-        .cr-pickers { display: grid; grid-template-columns: repeat(3, minmax(10rem, 1fr)); gap: .9rem; flex: 1; max-width: 48rem; }
+        .cr-pickers { display: grid; grid-template-columns: repeat(auto-fit, minmax(10rem, 1fr)); gap: .9rem; flex: 1; max-width: 64rem; }
         .cr-actions { display: flex; gap: .5rem; flex-wrap: wrap; }
         .cr-label { display: block; font-size: .8rem; font-weight: 600; color: #374151; margin-bottom: .3rem; }
         .cr-empty { padding: 2.5rem 1rem; text-align: center; color: #64748b; border: 1px dashed #cbd5e1; border-radius: 12px; background: #fff; }

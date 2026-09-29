@@ -5,23 +5,37 @@ namespace App\Filament\Pages;
 use App\Models\Assessment;
 use App\Models\GradingScale;
 use App\Models\Mark;
+use App\Models\MarkSheet;
 use App\Models\SchoolClass;
 use App\Models\Section;
 use App\Models\Student;
 use App\Models\Subject;
 use App\Models\Term;
+use App\Services\Academics\MarkSheets;
 use App\Support\AcademicAccess;
 use BackedEnum;
+use Filament\Actions\Action;
+use Filament\Forms\Components\FileUpload;
+use Filament\Forms\Components\Textarea;
 use Filament\Notifications\Notification;
 use Filament\Pages\Page;
 use Filament\Support\Icons\Heroicon;
 use Illuminate\Support\Collection;
 use Illuminate\Support\Facades\DB;
 use Livewire\Attributes\Computed;
+use Livewire\Features\SupportFileUploads\TemporaryUploadedFile;
+use Symfony\Component\HttpFoundation\StreamedResponse;
 
 /**
  * Mark sheet: one exam, one class (or stream), one subject. Teachers see
- * only the class subjects assigned to them.
+ * only the class subjects assigned to them, submit the finished sheet, and
+ * the Director of Studies approves it (App\Models\MarkSheet). Sheets can
+ * also be downloaded to Excel, filled in offline and uploaded again.
+ *
+ * @property-read Assessment|null $assessment
+ * @property-read SchoolClass|null $schoolClass
+ * @property-read Subject|null $subject
+ * @property-read MarkSheet|null $markSheet
  */
 class EnterMarks extends Page
 {
@@ -110,6 +124,7 @@ class EnterMarks extends Page
 
     protected function resetSheet(): void
     {
+        unset($this->markSheet);
         $this->subjectId = null;
         $this->scores = $this->absent = $this->comments = [];
     }
@@ -243,21 +258,12 @@ class EnterMarks extends Page
             ->orderBy('name')
             ->get();
 
-        if ($subject->pivot->is_compulsory) {
-            return ['students' => $students, 'filtered' => false];
-        }
-
-        $takes = $students->filter(fn (Student $s) => $s->electives->contains('id', $subject->id)
-            || $s->combination?->subjects->contains('id', $subject->id)
-            || $s->combination?->subsidiary_subject_id === $subject->id);
-
-        return $takes->isEmpty()
-            ? ['students' => $students, 'filtered' => false]
-            : ['students' => $takes->values(), 'filtered' => true];
+        return MarkSheets::takers($students, $subject);
     }
 
     protected function loadSheet(): void
     {
+        unset($this->markSheet);
         $this->scores = $this->absent = $this->comments = [];
 
         if (! $this->assessmentId || ! $this->subjectId) {
@@ -296,25 +302,29 @@ class EnterMarks extends Page
         $this->persist(quiet: true);
     }
 
-    protected function persist(bool $quiet): void
+    /**
+     * Save the sheet. Returns false when nothing could be saved (closed
+     * sheet or invalid scores).
+     */
+    protected function persist(bool $quiet): bool
     {
         $assessment = $this->assessment;
         $subject = $this->subject;
 
         if (! $assessment || ! $subject) {
-            return;
+            return false;
         }
 
         abort_unless(AcademicAccess::canEnterMarksFor($subject->pivot->teacher_id, $this->classId), 403);
 
-        if ($assessment->isLocked()) {
+        if ($this->isReadOnly()) {
             if ($quiet) {
-                return;
+                return false;
             }
 
-            Notification::make()->title('This exam is locked')->body('Ask the administrator to reopen it.')->danger()->send();
+            Notification::make()->title($this->readOnlyReason() ?? 'This mark sheet is closed')->body('Ask the Director of Studies to reopen it.')->danger()->send();
 
-            return;
+            return false;
         }
 
         $max = (float) $assessment->max_score;
@@ -334,12 +344,12 @@ class EnterMarks extends Page
             $this->savedAt = null;
 
             if ($quiet) {
-                return;
+                return false;
             }
 
             Notification::make()->title(count($errors).' '.str('score')->plural(count($errors)).' need fixing')->body('Scores must be from 0 to '.(float) $max.'.')->danger()->send();
 
-            return;
+            return false;
         }
 
         $this->resetErrorBag();
@@ -373,6 +383,274 @@ class EnterMarks extends Page
         if (! $quiet) {
             Notification::make()->title("Marks saved ({$saved})")->success()->send();
         }
+
+        return true;
+    }
+
+    // ── Hand-in and approval ──
+
+    #[Computed]
+    public function markSheet(): ?MarkSheet
+    {
+        $assessment = $this->assessment;
+
+        return $assessment && $this->classId && $this->subject
+            ? MarkSheet::for($assessment, $this->classId, (int) $this->subjectId)
+            : null;
+    }
+
+    public function isReadOnly(): bool
+    {
+        $assessment = $this->assessment;
+        $sheet = $this->markSheet;
+
+        return ! $assessment || ! $sheet || ! MarkSheets::isEditable($assessment, $sheet);
+    }
+
+    public function readOnlyReason(): ?string
+    {
+        return match (true) {
+            (bool) $this->assessment?->isLocked() => 'This exam is locked',
+            (bool) $this->markSheet?->isApproved() => 'This mark sheet has been approved',
+            (bool) $this->markSheet?->isSubmitted() && ! AcademicAccess::manages() => 'This mark sheet has been submitted',
+            default => null,
+        };
+    }
+
+    /**
+     * Students on the sheet with neither a score nor "absent".
+     */
+    public function missingCount(): int
+    {
+        return $this->sheetStudents()['students']
+            ->filter(fn (Student $s) => trim((string) ($this->scores[$s->id] ?? '')) === '' && ! ($this->absent[$s->id] ?? false))
+            ->count();
+    }
+
+    /**
+     * The teacher hands the finished sheet to the Director of Studies.
+     * Saves first; after this only those who manage exams can change it.
+     */
+    public function submitSheetAction(): Action
+    {
+        return Action::make('submitSheet')
+            ->label('Submit for approval')
+            ->icon('heroicon-o-paper-airplane')
+            ->visible(fn (): bool => (bool) $this->markSheet?->isOpen() && ! $this->isReadOnly())
+            ->requiresConfirmation()
+            ->modalHeading('Submit this mark sheet?')
+            ->modalDescription(fn (): string => ($this->missingCount()
+                ? $this->missingCount().' '.str('student')->plural($this->missingCount()).' still '.($this->missingCount() === 1 ? 'has' : 'have').' no mark. Leave them blank only if they do not take this subject. '
+                : 'Every student has a mark. ')
+                .(AcademicAccess::manages() ? '' : 'You will not be able to change the marks after submitting, unless the Director of Studies returns the sheet.'))
+            ->modalSubmitActionLabel('Submit')
+            ->action(function (): void {
+                if (! $this->persist(quiet: true)) {
+                    Notification::make()->title('Fix the marks first')->body('Some scores are not valid.')->danger()->send();
+
+                    return;
+                }
+
+                $this->markSheet?->submit(auth()->user());
+                unset($this->markSheet);
+
+                Notification::make()->title('Mark sheet submitted')->body('The Director of Studies can now approve it.')->success()->send();
+            });
+    }
+
+    public function approveSheetAction(): Action
+    {
+        return Action::make('approveSheet')
+            ->label('Approve')
+            ->icon('heroicon-o-check-badge')
+            ->color('success')
+            ->visible(fn (): bool => AcademicAccess::manages() && ! $this->assessment?->isLocked() && ! $this->markSheet?->isApproved())
+            ->requiresConfirmation()
+            ->modalHeading('Approve this mark sheet?')
+            ->modalDescription('The marks become final: nobody can change them unless you reopen the sheet.')
+            ->action(function (): void {
+                if (! $this->persist(quiet: true)) {
+                    Notification::make()->title('Fix the marks first')->body('Some scores are not valid.')->danger()->send();
+
+                    return;
+                }
+
+                $this->markSheet?->approve(auth()->user());
+                unset($this->markSheet);
+
+                Notification::make()->title('Mark sheet approved')->success()->send();
+            });
+    }
+
+    /**
+     * Send a submitted sheet back to the teacher, or reopen an approved
+     * one, with a note of what to correct.
+     */
+    public function returnSheetAction(): Action
+    {
+        return Action::make('returnSheet')
+            ->label(fn (): string => $this->markSheet?->isApproved() ? 'Reopen' : 'Return to teacher')
+            ->icon('heroicon-o-arrow-uturn-left')
+            ->color('gray')
+            ->visible(fn (): bool => AcademicAccess::manages() && ! $this->assessment?->isLocked() && ! $this->markSheet?->isOpen())
+            ->modalHeading(fn (): string => $this->markSheet?->isApproved() ? 'Reopen this mark sheet?' : 'Return this mark sheet to the teacher?')
+            ->modalDescription('The teacher can change the marks again and submit the sheet once more.')
+            ->schema([
+                Textarea::make('note')
+                    ->label('What should be corrected?')
+                    ->placeholder('e.g. Check the scores for the last five students')
+                    ->maxLength(500)
+                    ->rows(3),
+            ])
+            ->action(function (array $data): void {
+                $this->markSheet?->returnToTeacher($data['note'] ?? null);
+                unset($this->markSheet);
+
+                Notification::make()->title('Mark sheet reopened for the teacher')->success()->send();
+            });
+    }
+
+    // ── Working offline: spreadsheet out, spreadsheet in ──
+
+    /**
+     * The sheet as a CSV file (opens in Excel): fill in the Score column,
+     * or write AB for absent, and upload it again.
+     */
+    public function downloadSheet(): ?StreamedResponse
+    {
+        $assessment = $this->assessment;
+        $subject = $this->subject;
+        $class = $this->schoolClass;
+
+        if (! $assessment || ! $subject || ! $class) {
+            return null;
+        }
+
+        $students = $this->sheetStudents()['students'];
+        $filename = str("{$class->name} {$subject->name} {$assessment->name}")->slug().'.csv';
+
+        return response()->streamDownload(function () use ($students, $assessment) {
+            $out = fopen('php://output', 'w');
+
+            if ($out === false) {
+                return;
+            }
+
+            fputcsv($out, ['Adm. No.', 'Name', 'Score (out of '.((float) $assessment->max_score).')', 'Comment']);
+
+            foreach ($students as $student) {
+                $id = $student->id;
+                fputcsv($out, [
+                    $student->admission_no,
+                    $student->name,
+                    ($this->absent[$id] ?? false) ? 'AB' : ($this->scores[$id] ?? ''),
+                    $this->comments[$id] ?? '',
+                ]);
+            }
+
+            fclose($out);
+        }, $filename, ['Content-Type' => 'text/csv']);
+    }
+
+    public function uploadSheetAction(): Action
+    {
+        return Action::make('uploadSheet')
+            ->label('Upload from Excel')
+            ->icon('heroicon-o-arrow-up-tray')
+            ->color('gray')
+            ->visible(fn (): bool => ! $this->isReadOnly())
+            ->modalHeading('Upload marks from a spreadsheet')
+            ->modalDescription('Use "Download sheet", fill in the Score column in Excel (AB for absent), save it as CSV and upload it here. Students are matched by admission number.')
+            ->schema([
+                FileUpload::make('file')
+                    ->label('CSV file')
+                    ->acceptedFileTypes(['text/csv', 'text/plain', 'application/vnd.ms-excel', 'application/csv'])
+                    ->maxSize(2048)
+                    ->storeFiles(false)
+                    ->required(),
+            ])
+            ->modalSubmitActionLabel('Upload and save')
+            ->action(function (array $data): void {
+                $file = $data['file'] ?? null;
+
+                if (! $file instanceof TemporaryUploadedFile) {
+                    return;
+                }
+
+                $this->importRows((string) file_get_contents($file->getRealPath()));
+            });
+    }
+
+    /**
+     * Put the scores from an uploaded CSV onto the sheet, then save it the
+     * same way the Save button does (so the same checks apply).
+     */
+    public function importRows(string $csv): void
+    {
+        $byAdmission = $this->sheetStudents()['students']
+            ->filter(fn (Student $s) => filled($s->admission_no))
+            ->keyBy(fn (Student $s) => mb_strtolower(trim((string) $s->admission_no)));
+
+        $lines = preg_split('/\r\n|\r|\n/', trim(preg_replace('/^\xEF\xBB\xBF/', '', $csv) ?? ''));
+        $matched = 0;
+        $unknown = [];
+
+        foreach (array_slice($lines ?: [], 1) as $line) {
+            $cells = str_getcsv($line);
+            $admission = mb_strtolower(trim((string) ($cells[0] ?? '')));
+
+            if ($admission === '') {
+                continue;
+            }
+
+            $student = $byAdmission->get($admission);
+
+            if (! $student) {
+                $unknown[] = trim((string) $cells[0]);
+
+                continue;
+            }
+
+            $score = trim((string) ($cells[2] ?? ''));
+            $isAbsent = in_array(mb_strtolower($score), ['ab', 'abs', 'absent'], true);
+
+            $this->absent[$student->id] = $isAbsent;
+            $this->scores[$student->id] = $isAbsent ? null : ($score === '' ? null : $score);
+
+            if (array_key_exists(3, $cells)) {
+                $this->comments[$student->id] = trim((string) $cells[3]) ?: null;
+            }
+
+            $matched++;
+        }
+
+        if ($matched === 0) {
+            Notification::make()->title('No students matched')->body('Check that the first column holds the admission numbers, as in the downloaded sheet.')->danger()->send();
+
+            return;
+        }
+
+        if ($this->persist(quiet: false) && $unknown) {
+            Notification::make()
+                ->title(count($unknown).' '.str('row')->plural(count($unknown)).' not on this sheet')
+                ->body('Not found: '.implode(', ', array_slice($unknown, 0, 10)).(count($unknown) > 10 ? '…' : ''))
+                ->warning()
+                ->persistent()
+                ->send();
+        }
+    }
+
+    public function printUrl(bool $blank = false): ?string
+    {
+        return $this->subject
+            ? route('filament.app.academics.mark-sheet', array_filter([
+                'assessment' => $this->assessmentId,
+                'class' => $this->classId,
+                'section' => $this->sectionId,
+                'subject' => $this->subjectId,
+                'blank' => $blank ? 1 : null,
+            ]))
+            : null;
     }
 
     /**

@@ -2,6 +2,7 @@
 
 namespace App\Http\Controllers;
 
+use App\Models\Assessment;
 use App\Models\FeeStructure;
 use App\Models\GradingScale;
 use App\Models\Promotion;
@@ -34,16 +35,20 @@ class ReportCardController extends Controller
             403,
         );
 
-        return $this->render($calculator, $class, $term, $request->integer('section') ?: null, $request->integer('student') ?: null, $request->boolean('fees'));
+        // One exam only (a mid-term report), if it is one of this term's.
+        $examId = $request->integer('exam') ?: null;
+        abort_if($examId && ! Assessment::where('term_id', $term->getKey())->whereKey($examId)->exists(), 404);
+
+        return $this->render($calculator, $class, $term, $request->integer('section') ?: null, $request->integer('student') ?: null, $request->boolean('fees'), $examId);
     }
 
     /**
      * The report cards themselves, once access has been checked: by the
      * school's staff above, or by the parent page for one learner.
      */
-    public function render(ResultsCalculator $calculator, SchoolClass $class, Term $term, ?int $section, ?int $student, bool $showFees): View
+    public function render(ResultsCalculator $calculator, SchoolClass $class, Term $term, ?int $section, ?int $student, bool $showFees, ?int $examId = null): View
     {
-        $results = $calculator->forClass($class, $term, $section);
+        $results = $calculator->forClass($class, $term, $section, $examId);
         $rows = $results['rows']->filter(fn ($r) => $r['average'] !== null);
 
         if ($student) {
@@ -69,7 +74,7 @@ class ReportCardController extends Controller
         $isFinalTerm = ! $nextTerm || $nextTerm->academic_year_id !== $term->academic_year_id;
         $promotions = app(PromotionService::class);
 
-        if ($isFinalTerm && ! $promotions->isFinalClass($class)) {
+        if ($isFinalTerm && ! $examId && ! $promotions->isFinalClass($class)) {
             $nextClass = $promotions->nextClass($class)?->name ?? 'the next class';
             $made = Promotion::where('academic_year_id', $term->academic_year_id)
                 ->whereIn('student_id', $rows->pluck('student.id'))

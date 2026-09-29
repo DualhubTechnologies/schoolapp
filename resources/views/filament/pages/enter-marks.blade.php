@@ -4,7 +4,8 @@
     $subject = $this->subject;
     $sheet = $this->sheetStudents();
     $students = $sheet['students'];
-    $locked = $assessment?->isLocked();
+    $locked = $subject ? $this->isReadOnly() : (bool) $assessment?->isLocked();
+    $markSheet = $subject ? $this->markSheet : null;
     $max = (float) ($assessment?->max_score ?? 100);
     $entered = collect($this->scores)->filter(fn ($v) => trim((string) $v) !== '')->count() + collect($this->absent)->filter()->count();
 @endphp
@@ -111,7 +112,7 @@
                     <div class="em-title">{{ $subject->name }} — {{ $class->name }}{{ $this->sectionId ? ' ' . $this->sectionOptions()[$this->sectionId] : '' }}</div>
                     <div class="em-muted">
                         {{ $assessment->name }} · marked out of <strong>{{ $max + 0 }}</strong> · {{ $entered }} of {{ $students->count() }} entered
-                        @if ($locked) · <span class="em-locked">Locked — read only</span> @endif
+                        @if ($locked) · <span class="em-locked">{{ $this->readOnlyReason() ?? 'Closed' }} — read only</span> @endif
                     </div>
                     @if (! $subject->pivot->is_compulsory && ! $sheet['filtered'])
                         <div class="em-note">Elective with no student choices recorded: everyone in the class is listed. Leave the score blank for students who don't take it.</div>
@@ -120,6 +121,32 @@
                 <label class="em-toggle">
                     <input type="checkbox" wire:model.live="showComments"> Comments
                 </label>
+            </div>
+
+            <div class="em-bar">
+                <div class="em-bar-status">
+                    @php($state = $markSheet?->status ?? 'open')
+                    <span @class(['em-pill', 'is-'.$state, 'is-returned' => $state === 'open' && $markSheet?->returned_note])>
+                        {{ $state === 'open' && $markSheet?->returned_note ? 'Returned for correction' : $markSheet?->statusLabel() }}
+                    </span>
+                    @if ($markSheet?->isSubmitted())
+                        <span class="em-muted">by {{ $markSheet->submitter?->name ?? 'a teacher' }}, {{ $markSheet->submitted_at?->format('j M, g:i a') }}</span>
+                    @elseif ($markSheet?->isApproved())
+                        <span class="em-muted">by {{ $markSheet->approver?->name ?? 'the Director of Studies' }}, {{ $markSheet->approved_at?->format('j M, g:i a') }}</span>
+                    @endif
+                    @if ($state === 'open' && $markSheet?->returned_note)
+                        <span class="em-returned">“{{ $markSheet->returned_note }}”</span>
+                    @endif
+                </div>
+                <div class="em-bar-actions">
+                    <x-filament::button type="button" size="sm" color="gray" icon="heroicon-o-arrow-down-tray" wire:click="downloadSheet">Download sheet</x-filament::button>
+                    {{ $this->uploadSheetAction }}
+                    <x-filament::button tag="a" size="sm" color="gray" icon="heroicon-o-printer" :href="$this->printUrl()" target="_blank">Print</x-filament::button>
+                    <x-filament::button tag="a" size="sm" color="gray" icon="heroicon-o-document" :href="$this->printUrl(blank: true)" target="_blank">Blank sheet</x-filament::button>
+                    {{ $this->returnSheetAction }}
+                    {{ $this->submitSheetAction }}
+                    {{ $this->approveSheetAction }}
+                </div>
             </div>
 
             <div class="em-scroll">
@@ -215,6 +242,14 @@
         .em-grade { display: inline-block; min-width: 2.2rem; font-weight: 700; color: #1a5fa8; }
         .em-comment { width: 100%; min-width: 12rem; padding: .3rem .5rem; border: 1px solid #e2e8f0; border-radius: 6px; font-size: .82rem; }
         .em-foot { display: flex; justify-content: space-between; align-items: center; gap: 1rem; padding: .85rem 1.25rem; border-top: 1px solid #eef2f7; background: #fafbfd; position: sticky; bottom: 0; }
+        .em-bar { display: flex; flex-wrap: wrap; justify-content: space-between; align-items: center; gap: .6rem 1rem; padding: .6rem 1.25rem; border-bottom: 1px solid #eef2f7; background: #fafbfd; }
+        .em-bar-status { display: flex; flex-wrap: wrap; align-items: center; gap: .5rem; }
+        .em-bar-actions { display: flex; flex-wrap: wrap; align-items: center; gap: .4rem; }
+        .em-pill { font-size: .72rem; font-weight: 700; padding: .15rem .6rem; border-radius: 999px; background: #e0ecfb; color: #1a5fa8; }
+        .em-pill.is-submitted { background: #fef3c7; color: #92400e; }
+        .em-pill.is-approved { background: #dcfce7; color: #166534; }
+        .em-pill.is-returned { background: #fee2e2; color: #991b1b; }
+        .em-returned { font-size: .8rem; color: #991b1b; }
         kbd { font-size: .72rem; padding: .05rem .35rem; border: 1px solid #cbd5e1; border-radius: 4px; background: #fff; }
     </style>
 </x-filament-panels::page>

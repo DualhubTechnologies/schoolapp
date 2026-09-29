@@ -9,6 +9,8 @@ use Illuminate\Database\Eloquent\Relations\HasMany;
 
 /**
  * A subject the school teaches, within one curriculum.
+ *
+ * @property-read ClassSubject $pivot when loaded through a class's subjects()
  */
 class Subject extends Model
 {

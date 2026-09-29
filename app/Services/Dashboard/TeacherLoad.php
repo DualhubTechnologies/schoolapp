@@ -8,6 +8,7 @@ use App\Models\SchoolClass;
 use App\Models\Student;
 use App\Models\Subject;
 use App\Models\Term;
+use App\Services\Academics\MarkSheets;
 use Illuminate\Support\Collection;
 
 /**
@@ -48,15 +49,7 @@ class TeacherLoad
                 $assessment = $assessments->first(fn (Assessment $a) => $a->appliesTo($class->curriculum()));
 
                 return $class->subjects->map(function (Subject $subject) use ($class, $students, $assessment) {
-                    $takes = $subject->pivot->is_compulsory
-                        ? $students
-                        : $students->filter(fn (Student $s) => $s->electives->contains('id', $subject->id)
-                            || $s->combination?->subjects->contains('id', $subject->id)
-                            || $s->combination?->subsidiary_subject_id === $subject->id);
-
-                    if ($takes->isEmpty()) {
-                        $takes = $students;
-                    }
+                    $takes = MarkSheets::takers($students, $subject)['students'];
 
                     $ids = $takes->pluck('id')->all();
 

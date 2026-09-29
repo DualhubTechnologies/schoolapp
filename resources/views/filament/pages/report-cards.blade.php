@@ -22,6 +22,17 @@
                 </x-filament::input.wrapper>
             </div>
             <div>
+                <label class="rc-label">Results for</label>
+                <x-filament::input.wrapper>
+                    <x-filament::input.select wire:model.live="examId">
+                        <option value="">Whole term</option>
+                        @foreach ($this->examOptions() as $id => $label)
+                            <option value="{{ $id }}">{{ $label }} only</option>
+                        @endforeach
+                    </x-filament::input.select>
+                </x-filament::input.wrapper>
+            </div>
+            <div>
                 <label class="rc-label">Class</label>
                 <x-filament::input.wrapper>
                     <x-filament::input.select wire:model.live="classId">
@@ -119,7 +130,7 @@
     @endif
 
     <style>
-        .rc-pickers { display: grid; grid-template-columns: repeat(3, minmax(10rem, 1fr)); gap: .9rem; max-width: 48rem; }
+        .rc-pickers { display: grid; grid-template-columns: repeat(auto-fit, minmax(10rem, 1fr)); gap: .9rem; max-width: 64rem; }
         .rc-label { display: block; font-size: .8rem; font-weight: 600; color: #374151; margin-bottom: .3rem; }
         .rc-empty { padding: 2.5rem 1rem; text-align: center; color: #64748b; border: 1px dashed #cbd5e1; border-radius: 12px; background: #fff; }
         .rc-card { background: #fff; border: 1px solid #e4e8f0; border-radius: 12px; overflow: hidden; }
@@ -139,7 +150,7 @@
         .rc-input { width: 100%; min-width: 11rem; font-size: .8rem; padding: .35rem .5rem; border: 1px solid #e2e8f0; border-radius: 6px; background: #fff; }
         .rc-input:disabled { background: #f8fafc; }
         .rc-headnote { padding: .9rem 1.2rem; border-bottom: 1px solid #eef2f7; background: #fafcff; }
-        .rc-headnote .rc-input { max-width: 48rem; }
+        .rc-headnote .rc-input { max-width: 64rem; }
         .rc-headtext { font-size: .85rem; color: #16233a; font-style: italic; }
         .rc-link { color: #1a5fa8; font-weight: 600; font-size: .8rem; }
     </style>

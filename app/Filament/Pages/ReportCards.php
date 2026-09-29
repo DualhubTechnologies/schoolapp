@@ -2,6 +2,7 @@
 
 namespace App\Filament\Pages;
 
+use App\Filament\Concerns\ChoosesExam;
 use App\Models\Mark;
 use App\Models\SchoolClass;
 use App\Models\Section;
@@ -26,11 +27,13 @@ use Livewire\Attributes\Computed;
  */
 class ReportCards extends Page
 {
+    use ChoosesExam;
+
     protected static string|BackedEnum|null $navigationIcon = Heroicon::OutlinedDocumentText;
 
     protected static string|\UnitEnum|null $navigationGroup = 'Exams & Results';
 
-    protected static ?int $navigationSort = 4;
+    protected static ?int $navigationSort = 5;
 
     protected static ?string $title = 'Report Cards';
 
@@ -133,6 +136,12 @@ class ReportCards extends Page
 
     public function updatedTermId(): void
     {
+        $this->examId = null;
+        $this->loadComments();
+    }
+
+    public function updatedExamId(): void
+    {
         $this->loadComments();
     }
 
@@ -198,7 +207,7 @@ class ReportCards extends Page
             return null;
         }
 
-        return $class && $term ? app(ResultsCalculator::class)->forClass($class, $term, $this->sectionId) : null;
+        return $class && $term ? app(ResultsCalculator::class)->forClass($class, $term, $this->sectionId, $this->chosenExamId()) : null;
     }
 
     protected function loadComments(): void
@@ -277,6 +286,7 @@ class ReportCards extends Page
             'class' => $this->classId,
             'section' => $this->sectionId,
             'student' => $studentId,
+            'exam' => $this->chosenExamId(),
             'fees' => $this->showFees ? 1 : 0,
             'print' => 1,
         ], fn ($v) => $v !== null));

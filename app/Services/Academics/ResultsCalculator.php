@@ -28,6 +28,9 @@ use Illuminate\Support\Collection;
  * assessments the student has a score in, each converted to a percentage
  * of its "out of" value. When none of those assessments carries a weight,
  * they count equally.
+ *
+ * Given one exam, the same is worked out from that exam alone (a
+ * mid-term report, say).
  */
 class ResultsCalculator
 {
@@ -41,7 +44,7 @@ class ResultsCalculator
      *     rows: Collection<int, array>, subject_stats: array<int, array>, summary: array
      * }
      */
-    public function forClass(SchoolClass $class, Term $term, ?int $sectionId = null): array
+    public function forClass(SchoolClass $class, Term $term, ?int $sectionId = null, ?int $assessmentId = null): array
     {
         $class->loadMissing(['classLevel', 'subjects']);
         $curriculum = $class->curriculum();
@@ -49,6 +52,8 @@ class ResultsCalculator
         $assessments = Assessment::where('school_id', $class->school_id)
             ->where('term_id', $term->getKey())
             ->where(fn ($q) => $q->whereNull('curriculum')->orWhere('curriculum', $curriculum))
+            // One exam only, e.g. a mid-term report.
+            ->when($assessmentId, fn ($q) => $q->whereKey($assessmentId))
             ->orderBy('sort_order')
             ->orderBy('held_on')
             ->orderBy('id')
@@ -94,6 +99,7 @@ class ResultsCalculator
             'term' => $term,
             'curriculum' => $curriculum,
             'assessments' => $assessments,
+            'exam' => $assessmentId ? $assessments->first() : null,
             'subjects' => $subjects,
             'rows' => $rows,
             'subject_stats' => $this->subjectStats($rows, $subjects),

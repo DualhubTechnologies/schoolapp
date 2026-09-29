@@ -35,6 +35,7 @@ class Assessment extends Model
         ];
     }
 
+    /** @return BelongsTo<Term, $this> */
     public function term(): BelongsTo
     {
         return $this->belongsTo(Term::class);
@@ -53,6 +54,32 @@ class Assessment extends Model
     public function appliesTo(?string $curriculum): bool
     {
         return $this->curriculum === null || $this->curriculum === $curriculum;
+    }
+
+    /**
+     * Where a term's exam weights do not add up to 100% for a curriculum,
+     * e.g. "Primary: 90%". Exams for every class count towards each
+     * curriculum. A curriculum whose exams all have no weight is fine:
+     * they then count equally.
+     *
+     * @param  array<string, string>  $curricula  key => label
+     * @return array<string, float> label => total weight
+     */
+    public static function weightProblems(int $schoolId, int $termId, array $curricula): array
+    {
+        $exams = static::where('school_id', $schoolId)->where('term_id', $termId)->get(['curriculum', 'weight']);
+        $problems = [];
+
+        foreach ($curricula as $key => $label) {
+            $applies = $exams->filter(fn (self $a) => $a->appliesTo($key));
+            $total = round((float) $applies->sum(fn (self $a) => (float) $a->weight), 2);
+
+            if ($applies->isNotEmpty() && $total > 0 && abs($total - 100) > 0.01) {
+                $problems[$label] = $total;
+            }
+        }
+
+        return $problems;
     }
 
     public function typeLabel(): string

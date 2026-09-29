@@ -78,6 +78,7 @@ class Modules
         // Exams & results
         'AssessmentResource' => 'exams',
         'EnterMarks' => 'exams',
+        'MarksProgress' => 'exams',
         'ClassResults' => 'exams',
         'ReportCards' => 'exams',
         // HR & payroll

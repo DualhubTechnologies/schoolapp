@@ -32,6 +32,7 @@ use App\Http\Controllers\FeeDocumentController;
 use App\Http\Controllers\FinanceDocumentController;
 use App\Http\Controllers\IdCardController;
 use App\Http\Controllers\LandingController;
+use App\Http\Controllers\MarkSheetController;
 use App\Http\Controllers\PayrollDocumentController;
 use App\Http\Controllers\ReportCardController;
 use App\Http\Controllers\StudentDocumentController;
@@ -160,6 +161,8 @@ class AppPanelProvider extends PanelProvider
                     ->name('payroll.schedule');
                 Route::get('/academics/report-cards', ReportCardController::class)
                     ->name('academics.report-cards');
+                Route::get('/academics/mark-sheet', MarkSheetController::class)
+                    ->name('academics.mark-sheet');
                 Route::get('/finance/vouchers/{entry}', [FinanceDocumentController::class, 'voucher'])
                     ->whereNumber('entry')
                     ->name('finance.voucher');

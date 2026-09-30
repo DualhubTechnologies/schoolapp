@@ -94,8 +94,8 @@
 
         .idc-top { display: flex; flex-wrap: wrap; justify-content: space-between; align-items: flex-end; gap: 1rem; margin-bottom: 1.25rem; }
         .idc-filters { flex: 1 1 22rem; max-width: 34rem; }
-        .idc-bar { display: flex; gap: .9rem; }
-        .idc-bar > div { flex: 1; }
+        .idc-bar { display: flex; flex-wrap: wrap; gap: .9rem; }
+        .idc-bar > div { flex: 1 1 10rem; }
         .idc-field-label { display: block; font-size: .8rem; font-weight: 600; color: #374151; margin-bottom: .3rem; }
         .idc-single-note { padding: .75rem 1rem; background: #eff6ff; border: 1px solid #bfdbfe; border-radius: 10px; color: #1e40af; font-size: .85rem; }
         .idc-template { display: flex; align-items: center; gap: .4rem; font-size: .82rem; color: #374151; }
@@ -107,7 +107,12 @@
         .idc-summary { font-size: .9rem; color: #16233a; }
         .idc-warn { color: #b91c1c; }
         .idc-ok { color: #15803d; }
-        .idc-actions { display: flex; gap: .5rem; }
+        .idc-actions { display: flex; flex-wrap: wrap; gap: .5rem; }
+        @media (max-width: 639px) {
+            .idc-top { align-items: stretch; }
+            .idc-filters { max-width: none; }
+            .idc-fronts { justify-content: center; }
+        }
 
         /*
          * Cards grow with the screen: --idc-zoom scales the real-size (mm)
@@ -116,6 +121,8 @@
          */
         .idc-layout { --idc-zoom: 1.05; --idc-card-w: 85.6mm; }
         .idc-layout--portrait { --idc-card-w: 54mm; }
+        @media (max-width: 639px) { .idc-layout--landscape { --idc-zoom: .85; } }
+        @media (max-width: 400px) { .idc-layout--landscape { --idc-zoom: .75; } .idc-item { padding: .7rem; } }
         @media (min-width: 1280px) { .idc-layout { --idc-zoom: 1.3; } }
         @media (min-width: 1600px) { .idc-layout { --idc-zoom: 1.5; } }
         @media (min-width: 2000px) { .idc-layout { --idc-zoom: 1.75; } }

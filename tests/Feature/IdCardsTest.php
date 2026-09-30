@@ -218,3 +218,20 @@ it('does not print another school\'s staff', function () {
 
     $this->get(route('filament.app.id-cards.print', ['type' => 'staff', 'ids' => $stranger->id]))->assertNotFound();
 });
+
+it('previews the template on a sample card as the choices change', function () {
+    Livewire::test(StudentIdCards::class)
+        ->mountAction('template')
+        ->fillForm(['orientation' => 'portrait', 'primary_color' => '#7a1f2b'])
+        ->assertHasNoFormErrors();
+
+    $draft = new IdCardTemplate(['orientation' => 'portrait', 'primary_color' => '#7a1f2b', 'accent_color' => '#c8a24a', 'validity' => 'academic_year']);
+    $html = view('filament.pages.id-cards.template-preview', ['sample' => app(IdCardService::class)->sample($draft)])->render();
+
+    expect($html)->toContain('Mugizi Adrian')
+        ->toContain('Sample Secondary School')
+        ->toContain('idc-portrait')
+        ->toContain('#7a1f2b')
+        ->not->toContain('Hope Primary')
+        ->and(IdCardTemplate::where('school_id', $this->school->id)->exists())->toBeFalse();
+});

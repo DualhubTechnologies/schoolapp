@@ -17,6 +17,7 @@ use Filament\Notifications\Notification;
 use Filament\Pages\Page;
 use Filament\Schemas\Components\Grid;
 use Filament\Schemas\Components\Utilities\Get;
+use Filament\Schemas\Components\View;
 use Illuminate\Support\Collection;
 use Livewire\Attributes\Computed;
 
@@ -189,6 +190,26 @@ abstract class IdCardsPage extends Page
         return $school ? app(IdCardService::class)->schoolData($school, $this->cardTemplate) : null;
     }
 
+    /**
+     * The sample card in the Template window, drawn from the choices as
+     * they stand in the form (not yet saved).
+     *
+     * @return array<string, mixed>
+     */
+    protected function templatePreview(Get $get): array
+    {
+        $draft = new IdCardTemplate([
+            'orientation' => $get('orientation') ?: IdCardTemplate::DEFAULTS['orientation'],
+            'primary_color' => IdCardTemplate::hex($get('primary_color'), IdCardTemplate::DEFAULTS['primary_color']),
+            'accent_color' => IdCardTemplate::hex($get('accent_color'), IdCardTemplate::DEFAULTS['accent_color']),
+            'validity' => $get('validity') ?: IdCardTemplate::DEFAULTS['validity'],
+            'validity_months' => (int) $get('validity_months') ?: 12,
+            'back_notes' => $get('back_notes'),
+        ]);
+
+        return app(IdCardService::class)->sample($draft, $this->holderType() === 'staff');
+    }
+
     /** @return array<string, string> */
     public function design(): array
     {
@@ -209,26 +230,32 @@ abstract class IdCardsPage extends Page
                 ->modalHeading('ID card template')
                 ->modalDescription('How your school\'s student and staff ID cards look. Saved for the school: every preview, print and export uses it until you change it.')
                 ->modalSubmitActionLabel('Save template')
+                ->modalWidth('4xl')
                 ->fillForm(fn (): array => [
                     ...IdCardTemplate::DEFAULTS,
                     ...$this->cardTemplate->only(['orientation', 'primary_color', 'accent_color', 'validity', 'validity_months', 'back_notes']),
                     'back_notes' => $this->cardTemplate->back_notes ?? IdCardTemplate::DEFAULT_BACK_NOTES,
                 ])
                 ->schema([
+                    View::make('filament.pages.id-cards.template-preview')
+                        ->viewData(fn (Get $get): array => ['sample' => $this->templatePreview($get)]),
                     ToggleButtons::make('orientation')
                         ->options(IdCardTemplate::ORIENTATIONS)
                         ->icons(['landscape' => 'heroicon-o-rectangle-group', 'portrait' => 'heroicon-o-device-phone-mobile'])
                         ->inline()
+                        ->live()
                         ->required(),
                     Grid::make(2)->schema([
                         ColorPicker::make('primary_color')
                             ->label('Main colour')
                             ->helperText('Header, footer and name.')
+                            ->live(debounce: 300)
                             ->regex('/^#[0-9a-fA-F]{6}$/')
                             ->required(),
                         ColorPicker::make('accent_color')
                             ->label('Accent colour')
                             ->helperText('Photo frame and trim.')
+                            ->live(debounce: 300)
                             ->regex('/^#[0-9a-fA-F]{6}$/')
                             ->required(),
                     ]),
@@ -244,6 +271,7 @@ abstract class IdCardsPage extends Page
                             ->numeric()
                             ->minValue(1)
                             ->maxValue(60)
+                            ->live(debounce: 500)
                             ->visible(fn (Get $get): bool => $get('validity') === 'months')
                             ->required(fn (Get $get): bool => $get('validity') === 'months'),
                     ]),
@@ -251,6 +279,7 @@ abstract class IdCardsPage extends Page
                         ->label('Rules on the back')
                         ->helperText('One rule per line; up to five are printed. The back is the same on every card.')
                         ->rows(4)
+                        ->live(debounce: 500)
                         ->maxLength(600),
                 ])
                 ->action(function (array $data): void {

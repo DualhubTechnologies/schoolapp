@@ -6,6 +6,17 @@ folded into the change they belong to. Add an entry with every release.
 
 ## 30 September 2026
 
+- **ID card template preview.** The Template window shows a sample card
+  (Mugizi Adrian at Sample Secondary School), front and back, redrawn
+  as the orientation, colours, validity and rules change, before
+  anything is saved.
+- **ID cards print one card per page.** The back of each card was pushed
+  down by the on-screen spacing and spilt onto an extra page; front and
+  back now each fill exactly one CR80 page, with no blank page at the
+  end.
+- ID Cards page: cards grow on large screens with the back beside the
+  fronts, and shrink to fit on phones.
+
 - **Report card template.** Each school sets how its report cards look,
   once, from the Template button on Report Cards: Classic, Modern or
   Compact design, main and accent colours, page border, lettering, its own

@@ -2,6 +2,7 @@
 
 namespace App\Filament\App\Resources\Terms\Tables;
 
+use App\Support\OwnSchool;
 use Filament\Actions\BulkActionGroup;
 use Filament\Actions\DeleteBulkAction;
 use Filament\Actions\EditAction;
@@ -9,6 +10,7 @@ use Filament\Tables\Columns\IconColumn;
 use Filament\Tables\Columns\TextColumn;
 use Filament\Tables\Filters\SelectFilter;
 use Filament\Tables\Table;
+use Illuminate\Database\Eloquent\Builder;
 
 class TermsTable
 {
@@ -63,7 +65,7 @@ class TermsTable
             ->filters([
                 SelectFilter::make('academic_year_id')
                     ->label('Academic year')
-                    ->relationship('academicYear', 'name')
+                    ->relationship('academicYear', 'name', fn (Builder $query) => OwnSchool::scope($query))
                     ->preload(),
             ])
             ->recordActions([

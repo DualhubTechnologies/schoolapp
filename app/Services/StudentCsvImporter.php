@@ -3,12 +3,14 @@
 namespace App\Services;
 
 use App\Models\Guardian;
+use App\Models\ResidencyType;
 use App\Models\School;
 use App\Models\SchoolClass;
 use App\Models\Section;
 use App\Models\Student;
 use App\Models\StudentImport;
 use App\Services\Subscriptions\SubscriptionManager;
+use App\Support\ImportDate;
 use App\Support\SchoolType;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Log;
@@ -43,6 +45,7 @@ class StudentCsvImporter
         'admission_no',
         'class',
         'section',
+        'residency',
         'gender',
         'date_of_birth',
         'admission_date',
@@ -81,6 +84,12 @@ class StudentCsvImporter
 
     /** @var array<string, int> "classId:UPPER SECTION" => id */
     protected array $sectionCache = [];
+
+    /** @var array<string, int> upper-cased residency name ("DAY", "BOARDING") => id */
+    protected array $residencyCache = [];
+
+    /** @var list<string> the school's residency names as it wrote them, for messages */
+    protected array $residencyNames = [];
 
     /** @var array<string, string> upper-cased admission number => "Name, Class" of the student who has it */
     protected array $existingAdmissionNos = [];
@@ -124,6 +133,8 @@ class StudentCsvImporter
             'errors' => [['row' => 0, 'field' => $field, 'message' => $message]],
             'preview' => [],
             'unknown_columns' => [],
+            'plan_room' => null,
+            'plan' => null,
         ];
     }
 
@@ -215,7 +226,41 @@ class StudentCsvImporter
             'preview' => $preview,
             'unknown_columns' => $unknown,
             // How many more active students the school's plan allows (null = no limit).
-            'plan_room' => SubscriptionManager::roomForStudents($this->schoolId),
+            'plan_room' => $room = SubscriptionManager::roomForStudents($this->schoolId),
+            'plan' => $this->planCheck($validRows, $room),
+        ];
+    }
+
+    /**
+     * When the new students would take the school past its plan: the
+     * plan, where the school stands, and the plans that would fit, so the
+     * school can move up or trim the file. Null when the file fits.
+     *
+     * @return array{name: string, limit: int, active: int, needed: int, over_by: int, fitting: list<array{name: string, max_students: ?int, price_per_term: float}>}|null
+     */
+    protected function planCheck(int $newStudents, ?int $room): ?array
+    {
+        if ($room === null || $newStudents <= $room) {
+            return null;
+        }
+
+        $plan = SubscriptionManager::current($this->schoolId)?->plan;
+        $active = SubscriptionManager::studentCount($this->schoolId);
+        $needed = $active + $newStudents;
+
+        $fitting = [];
+
+        foreach (SubscriptionManager::plansFitting($this->schoolId, $needed) as $fit) {
+            $fitting[] = ['name' => (string) $fit->name, 'max_students' => $fit->max_students, 'price_per_term' => (float) $fit->price_per_term];
+        }
+
+        return [
+            'name' => (string) ($plan->name ?? 'current'),
+            'limit' => (int) ($plan->max_students ?? 0),
+            'active' => $active,
+            'needed' => $needed,
+            'over_by' => $newStudents - $room,
+            'fitting' => $fitting,
         ];
     }
 
@@ -354,16 +399,24 @@ class StudentCsvImporter
             $fail('section', "Section '{$section}' not found under class '{$class}'.");
         }
 
+        $residency = $data['residency'] ?? '';
+
+        if ($residency !== '' && ! isset($this->residencyCache[$this->key($residency)])) {
+            $fail('residency', $this->residencyCache === []
+                ? "Residency '{$residency}' is not set up. Add Day / Boarding under Residency types first, or leave the column blank."
+                : "Residency '{$residency}' not found. Use one of: ".implode(', ', $this->residencyNames).'.');
+        }
+
         if (($data['gender'] ?? '') !== '' && ! in_array(strtolower($data['gender']), ['male', 'female'], true)) {
             $fail('gender', "Gender must be 'Male' or 'Female'.");
         }
 
         if (($data['date_of_birth'] ?? '') !== '' && ! $this->parseDate($data['date_of_birth'])) {
-            $fail('date_of_birth', 'Invalid date of birth. Use YYYY-MM-DD.');
+            $fail('date_of_birth', "Invalid date of birth '{$data['date_of_birth']}'. ".ImportDate::HINT);
         }
 
         if (($data['admission_date'] ?? '') !== '' && ! $this->parseDate($data['admission_date'])) {
-            $fail('admission_date', 'Invalid admission date. Use YYYY-MM-DD.');
+            $fail('admission_date', "Invalid admission date '{$data['admission_date']}'. ".ImportDate::HINT);
         }
 
         if (($data['guardian_phone'] ?? '') !== '' && ! preg_match('/^[\d\s\+\-\(\)]{7,20}$/', $data['guardian_phone'])) {
@@ -432,6 +485,7 @@ class StudentCsvImporter
                 'last_name' => $data['last_name'] ?: null,
                 'school_class_id' => $classId,
                 'section_id' => $sectionId,
+                'residency_type_id' => ($data['residency'] ?? '') !== '' ? $this->residencyCache[$this->key($data['residency'])] : null,
                 'guardian_id' => $guardianId,
                 'gender' => ($data['gender'] ?? '') !== '' ? strtolower($data['gender']) : null,
                 'date_of_birth' => $this->parseDate($data['date_of_birth'] ?? ''),
@@ -579,6 +633,17 @@ class StudentCsvImporter
                 $this->sectionCache[$section->school_class_id.':'.$this->key($section->name)] = $section->id;
             });
 
+        $this->residencyCache = [];
+        $this->residencyNames = [];
+        ResidencyType::where('school_id', $this->schoolId)
+            ->where('is_active', true)
+            ->orderBy('name')
+            ->get(['id', 'name'])
+            ->each(function (ResidencyType $type) {
+                $this->residencyCache[$this->key((string) $type->name)] = $type->id;
+                $this->residencyNames[] = (string) $type->name;
+            });
+
         $this->existingAdmissionNos = [];
         Student::where('school_id', $this->schoolId)
             ->with('schoolClass:id,name')
@@ -591,25 +656,10 @@ class StudentCsvImporter
             });
     }
 
-    /**
-     * Parse a date in any accepted format to Y-m-d, or null if invalid.
-     * Day-first formats are tried before month-first.
-     */
+    /** A date as Y-m-d, or null if it is blank or cannot be read. */
     protected function parseDate(string $date): ?string
     {
-        if ($date === '') {
-            return null;
-        }
-
-        foreach (['Y-m-d', 'd/m/Y', 'd-m-Y', 'Y/m/d', 'm/d/Y'] as $format) {
-            $d = \DateTime::createFromFormat('!'.$format, $date);
-
-            if ($d && $d->format($format) === $date) {
-                return $d->format('Y-m-d');
-            }
-        }
-
-        return null;
+        return ImportDate::parse($date);
     }
 
     /**
@@ -653,6 +703,11 @@ class StudentCsvImporter
                 ->all();
         }
 
+        // The school's own residencies (Day, Boarding...), taken in turn.
+        $residencies = $school
+            ? ResidencyType::where('school_id', $school->id)->where('is_active', true)->orderBy('name')->pluck('name')->all()
+            : [];
+
         // Age on entering the first class: 6 for P.1, 13 for S.1.
         $firstAge = $school?->school_type === School::TYPE_SECONDARY ? 13 : 6;
 
@@ -671,9 +726,10 @@ class StudentCsvImporter
                 sprintf('ADM-%04d', $i + 1),                             // admission_no (must be new)
                 $className,                                              // class (must already exist)
                 $section,                                                // section (optional)
+                $residencies === [] ? '' : $residencies[$i % count($residencies)], // residency: Day / Boarding (optional)
                 $gender,                                                 // gender: Male / Female
-                today()->subYears($firstAge + $i)->format('Y').'-03-15', // date_of_birth: YYYY-MM-DD
-                today()->format('Y').'-02-02',                           // admission_date (blank = today)
+                '15-03-'.today()->subYears($firstAge + $i)->format('Y'), // date_of_birth: DD-MM-YYYY
+                '02-02-'.today()->format('Y'),                           // admission_date: DD-MM-YYYY (blank = today)
                 '',                                                      // lin
                 '',                                                      // nin
                 '',                                                      // schoolpay_code (only if the school uses SchoolPay)

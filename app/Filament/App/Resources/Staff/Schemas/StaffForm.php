@@ -13,7 +13,9 @@ use Filament\Forms\Components\TextInput;
 use Filament\Forms\Components\Toggle;
 use Filament\Forms\Components\ToggleButtons;
 use Filament\Schemas\Components\Section;
+use Filament\Schemas\Components\Utilities\Get;
 use Filament\Schemas\Schema;
+use Illuminate\Validation\Rules\Unique;
 
 /**
  * A staff member's record. Pay itself -- salary, allowances, deductions,
@@ -104,7 +106,7 @@ class StaffForm
                         TextInput::make('staff_no')
                             ->label('Staff number')
                             ->required()
-                            ->unique(ignoreRecord: true)
+                            ->unique(ignoreRecord: true, modifyRuleUsing: fn (Unique $rule, Get $get) => $rule->where('school_id', $get('school_id') ?? auth()->user()?->school_id))
                             ->validationMessages(['unique' => 'Another staff member already has this number.']),
                         Select::make('employment_type')
                             ->label('Employment type')

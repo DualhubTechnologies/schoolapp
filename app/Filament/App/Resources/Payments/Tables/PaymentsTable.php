@@ -6,6 +6,7 @@ use App\Filament\Pages\ReceivePayment;
 use App\Filament\Pages\StudentAccount;
 use App\Models\StudentPayment;
 use App\Models\Term;
+use App\Support\OwnSchool;
 use Filament\Actions\Action;
 use Filament\Actions\ActionGroup;
 use Filament\Forms\Components\DatePicker;
@@ -127,7 +128,7 @@ class PaymentsTable
 
                 SelectFilter::make('class')
                     ->label('Class')
-                    ->relationship('student.schoolClass', 'name')
+                    ->relationship('student.schoolClass', 'name', fn (Builder $query) => OwnSchool::scope($query))
                     ->preload(),
 
                 SelectFilter::make('status')

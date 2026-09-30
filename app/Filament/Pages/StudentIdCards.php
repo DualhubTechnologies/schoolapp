@@ -4,6 +4,8 @@ namespace App\Filament\Pages;
 
 use App\Filament\App\Resources\Students\StudentResource;
 use App\Filament\Support\IdCardsPage;
+use App\Models\House;
+use App\Models\ResidencyType;
 use App\Models\SchoolClass;
 use App\Models\Section;
 use App\Models\Staff;
@@ -30,6 +32,13 @@ class StudentIdCards extends IdCardsPage
 
     public ?int $sectionId = null;
 
+    /** 'male', 'female' or '' for all. */
+    public string $gender = '';
+
+    public ?int $residencyId = null;
+
+    public ?int $houseId = null;
+
     public function mount(): void
     {
         parent::mount();
@@ -54,6 +63,49 @@ class StudentIdCards extends IdCardsPage
         $this->refreshCards();
     }
 
+    public function updatedGender(): void
+    {
+        $this->refreshCards();
+    }
+
+    public function updatedResidencyId(): void
+    {
+        $this->refreshCards();
+    }
+
+    public function updatedHouseId(): void
+    {
+        $this->refreshCards();
+    }
+
+    /** Back to the class alone: no search, sex, residency, house or readiness. */
+    public function clearFilters(): void
+    {
+        $this->gender = '';
+        $this->residencyId = null;
+        $this->houseId = null;
+        $this->readiness = '';
+        $this->clearSearch();
+    }
+
+    /** Whether anything beyond the class and stream narrows the list. */
+    public function hasExtraFilters(): bool
+    {
+        return $this->search !== '' || $this->gender !== '' || $this->residencyId || $this->houseId || $this->readiness !== '';
+    }
+
+    /** @return Collection<int, string> */
+    public function residencyOptions(): Collection
+    {
+        return ResidencyType::where('school_id', auth()->user()?->school_id)->orderBy('name')->pluck('name', 'id');
+    }
+
+    /** @return Collection<int, string> */
+    public function houseOptions(): Collection
+    {
+        return House::where('school_id', auth()->user()?->school_id)->orderBy('name')->pluck('name', 'id');
+    }
+
     /** @return Collection<int, string> */
     public function classOptions(): Collection
     {
@@ -71,17 +123,26 @@ class StudentIdCards extends IdCardsPage
             : collect();
     }
 
-    /** @return Collection<int, Student> */
+    /**
+     * A class (and stream), or a search across the whole school, narrowed
+     * by sex, residency and house.
+     *
+     * @return Collection<int, Student>
+     */
     protected function filteredHolders(): Collection
     {
-        if (! $this->classId) {
+        if (! $this->classId && $this->search === '') {
             return collect();
         }
 
-        return Student::where('school_id', auth()->user()?->school_id)
+        return $this->applySearchTo(Student::query(), ['students.name', 'students.admission_no', 'students.lin', 'students.schoolpay_code'])
+            ->where('school_id', auth()->user()?->school_id)
             ->where('status', 'active')
-            ->where('school_class_id', $this->classId)
-            ->when($this->sectionId, fn ($q) => $q->where('section_id', $this->sectionId))
+            ->when($this->classId, fn ($q) => $q->where('school_class_id', $this->classId))
+            ->when($this->classId && $this->sectionId, fn ($q) => $q->where('section_id', $this->sectionId))
+            ->when($this->gender !== '', fn ($q) => $q->where('gender', $this->gender))
+            ->when($this->residencyId, fn ($q) => $q->where('residency_type_id', $this->residencyId))
+            ->when($this->houseId, fn ($q) => $q->where('house_id', $this->houseId))
             ->with(['school', 'guardian', 'schoolClass', 'section', 'house', 'residencyType'])
             ->orderBy('name')
             ->get();
@@ -112,6 +173,6 @@ class StudentIdCards extends IdCardsPage
 
     public function emptyHint(): string
     {
-        return 'Choose a class to preview its ID cards.';
+        return 'Choose a class, or search for a learner by name or number, to see their ID cards.';
     }
 }

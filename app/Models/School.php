@@ -150,6 +150,14 @@ class School extends Model
         return $this->hasOne(IdCardTemplate::class);
     }
 
+    /**
+     * @return HasOne<ReportCardTemplate, $this>
+     */
+    public function reportCardTemplate(): HasOne
+    {
+        return $this->hasOne(ReportCardTemplate::class);
+    }
+
     // ── Type helpers ──
 
     public function isPrimary(): bool

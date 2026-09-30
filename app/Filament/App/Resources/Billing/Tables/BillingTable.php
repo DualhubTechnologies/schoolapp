@@ -4,6 +4,7 @@ namespace App\Filament\App\Resources\Billing\Tables;
 
 use App\Filament\Pages\StudentAccount;
 use App\Models\Term;
+use App\Support\OwnSchool;
 use Filament\Actions\Action;
 use Filament\Actions\BulkActionGroup;
 use Filament\Actions\DeleteAction;
@@ -14,6 +15,7 @@ use Filament\Tables\Columns\TextColumn;
 use Filament\Tables\Filters\SelectFilter;
 use Filament\Tables\Grouping\Group;
 use Filament\Tables\Table;
+use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Database\Query\Builder as QueryBuilder;
 use Illuminate\Support\Facades\DB;
 
@@ -119,12 +121,12 @@ class BillingTable
 
                 SelectFilter::make('school_class')
                     ->label('Class')
-                    ->relationship('student.schoolClass', 'name')
+                    ->relationship('student.schoolClass', 'name', fn (Builder $query) => OwnSchool::scope($query))
                     ->preload(),
 
                 SelectFilter::make('residency')
                     ->label('Residency')
-                    ->relationship('student.residencyType', 'name')
+                    ->relationship('student.residencyType', 'name', fn (Builder $query) => OwnSchool::scope($query))
                     ->preload(),
             ])
             ->recordActions([

@@ -5,18 +5,14 @@ namespace App\Filament\Widgets;
 use App\Filament\App\Resources\AcademicYears\AcademicYearResource;
 use App\Filament\App\Resources\FeeStructures\FeeStructureResource;
 use App\Filament\App\Resources\SchoolClasses\SchoolClassResource;
-use App\Filament\App\Resources\Students\StudentResource;
 use App\Filament\App\Resources\Terms\TermResource;
-use App\Filament\App\Resources\Users\UserResource;
 use App\Filament\Pages\SchoolProfile;
 use App\Filament\Widgets\Concerns\SchoolScoped;
 use App\Models\AcademicYear;
 use App\Models\FeeStructure;
 use App\Models\School;
 use App\Models\SchoolClass;
-use App\Models\Student;
 use App\Models\Term;
-use App\Models\User;
 use Filament\Widgets\Widget;
 
 /**
@@ -75,24 +71,6 @@ class SetupChecklist extends Widget
                     'text' => 'What each class pays this term, so balances and receipts work.',
                     'url' => FeeStructureResource::getUrl(),
                     'done' => FeeStructure::where('school_id', $id)->exists(),
-                ],
-                [
-                    'title' => 'Tell parents how to pay',
-                    'text' => 'Your bank account or mobile money number. Parents see it on receipts, statements and their fees page.',
-                    'url' => SchoolProfile::getUrl(),
-                    'done' => filled($school?->fee_payment_bank) || filled($school?->fee_payment_mobile_money) || filled($school?->fee_payment_instructions),
-                ],
-                [
-                    'title' => 'Add or import your learners',
-                    'text' => 'One at a time, or all at once from an Excel/CSV file.',
-                    'url' => StudentResource::getUrl(),
-                    'done' => Student::where('school_id', $id)->exists(),
-                ],
-                [
-                    'title' => 'Invite your team',
-                    'text' => 'Give the bursar, teachers and director of studies their own logins.',
-                    'url' => UserResource::getUrl(),
-                    'done' => User::where('school_id', $id)->count() > 1,
                 ],
             ];
         });

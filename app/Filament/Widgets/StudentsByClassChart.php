@@ -45,41 +45,52 @@ class StudentsByClassChart extends ChartWidget
             ->orderBy('name')
             ->pluck('name', 'id');
 
+        // Gender compared in lower case: "Male" from an import counts as male.
         $counts = Student::where('school_id', $this->schoolId())
             ->where('status', 'active')
-            ->selectRaw('school_class_id, gender, COUNT(*) as n')
-            ->groupBy('school_class_id', 'gender')
+            ->selectRaw('school_class_id, LOWER(gender) as g, COUNT(*) as n')
+            ->groupBy('school_class_id', 'g')
             ->get()
             ->groupBy('school_class_id');
 
         $series = fn (?string $gender) => $classes->keys()
-            ->map(fn ($id) => (int) ($counts->get($id)?->firstWhere('gender', $gender)?->n ?? 0))
+            ->map(fn ($id) => (int) ($counts->get($id)?->first(fn (Student $row) => $row->getAttribute('g') === $gender)?->getAttribute('n') ?? 0))
             ->all();
 
+        // Boys and girls side by side in each class, so both always show.
+        $bar = ['borderRadius' => 5, 'borderSkipped' => false, 'maxBarThickness' => 28, 'categoryPercentage' => 0.7, 'barPercentage' => 0.9];
+
         $datasets = [
-            ['label' => 'Male', 'data' => $series('male'), 'backgroundColor' => '#2472c4', 'borderRadius' => 4, 'maxBarThickness' => 44],
-            ['label' => 'Female', 'data' => $series('female'), 'backgroundColor' => '#c8588a', 'borderRadius' => 4, 'maxBarThickness' => 44],
+            ['label' => 'Male', 'data' => $series('male'), 'backgroundColor' => '#2472c4', ...$bar],
+            ['label' => 'Female', 'data' => $series('female'), 'backgroundColor' => '#c8588a', ...$bar],
         ];
 
         // Only show "Not recorded" when some students lack a gender.
         $unknown = $series(null);
         if (array_sum($unknown) > 0) {
-            $datasets[] = ['label' => 'Not recorded', 'data' => $unknown, 'backgroundColor' => '#cbd5e1', 'borderRadius' => 4, 'maxBarThickness' => 44];
+            $datasets[] = ['label' => 'Not recorded', 'data' => $unknown, 'backgroundColor' => '#cbd5e1', ...$bar];
         }
+
+        // Each class with its total: "S.1 (84)".
+        $totals = $classes->keys()->map(fn ($id) => (int) ($counts->get($id)?->sum('n') ?? 0));
 
         return [
             'datasets' => $datasets,
-            'labels' => $classes->values()->all(),
+            'labels' => $classes->values()->map(fn ($name, $i) => "{$name} ({$totals[$i]})")->all(),
         ];
     }
 
     protected function getOptions(): array
     {
         return [
-            'plugins' => ['legend' => ['position' => 'bottom', 'labels' => ['usePointStyle' => true, 'pointStyle' => 'circle', 'padding' => 18]]],
+            'plugins' => [
+                'legend' => ['position' => 'bottom', 'labels' => ['usePointStyle' => true, 'pointStyle' => 'circle', 'padding' => 18]],
+                'tooltip' => ['mode' => 'index', 'intersect' => false],
+            ],
+            'interaction' => ['mode' => 'index', 'intersect' => false],
             'scales' => [
-                'x' => ['stacked' => true, 'grid' => ['display' => false]],
-                'y' => ['stacked' => true, 'beginAtZero' => true, 'ticks' => ['precision' => 0], 'border' => ['display' => false], 'grid' => ['color' => '#eef2f7']],
+                'x' => ['stacked' => false, 'grid' => ['display' => false], 'ticks' => ['font' => ['weight' => '600']]],
+                'y' => ['stacked' => false, 'beginAtZero' => true, 'grace' => '10%', 'ticks' => ['precision' => 0], 'border' => ['display' => false], 'grid' => ['color' => '#eef2f7']],
             ],
         ];
     }

@@ -177,6 +177,50 @@ class IdCardService
     }
 
     /**
+     * A made-up card for the template preview: sample school, sample
+     * holder, so a school sees its choices before any real record is
+     * ready. Everything the front and back templates read.
+     *
+     * @return array{card: array<string, mixed>, shared: array<string, mixed>, design: array<string, string>}
+     */
+    public function sample(IdCardTemplate $template, bool $staff = false): array
+    {
+        $issuedOn = now();
+        $school = new School([
+            'name' => 'Sample Secondary School',
+            'motto' => 'Learners today, leaders tomorrow',
+            'address' => 'P.O. Box 100, Kampala',
+            'phone' => '0772 000 000',
+            'email' => 'info@sampleschool.ac.ug',
+        ]);
+
+        $fields = $staff
+            ? ['Staff No.' => 'ST-0012', 'Designation' => 'Teacher', 'Department' => 'Sciences', 'Sex' => 'Male', 'Tel.' => '0772 123 456']
+            : ['Student No.' => 'ADM-0001', 'Class' => 'S.1 East', 'Sex' => 'Male', 'Date of Birth' => '14/03/2012', 'Parent Tel.' => '0772 123 456'];
+
+        return [
+            'card' => [
+                'name' => 'Mugizi Adrian',
+                'role' => $staff ? 'STAFF' : 'STUDENT',
+                'fields' => $fields,
+                'cardNumber' => 'SH00000/'.$issuedOn->format('y').($staff ? '/S0001' : '/00001'),
+                'issuedOn' => $issuedOn,
+                'expiresOn' => $template->validity === 'months'
+                    ? $issuedOn->copy()->addMonths(max(1, $template->validity_months ?: 12))
+                    : Carbon::create((int) $issuedOn->format('Y'), 12, 4),
+                'photoPath' => null,
+            ],
+            'shared' => [
+                'school' => $school,
+                'logoPath' => null,
+                'signaturePath' => null,
+                'notes' => $template->noteLines(),
+            ],
+            'design' => $this->design($template),
+        ];
+    }
+
+    /**
      * The template's colours and shapes, ready for the stylesheet.
      *
      * @return array<string, string>

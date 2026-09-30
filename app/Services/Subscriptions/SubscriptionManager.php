@@ -134,6 +134,25 @@ class SubscriptionManager
         return $limit === null ? null : max(0, $limit - static::studentCount($school));
     }
 
+    /**
+     * The plans a school could move to and still fit: room for $students
+     * active students and for the staff logins it already has. Smallest
+     * first.
+     *
+     * @return Collection<int, Plan>
+     */
+    public static function plansFitting(School|int $school, int $students): Collection
+    {
+        $users = static::userCount($school);
+
+        return Plan::where('is_active', true)
+            ->where('is_trial', false)
+            ->where(fn ($q) => $q->whereNull('max_students')->orWhere('max_students', '>=', $students))
+            ->where(fn ($q) => $q->whereNull('max_users')->orWhere('max_users', '>=', $users))
+            ->orderBy('sort_order')
+            ->get();
+    }
+
     public static function roomForUsers(School|int $school): ?int
     {
         $limit = static::current($school)?->plan?->max_users;

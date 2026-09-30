@@ -6,6 +6,7 @@ use App\Models\Assessment;
 use App\Models\FeeStructure;
 use App\Models\GradingScale;
 use App\Models\Promotion;
+use App\Models\ReportCardTemplate;
 use App\Models\SchoolClass;
 use App\Models\Staff;
 use App\Models\Term;
@@ -40,14 +41,21 @@ class ReportCardController extends Controller
         $examId = $request->integer('exam') ?: null;
         abort_if($examId && ! Assessment::where('term_id', $term->getKey())->whereKey($examId)->exists(), 404);
 
-        return $this->render($calculator, $class, $term, $request->integer('section') ?: null, $request->integer('student') ?: null, $request->boolean('fees'), $examId);
+        // ?students=1,2,3: just the learners the Report Cards page is showing
+        // after a search or filter.
+        $only = array_values(array_filter(array_map('intval', explode(',', (string) $request->query('students')))));
+
+        return $this->render($calculator, $class, $term, $request->integer('section') ?: null, $request->integer('student') ?: null, $request->boolean('fees'), $only, $examId);
     }
 
     /**
      * The report cards themselves, once access has been checked: by the
      * school's staff above, or by the parent page for one learner.
+     *
+     * @param  list<int>  $only  when given, just these learners
+     * @param  int|null  $examId  one exam only (a mid-term report)
      */
-    public function render(ResultsCalculator $calculator, SchoolClass $class, Term $term, ?int $section, ?int $student, bool $showFees, ?int $examId = null): View
+    public function render(ResultsCalculator $calculator, SchoolClass $class, Term $term, ?int $section, ?int $student, bool $showFees, array $only = [], ?int $examId = null): View
     {
         $results = $calculator->forClass($class, $term, $section, $examId);
         $rows = $results['rows']->filter(fn ($r) => $r['average'] !== null);
@@ -56,7 +64,16 @@ class ReportCardController extends Controller
             $rows = $rows->filter(fn ($r) => $r['student']->id === $student);
         }
 
+        if ($only !== []) {
+            $rows = $rows->filter(fn ($r) => in_array($r['student']->id, $only, true));
+        }
+
         abort_if($rows->isEmpty(), 404, 'No results to print.');
+
+        // The school's template decides what is printed. Fees are the one
+        // part chosen per print: the Report Cards page ticks the box from
+        // the template, and the parent page never shows them.
+        $template = ReportCardTemplate::forSchool($class->school_id);
 
         $nextTerm = $term->next();
 
@@ -75,7 +92,7 @@ class ReportCardController extends Controller
         $isFinalTerm = ! $nextTerm || $nextTerm->academic_year_id !== $term->academic_year_id;
         $promotions = app(PromotionService::class);
 
-        if ($isFinalTerm && ! $examId && ! $promotions->isFinalClass($class)) {
+        if ($template->shows('promotion') && $isFinalTerm && ! $examId && ! $promotions->isFinalClass($class)) {
             $nextClass = $promotions->nextClass($class)?->name ?? 'the next class';
             $made = Promotion::where('academic_year_id', $term->academic_year_id)
                 ->whereIn('student_id', $rows->pluck('student.id'))
@@ -124,6 +141,7 @@ class ReportCardController extends Controller
             'scales' => $scales,
             'promotionText' => $promotionText,
             'attendance' => $attendance,
+            'template' => $template,
         ]);
     }
 }

@@ -125,6 +125,21 @@ uses `{student}`, `{class}` or `{balance}`. Sending runs on the queue
 (`SendMessageBatch`, never retried so nobody is texted twice); needs the
 queue worker and `SMS_DRIVER=africastalking`.
 
+**Report card template** (`App\Models\ReportCardTemplate`): one per
+school, set by those who manage exams (head teacher, director of studies,
+school admin). Until a school saves one, the defaults apply: Classic
+design, navy and gold, no border, every part printed. The template
+applies to printed cards and to cards parents open. The fees box is the
+one part also chosen per print (the "Show fees balance" tick starts from
+the template); parents never see fees on their online card.
+
+**Sharing** (`App\Services\Academics\MarksCompleteness`): a subject counts
+as taught in a class once any learner has a mark in it that term; each of
+the term's exams for the class's curriculum must then have marks in it.
+Missing ones are listed before sharing, and the head must tick "Share
+anyway" to share regardless. Single learners without a mark are not
+listed (absences and electives).
+
 ## Promotion
 
 **Code:** `App\Services\Academics\PromotionService`, `PromotionAdvisor`

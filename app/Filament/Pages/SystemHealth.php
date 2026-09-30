@@ -2,6 +2,7 @@
 
 namespace App\Filament\Pages;
 
+use App\Support\ServerStats;
 use App\Support\SystemHealth as Checks;
 use BackedEnum;
 use Filament\Pages\Page;
@@ -49,5 +50,16 @@ class SystemHealth extends Page
     public function checks(): array
     {
         return app(Checks::class)->checks();
+    }
+
+    /**
+     * CPU, memory, swap, disk, database and uptime, read fresh on every
+     * refresh (the panel refreshes itself every 30 seconds).
+     *
+     * @return list<array{key: string, label: string, status: 'ok'|'warning'|'danger', value: string, detail: string, percent: int|null, fix: string|null}>
+     */
+    public function serverReadings(): array
+    {
+        return app(ServerStats::class)->readings();
     }
 }

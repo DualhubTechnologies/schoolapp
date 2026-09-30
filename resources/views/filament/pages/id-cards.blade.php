@@ -65,6 +65,14 @@
 
         <div class="idc-layout idc-layout--{{ $orientation }}">
             <div class="idc-fronts">
+                @if ($shared)
+                    <aside class="idc-item idc-back">
+                        <div class="idc-back-title">Back of every card</div>
+                        <div class="idc-scale">@include('id-cards.templates.'.$orientation.'-back')</div>
+                        <p class="idc-muted">The same on every card: school contacts, rules and signature{{ $this->canEditTemplate() ? ' — change the rules under Template.' : '.' }}</p>
+                    </aside>
+                @endif
+
                 @foreach ($cards as $card)
                     <div class="idc-item {{ $card['ready'] ? '' : 'is-incomplete' }}" wire:key="idc-{{ $card['holder']->id }}">
                         <div class="idc-scale">@include('id-cards.templates.'.$orientation.'-front')</div>
@@ -78,14 +86,6 @@
                     </div>
                 @endforeach
             </div>
-
-            @if ($shared)
-                <aside class="idc-back">
-                    <div class="idc-back-title">Back of every card</div>
-                    <div class="idc-scale">@include('id-cards.templates.'.$orientation.'-back')</div>
-                    <p class="idc-muted">The same on every card: school contacts, rules and signature{{ $this->canEditTemplate() ? ' — change the rules under Template.' : '.' }}</p>
-                </aside>
-            @endif
         </div>
     @endif
 
@@ -109,18 +109,25 @@
         .idc-ok { color: #15803d; }
         .idc-actions { display: flex; gap: .5rem; }
 
-        .idc-layout { display: flex; flex-wrap: wrap; align-items: flex-start; gap: 1.25rem; }
-        .idc-fronts { flex: 1 1 36rem; display: grid; gap: 1rem; }
-        .idc-layout--landscape .idc-fronts { grid-template-columns: repeat(auto-fill, minmax(min(100%, 22rem), 1fr)); }
-        .idc-layout--portrait .idc-fronts { grid-template-columns: repeat(auto-fill, minmax(min(100%, 15rem), 1fr)); }
-        .idc-item { background: #f8fafc; border: 1px solid #e4e8f0; border-radius: 12px; padding: .9rem; text-align: center; }
+        /*
+         * Cards grow with the screen: --idc-zoom scales the real-size (mm)
+         * card, and each grid cell is sized to fit one card at that zoom,
+         * so the back and the fronts sit side by side with no empty gap.
+         */
+        .idc-layout { --idc-zoom: 1.05; --idc-card-w: 85.6mm; }
+        .idc-layout--portrait { --idc-card-w: 54mm; }
+        @media (min-width: 1280px) { .idc-layout { --idc-zoom: 1.3; } }
+        @media (min-width: 1600px) { .idc-layout { --idc-zoom: 1.5; } }
+        @media (min-width: 2000px) { .idc-layout { --idc-zoom: 1.75; } }
+        .idc-fronts { display: grid; gap: 1.25rem; align-items: start; justify-content: start; grid-template-columns: repeat(auto-fill, minmax(min(100%, calc(var(--idc-card-w) * var(--idc-zoom) + 2rem)), max-content)); }
+        .idc-item { background: #f8fafc; border: 1px solid #e4e8f0; border-radius: 12px; padding: 1rem; text-align: center; }
         .idc-item.is-incomplete { border-color: #fecaca; background: #fffafa; }
-        .idc-scale { zoom: 1.05; display: inline-block; }
+        .idc-scale { zoom: var(--idc-zoom); display: inline-block; max-width: 100%; }
         .idc-scale .idc { box-shadow: 0 1px 4px rgba(16, 24, 40, .12); }
         .idc-missing-note { margin-top: .7rem; padding: .45rem .65rem; background: #fef2f2; border: 1px solid #fecaca; border-radius: 8px; color: #991b1b; font-size: .78rem; text-align: left; }
-        .idc-back { flex: 0 0 auto; position: sticky; top: 5rem; background: #fff; border: 1px solid #e4e8f0; border-radius: 12px; padding: .9rem; text-align: center; max-width: 100%; }
+        .idc-back { background: #fff; }
         .idc-back-title { font-size: .72rem; font-weight: 700; letter-spacing: .06em; text-transform: uppercase; color: #64748b; margin-bottom: .6rem; }
-        .idc-back .idc-muted { max-width: 20rem; margin: .6rem auto 0; }
+        .idc-back .idc-muted { max-width: 22rem; margin: .7rem auto 0; }
         .idc-link { color: #1a5fa8; font-weight: 600; text-decoration: underline; background: none; border: 0; cursor: pointer; padding: 0; font-size: inherit; }
     </style>
 </x-filament-panels::page>

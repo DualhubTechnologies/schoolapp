@@ -6,6 +6,16 @@ folded into the change they belong to. Add an entry with every release.
 
 ## 30 September 2026
 
+- **Staff bulk upload**, like students: a CSV template with five example
+  staff (teaching and support, paid by bank and by mobile money), then
+  upload, check and import from the Staff page. Each row can carry the
+  job, category, department, employment details, TIN/NSSF, starting
+  salary and bank or mobile money details. Rows with problems are listed
+  and skipped; staff numbers the school already has are left alone, so a
+  file can be uploaded again.
+- Staff numbers are now unique within each school, not across all
+  schools, so two schools can both have "ST-001".
+
 - **ID card template preview.** The Template window shows a sample card
   (Mugizi Adrian at Sample Secondary School), front and back, redrawn
   as the orientation, colours, validity and rules change, before

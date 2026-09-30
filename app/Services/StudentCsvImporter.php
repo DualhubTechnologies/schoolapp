@@ -3,6 +3,7 @@
 namespace App\Services;
 
 use App\Models\Guardian;
+use App\Models\ResidencyType;
 use App\Models\School;
 use App\Models\SchoolClass;
 use App\Models\Section;
@@ -44,6 +45,7 @@ class StudentCsvImporter
         'admission_no',
         'class',
         'section',
+        'residency',
         'gender',
         'date_of_birth',
         'admission_date',
@@ -82,6 +84,12 @@ class StudentCsvImporter
 
     /** @var array<string, int> "classId:UPPER SECTION" => id */
     protected array $sectionCache = [];
+
+    /** @var array<string, int> upper-cased residency name ("DAY", "BOARDING") => id */
+    protected array $residencyCache = [];
+
+    /** @var list<string> the school's residency names as it wrote them, for messages */
+    protected array $residencyNames = [];
 
     /** @var array<string, string> upper-cased admission number => "Name, Class" of the student who has it */
     protected array $existingAdmissionNos = [];
@@ -391,6 +399,14 @@ class StudentCsvImporter
             $fail('section', "Section '{$section}' not found under class '{$class}'.");
         }
 
+        $residency = $data['residency'] ?? '';
+
+        if ($residency !== '' && ! isset($this->residencyCache[$this->key($residency)])) {
+            $fail('residency', $this->residencyCache === []
+                ? "Residency '{$residency}' is not set up. Add Day / Boarding under Residency types first, or leave the column blank."
+                : "Residency '{$residency}' not found. Use one of: ".implode(', ', $this->residencyNames).'.');
+        }
+
         if (($data['gender'] ?? '') !== '' && ! in_array(strtolower($data['gender']), ['male', 'female'], true)) {
             $fail('gender', "Gender must be 'Male' or 'Female'.");
         }
@@ -469,6 +485,7 @@ class StudentCsvImporter
                 'last_name' => $data['last_name'] ?: null,
                 'school_class_id' => $classId,
                 'section_id' => $sectionId,
+                'residency_type_id' => ($data['residency'] ?? '') !== '' ? $this->residencyCache[$this->key($data['residency'])] : null,
                 'guardian_id' => $guardianId,
                 'gender' => ($data['gender'] ?? '') !== '' ? strtolower($data['gender']) : null,
                 'date_of_birth' => $this->parseDate($data['date_of_birth'] ?? ''),
@@ -616,6 +633,17 @@ class StudentCsvImporter
                 $this->sectionCache[$section->school_class_id.':'.$this->key($section->name)] = $section->id;
             });
 
+        $this->residencyCache = [];
+        $this->residencyNames = [];
+        ResidencyType::where('school_id', $this->schoolId)
+            ->where('is_active', true)
+            ->orderBy('name')
+            ->get(['id', 'name'])
+            ->each(function (ResidencyType $type) {
+                $this->residencyCache[$this->key((string) $type->name)] = $type->id;
+                $this->residencyNames[] = (string) $type->name;
+            });
+
         $this->existingAdmissionNos = [];
         Student::where('school_id', $this->schoolId)
             ->with('schoolClass:id,name')
@@ -675,6 +703,11 @@ class StudentCsvImporter
                 ->all();
         }
 
+        // The school's own residencies (Day, Boarding...), taken in turn.
+        $residencies = $school
+            ? ResidencyType::where('school_id', $school->id)->where('is_active', true)->orderBy('name')->pluck('name')->all()
+            : [];
+
         // Age on entering the first class: 6 for P.1, 13 for S.1.
         $firstAge = $school?->school_type === School::TYPE_SECONDARY ? 13 : 6;
 
@@ -693,6 +726,7 @@ class StudentCsvImporter
                 sprintf('ADM-%04d', $i + 1),                             // admission_no (must be new)
                 $className,                                              // class (must already exist)
                 $section,                                                // section (optional)
+                $residencies === [] ? '' : $residencies[$i % count($residencies)], // residency: Day / Boarding (optional)
                 $gender,                                                 // gender: Male / Female
                 '15-03-'.today()->subYears($firstAge + $i)->format('Y'), // date_of_birth: DD-MM-YYYY
                 '02-02-'.today()->format('Y'),                           // admission_date: DD-MM-YYYY (blank = today)

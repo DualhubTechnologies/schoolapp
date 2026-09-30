@@ -205,13 +205,14 @@
         <p class="text-xs font-semibold text-gray-950 dark:text-white mb-2">Optional columns</p>
 
         <div class="flex flex-wrap gap-1.5">
-            @foreach (['lin', 'nin', 'section', 'gender', 'date_of_birth', 'admission_date', 'phone', 'email', 'address', 'medical_notes', 'guardian_name', 'guardian_phone', 'guardian_email', 'guardian_relationship', 'status'] as $col)
+            @foreach (['lin', 'nin', 'section', 'residency', 'gender', 'date_of_birth', 'admission_date', 'phone', 'email', 'address', 'medical_notes', 'guardian_name', 'guardian_phone', 'guardian_email', 'guardian_relationship', 'status'] as $col)
                 <code class="text-xs bg-gray-100 dark:bg-gray-800 text-gray-600 dark:text-gray-400 px-1.5 py-0.5 rounded">{{ $col }}</code>
             @endforeach
         </div>
 
         <p class="mt-3 text-xs text-gray-500 dark:text-gray-400">
             <strong>Dates</strong> (date_of_birth, admission_date): DD-MM-YYYY, e.g. 14-03-2012. 14/03/2012 and 4-3-2012 also work. A blank admission date means today.
+            <br><strong>residency</strong>: the school's own names, e.g. Day or Boarding. It decides which day / boarding fees the learner is billed.
         </p>
 
     </div>

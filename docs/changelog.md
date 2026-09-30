@@ -6,6 +6,12 @@ folded into the change they belong to. Add an entry with every release.
 
 ## 30 September 2026
 
+- **Student imports capture residency.** The template has a `residency`
+  column filled with the school's own names (Day, Boarding...), and the
+  import sets it, so imported learners are billed their day or boarding
+  fees. An unknown name is listed at the check with the names to use; a
+  blank leaves it unset.
+
 - **Report Cards: search and filters.** Search the class by name,
   admission number or LIN (Search button or Enter), and filter by sex,
   residency and whether the class teacher's comment is written. "Print

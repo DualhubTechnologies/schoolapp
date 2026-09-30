@@ -9,6 +9,13 @@ return [
     // A new school starts on the trial plan for this many days.
     'trial_days' => (int) env('SUBSCRIPTION_TRIAL_DAYS', 30),
 
+    /*
+     * Percentage added to plan prices where the public landing page shows
+     * them (rounded to the nearest UGX 1,000). Billing always uses the
+     * plan prices themselves (Admin → Plans). 0 = show them as they are.
+     */
+    'landing_price_markup' => (float) env('LANDING_PRICE_MARKUP', 10),
+
     // Length of each billing cycle. Ugandan schools budget by term.
     'cycle_months' => [
         'term' => 4,

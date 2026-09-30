@@ -19,6 +19,10 @@
     $mailUrl = 'mailto:' . $contact['email'] . '?subject=' . rawurlencode('SchoolHub demo request');
     $demoErrors = $errors->getBag('demo');
     $demoSent = session('demo_sent');
+    // Prices as advertised here: the plan price plus the landing-page markup
+    // (config/subscriptions.php), rounded to the nearest UGX 1,000.
+    $markup = 1 + (float) config('subscriptions.landing_price_markup', 0) / 100;
+    $shown = fn ($amount): float => (float) $amount > 0 ? round((float) $amount * $markup / 1000) * 1000 : (float) $amount;
     $hasYearly = $plans->contains(fn ($p) => $p->price_per_year > 0);
     $popular = $plans->count() >= 3 ? $plans->values()[1]->id : null;
     $check = '<svg viewBox="0 0 20 20" fill="currentColor" aria-hidden="true"><path fill-rule="evenodd" d="M16.704 4.153a.75.75 0 0 1 .143 1.052l-8 10.5a.75.75 0 0 1-1.127.075l-4.5-4.5a.75.75 0 0 1 1.06-1.06l3.894 3.893 7.48-9.817a.75.75 0 0 1 1.05-.143Z" clip-rule="evenodd"/></svg>';
@@ -824,8 +828,10 @@
             <div class="plans">
                 @foreach ($plans as $plan)
                     @php
-                        $yearSaving = $plan->price_per_term > 0 && $plan->price_per_year > 0
-                            ? (int) round((1 - $plan->price_per_year / ($plan->price_per_term * 3)) * 100)
+                        $termPrice = $shown($plan->price_per_term);
+                        $yearPrice = $plan->price_per_year > 0 ? $shown($plan->price_per_year) : $termPrice * 3;
+                        $yearSaving = $termPrice > 0 && $plan->price_per_year > 0
+                            ? (int) round((1 - $yearPrice / ($termPrice * 3)) * 100)
                             : 0;
                     @endphp
                     <div @class(['plan', 'featured' => $plan->id === $popular]) data-reveal>
@@ -838,8 +844,8 @@
                             <p class="plan-sub">Sized to your school — talk to us for a quote.</p>
                             <a href="#demo" class="btn btn-block btn-secondary">Contact sales</a>
                         @else
-                            <div class="plan-price price-term"><small>UGX</small><b>{{ number_format($plan->price_per_term) }}</b><span>per term</span></div>
-                            <div class="plan-price price-year"><small>UGX</small><b>{{ number_format($plan->price_per_year ?: $plan->price_per_term * 3) }}</b><span>per year</span></div>
+                            <div class="plan-price price-term"><small>UGX</small><b>{{ number_format($termPrice) }}</b><span>per term</span></div>
+                            <div class="plan-price price-year"><small>UGX</small><b>{{ number_format($yearPrice) }}</b><span>per year</span></div>
                             <p class="plan-sub price-term">Billed at the start of each term</p>
                             <p class="plan-sub price-year">{{ $yearSaving > 0 ? "Save {$yearSaving}% compared with paying per term" : 'Billed once a year' }}</p>
 

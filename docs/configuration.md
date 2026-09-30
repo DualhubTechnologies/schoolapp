@@ -83,6 +83,7 @@ Shown to users (help link, error pages) and used for owner emails.
 |---|---|---|
 | `SUBSCRIPTION_TRIAL_DAYS` | `30` | Trial length after approval. |
 | `SUBSCRIPTION_REMINDER_TIME` | `08:00` | Daily reminder run, Africa/Kampala time. |
+| `LANDING_PRICE_MARKUP` | `10` | Percent added to plan prices where the public landing page shows them (nearest UGX 1,000). Billing uses the plan prices. `0` shows them as they are. |
 | `SUBSCRIPTION_MOMO`, `SUBSCRIPTION_AIRTEL`, `SUBSCRIPTION_BANK` | empty | How schools pay SchoolHub; shown on the Subscription page. |
 | `SUBSCRIPTION_CONTACT_PHONE`, `SUBSCRIPTION_CONTACT_EMAIL` | empty | Billing contact shown to schools. |
 

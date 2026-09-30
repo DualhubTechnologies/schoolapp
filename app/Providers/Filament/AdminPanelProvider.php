@@ -5,6 +5,7 @@ namespace App\Providers\Filament;
 use App\Filament\App\Resources\Users\UserResource;
 use App\Filament\App\Widgets\PlatformActivityKpis;
 use App\Filament\App\Widgets\PlatformKpis;
+use App\Filament\App\Widgets\PlatformServerKpis;
 use App\Filament\App\Widgets\WelcomeBanner;
 use App\Filament\Pages\Auth\Login;
 use App\Filament\Pages\Auth\ResetPassword;
@@ -126,12 +127,13 @@ class AdminPanelProvider extends PanelProvider
             ])
             ->discoverWidgets(in: app_path('Filament/Widgets'), for: 'App\Filament\Widgets')
             // Same dashboard design as the school app: greeting banner and
-            // platform cards and today's activity first, then the subscription
-            // figures.
+            // platform cards, today's activity and the server's load first,
+            // then the subscription figures.
             ->widgets([
                 WelcomeBanner::class,
                 PlatformKpis::class,
                 PlatformActivityKpis::class,
+                PlatformServerKpis::class,
                 StatsOverview::class,
             ])
 

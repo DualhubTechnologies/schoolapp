@@ -26,7 +26,7 @@ class SystemHealth
      */
     public function checks(): array
     {
-        return [
+        $checks = [
             $this->email(),
             $this->sms(),
             $this->queue(),
@@ -35,6 +35,13 @@ class SystemHealth
             $this->debugMode(),
             $this->errors(),
         ];
+
+        // CPU, memory and disk (left out where they cannot be read).
+        if ($server = app(ServerStats::class)->summaryCheck()) {
+            $checks[] = $server;
+        }
+
+        return $checks;
     }
 
     /** The worst status among the checks. */

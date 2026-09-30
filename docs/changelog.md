@@ -6,6 +6,18 @@ folded into the change they belong to. Add an entry with every release.
 
 ## 30 September 2026
 
+- **Students by class chart** shows boys and girls side by side in each
+  class (they were stacked, so a class of mostly one gender showed one
+  colour), labels each class with its total ("S.1 (84)"), and counts
+  "Male"/"FEMALE" typed in any case.
+
+- **Server readings for the platform owner.** System health opens with a
+  Server panel (CPU load, memory, swap, disk, database response and
+  size, uptime), refreshed every 30 seconds, each marked fine, "Watch"
+  or "High" with what to do. The platform dashboard shows CPU, memory,
+  disk and database as cards, and a high reading counts toward System
+  health's warning badge.
+
 - **Student imports capture residency.** The template has a `residency`
   column filled with the school's own names (Day, Boarding...), and the
   import sets it, so imported learners are billed their day or boarding

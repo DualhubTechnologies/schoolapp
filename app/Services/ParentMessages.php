@@ -2,9 +2,11 @@
 
 namespace App\Services;
 
+use App\Models\AttendanceRecord;
 use App\Models\Student;
 use App\Models\StudentPayment;
 use App\Models\Term;
+use Carbon\CarbonInterface;
 
 /**
  * The texts SchoolHub sends to parents, in the school's chosen language
@@ -103,6 +105,62 @@ class ParentMessages
             }
 
             $result[$this->sms->send($phone, $this->reportCardReady($student, $term))['ok'] ? 'sent' : 'failed']++;
+        }
+
+        return $result;
+    }
+
+    public function absentToday(Student $student, CarbonInterface $date): string
+    {
+        $values = [
+            '{school}' => $student->school->name,
+            '{student}' => $student->name,
+            '{date}' => $date->format('j M'),
+            '{phone}' => $student->school->phone ?: '',
+        ];
+
+        $template = match ($student->school->parent_sms_language ?? 'en') {
+            'lg' => '{school}: {student} tazze ku ssomero leero, {date}. Bw\'oba tonnatutegeeza nsonga, tukubire ku {phone}.',
+            default => '{school}: {student} was not at school today, {date}. If you have not told us why, please call {phone}.',
+        };
+
+        return rtrim(strtr($template, $values), ' .').'.';
+    }
+
+    /**
+     * Text the family of each learner marked absent on a day, once: a
+     * record already texted is skipped.
+     *
+     * @param  iterable<AttendanceRecord>  $records  absent records, with student.guardian and student.school
+     * @return array{sent: int, failed: int, no_phone: int, already: int}
+     */
+    public function sendAbsences(iterable $records): array
+    {
+        $result = ['sent' => 0, 'failed' => 0, 'no_phone' => 0, 'already' => 0];
+        $reminders = app(FeeReminderService::class);
+
+        foreach ($records as $record) {
+            if ($record->parent_texted_at) {
+                $result['already']++;
+
+                continue;
+            }
+
+            $student = $record->student;
+            $phone = $reminders->phoneFor($student);
+
+            if (! $phone) {
+                $result['no_phone']++;
+
+                continue;
+            }
+
+            if ($this->sms->send($phone, $this->absentToday($student, $record->date))['ok']) {
+                $record->forceFill(['parent_texted_at' => now()])->save();
+                $result['sent']++;
+            } else {
+                $result['failed']++;
+            }
         }
 
         return $result;

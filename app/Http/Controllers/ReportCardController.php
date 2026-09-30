@@ -12,6 +12,7 @@ use App\Models\Term;
 use App\Services\Academics\PromotionAdvisor;
 use App\Services\Academics\PromotionService;
 use App\Services\Academics\ResultsCalculator;
+use App\Services\Attendance\AttendanceSummary;
 use App\Support\AcademicAccess;
 use Illuminate\Http\Request;
 use Illuminate\View\View;
@@ -98,6 +99,12 @@ class ReportCardController extends Controller
             }
         }
 
+        // Days present this term, from the class register (a number typed
+        // on the term report, if any, takes precedence in the view).
+        $attendance = $term->start_date
+            ? app(AttendanceSummary::class)->forStudents($rows->pluck('student.id')->all(), $term->start_date, $term->end_date)
+            : [];
+
         $scales = GradingScale::where('school_id', $class->school_id)
             ->where('curriculum', $class->curriculum())
             ->with('bands')
@@ -116,6 +123,7 @@ class ReportCardController extends Controller
             'teachers' => $teachers,
             'scales' => $scales,
             'promotionText' => $promotionText,
+            'attendance' => $attendance,
         ]);
     }
 }

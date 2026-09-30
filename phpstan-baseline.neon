@@ -205,12 +205,6 @@ parameters:
 			path: app/Filament/App/Resources/FeeBalances/FeeBalanceResource.php
 
 		-
-			message: '#^Parameter \#1 \$expression of method Illuminate\\Database\\Eloquent\\Builder\<Illuminate\\Database\\Eloquent\\Model\>\:\:selectRaw\(\) expects literal\-string, non\-falsy\-string given\.$#'
-			identifier: argument.type
-			count: 3
-			path: app/Filament/App/Resources/FeeBalances/FeeBalanceResource.php
-
-		-
 			message: '#^Access to an undefined property App\\Models\\Student\:\:\$total_charged\.$#'
 			identifier: property.notFound
 			count: 2
@@ -220,12 +214,6 @@ parameters:
 			message: '#^Access to an undefined property App\\Models\\Student\:\:\$total_paid\.$#'
 			identifier: property.notFound
 			count: 1
-			path: app/Filament/App/Resources/FeeBalances/Tables/FeeBalancesTable.php
-
-		-
-			message: '#^Parameter \#1 \$sql of method Illuminate\\Database\\Eloquent\\Builder\<Illuminate\\Database\\Eloquent\\Model\>\:\:whereRaw\(\) expects Illuminate\\Contracts\\Database\\Query\\Expression\|literal\-string, non\-falsy\-string given\.$#'
-			identifier: argument.type
-			count: 8
 			path: app/Filament/App/Resources/FeeBalances/Tables/FeeBalancesTable.php
 
 		-
@@ -249,18 +237,6 @@ parameters:
 		-
 			message: '#^Method App\\Filament\\App\\Resources\\FeeReminders\\Pages\\ListFeeReminders\:\:debtors\(\) has parameter \$classIds with no value type specified in iterable type array\.$#'
 			identifier: missingType.iterableValue
-			count: 1
-			path: app/Filament/App/Resources/FeeReminders/Pages/ListFeeReminders.php
-
-		-
-			message: '#^Parameter \#1 \$expression of method Illuminate\\Database\\Eloquent\\Builder\<App\\Models\\Student\>\:\:selectRaw\(\) expects literal\-string, non\-falsy\-string given\.$#'
-			identifier: argument.type
-			count: 1
-			path: app/Filament/App/Resources/FeeReminders/Pages/ListFeeReminders.php
-
-		-
-			message: '#^Parameter \#1 \$sql of method Illuminate\\Database\\Eloquent\\Builder\<App\\Models\\Student\>\:\:whereRaw\(\) expects Illuminate\\Contracts\\Database\\Query\\Expression\|literal\-string, non\-falsy\-string given\.$#'
-			identifier: argument.type
 			count: 1
 			path: app/Filament/App/Resources/FeeReminders/Pages/ListFeeReminders.php
 

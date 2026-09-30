@@ -71,11 +71,13 @@ Two layers:
 |---|---|
 | students | Student records, guardians |
 | promotion | Year-end promotion |
+| attendance | Daily class register, attendance report, texts to parents of absent learners |
+| messages | Bulk SMS to families, a class, those owing fees, or staff |
 | id_cards | Student and staff ID cards, the card template |
 | fees | Payments, receipts, billing, balances, reminders, fee set-up |
 | transport | Van routes, learners, route lists |
 | finance | Expenses, income, budget, income vs expenditure |
-| exams / exams_all | Marks (own subjects / all subjects), results, report cards |
+| exams / exams_all | Marks (own subjects / all subjects, submitting / approving mark sheets), marks progress, results, report cards |
 | hr | Staff, salaries, payroll, payslips |
 | academics | Years, terms, classes, streams, subjects, grading |
 | settings | School profile, users & access, audit trail |
@@ -117,9 +119,10 @@ Two layers:
 | Fees | `fee_structures`, `student_charges`, `student_payments`, `student_discounts`, `fee_reminders` |
 | Transport | `transport_routes` (routes are linked from `students`) |
 | Finance | `finance_entries`, `finance_categories`, `budget_lines` |
-| Academics | `academic_years`, `terms`, `subjects`, `combinations`, `assessments`, `marks`, `grading_scales`, `grading_bands`, `term_reports`, `promotions`, `promotion_rules` |
+| Academics | `academic_years`, `terms`, `subjects`, `combinations`, `assessments`, `marks`, `mark_sheets`, `grading_scales`, `grading_bands`, `term_reports`, `promotions`, `promotion_rules` |
 | HR & payroll | `staff`, `staff_salaries`, `staff_allowances`, `staff_deductions`, `staff_bank_details`, `salary_arrears`, `payroll_periods`, `payroll_entries`, `payroll_entry_items`, `paye_tax_brackets` |
 | ID cards | `id_card_templates` |
+| Attendance & messages | `attendance_records`, `message_batches` |
 | Audit & errors | `activity_log`, `error_reports`, `error_occurrences` |
 | Laravel | `sessions`, `cache`, `jobs`, `failed_jobs`, `notifications`, `imports`, `exports` |
 
@@ -142,6 +145,7 @@ Two layers:
 |---|---|
 | Welcome, approval, registration emails | Queued notifications (`QUEUE_CONNECTION=database`) |
 | Student CSV import | `App\Jobs\ProcessStudentImport` on the queue |
+| Bulk SMS | `App\Jobs\SendMessageBatch` on the queue |
 | Subscription reminders | `subscriptions:remind`, daily at 08:00 Kampala time |
 | Backup (database + files) | `backup:run`, daily at 01:30 Kampala time |
 | Error occurrence clean-up | `model:prune`, daily at 02:30 |

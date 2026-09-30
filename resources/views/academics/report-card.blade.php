@@ -144,6 +144,12 @@
                         <div class="kv"><span>Position in stream</span><b>{{ $row['stream_position'] }} out of {{ $row['stream_out_of'] }}</b></div>
                     @endif
                     @if ($report?->conduct)<div class="kv"><span>Conduct</span><b>{{ $report->conduct }}</b></div>@endif
+                    @php $days = $attendance[$student->id] ?? null; @endphp
+                    @if ($report?->days_present)
+                        <div class="kv"><span>Days present</span><b>{{ $report->days_present }}</b></div>
+                    @elseif ($days && $days['days'])
+                        <div class="kv"><span>Attendance</span><b>{{ $days['present'] }} of {{ $days['days'] }} days</b></div>
+                    @endif
                     @if (! empty($promotionText[$student->id]))
                         <div class="kv"><span>Promotion</span><b style="color:#1e3a5f">{{ $promotionText[$student->id] }}</b></div>
                     @endif

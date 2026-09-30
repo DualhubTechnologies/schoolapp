@@ -4,6 +4,29 @@ What changed in SchoolHub, newest first, in terms of what schools and the
 platform owner notice. Housekeeping commits (formatting, type fixes) are
 folded into the change they belong to. Add an entry with every release.
 
+## 30 September 2026
+
+- **Marks and exams revised.** Teachers submit finished mark sheets and
+  the Director of Studies approves them or returns them with a note;
+  approved sheets are final until reopened. New **Marks Progress** page
+  shows every sheet of an exam (not started, being entered, complete,
+  submitted, approved) with "approve all submitted". Mark sheets can be
+  downloaded to Excel, filled offline and uploaded, or printed blank or
+  filled. Results and report cards can be produced for one exam alone
+  (mid-term reports). The Exams list warns when a term's weights do not
+  add up to 100%.
+- **Attendance** module: daily class register (present, absent, late,
+  excused), text parents of absent learners, attendance report with
+  Excel export, and the term's attendance on report cards.
+- **Messages (SMS)** module: bulk SMS to all families, a class or stream,
+  families owing fees, or staff, personalised with the learner's name,
+  class or balance; sent in the background with a history.
+- **Two-step sign-in** with an authenticator app, from each user's new
+  profile page (recommended for the platform owner and bursars).
+- Security headers on every page, HTTPS links in production, and new
+  System health checks: HTTPS and secure cookie, log rotation, disk space,
+  owner two-step sign-in.
+
 ## 29 September 2026
 
 - **System health** page for the platform owner: shows whether email, SMS,

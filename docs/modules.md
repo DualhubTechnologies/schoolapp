@@ -94,6 +94,37 @@ letter. By default no one gets a second SMS within a few days of the last.
 Positions are given in class and stream. Report cards are shared with
 parents only when the school chooses to share them.
 
+## Mark sheets and approval
+
+A mark sheet is one exam, one class, one subject (`mark_sheets`):
+
+| Status | Who can change the marks |
+|---|---|
+| Being entered | The subject teacher (and class teacher for their stream), and the Director of Studies |
+| Submitted | Only those with "Marks for all subjects" (or School Admins) |
+| Approved | Nobody, until the Director of Studies reopens it |
+
+Locking an exam still closes every sheet of it. **Marks Progress** shows
+every sheet's state; **Results for** on Results and Report Cards picks the
+whole term or one exam alone. Spreadsheet upload matches learners by
+admission number and applies the same checks as typing.
+
+## Attendance
+
+One record per learner per day (`attendance_records`). Late counts as
+present; excused is shown apart. Class teachers take only their own
+streams. "Text parents of absent learners" sends once per record, for
+today's register only. Report cards show "Attendance: X of Y days" for the
+term's dates, unless a days-present figure was typed on the term report.
+
+## Messages (SMS)
+
+Audiences: all families, a class or stream, families owing fees, all
+staff. A family with several children receives one SMS unless the text
+uses `{student}`, `{class}` or `{balance}`. Sending runs on the queue
+(`SendMessageBatch`, never retried so nobody is texted twice); needs the
+queue worker and `SMS_DRIVER=africastalking`.
+
 ## Promotion
 
 **Code:** `App\Services\Academics\PromotionService`, `PromotionAdvisor`

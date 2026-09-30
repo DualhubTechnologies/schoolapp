@@ -40,6 +40,7 @@ use App\Http\Controllers\TransportDocumentController;
 use App\Http\Middleware\EnsureSchoolSubscribed;
 use App\Support\UndoDelete;
 use Filafly\LogoTools\LogoToolsPlugin;
+use Filament\Auth\MultiFactor\App\AppAuthentication;
 use Filament\Http\Middleware\Authenticate;
 use Filament\Http\Middleware\AuthenticateSession;
 use Filament\Http\Middleware\DisableBladeIconComponents;
@@ -70,6 +71,12 @@ class AppPanelProvider extends PanelProvider
             ->id('app')
             ->path('/')                       // Serves at http://schoolapp.test
             ->login(Login::class)
+            // Name, email and password, and optional two-step sign-in with an
+            // authenticator app (with recovery codes if the phone is lost).
+            ->profile(isSimple: false)
+            ->multiFactorAuthentication([
+                AppAuthentication::make()->recoverable(),
+            ])
             // Schools sign themselves up; the person registering becomes its School Admin.
             ->registration(RegisterSchool::class)
             ->passwordReset(resetAction: ResetPassword::class)

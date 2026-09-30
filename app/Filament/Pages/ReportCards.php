@@ -4,6 +4,7 @@ namespace App\Filament\Pages;
 
 use App\Models\Mark;
 use App\Models\ReportCardTemplate;
+use App\Models\ResidencyType;
 use App\Models\SchoolClass;
 use App\Models\Section;
 use App\Models\Student;
@@ -34,7 +35,10 @@ use Livewire\Attributes\Computed;
 
 /**
  * Write the term's report-card comments for a class, then print the
- * cards -- the whole class at once or one student.
+ * cards -- the whole class at once, the learners a search or filter
+ * shows, or one student.
+ *
+ * @property-read array<string, mixed>|null $results
  */
 class ReportCards extends Page
 {
@@ -55,6 +59,26 @@ class ReportCards extends Page
     public ?int $sectionId = null;
 
     public bool $showFees = true;
+
+    /** What is typed in the search box; applied by the Search button or Enter. */
+    public string $searchInput = '';
+
+    /** The search in force: name, admission number or LIN. */
+    public string $search = '';
+
+    /** 'male', 'female' or '' for all. */
+    public string $gender = '';
+
+    public ?int $residencyId = null;
+
+    /** '' all, 'missing' no class teacher's comment yet, 'written' has one. */
+    public string $commentFilter = '';
+
+    public const COMMENT_FILTERS = [
+        '' => 'All learners',
+        'missing' => 'No comment yet',
+        'written' => 'Comment written',
+    ];
 
     /** @var array<int, array{class_teacher_comment: ?string, conduct: ?string}> */
     public array $comments = [];
@@ -338,6 +362,76 @@ class ReportCards extends Page
         $this->loadComments();
     }
 
+    /** The Search button (or Enter in the search box). */
+    public function applySearch(): void
+    {
+        $this->search = trim($this->searchInput);
+    }
+
+    public function clearSearch(): void
+    {
+        $this->searchInput = '';
+        $this->search = '';
+    }
+
+    /** Back to the whole class or stream. */
+    public function clearFilters(): void
+    {
+        $this->gender = '';
+        $this->residencyId = null;
+        $this->commentFilter = '';
+        $this->clearSearch();
+    }
+
+    public function hasFilters(): bool
+    {
+        return $this->search !== '' || $this->gender !== '' || $this->residencyId !== null || $this->commentFilter !== '';
+    }
+
+    /** @return Collection<int, string> */
+    public function residencyOptions(): Collection
+    {
+        return ResidencyType::where('school_id', auth()->user()?->school_id)->orderBy('name')->pluck('name', 'id');
+    }
+
+    /**
+     * The class's rows narrowed by the search and filters. Comments are
+     * still saved for everyone: hidden rows keep what was typed.
+     *
+     * @return Collection<int, array<string, mixed>>
+     */
+    public function visibleRows(): Collection
+    {
+        $needle = mb_strtolower($this->search);
+
+        return ($this->results ? $this->results['rows'] : collect())
+            ->filter(function (array $row) use ($needle): bool {
+                /** @var Student $student */
+                $student = $row['student'];
+
+                if ($needle !== '' && ! str_contains(mb_strtolower(implode(' ', [$student->name, $student->admission_no, $student->lin])), $needle)) {
+                    return false;
+                }
+
+                if ($this->gender !== '' && $student->gender !== $this->gender) {
+                    return false;
+                }
+
+                if ($this->residencyId && (int) $student->residency_type_id !== $this->residencyId) {
+                    return false;
+                }
+
+                $hasComment = filled($this->comments[$student->id]['class_teacher_comment'] ?? null);
+
+                return match ($this->commentFilter) {
+                    'missing' => ! $hasComment,
+                    'written' => $hasComment,
+                    default => true,
+                };
+            })
+            ->values();
+    }
+
     /** @return Collection<int, string> */
     public function termOptions(): Collection
     {
@@ -454,11 +548,17 @@ class ReportCards extends Page
 
     public function printUrl(?int $studentId = null): string
     {
+        // "Print all" after a search or filter prints just the learners shown.
+        $shown = ! $studentId && $this->hasFilters()
+            ? $this->visibleRows()->pluck('student.id')->implode(',')
+            : null;
+
         return route('filament.app.academics.report-cards', array_filter([
             'term' => $this->termId,
             'class' => $this->classId,
             'section' => $this->sectionId,
             'student' => $studentId,
+            'students' => $shown ?: null,
             'fees' => $this->showFees ? 1 : 0,
             'print' => 1,
         ], fn ($v) => $v !== null));

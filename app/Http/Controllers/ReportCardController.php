@@ -35,20 +35,31 @@ class ReportCardController extends Controller
             403,
         );
 
-        return $this->render($calculator, $class, $term, $request->integer('section') ?: null, $request->integer('student') ?: null, $request->boolean('fees'));
+        // ?students=1,2,3: just the learners the Report Cards page is showing
+        // after a search or filter.
+        $only = array_values(array_filter(array_map('intval', explode(',', (string) $request->query('students')))));
+
+        return $this->render($calculator, $class, $term, $request->integer('section') ?: null, $request->integer('student') ?: null, $request->boolean('fees'), $only);
     }
 
     /**
      * The report cards themselves, once access has been checked: by the
      * school's staff above, or by the parent page for one learner.
      */
-    public function render(ResultsCalculator $calculator, SchoolClass $class, Term $term, ?int $section, ?int $student, bool $showFees): View
+    /**
+     * @param  list<int>  $only  when given, just these learners
+     */
+    public function render(ResultsCalculator $calculator, SchoolClass $class, Term $term, ?int $section, ?int $student, bool $showFees, array $only = []): View
     {
         $results = $calculator->forClass($class, $term, $section);
         $rows = $results['rows']->filter(fn ($r) => $r['average'] !== null);
 
         if ($student) {
             $rows = $rows->filter(fn ($r) => $r['student']->id === $student);
+        }
+
+        if ($only !== []) {
+            $rows = $rows->filter(fn ($r) => in_array($r['student']->id, $only, true));
         }
 
         abort_if($rows->isEmpty(), 404, 'No results to print.');

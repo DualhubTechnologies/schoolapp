@@ -7,6 +7,7 @@ use App\Filament\Pages\StudentAccount;
 use App\Filament\Pages\StudentIdCards;
 use App\Models\Student;
 use App\Support\Modules;
+use App\Support\OwnSchool;
 use App\Support\PrivateFiles;
 use Filament\Actions\Action;
 use Filament\Actions\ActionGroup;
@@ -149,11 +150,11 @@ class StudentsTable
             ->filters([
                 SelectFilter::make('school_class_id')
                     ->label('Class')
-                    ->relationship('schoolClass', 'name')
+                    ->relationship('schoolClass', 'name', fn (Builder $query) => OwnSchool::scope($query))
                     ->preload(),
                 SelectFilter::make('section_id')
                     ->label('Section')
-                    ->relationship('section', 'name')
+                    ->relationship('section', 'name', fn (Builder $query) => OwnSchool::scope($query))
                     ->preload(),
                 SelectFilter::make('enrolment_status')
                     ->label('Enrolment')

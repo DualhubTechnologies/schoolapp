@@ -4,6 +4,7 @@ namespace App\Filament\App\Resources\FeeStructures\Tables;
 
 use App\Models\FeeStructure;
 use App\Models\Term;
+use App\Support\OwnSchool;
 use Filament\Actions\BulkActionGroup;
 use Filament\Actions\DeleteBulkAction;
 use Filament\Actions\EditAction;
@@ -11,6 +12,7 @@ use Filament\Tables\Columns\IconColumn;
 use Filament\Tables\Columns\TextColumn;
 use Filament\Tables\Filters\SelectFilter;
 use Filament\Tables\Table;
+use Illuminate\Database\Eloquent\Builder;
 
 class FeeStructureTable
 {
@@ -80,7 +82,7 @@ class FeeStructureTable
             ->filters([
                 SelectFilter::make('school_class_id')
                     ->label('Class')
-                    ->relationship('schoolClass', 'name')
+                    ->relationship('schoolClass', 'name', fn (Builder $query) => OwnSchool::scope($query))
                     ->preload(),
 
                 SelectFilter::make('term_id')
@@ -94,7 +96,7 @@ class FeeStructureTable
 
                 SelectFilter::make('residency_type_id')
                     ->label('Residency')
-                    ->relationship('residencyType', 'name')
+                    ->relationship('residencyType', 'name', fn (Builder $query) => OwnSchool::scope($query))
                     ->preload(),
 
                 SelectFilter::make('frequency')

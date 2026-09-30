@@ -2,12 +2,14 @@
 
 namespace App\Filament\App\Resources\Sections\Tables;
 
+use App\Support\OwnSchool;
 use Filament\Actions\BulkActionGroup;
 use Filament\Actions\DeleteBulkAction;
 use Filament\Actions\EditAction;
 use Filament\Tables\Columns\TextColumn;
 use Filament\Tables\Filters\SelectFilter;
 use Filament\Tables\Table;
+use Illuminate\Database\Eloquent\Builder;
 
 class SectionsTable
 {
@@ -43,7 +45,7 @@ class SectionsTable
             ->filters([
                 SelectFilter::make('school_class_id')
                     ->label('Class')
-                    ->relationship('schoolClass', 'name')
+                    ->relationship('schoolClass', 'name', fn (Builder $query) => OwnSchool::scope($query))
                     ->preload(),
             ])
             ->recordActions([

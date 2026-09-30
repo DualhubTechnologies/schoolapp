@@ -143,3 +143,41 @@ it('will not share with parents while exams are missing, unless told to', functi
 
     expect($this->term->fresh()->report_cards_released_at)->not->toBeNull();
 });
+
+it('searches and filters the class, and prints just the learners shown', function () {
+    $brian = Student::create([
+        'school_id' => $this->school->id, 'school_class_id' => $this->class->id,
+        'name' => 'Brian Okello', 'first_name' => 'Brian', 'last_name' => 'Okello',
+        'admission_no' => 'ADM-002', 'gender' => 'male', 'status' => 'active',
+    ]);
+    Mark::create(['assessment_id' => $this->bot->id, 'student_id' => $brian->id, 'subject_id' => $this->english->id, 'score' => 50]);
+
+    $page = Livewire::test(ReportCards::class)
+        ->set('classId', $this->class->id)
+        ->assertSee('Aisha Nakato')
+        ->assertSee('Brian Okello')
+        ->set('searchInput', 'okello')
+        ->assertSee('Aisha Nakato')
+        ->call('applySearch')
+        ->assertSee('Brian Okello')
+        ->assertDontSee('Aisha Nakato')
+        ->assertSee('Print 1 shown');
+
+    expect($page->instance()->printUrl())->toContain('students='.$brian->id);
+
+    $page->call('clearSearch')
+        ->set('gender', 'female')
+        ->assertSee('Aisha Nakato')
+        ->assertDontSee('Brian Okello')
+        ->set('gender', '')
+        ->set('commentFilter', 'missing')
+        ->assertSee('Brian Okello')
+        ->assertDontSee('Aisha Nakato')
+        ->call('clearFilters')
+        ->assertSee('Print all');
+
+    $this->get(route('filament.app.academics.report-cards', ['term' => $this->term->id, 'class' => $this->class->id, 'students' => $brian->id]))
+        ->assertOk()
+        ->assertSee('Brian Okello')
+        ->assertDontSee('Aisha Nakato');
+});

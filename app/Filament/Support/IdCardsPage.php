@@ -18,6 +18,7 @@ use Filament\Pages\Page;
 use Filament\Schemas\Components\Grid;
 use Filament\Schemas\Components\Utilities\Get;
 use Filament\Schemas\Components\View;
+use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Support\Collection;
 use Livewire\Attributes\Computed;
 
@@ -46,6 +47,21 @@ abstract class IdCardsPage extends Page
 
     /** Set when opened for a chosen set (a table bulk action), comma-separated. */
     public string $holderIds = '';
+
+    /** What is typed in the search box; applied by the Search button or Enter. */
+    public string $searchInput = '';
+
+    /** The search in force: name or number. */
+    public string $search = '';
+
+    /** '' everyone, 'ready' only cards that can print, 'missing' only those missing details. */
+    public string $readiness = '';
+
+    public const READINESS = [
+        '' => 'All cards',
+        'ready' => 'Ready to print',
+        'missing' => 'Missing details',
+    ];
 
     /** 'students' or 'staff': which print/export route and which records. */
     abstract public function holderType(): string;
@@ -98,6 +114,52 @@ abstract class IdCardsPage extends Page
         unset($this->holders, $this->cards);
     }
 
+    /** The Search button (or Enter in the search box). */
+    public function applySearch(): void
+    {
+        $this->search = trim($this->searchInput);
+        $this->refreshCards();
+    }
+
+    public function clearSearch(): void
+    {
+        $this->searchInput = '';
+        $this->search = '';
+        $this->refreshCards();
+    }
+
+    public function updatedReadiness(): void
+    {
+        $this->refreshCards();
+    }
+
+    /**
+     * A query narrowed to what the search box holds: any of the columns
+     * contains it (case does not matter).
+     *
+     * @template TModel of \Illuminate\Database\Eloquent\Model
+     *
+     * @param  Builder<TModel>  $query
+     * @param  list<string>  $columns
+     * @return Builder<TModel>
+     */
+    protected function applySearchTo(Builder $query, array $columns): Builder
+    {
+        if ($this->search === '') {
+            return $query;
+        }
+
+        // LIKE ignores case on MySQL's default collation and for plain
+        // letters on SQLite, so "nakato" finds "Nakato".
+        $term = '%'.$this->search.'%';
+
+        return $query->where(function ($q) use ($columns, $term): void {
+            foreach ($columns as $column) {
+                $q->orWhere($column, 'like', $term);
+            }
+        });
+    }
+
     public function hasExplicitSelection(): bool
     {
         return $this->holderId !== null || $this->holderIds !== '';
@@ -124,7 +186,19 @@ abstract class IdCardsPage extends Page
     {
         $ids = $this->explicitIds();
 
-        return $ids !== [] ? $this->holdersById($ids) : $this->filteredHolders();
+        if ($ids !== []) {
+            return $this->holdersById($ids);
+        }
+
+        $holders = $this->filteredHolders();
+
+        if ($this->readiness === '') {
+            return $holders;
+        }
+
+        $service = app(IdCardService::class);
+
+        return $holders->filter(fn (Student|Staff $holder): bool => $service->isReady($holder) === ($this->readiness === 'ready'))->values();
     }
 
     /**

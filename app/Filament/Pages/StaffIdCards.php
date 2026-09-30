@@ -30,6 +30,9 @@ class StaffIdCards extends IdCardsPage
 
     public string $department = '';
 
+    /** 'male', 'female' or '' for all. */
+    public string $gender = '';
+
     public function holderType(): string
     {
         return 'staff';
@@ -43,6 +46,26 @@ class StaffIdCards extends IdCardsPage
     public function updatedDepartment(): void
     {
         $this->refreshCards();
+    }
+
+    public function updatedGender(): void
+    {
+        $this->refreshCards();
+    }
+
+    /** Back to all active staff. */
+    public function clearFilters(): void
+    {
+        $this->category = '';
+        $this->department = '';
+        $this->gender = '';
+        $this->readiness = '';
+        $this->clearSearch();
+    }
+
+    public function hasExtraFilters(): bool
+    {
+        return $this->search !== '' || $this->category !== '' || $this->department !== '' || $this->gender !== '' || $this->readiness !== '';
     }
 
     /** @return Collection<int, string> */
@@ -59,10 +82,12 @@ class StaffIdCards extends IdCardsPage
     /** @return Collection<int, Staff> */
     protected function filteredHolders(): Collection
     {
-        return Staff::where('school_id', auth()->user()?->school_id)
+        return $this->applySearchTo(Staff::query(), ['staff.name', 'staff.staff_no', 'staff.position', 'staff.phone'])
+            ->where('school_id', auth()->user()?->school_id)
             ->where('status', 'active')
             ->when($this->category !== '', fn ($q) => $q->where('category', $this->category))
             ->when($this->department !== '', fn ($q) => $q->where('department', $this->department))
+            ->when($this->gender !== '', fn ($q) => $q->where('gender', $this->gender))
             ->with('school')
             ->orderBy('name')
             ->get();

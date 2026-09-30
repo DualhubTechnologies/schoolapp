@@ -6,6 +6,25 @@ folded into the change they belong to. Add an entry with every release.
 
 ## 30 September 2026
 
+- **Report Cards: search and filters.** Search the class by name,
+  admission number or LIN (Search button or Enter), and filter by sex,
+  residency and whether the class teacher's comment is written. "Print
+  all" becomes "Print N shown" and prints just those learners. A
+  "Loading report cards…" indicator shows while a class loads.
+
+- **Filters show only the school's own records.** The Class, Section,
+  Residency and Academic year filters on Students, Sections, Payments,
+  Billing, Fee Setup, Fee Balances, Fee Reminders and Terms listed every
+  school's entries (a secondary school saw another school's "Baby
+  Class"). They now list only the school's own.
+- **ID cards: search and more filters.** A search box with a Search
+  button (students by name, admission number, LIN or SchoolPay code,
+  across the whole school or within a class; staff by name, number, job
+  or phone), filters for sex, residency and house (students), sex
+  (staff), and "Ready to print / Missing details", with "Clear search
+  and filters". A "Loading ID cards…" indicator shows while the cards
+  are fetched.
+
 - **Student imports respect the plan.** A file with more new students
   than the plan has room for is no longer part-imported: nothing is
   imported, and the check explains the limit (plan, students now, total

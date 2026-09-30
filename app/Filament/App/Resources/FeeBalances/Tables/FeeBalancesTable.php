@@ -7,6 +7,7 @@ use App\Filament\Pages\ReceivePayment;
 use App\Filament\Pages\StudentAccount;
 use App\Filament\Support\FeeReminderActions;
 use App\Models\Student;
+use App\Support\OwnSchool;
 use Filament\Actions\Action;
 use Filament\Actions\ActionGroup;
 use Filament\Actions\BulkActionGroup;
@@ -145,12 +146,12 @@ class FeeBalancesTable
 
                 SelectFilter::make('school_class_id')
                     ->label('Class')
-                    ->relationship('schoolClass', 'name')
+                    ->relationship('schoolClass', 'name', fn (Builder $query) => OwnSchool::scope($query))
                     ->preload(),
 
                 SelectFilter::make('residency_type_id')
                     ->label('Residency')
-                    ->relationship('residencyType', 'name')
+                    ->relationship('residencyType', 'name', fn (Builder $query) => OwnSchool::scope($query))
                     ->preload(),
 
                 Filter::make('paid_at_least')

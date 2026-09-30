@@ -235,3 +235,50 @@ it('previews the template on a sample card as the choices change', function () {
         ->not->toContain('Hope Primary')
         ->and(IdCardTemplate::where('school_id', $this->school->id)->exists())->toBeFalse();
 });
+
+it('finds learners by name or number across the school, only when Search is pressed', function () {
+    Livewire::test(StudentIdCards::class)
+        ->set('searchInput', 'nakato')
+        ->assertSee('Choose a class, or search')
+        ->call('applySearch')
+        ->assertSee('Nakato Grace')
+        ->assertDontSee('Mukasa John')
+        ->set('searchInput', 'ADM-2')
+        ->call('applySearch')
+        ->assertSee('Mukasa John')
+        ->assertDontSee('Nakato Grace')
+        ->call('clearSearch')
+        ->assertSee('Choose a class, or search');
+});
+
+it('narrows a class by sex and by whether the card is ready', function () {
+    Livewire::test(StudentIdCards::class)
+        ->set('classId', $this->class->id)
+        ->set('gender', 'female')
+        ->assertSee('Nakato Grace')
+        ->assertDontSee('Mukasa John')
+        ->set('gender', '')
+        ->set('readiness', 'missing')
+        ->assertSee('Mukasa John')
+        ->assertDontSee('Nakato Grace')
+        ->set('readiness', 'ready')
+        ->assertSee('Nakato Grace')
+        ->assertDontSee('Mukasa John')
+        ->assertSee('all ready to print')
+        ->call('clearFilters')
+        ->assertSet('readiness', '')
+        ->assertSee('Mukasa John');
+});
+
+it('finds staff by name, number or job', function () {
+    Staff::create(['school_id' => $this->school->id, 'name' => 'Okello Brian', 'staff_no' => 'ST-1', 'position' => 'Bursar', 'employment_date' => '2020-01-01', 'status' => 'active']);
+    Staff::create(['school_id' => $this->school->id, 'name' => 'Achieng Faith', 'staff_no' => 'ST-2', 'position' => 'Teacher', 'employment_date' => '2020-01-01', 'status' => 'active']);
+
+    Livewire::test(StaffIdCards::class)
+        ->assertSee('Okello Brian')
+        ->assertSee('Achieng Faith')
+        ->set('searchInput', 'bursar')
+        ->call('applySearch')
+        ->assertSee('Okello Brian')
+        ->assertDontSee('Achieng Faith');
+});

@@ -7,6 +7,7 @@ use App\Filament\Concerns\GatedByModule;
 use App\Filament\Pages\StudentAccount;
 use App\Models\FeeReminder;
 use App\Support\Modules;
+use App\Support\OwnSchool;
 use BackedEnum;
 use Filament\Actions\Action;
 use Filament\Resources\Resource;
@@ -97,7 +98,7 @@ class FeeReminderResource extends Resource
                 SelectFilter::make('status')->options(FeeReminder::STATUSES),
                 SelectFilter::make('class')
                     ->label('Class')
-                    ->relationship('student.schoolClass', 'name')
+                    ->relationship('student.schoolClass', 'name', fn (Builder $query) => OwnSchool::scope($query))
                     ->preload(),
             ])
             ->recordActions([

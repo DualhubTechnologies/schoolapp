@@ -4,6 +4,20 @@ What changed in SchoolHub, newest first, in terms of what schools and the
 platform owner notice. Housekeeping commits (formatting, type fixes) are
 folded into the change they belong to. Add an entry with every release.
 
+## 30 September 2026
+
+- **Report card template.** Each school sets how its report cards look,
+  once, from the Template button on Report Cards: Classic, Modern or
+  Compact design, main and accent colours, page border, lettering, its own
+  report title, an extra header line, a footer and a faint logo
+  watermark, and which parts are printed (photo, exam columns, positions,
+  teacher initials, conduct, promotion, next term date, fees, comments,
+  signatures, grading key). Schools that never set one get the standard
+  design. Parents' online cards use the same template.
+- **Sharing report cards checks the marks first.** Share with parents now
+  lists every exam still without marks, class by class, and will not
+  share until they are entered or the head ticks "Share anyway".
+
 ## 29 September 2026
 
 - **System health** page for the platform owner: shows whether email, SMS,

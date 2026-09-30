@@ -5,6 +5,7 @@ namespace App\Http\Controllers;
 use App\Models\FeeStructure;
 use App\Models\GradingScale;
 use App\Models\Promotion;
+use App\Models\ReportCardTemplate;
 use App\Models\SchoolClass;
 use App\Models\Staff;
 use App\Models\Term;
@@ -52,6 +53,11 @@ class ReportCardController extends Controller
 
         abort_if($rows->isEmpty(), 404, 'No results to print.');
 
+        // The school's template decides what is printed. Fees are the one
+        // part chosen per print: the Report Cards page ticks the box from
+        // the template, and the parent page never shows them.
+        $template = ReportCardTemplate::forSchool($class->school_id);
+
         $nextTerm = $term->next();
 
         // Next term's fees per residency, from the fee set-up in force then.
@@ -69,7 +75,7 @@ class ReportCardController extends Controller
         $isFinalTerm = ! $nextTerm || $nextTerm->academic_year_id !== $term->academic_year_id;
         $promotions = app(PromotionService::class);
 
-        if ($isFinalTerm && ! $promotions->isFinalClass($class)) {
+        if ($template->shows('promotion') && $isFinalTerm && ! $promotions->isFinalClass($class)) {
             $nextClass = $promotions->nextClass($class)?->name ?? 'the next class';
             $made = Promotion::where('academic_year_id', $term->academic_year_id)
                 ->whereIn('student_id', $rows->pluck('student.id'))
@@ -111,6 +117,7 @@ class ReportCardController extends Controller
             'teachers' => $teachers,
             'scales' => $scales,
             'promotionText' => $promotionText,
+            'template' => $template,
         ]);
     }
 }

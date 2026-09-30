@@ -103,7 +103,7 @@
         <ul class="text-xs text-gray-500 dark:text-gray-400 space-y-1">
             <li><strong>category</strong>: Teaching or Non-teaching (blank = Teaching). Only teaching staff can be given subjects.</li>
             <li><strong>employment_type</strong>: Permanent, Contract, Part-time or Volunteer. <strong>status</strong>: Active, On leave or Left the school.</li>
-            <li><strong>Dates</strong>: YYYY-MM-DD (e.g. 2024-02-01) or DD/MM/YYYY. A blank employment date means today.</li>
+            <li><strong>Dates</strong>: DD-MM-YYYY, e.g. 01-02-2024 (DD/MM/YYYY and 1-2-2024 also work). A blank employment date means today.</li>
             <li><strong>basic_salary</strong> in shillings sets the starting salary for payroll. <strong>pays_nssf</strong> / <strong>pays_lst</strong>: Yes or No (blank = Yes).</li>
             <li><strong>Payment</strong>: fill the bank columns, or <em>mobile_money_provider</em> (MTN / Airtel) and <em>mobile_money_number</em>.</li>
             <li>A staff number the school already has is skipped, so a file can safely be uploaded again.</li>

@@ -210,6 +210,10 @@
             @endforeach
         </div>
 
+        <p class="mt-3 text-xs text-gray-500 dark:text-gray-400">
+            <strong>Dates</strong> (date_of_birth, admission_date): DD-MM-YYYY, e.g. 14-03-2012. 14/03/2012 and 4-3-2012 also work. A blank admission date means today.
+        </p>
+
     </div>
 
 @endif

@@ -6,6 +6,12 @@ folded into the change they belong to. Add an entry with every release.
 
 ## 30 September 2026
 
+- **Import dates are day first.** Student and staff templates now write
+  dates as DD-MM-YYYY, and imports read the ways Excel saves them:
+  14-03-2012, 4-3-2012, 14/03/2012, 14-03-12, 14-Mar-2012, 2012-03-14
+  or Excel's own date number. A date that does not exist (31-02-2012)
+  is refused, and the message shows the value that could not be read.
+
 - **Staff bulk upload**, like students: a CSV template with five example
   staff (teaching and support, paid by bank and by mobile money), then
   upload, check and import from the Staff page. Each row can carry the

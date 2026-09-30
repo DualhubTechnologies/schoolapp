@@ -5,6 +5,7 @@ namespace App\Services;
 use App\Models\Staff;
 use App\Models\StaffBankDetail;
 use App\Models\StaffSalary;
+use App\Support\ImportDate;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Log;
 use Illuminate\Support\Facades\Storage;
@@ -219,7 +220,7 @@ class StaffCsvImporter
 
         foreach (['date_of_birth' => 'date of birth', 'employment_date' => 'employment date'] as $field => $label) {
             if ($data[$field] !== '' && ! $this->parseDate($data[$field])) {
-                $fail($field, "Invalid {$label}. Use YYYY-MM-DD, e.g. 2024-02-01.");
+                $fail($field, "Invalid {$label} '{$data[$field]}'. ".ImportDate::HINT);
             }
         }
 
@@ -487,19 +488,7 @@ class StaffCsvImporter
 
     protected function parseDate(string $date): ?string
     {
-        if ($date === '') {
-            return null;
-        }
-
-        foreach (['Y-m-d', 'd/m/Y', 'd-m-Y', 'Y/m/d', 'm/d/Y'] as $format) {
-            $d = \DateTime::createFromFormat('!'.$format, $date);
-
-            if ($d && $d->format($format) === $date) {
-                return $d->format('Y-m-d');
-            }
-        }
-
-        return null;
+        return ImportDate::parse($date);
     }
 
     /**
@@ -510,11 +499,11 @@ class StaffCsvImporter
     {
         $year = (int) now()->format('Y');
         $rows = [
-            ['Okello Brian', 'ST-001', 'Head Teacher', 'Teaching', 'Administration', 'Male', ($year - 45).'-05-12', '0772100001', 'brian.okello@example.com', '', 'Permanent', ($year - 6).'-02-01', 'O.B.', '', '', 'Yes', 'Yes', '1500000', 'Stanbic Bank', 'Kampala Road', 'Okello Brian', '9030001234567', '', '', 'Active'],
-            ['Nakato Sarah', 'ST-002', 'Teacher', 'Teaching', 'Sciences', 'Female', ($year - 32).'-09-03', '0701100002', '', '', 'Permanent', ($year - 2).'-02-01', 'N.S.', '', '', 'Yes', 'Yes', '850000', 'Centenary Bank', 'Mbarara', 'Nakato Sarah', '3100045678', '', '', 'Active'],
-            ['Mugisha Ivan', 'ST-003', 'Teacher', 'Teaching', 'Languages', 'Male', ($year - 28).'-01-20', '0782100003', '', '', 'Contract', $year.'-02-01', '', '', '', 'Yes', 'Yes', '700000', '', '', '', '', 'MTN', '0772100003', 'Active'],
-            ['Achieng Faith', 'ST-004', 'Bursar', 'Non-teaching', 'Accounts', 'Female', ($year - 38).'-07-14', '0756100004', '', '', 'Permanent', ($year - 4).'-05-02', '', '', '', 'Yes', 'Yes', '900000', 'dfcu Bank', 'Wandegeya', 'Achieng Faith', '01234567890', '', '', 'Active'],
-            ['Kato Samuel', 'ST-005', 'Driver', 'Non-teaching', 'Transport', 'Male', ($year - 41).'-11-30', '0774100005', '', '', 'Permanent', ($year - 3).'-01-15', '', '', '', 'Yes', 'No', '450000', '', '', '', '', 'Airtel', '0754100005', 'Active'],
+            ['Okello Brian', 'ST-001', 'Head Teacher', 'Teaching', 'Administration', 'Male', '12-05-'.($year - 45), '0772100001', 'brian.okello@example.com', '', 'Permanent', '01-02-'.($year - 6), 'O.B.', '', '', 'Yes', 'Yes', '1500000', 'Stanbic Bank', 'Kampala Road', 'Okello Brian', '9030001234567', '', '', 'Active'],
+            ['Nakato Sarah', 'ST-002', 'Teacher', 'Teaching', 'Sciences', 'Female', '03-09-'.($year - 32), '0701100002', '', '', 'Permanent', '01-02-'.($year - 2), 'N.S.', '', '', 'Yes', 'Yes', '850000', 'Centenary Bank', 'Mbarara', 'Nakato Sarah', '3100045678', '', '', 'Active'],
+            ['Mugisha Ivan', 'ST-003', 'Teacher', 'Teaching', 'Languages', 'Male', '20-01-'.($year - 28), '0782100003', '', '', 'Contract', '01-02-'.$year, '', '', '', 'Yes', 'Yes', '700000', '', '', '', '', 'MTN', '0772100003', 'Active'],
+            ['Achieng Faith', 'ST-004', 'Bursar', 'Non-teaching', 'Accounts', 'Female', '14-07-'.($year - 38), '0756100004', '', '', 'Permanent', '02-05-'.($year - 4), '', '', '', 'Yes', 'Yes', '900000', 'dfcu Bank', 'Wandegeya', 'Achieng Faith', '01234567890', '', '', 'Active'],
+            ['Kato Samuel', 'ST-005', 'Driver', 'Non-teaching', 'Transport', 'Male', '30-11-'.($year - 41), '0774100005', '', '', 'Permanent', '15-01-'.($year - 3), '', '', '', 'Yes', 'No', '450000', '', '', '', '', 'Airtel', '0754100005', 'Active'],
         ];
 
         $file = 'staff-import-template'.($schoolId ? "-{$schoolId}" : '').'.csv';

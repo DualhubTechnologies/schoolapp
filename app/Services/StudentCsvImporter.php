@@ -9,6 +9,7 @@ use App\Models\Section;
 use App\Models\Student;
 use App\Models\StudentImport;
 use App\Services\Subscriptions\SubscriptionManager;
+use App\Support\ImportDate;
 use App\Support\SchoolType;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Log;
@@ -359,11 +360,11 @@ class StudentCsvImporter
         }
 
         if (($data['date_of_birth'] ?? '') !== '' && ! $this->parseDate($data['date_of_birth'])) {
-            $fail('date_of_birth', 'Invalid date of birth. Use YYYY-MM-DD.');
+            $fail('date_of_birth', "Invalid date of birth '{$data['date_of_birth']}'. ".ImportDate::HINT);
         }
 
         if (($data['admission_date'] ?? '') !== '' && ! $this->parseDate($data['admission_date'])) {
-            $fail('admission_date', 'Invalid admission date. Use YYYY-MM-DD.');
+            $fail('admission_date', "Invalid admission date '{$data['admission_date']}'. ".ImportDate::HINT);
         }
 
         if (($data['guardian_phone'] ?? '') !== '' && ! preg_match('/^[\d\s\+\-\(\)]{7,20}$/', $data['guardian_phone'])) {
@@ -591,25 +592,10 @@ class StudentCsvImporter
             });
     }
 
-    /**
-     * Parse a date in any accepted format to Y-m-d, or null if invalid.
-     * Day-first formats are tried before month-first.
-     */
+    /** A date as Y-m-d, or null if it is blank or cannot be read. */
     protected function parseDate(string $date): ?string
     {
-        if ($date === '') {
-            return null;
-        }
-
-        foreach (['Y-m-d', 'd/m/Y', 'd-m-Y', 'Y/m/d', 'm/d/Y'] as $format) {
-            $d = \DateTime::createFromFormat('!'.$format, $date);
-
-            if ($d && $d->format($format) === $date) {
-                return $d->format('Y-m-d');
-            }
-        }
-
-        return null;
+        return ImportDate::parse($date);
     }
 
     /**
@@ -672,8 +658,8 @@ class StudentCsvImporter
                 $className,                                              // class (must already exist)
                 $section,                                                // section (optional)
                 $gender,                                                 // gender: Male / Female
-                today()->subYears($firstAge + $i)->format('Y').'-03-15', // date_of_birth: YYYY-MM-DD
-                today()->format('Y').'-02-02',                           // admission_date (blank = today)
+                '15-03-'.today()->subYears($firstAge + $i)->format('Y'), // date_of_birth: DD-MM-YYYY
+                '02-02-'.today()->format('Y'),                           // admission_date: DD-MM-YYYY (blank = today)
                 '',                                                      // lin
                 '',                                                      // nin
                 '',                                                      // schoolpay_code (only if the school uses SchoolPay)

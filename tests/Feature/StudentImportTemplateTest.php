@@ -2,7 +2,10 @@
 
 use App\Models\School;
 use App\Models\SchoolClass;
+use App\Models\StudentImport;
+use App\Models\User;
 use App\Services\StudentCsvImporter;
+use Illuminate\Support\Facades\Storage;
 
 function templateClasses(School $school): array
 {
@@ -33,4 +36,25 @@ it('uses the classes the school has set up, in order', function () {
     SchoolClass::create(['school_id' => $school->id, 'name' => 'P.1', 'level' => 2]);
 
     expect(templateClasses($school))->toBe(['Top Class', 'P.1']);
+});
+
+it('writes the template dates day first, DD-MM-YYYY', function () {
+    $rows = array_map('str_getcsv', file(StudentCsvImporter::generateTemplate(schoolOfType(School::TYPE_PRIMARY)->id), FILE_IGNORE_NEW_LINES));
+    $row = array_combine(array_shift($rows), $rows[0]);
+
+    expect($row['date_of_birth'])->toMatch('/^15-03-\d{4}$/')
+        ->and($row['admission_date'])->toBe('02-02-'.today()->format('Y'));
+});
+
+it('checks its own DD-MM-YYYY template clean', function () {
+    $school = schoolOfType(School::TYPE_PRIMARY);
+    SchoolClass::create(['school_id' => $school->id, 'name' => 'P.1', 'level' => 1]);
+    SchoolClass::create(['school_id' => $school->id, 'name' => 'P.2', 'level' => 2]);
+    Storage::disk('local')->put('imports/copy.csv', file_get_contents(StudentCsvImporter::generateTemplate($school->id)));
+
+    $import = StudentImport::create(['school_id' => $school->id, 'file_name' => 'copy.csv', 'file_path' => 'imports/copy.csv', 'status' => 'pending', 'imported_by' => User::factory()->create(['school_id' => $school->id])->id]);
+    $result = (new StudentCsvImporter($import))->validate();
+
+    expect($result['errors'])->toBe([])
+        ->and($result['valid_rows'])->toBe(2);
 });

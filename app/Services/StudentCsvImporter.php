@@ -125,6 +125,8 @@ class StudentCsvImporter
             'errors' => [['row' => 0, 'field' => $field, 'message' => $message]],
             'preview' => [],
             'unknown_columns' => [],
+            'plan_room' => null,
+            'plan' => null,
         ];
     }
 
@@ -216,7 +218,41 @@ class StudentCsvImporter
             'preview' => $preview,
             'unknown_columns' => $unknown,
             // How many more active students the school's plan allows (null = no limit).
-            'plan_room' => SubscriptionManager::roomForStudents($this->schoolId),
+            'plan_room' => $room = SubscriptionManager::roomForStudents($this->schoolId),
+            'plan' => $this->planCheck($validRows, $room),
+        ];
+    }
+
+    /**
+     * When the new students would take the school past its plan: the
+     * plan, where the school stands, and the plans that would fit, so the
+     * school can move up or trim the file. Null when the file fits.
+     *
+     * @return array{name: string, limit: int, active: int, needed: int, over_by: int, fitting: list<array{name: string, max_students: ?int, price_per_term: float}>}|null
+     */
+    protected function planCheck(int $newStudents, ?int $room): ?array
+    {
+        if ($room === null || $newStudents <= $room) {
+            return null;
+        }
+
+        $plan = SubscriptionManager::current($this->schoolId)?->plan;
+        $active = SubscriptionManager::studentCount($this->schoolId);
+        $needed = $active + $newStudents;
+
+        $fitting = [];
+
+        foreach (SubscriptionManager::plansFitting($this->schoolId, $needed) as $fit) {
+            $fitting[] = ['name' => (string) $fit->name, 'max_students' => $fit->max_students, 'price_per_term' => (float) $fit->price_per_term];
+        }
+
+        return [
+            'name' => (string) ($plan->name ?? 'current'),
+            'limit' => (int) ($plan->max_students ?? 0),
+            'active' => $active,
+            'needed' => $needed,
+            'over_by' => $newStudents - $room,
+            'fitting' => $fitting,
         ];
     }
 

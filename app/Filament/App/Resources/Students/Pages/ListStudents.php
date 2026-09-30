@@ -194,6 +194,23 @@ class ListStudents extends ListRecords
         $this->importStep = 'preview';
     }
 
+    /**
+     * Check the same file again -- after the school has moved to a bigger
+     * plan in another tab, say -- without uploading it a second time.
+     */
+    public function recheckImport(): void
+    {
+        $import = $this->importId ? StudentImport::find($this->importId) : null;
+
+        if (! $import || $import->school_id !== auth()->user()->school_id) {
+            $this->resetImport();
+
+            return;
+        }
+
+        $this->validationResult = (new StudentCsvImporter($import))->validate();
+    }
+
     /*
     |--------------------------------------------------------------------------
     | Start Import
@@ -213,6 +230,23 @@ class ListStudents extends ListRecords
                 ->title('Import not ready')
                 ->body('Please validate the file first.')
                 ->danger()
+                ->send();
+
+            return;
+        }
+
+        // More new students than the plan has room for: nothing is imported.
+        // The school moves to a plan that fits, or trims the file. Checked
+        // again here, as students may have been added since the preview.
+        $room = SubscriptionManager::roomForStudents($import->school_id);
+        $newRows = (int) ($this->validationResult['valid_rows'] ?? 0);
+
+        if ($room !== null && $newRows > $room) {
+            Notification::make()
+                ->title('Too many students for your plan')
+                ->body('Your plan has room for '.number_format($room).' more active '.str('student')->plural($room).' and this file has '.number_format($newRows).' new. Choose a bigger plan, or remove '.number_format($newRows - $room).' from the file and upload it again.')
+                ->danger()
+                ->persistent()
                 ->send();
 
             return;

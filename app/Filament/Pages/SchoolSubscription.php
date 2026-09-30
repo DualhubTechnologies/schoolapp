@@ -14,6 +14,7 @@ use Filament\Pages\Page;
 use Filament\Support\Icons\Heroicon;
 use Illuminate\Support\Collection;
 use Livewire\Attributes\Computed;
+use Livewire\Attributes\Url;
 
 /**
  * The school's own view of its SchoolHub subscription: plan, days left,
@@ -67,6 +68,19 @@ class SchoolSubscription extends Page
     }
 
     public ?int $codeModalPlanId = null;
+
+    /**
+     * New students the school is trying to add (from a student import that
+     * would not fit): the plans are then suggested for that many more.
+     */
+    #[Url(as: 'students')]
+    public ?int $adding = null;
+
+    /** Active students the school needs room for: today's, plus any it is adding. */
+    public function studentsNeeded(): int
+    {
+        return $this->usage['students']['used'] + max(0, (int) $this->adding);
+    }
 
     /** They clicked "Activate with a code" on a plan card -- open the prompt for that plan. */
     public function chooseplan(int $planId): void
@@ -142,10 +156,10 @@ class SchoolSubscription extends Page
         return SubscriptionPayment::where('school_id', $this->school->getKey())->with('subscription.plan')->orderByDesc('paid_on')->limit(20)->get();
     }
 
-    /** Smallest plan that fits the school as it is today. */
+    /** Smallest plan that fits the school: today's students plus any it is adding. */
     public function suggestedPlanId(): ?int
     {
-        $students = $this->usage['students']['used'];
+        $students = $this->studentsNeeded();
         $users = $this->usage['users']['used'];
 
         return $this->plans

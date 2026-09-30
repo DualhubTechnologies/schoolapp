@@ -6,6 +6,14 @@ folded into the change they belong to. Add an entry with every release.
 
 ## 30 September 2026
 
+- **Student imports respect the plan.** A file with more new students
+  than the plan has room for is no longer part-imported: nothing is
+  imported, and the check explains the limit (plan, students now, total
+  needed), lists the plans that would fit, links the administrator to
+  the Subscription page with the right plan marked, or says how many
+  rows to remove. "Check again" re-checks the same file after an
+  upgrade.
+
 - **Import dates are day first.** Student and staff templates now write
   dates as DD-MM-YYYY, and imports read the ways Excel saves them:
   14-03-2012, 4-3-2012, 14/03/2012, 14-03-12, 14-Mar-2012, 2012-03-14

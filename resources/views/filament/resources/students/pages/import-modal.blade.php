@@ -256,12 +256,63 @@
         $planRoom = $validationResult['plan_room'] ?? null;
     @endphp
 
-    {{-- The school's plan cannot take every new student in the file --}}
-    @if ($planRoom !== null && $validRows > $planRoom)
-        <div class="rounded-lg bg-red-50 ring-1 ring-red-200 px-3 py-2 mb-4 text-xs text-red-800">
-            <strong>Your plan has room for {{ number_format($planRoom) }} more active {{ \Illuminate\Support\Str::plural('student', $planRoom) }}.</strong>
-            Only the first {{ number_format($planRoom) }} new {{ \Illuminate\Support\Str::plural('row', $planRoom) }} will be imported; the rest are skipped.
-            Ask for a bigger plan on the Subscription page, or mark students who have left as Withdrawn/Transferred/Completed.
+    {{--
+        More new students than the plan has room for: nothing is imported.
+        The school moves to a plan that fits, or trims the file.
+    --}}
+    @php
+        $planCheck = $validationResult['plan'] ?? null;
+        $overPlan = $planRoom !== null && $validRows > $planRoom;
+        $canChangePlan = \App\Support\Modules::hasFullAccess(auth()->user());
+    @endphp
+
+    @if ($overPlan)
+        <div class="rounded-lg bg-red-50 dark:bg-red-500/10 ring-1 ring-red-200 dark:ring-red-500/20 px-4 py-3 mb-4 text-sm text-red-900 dark:text-red-200">
+            <p class="font-semibold mb-1">This file has more students than your plan allows, so nothing will be imported yet.</p>
+            <p class="text-xs mb-3">
+                @if ($planCheck)
+                    Your <strong>{{ $planCheck['name'] }}</strong> plan allows <strong>{{ number_format($planCheck['limit']) }}</strong> active students.
+                    The school has <strong>{{ number_format($planCheck['active']) }}</strong>, and this file adds <strong>{{ number_format($validRows) }}</strong> new,
+                    making <strong>{{ number_format($planCheck['needed']) }}</strong>.
+                @else
+                    Your plan has room for {{ number_format($planRoom) }} more active {{ \Illuminate\Support\Str::plural('student', $planRoom) }}; this file has {{ number_format($validRows) }} new.
+                @endif
+            </p>
+
+            <div class="grid gap-3 sm:grid-cols-2">
+                <div class="rounded-md bg-white dark:bg-gray-900 ring-1 ring-red-100 dark:ring-white/10 p-3">
+                    <p class="text-xs font-semibold text-gray-950 dark:text-white mb-1">1. Choose a plan that fits</p>
+                    @if (! empty($planCheck['fitting']))
+                        <ul class="text-xs text-gray-600 dark:text-gray-300 space-y-0.5 mb-2">
+                            @foreach ($planCheck['fitting'] as $fit)
+                                <li><strong>{{ $fit['name'] }}</strong> — {{ \App\Models\Plan::limitLabel($fit['max_students']) }} students · UGX {{ number_format($fit['price_per_term']) }} / term</li>
+                            @endforeach
+                        </ul>
+                    @else
+                        <p class="text-xs text-gray-600 dark:text-gray-300 mb-2">No listed plan is that large. Contact SchoolHub for a plan that fits.</p>
+                    @endif
+                    @if ($canChangePlan)
+                        <a href="{{ \App\Filament\Pages\SchoolSubscription::getUrl(['students' => $validRows]) }}" target="_blank"
+                           class="inline-flex items-center gap-1 rounded-md px-3 py-1.5 text-xs font-semibold bg-blue-600 text-white hover:bg-blue-500">
+                            See plans and upgrade
+                        </a>
+                        <p class="mt-1.5 text-xs text-gray-500 dark:text-gray-400">Opens in a new tab. After upgrading, click <em>Check again</em> below.</p>
+                    @else
+                        <p class="text-xs text-gray-500 dark:text-gray-400">Ask your school administrator to move the school to a bigger plan.</p>
+                    @endif
+                </div>
+                <div class="rounded-md bg-white dark:bg-gray-900 ring-1 ring-red-100 dark:ring-white/10 p-3">
+                    <p class="text-xs font-semibold text-gray-950 dark:text-white mb-1">2. Or import fewer students</p>
+                    <p class="text-xs text-gray-600 dark:text-gray-300">
+                        @if ($planRoom > 0)
+                            Keep at most <strong>{{ number_format($planRoom) }}</strong> new {{ \Illuminate\Support\Str::plural('student', $planRoom) }} in the file
+                            (remove {{ number_format($validRows - $planRoom) }}), then upload it again.
+                        @else
+                            The plan is already full. Mark students who have left as Withdrawn, Transferred or Completed to free places, or choose a bigger plan.
+                        @endif
+                    </p>
+                </div>
+            </div>
         </div>
     @endif
 
@@ -408,11 +459,19 @@
         </div>
 
         <div class="flex items-center gap-2">
+            @if ($overPlan)
+                <button type="button" wire:click="recheckImport" wire:loading.attr="disabled" class="inline-flex items-center justify-center rounded-lg px-3 py-2 text-xs font-semibold text-gray-700 bg-white ring-1 ring-gray-300 shadow-sm hover:bg-gray-50 transition-colors dark:text-gray-200 dark:bg-gray-800 dark:ring-gray-600 dark:hover:bg-gray-700">
+                    <span wire:loading.remove wire:target="recheckImport">Check again</span>
+                    <span wire:loading wire:target="recheckImport">Checking...</span>
+                </button>
+            @endif
             <button type="button" wire:click="resetImport" class="inline-flex items-center justify-center rounded-lg px-3 py-2 text-xs font-semibold text-gray-700 bg-white ring-1 ring-gray-300 shadow-sm hover:bg-gray-50 transition-colors dark:text-gray-200 dark:bg-gray-800 dark:ring-gray-600 dark:hover:bg-gray-700">
                 Cancel
             </button>
-            <button type="button" wire:click="startImport" wire:loading.attr="disabled" @disabled($validRows === 0) class="inline-flex items-center justify-center gap-1.5 rounded-lg px-4 py-2 text-xs font-semibold bg-blue-600 text-white shadow-sm hover:bg-blue-500 transition-colors disabled:opacity-50 disabled:cursor-not-allowed dark:bg-blue-500 dark:hover:bg-blue-400">
-                @if ($validRows === 0)
+            <button type="button" wire:click="startImport" wire:loading.attr="disabled" @disabled($validRows === 0 || $overPlan) class="inline-flex items-center justify-center gap-1.5 rounded-lg px-4 py-2 text-xs font-semibold bg-blue-600 text-white shadow-sm hover:bg-blue-500 transition-colors disabled:opacity-50 disabled:cursor-not-allowed dark:bg-blue-500 dark:hover:bg-blue-400">
+                @if ($overPlan)
+                    Too many for your plan
+                @elseif ($validRows === 0)
                     Nothing new to import
                 @else
                     Import {{ number_format($validRows) }} new {{ \Illuminate\Support\Str::plural('student', $validRows) }}

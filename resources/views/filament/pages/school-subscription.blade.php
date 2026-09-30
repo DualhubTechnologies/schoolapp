@@ -118,6 +118,12 @@
         <div class="sub-section">
             <h3>Plans</h3>
             <div class="sub-muted" style="margin-bottom:.8rem">Choose by the number of active students and staff logins. Paying for a year saves about 10%.</div>
+            @if ($this->adding > 0)
+                <div class="sub-alert sub-alert-amber" style="margin-bottom:.9rem">
+                    <strong>You are adding {{ number_format($this->adding) }} {{ \Illuminate\Support\Str::plural('student', $this->adding) }}.</strong>
+                    <div>With the {{ number_format($usage['students']['used']) }} the school has, you need a plan for at least {{ number_format($this->studentsNeeded()) }} active students.{{ $suggested ? ' The plan marked "Fits your school" covers them.' : ' None of these plans is that large; contact SchoolHub.' }} Once the new plan is active, go back to the import and click <em>Check again</em>.</div>
+                </div>
+            @endif
             <div class="sub-plans">
                 @foreach ($this->plans as $p)
                     <div @class(['sub-tier', 'sub-tier-current' => $plan?->is($p), 'sub-tier-suggested' => ! $plan?->is($p) && $p->getKey() === $suggested])>

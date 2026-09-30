@@ -10,7 +10,6 @@ use Filament\Forms\Components\DatePicker;
 use Filament\Forms\Components\Textarea;
 use Filament\Forms\Components\Toggle;
 use Filament\Notifications\Notification;
-use Filament\Schemas\Components\Text;
 use Illuminate\Support\Collection;
 
 /**
@@ -113,10 +112,6 @@ class FeeReminderActions
             Toggle::make('skip_recent')
                 ->label('Skip guardians reminded in the last 3 days')
                 ->default(true),
-
-            Text::make(fn () => config('sms.driver') === 'log'
-                ? 'Test mode: SMS are recorded but not delivered. Set SMS_DRIVER=africastalking in .env to send for real.'
-                : null),
         ];
     }
 

@@ -89,9 +89,6 @@
                         {{ $this->sendAction }}
                     @endif
                 </div>
-                @if (config('sms.driver') !== 'africastalking')
-                    <p class="sm-warn">SMS sending is not switched on for SchoolHub yet: messages are recorded but not delivered.</p>
-                @endif
             </div>
         </section>
     </div>
@@ -143,7 +140,6 @@
         .sm-big { font-size: 2rem; font-weight: 800; color: #16233a; line-height: 1; }
         .sm-muted { color: #64748b; font-size: .8rem; }
         .sm-phone { white-space: pre-wrap; background: #eef6ee; border-radius: 12px 12px 12px 2px; padding: .7rem .85rem; font-size: .88rem; color: #14301a; }
-        .sm-warn { margin-top: .75rem; font-size: .78rem; color: #92400e; background: #fffbeb; padding: .45rem .6rem; border-radius: 6px; }
         .sm-empty { padding: 1.5rem; text-align: center; color: #64748b; }
         .sm-scroll { overflow-x: auto; }
         .sm-table { width: 100%; border-collapse: collapse; font-size: .85rem; }

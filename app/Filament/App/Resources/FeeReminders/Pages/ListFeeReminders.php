@@ -88,10 +88,6 @@ class ListFeeReminders extends ListRecords
                         ->label('Skip guardians already texted in the last 3 days')
                         ->default(true)
                         ->visible(fn (Get $get) => $get('channel') === 'sms'),
-
-                    Text::make(fn (Get $get) => $get('channel') === 'sms' && config('sms.driver') === 'log'
-                        ? 'Test mode: SMS are recorded but not delivered. Set SMS_DRIVER=africastalking in .env to send for real.'
-                        : null),
                 ])
                 ->action(function (array $data) {
                     $students = $this->debtors($data['class_ids'] ?? [], (float) ($data['min_balance'] ?? 1));

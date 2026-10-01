@@ -10,7 +10,9 @@
  */
 return [
 
-    'public_key' => env('LICENCE_PUBLIC_KEY', ''),
+    // SchoolHub's public key, made on the server on 1 October 2026. The
+    // Windows app checks every licence with it.
+    'public_key' => env('LICENCE_PUBLIC_KEY', 'GVdvAk4enebTPFszl3URZx+TUysX1OJ/eI1Wefwrr3I='),
 
     'private_key' => env('LICENCE_PRIVATE_KEY'),
 

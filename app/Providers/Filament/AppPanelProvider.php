@@ -19,6 +19,7 @@ use App\Filament\App\Widgets\PlatformKpis;
 use App\Filament\App\Widgets\TeacherKpis;
 use App\Filament\App\Widgets\TeacherMarksProgress;
 use App\Filament\App\Widgets\WelcomeBanner;
+use App\Filament\Auth\ConfirmedAppAuthentication;
 use App\Filament\Pages\Auth\Login;
 use App\Filament\Pages\Auth\RegisterSchool;
 use App\Filament\Pages\Auth\ResetPassword;
@@ -44,7 +45,6 @@ use App\Support\Edition;
 use App\Support\PublicSite;
 use App\Support\UndoDelete;
 use Filafly\LogoTools\LogoToolsPlugin;
-use Filament\Auth\MultiFactor\App\AppAuthentication;
 use Filament\Http\Middleware\Authenticate;
 use Filament\Http\Middleware\AuthenticateSession;
 use Filament\Http\Middleware\DisableBladeIconComponents;
@@ -79,7 +79,7 @@ class AppPanelProvider extends PanelProvider
             // authenticator app (with recovery codes if the phone is lost).
             ->profile(isSimple: false)
             ->multiFactorAuthentication([
-                AppAuthentication::make()->recoverable(),
+                ConfirmedAppAuthentication::make()->recoverable(),
             ])
             // Schools sign themselves up; the person registering becomes its
             // School Admin. Not in the Windows app: its one school is set up

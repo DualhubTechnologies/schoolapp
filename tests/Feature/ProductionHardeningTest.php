@@ -1,5 +1,6 @@
 <?php
 
+use App\Filament\Auth\ConfirmedAppAuthentication;
 use App\Models\User;
 use Database\Seeders\RoleSeeder;
 use Filament\Auth\Pages\EditProfile;
@@ -56,4 +57,27 @@ it('links to the profile, where two-step sign-in is set up, from the user menu',
         ->assertOk()
         ->assertSee('My profile &amp; security', false)
         ->assertSee(Filament::getPanel('admin')->getProfileUrl(), false);
+});
+
+it('asks for the password before an authenticator app can be linked', function () {
+    Filament::setCurrentPanel('admin');
+    $owner = User::factory()->create(['school_id' => null])->assignRole('Super Admin');
+    $this->actingAs($owner);
+    $setUpLabel = __('filament-panels::auth/multi-factor/app/actions/set-up.label');
+
+    Livewire::test(EditProfile::class)
+        ->assertSee('Confirm your password to set up')
+        ->assertDontSee($setUpLabel);
+
+    session()->put(ConfirmedAppAuthentication::SESSION_KEY, time());
+
+    Livewire::test(EditProfile::class)
+        ->assertDontSee('Confirm your password to set up')
+        ->assertSee($setUpLabel);
+
+    // The confirmation runs out after ten minutes.
+    session()->put(ConfirmedAppAuthentication::SESSION_KEY, time() - 601);
+
+    expect(ConfirmedAppAuthentication::passwordRecentlyConfirmed())->toBeFalse();
+    Livewire::test(EditProfile::class)->assertDontSee($setUpLabel);
 });

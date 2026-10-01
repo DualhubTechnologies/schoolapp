@@ -11,9 +11,9 @@ use Illuminate\Support\Facades\File;
  * The Windows app keeps its data in SQLite rather than the server's
  * MySQL. These check the parts that differ between the two.
  */
-it('groups dates by month on SQLite', function () {
-    expect(DB::getDriverName())->toBe('sqlite')
-        ->and(DB::selectOne('select '.Sql::yearMonth("'2026-09-14'").' as ym')->ym)->toBe('2026-09');
+// Runs on whichever database the tests use: SQLite locally, MySQL on GitHub.
+it('groups dates by month on either database', function () {
+    expect(DB::selectOne('select '.Sql::yearMonth("'2026-09-14'").' as ym')->ym)->toBe('2026-09');
 });
 
 it('backs up a SQLite database as a consistent, compressed copy', function () {

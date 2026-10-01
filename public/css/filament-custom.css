@@ -985,6 +985,8 @@ html .fi-body {
 
     text-align: left;
 
+    text-decoration: none;
+
     transition: background 0.12s ease;
 
 }

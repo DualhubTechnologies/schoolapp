@@ -46,3 +46,14 @@ it('gives school users a profile page where two-step sign-in can be set up', fun
 
     Livewire::test(EditProfile::class)->assertOk()->assertSee('Authenticator app');
 });
+
+it('links to the profile, where two-step sign-in is set up, from the user menu', function () {
+    Filament::setCurrentPanel('admin');
+    $owner = User::factory()->create(['school_id' => null])->assignRole('Super Admin');
+
+    $this->actingAs($owner)
+        ->get(Filament::getPanel('admin')->getUrl())
+        ->assertOk()
+        ->assertSee('My profile &amp; security', false)
+        ->assertSee(Filament::getPanel('admin')->getProfileUrl(), false);
+});

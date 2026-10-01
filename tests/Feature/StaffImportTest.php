@@ -12,6 +12,7 @@ use Database\Seeders\RoleSeeder;
 use Filament\Facades\Filament;
 use Illuminate\Http\UploadedFile;
 use Illuminate\Support\Facades\Storage;
+use Illuminate\Support\ViewErrorBag;
 use Livewire\Livewire;
 
 beforeEach(function () {
@@ -137,3 +138,27 @@ it('offers the staff CSV template for download', function () {
         ->callAction('downloadTemplate')
         ->assertFileDownloaded('staff-import-template.csv');
 });
+
+// Livewire tests never draw a modal's contents, so the Import staff window
+// is drawn here directly: once, a Blade mistake in it broke every upload.
+it('draws every step of the Import staff window', function (string $step) {
+    $html = view('filament.resources.staff.pages.import-modal', [
+        'importStep' => $step,
+        'csvFile' => null,
+        'errors' => new ViewErrorBag,
+        'validationResult' => [
+            'total_rows' => 2, 'valid_rows' => 1, 'invalid_rows' => 1, 'existing_rows' => 0, 'error_count' => 1,
+            'errors' => [['row' => 3, 'field' => 'name', 'type' => 'error', 'message' => 'Name is required.']],
+            'existing' => [],
+            'preview' => [['name' => 'Okello Brian', 'staff_no' => 'ST-1', 'position' => 'Teacher', 'category' => 'Teaching', 'department' => '', 'phone' => '', 'basic_salary' => '']],
+            'unknown_columns' => [],
+        ],
+        'importResult' => ['imported' => 1, 'skipped' => 1, 'problems' => [['row' => 3, 'field' => 'name', 'type' => 'error', 'message' => 'Name is required.']]],
+    ])->render();
+
+    expect($html)->toContain(match ($step) {
+        'upload' => 'Check file',
+        'preview' => 'Okello Brian',
+        'complete' => 'Import completed',
+    });
+})->with(['upload', 'preview', 'complete']);

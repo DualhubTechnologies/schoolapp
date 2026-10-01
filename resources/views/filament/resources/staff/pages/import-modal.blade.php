@@ -10,7 +10,10 @@
 
 <div class="flex items-center gap-2 mb-5 text-sm">
     @foreach ($steps as $key => $label)
-        @php($thisIndex = array_search($key, $stepKeys, true))
+        {{-- Block form on purpose: the one-line form breaks templates that also use blocks. --}}
+        @php
+            $thisIndex = array_search($key, $stepKeys, true);
+        @endphp
         <div class="flex items-center gap-1.5">
             @if ($importStep === $key)
                 <span class="flex h-6 w-6 items-center justify-center rounded-full bg-blue-600 text-white text-xs font-bold">{{ $loop->iteration }}</span>

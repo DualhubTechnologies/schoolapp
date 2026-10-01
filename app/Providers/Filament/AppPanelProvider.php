@@ -38,6 +38,7 @@ use App\Http\Controllers\ReportCardController;
 use App\Http\Controllers\StudentDocumentController;
 use App\Http\Controllers\TransportDocumentController;
 use App\Http\Middleware\EnsureSchoolSubscribed;
+use App\Support\PublicSite;
 use App\Support\UndoDelete;
 use Filafly\LogoTools\LogoToolsPlugin;
 use Filament\Auth\MultiFactor\App\AppAuthentication;
@@ -86,6 +87,10 @@ class AppPanelProvider extends PanelProvider
             // signed-in users to /dashboard instead.
             ->routes(function () {
                 Route::get('/', LandingController::class)->name('landing');
+                // The other public pages: About, Features, Pricing, Help, Contact.
+                Route::get('/{page}', [LandingController::class, 'page'])
+                    ->whereIn('page', array_keys(PublicSite::PAGES))
+                    ->name('site.page');
                 // Terms and conditions, linked from registration and the site footers.
                 Route::view('/terms-and-conditions', 'legal.terms')->name('legal.terms');   // /terms is the academic Terms resource
                 // A new school administrator confirms their email with the code we sent.

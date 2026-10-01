@@ -2,24 +2,33 @@
 
 namespace App\Http\Controllers;
 
-use App\Models\DemoRequest;
-use App\Models\Plan;
+use App\Support\PublicSite;
 use Illuminate\Contracts\View\View;
 
 /**
- * The public home page at the site root: what SchoolHub does, what it
- * costs, and the way in (sign in / register a school).
+ * The public site: the home page at the site root (what SchoolHub does,
+ * what it costs, and the way in), and the About, Features, Pricing, Help
+ * and Contact pages, which reuse its sections.
  */
 class LandingController extends Controller
 {
     public function __invoke(): View
     {
-        return view('landing', [
-            'plans' => Plan::where('is_active', true)->where('is_trial', false)->orderBy('sort_order')->get(),
-            'trialDays' => (int) config('subscriptions.trial_days', 30),
-            'contact' => config('contact'),
-            'learnerRanges' => DemoRequest::LEARNERS,
-            'contactMethods' => DemoRequest::CONTACT_METHODS,
+        // On the home page "Book a demo" scrolls to its own form.
+        return view('landing', [...PublicSite::viewData(), 'demoUrl' => '#demo']);
+    }
+
+    public function page(string $page): View
+    {
+        abort_unless(array_key_exists($page, PublicSite::PAGES), 404);
+
+        [, $title, $description] = PublicSite::PAGES[$page];
+
+        return view("site.{$page}", [
+            ...PublicSite::viewData(),
+            'page' => $page,
+            'title' => $title,
+            'description' => $description,
         ]);
     }
 }

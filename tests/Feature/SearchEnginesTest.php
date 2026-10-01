@@ -36,7 +36,20 @@ it('points search engines at a sitemap of the public pages', function () {
         ->assertSee('<loc>https://www.schoolhubug.com/terms-and-conditions</loc>', false);
 });
 
-it('sends the old website\'s addresses Google still lists to where they live now', function () {
-    $this->get('/about')->assertStatus(301)->assertRedirect('/');
+it('sends the old website\'s privacy page, which Google still lists, to where it lives now', function () {
     $this->get('/privacy-policy')->assertStatus(301)->assertRedirect('/terms-and-conditions#privacy');
+});
+
+it('writes the business details as valid JSON that Google can read', function () {
+    $html = $this->get('/')->assertOk()->getContent();
+
+    preg_match('#<script type="application/ld\+json">(.*?)</script>#s', $html, $m);
+    $data = json_decode($m[1] ?? '', true);
+
+    expect($data)->toBeArray()
+        ->and($data['@context'])->toBe('https://schema.org')
+        ->and($data['@type'])->toBe('Organization')
+        ->and($data['logo'])->toBe('https://www.schoolhubug.com/images/schoolhub-icon-512.png')
+        ->and($data['telephone'])->toBe('+256782863209')
+        ->and($data['contactPoint']['hoursAvailable']['opens'])->toBe('08:00');
 });

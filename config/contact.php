@@ -16,4 +16,14 @@ return [
 
     // Who builds and supports SchoolHub.
     'company' => env('CONTACT_COMPANY', 'DualHub Technologies'),
+
+    // Where the team is and when it answers: on the Contact page and in the
+    // footer, and in the details Google reads. Keep these the same as the
+    // Google Business Profile so Google matches the two.
+    'location' => env('CONTACT_LOCATION', 'Wakiso, Uganda'),
+    'locality' => env('CONTACT_LOCALITY', 'Wakiso'),
+    'hours' => env('CONTACT_HOURS', 'Monday to Friday, 8:00 am – 6:00 pm'),
+    'opens' => env('CONTACT_OPENS', '08:00'),
+    'closes' => env('CONTACT_CLOSES', '18:00'),
+    'days' => ['Monday', 'Tuesday', 'Wednesday', 'Thursday', 'Friday'],
 ];

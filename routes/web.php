@@ -3,6 +3,7 @@
 use App\Http\Controllers\NssfScheduleController;
 use App\Http\Controllers\ParentPageController;
 use App\Http\Controllers\PayslipController;
+use App\Support\PublicSite;
 use Illuminate\Support\Facades\Route;
 
 Route::get('/payslip/{entry}/download', [PayslipController::class, 'download'])
@@ -21,12 +22,16 @@ Route::get('/payslips/{period}/all', [PayslipController::class, 'downloadAll'])
     ->name('payslips.all')
     ->middleware('auth');
 
-// For search engines: the public pages to list, and two addresses from
-// the old website that Google still shows, sent to where they live now
+// For search engines: the public pages to list, and the old website's
+// privacy page, which Google still shows, sent to where it lives now
 // (301, so Google moves its listing too).
 Route::get('/sitemap.xml', function () {
     $site = rtrim((string) config('app.url'), '/');
-    $pages = [['/', 'weekly', '1.0'], ['/terms-and-conditions', 'monthly', '0.5']];
+    $pages = [
+        ['/', 'weekly', '1.0'],
+        ...array_map(fn (string $slug): array => ['/'.$slug, 'monthly', '0.8'], array_keys(PublicSite::PAGES)),
+        ['/terms-and-conditions', 'monthly', '0.5'],
+    ];
 
     $xml = '<?xml version="1.0" encoding="UTF-8"?>'."\n".'<urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9">'."\n";
 
@@ -45,7 +50,6 @@ Route::get('/robots.txt', fn () => response(
     ['Content-Type' => 'text/plain'],
 ))->name('robots');
 
-Route::permanentRedirect('/about', '/');
 Route::permanentRedirect('/privacy-policy', '/terms-and-conditions#privacy');
 
 // The parent page: a learner's fees and report cards from the short link

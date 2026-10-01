@@ -6,6 +6,18 @@ folded into the change they belong to. Add an entry with every release.
 
 ## 1 October 2026
 
+- **Public pages: About, Features, Pricing, Help and Contact**, each with
+  its own address, title and description so Google can list them as
+  sitelinks, in the menu and the sitemap. They reuse the home page's
+  sections, which now live in resources/views/site. The Contact page
+  and footer show the phone (0782 863209), location (Wakiso, Uganda)
+  and hours (Monday to Friday, 8 am - 6 pm), and the same details go to
+  Google with the logo. A demo request returns to the page it was sent
+  from. /about is now a real page.
+- Fixed: Blade read "@context" in yesterday's Google business details as
+  a directive, so that block was not valid JSON. It is now built in PHP
+  and tested to parse.
+
 - **Google shows the SchoolHub logo.** The site had no favicon.ico, so
   Google showed a plain globe beside it in results. It now has one
   (16/32/48px), a 48px icon, a canonical address on the public pages,

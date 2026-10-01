@@ -10,8 +10,8 @@ use Illuminate\Support\Facades\Notification;
 use Illuminate\Support\Facades\Validator;
 
 /**
- * The "Book a demo" form on the landing page. The request is saved first,
- * so it is never lost if the email to the team fails.
+ * The "Book a demo" form on the home and Contact pages. The request is
+ * saved first, so it is never lost if the email to the team fails.
  */
 class DemoRequestController extends Controller
 {
@@ -19,7 +19,7 @@ class DemoRequestController extends Controller
     {
         // Honeypot: people never see this field, bots fill it in.
         if (filled($request->input('website'))) {
-            return redirect()->to(url('/').'#demo')->with('demo_sent', true);
+            return redirect()->to($this->formPage().'#demo')->with('demo_sent', true);
         }
 
         $validator = Validator::make($request->all(), [
@@ -41,7 +41,7 @@ class DemoRequestController extends Controller
 
         // Back to the form itself, not the top of the page.
         if ($validator->fails()) {
-            return redirect()->to(url('/').'#demo')->withErrors($validator, 'demo')->withInput();
+            return redirect()->to($this->formPage().'#demo')->withErrors($validator, 'demo')->withInput();
         }
 
         $data = $validator->validated();
@@ -54,6 +54,18 @@ class DemoRequestController extends Controller
             report($e);   // saved already; it shows in Platform Management → Demo requests
         }
 
-        return redirect()->to(url('/').'#demo')->with('demo_sent', $demo->name);
+        return redirect()->to($this->formPage().'#demo')->with('demo_sent', $demo->name);
+    }
+
+    /**
+     * The page the form was sent from (home or Contact), so the visitor sees
+     * the result where they filled it in. Anywhere else: the home page.
+     */
+    protected function formPage(): string
+    {
+        $previous = strtok(url()->previous(), '#?') ?: '';
+        $contact = route('filament.app.site.page', 'contact');
+
+        return $previous === $contact ? $contact : url('/');
     }
 }

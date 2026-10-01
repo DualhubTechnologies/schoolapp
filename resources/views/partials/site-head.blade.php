@@ -22,13 +22,41 @@
 <meta property="og:site_name" content="SchoolHub">
 <meta property="og:image" content="{{ $logo }}">
 <meta name="twitter:card" content="summary">
+@php
+    // Phone in international form, as Google prefers: 0782 863209 -> +256782863209.
+    $phone = '+256'.ltrim((string) preg_replace('/\D/', '', (string) config('contact.phone')), '0');
+
+    // Built here, inside @php, because Blade would read "@context" written
+    // in the template as one of its own directives and mangle the JSON.
+    $organization = json_encode([
+        '@context' => 'https://schema.org',
+        '@type' => 'Organization',
+        'name' => 'SchoolHub',
+        'url' => $site.'/',
+        'logo' => $logo,
+        'email' => config('contact.email'),
+        'telephone' => $phone,
+        'address' => [
+            '@type' => 'PostalAddress',
+            'addressLocality' => config('contact.locality'),
+            'addressCountry' => 'UG',
+        ],
+        'contactPoint' => [
+            '@type' => 'ContactPoint',
+            'contactType' => 'customer support',
+            'telephone' => $phone,
+            'email' => config('contact.email'),
+            'areaServed' => 'UG',
+            'availableLanguage' => 'English',
+            'hoursAvailable' => [
+                '@type' => 'OpeningHoursSpecification',
+                'dayOfWeek' => config('contact.days'),
+                'opens' => config('contact.opens'),
+                'closes' => config('contact.closes'),
+            ],
+        ],
+    ], JSON_UNESCAPED_SLASHES | JSON_UNESCAPED_UNICODE | JSON_PRETTY_PRINT | JSON_HEX_TAG);
+@endphp
 <script type="application/ld+json">
-{!! json_encode([
-    '@context' => 'https://schema.org',
-    '@type' => 'Organization',
-    'name' => 'SchoolHub',
-    'url' => $site.'/',
-    'logo' => $logo,
-    'email' => config('contact.email'),
-], JSON_UNESCAPED_SLASHES | JSON_PRETTY_PRINT) !!}
+{!! $organization !!}
 </script>

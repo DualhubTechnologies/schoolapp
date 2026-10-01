@@ -30,4 +30,9 @@ return [
     // The Windows app installer: the newest GitHub release, so the website
     // never needs changing for a new version (desktop/build-windows.ps1).
     'windows_download' => env('WINDOWS_DOWNLOAD_URL', 'https://github.com/DualhubTechnologies/schoolapp/releases/latest/download/SchoolHub-Setup.exe'),
+
+    // Whether the website offers the Windows app at all. Off while the next
+    // version (short licence keys) is prepared; WINDOWS_DOWNLOAD_ENABLED=true
+    // in .env, or true here, shows the section and links again.
+    'windows_download_enabled' => (bool) env('WINDOWS_DOWNLOAD_ENABLED', false),
 ];

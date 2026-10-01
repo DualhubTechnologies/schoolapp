@@ -1,4 +1,5 @@
-    {{-- ── SchoolHub for Windows: the offline edition ── --}}
+    {{-- ── SchoolHub for Windows: the offline edition (shown only when contact.windows_download_enabled) ── --}}
+    @if ($contact['windows_download_enabled'] ?? false)
     <section class="section section-alt" id="windows">
         <div class="container">
             <div class="show" data-reveal>
@@ -35,3 +36,4 @@
             </div>
         </div>
     </section>
+    @endif

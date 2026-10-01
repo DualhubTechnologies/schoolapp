@@ -52,7 +52,7 @@
                 </div>
 
                 @unless ($signedIn)
-                    <p class="hero-signin">Already registered? <a href="{{ $loginUrl }}">Sign in to your school</a> · No internet? <a href="#windows">Get SchoolHub for Windows</a></p>
+                    <p class="hero-signin">Already registered? <a href="{{ $loginUrl }}">Sign in to your school</a>@if ($contact['windows_download_enabled'] ?? false) · No internet? <a href="#windows">Get SchoolHub for Windows</a>@endif</p>
                 @endunless
 
                 <div class="hero-points">

@@ -3,9 +3,11 @@
 namespace App\Http\Middleware;
 
 use App\Filament\Pages\AwaitingApproval;
+use App\Filament\Pages\Licence;
 use App\Filament\Pages\SchoolSubscription;
 use App\Models\User;
 use App\Services\Subscriptions\SubscriptionManager;
+use App\Support\Edition;
 use Closure;
 use Illuminate\Http\Request;
 use Symfony\Component\HttpFoundation\Response;
@@ -27,8 +29,13 @@ class EnsureSchoolSubscribed
         }
 
         // A school awaiting approval has nothing to pay yet: it waits on
-        // its own page. Every other locked school goes to Subscription.
-        $page = AwaitingApproval::isWaiting($user) ? AwaitingApproval::class : SchoolSubscription::class;
+        // its own page. Every other locked school goes to Subscription, or
+        // in the Windows app to its Licence page.
+        $page = match (true) {
+            Edition::isDesktop() => Licence::class,
+            AwaitingApproval::isWaiting($user) => AwaitingApproval::class,
+            default => SchoolSubscription::class,
+        };
 
         $route = $request->route()?->getName() ?? '';
 

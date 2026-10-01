@@ -83,6 +83,25 @@ Shown to users (help link, error pages) and used for owner emails.
 
 Keep these the same as the Google Business Profile, so Google matches the two.
 
+## Windows app licences (`config/licence.php`)
+
+Schools using SchoolHub on Windows (`APP_EDITION=desktop`) pay with a
+licence key, checked on their computer without internet.
+
+| Setting | Where | Notes |
+|---|---|---|
+| `LICENCE_PRIVATE_KEY` | online server `.env` only | Signs licence keys. **Secret**: never in the code or the Windows app. |
+| `LICENCE_PUBLIC_KEY` | server `.env` and the Windows app | Checks licence keys. Not secret. |
+
+Set up once, on the server: `php artisan licence:keygen` writes both into
+`.env` and prints the public key, which is built into the Windows app.
+Then `php artisan config:cache`. Making a new pair later stops every
+licence already issued, so the command refuses unless given `--force`.
+
+Issuing: Platform Management → **Windows licences** → *Issue licence*,
+with the school name and code exactly as the school's Licence page shows
+them. *Show key* gives the key to send; *Renew* issues the next period.
+
 ## Website visitor locations (`config/services.php` → `maxmind`)
 
 The Website visitors page (platform owner) shows each visitor's country

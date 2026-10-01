@@ -17,6 +17,7 @@ Artisan::command('inspire', function () {
 // (see config/subscriptions.php). Needs the scheduler running:
 // `php artisan schedule:work` locally, or a cron entry in production.
 Schedule::command('subscriptions:remind')
+    ->when(fn (): bool => Edition::isServer())
     ->dailyAt(config('subscriptions.reminder_time', '08:00'))
     ->timezone(config('subscriptions.reminder_timezone', 'Africa/Kampala'))
     ->withoutOverlapping()

@@ -11,6 +11,8 @@ use App\Models\Subscription;
 use App\Models\SubscriptionActivationCode;
 use App\Models\SubscriptionPayment;
 use App\Models\User;
+use App\Support\Edition;
+use App\Support\Licensing\DesktopLicence;
 use Carbon\CarbonImmutable;
 use Illuminate\Support\Collection;
 use Illuminate\Support\Facades\DB;
@@ -28,17 +30,28 @@ use Illuminate\Support\Facades\DB;
  *   suspended  switched off by the platform owner -- locked
  *   pending    registered itself, awaiting the platform owner's approval
  *   rejected   registration turned down
+ *   clock      Windows app only: the computer's date was set back -- locked
  *
  * Status is worked out from dates every time, so there is no nightly job
  * to forget and nothing to drift.
+ *
+ * In the Windows app (Edition::isDesktop) the answer comes from the
+ * school's signed licence keys instead (DesktopLicence), in the same shape,
+ * so everything built on it (locking, limits, banners) works unchanged.
  */
 class SubscriptionManager
 {
-    public const LOCKED = ['expired', 'none', 'suspended', 'pending', 'rejected'];
+    public const LOCKED = ['expired', 'none', 'suspended', 'pending', 'rejected', 'clock'];
 
     /** The period in force today (or the last one, once it has ended). */
     public static function current(School|int $school): ?Subscription
     {
+        if (Edition::isDesktop()) {
+            $model = $school instanceof School ? $school : School::find($school);
+
+            return $model ? DesktopLicence::currentPeriod($model) : null;
+        }
+
         return Subscription::with('plan')
             ->where('school_id', static::id($school))
             ->where('is_cancelled', false)
@@ -54,6 +67,11 @@ class SubscriptionManager
     public static function status(School|int $school): array
     {
         $school = $school instanceof School ? $school : School::find($school);
+
+        if (Edition::isDesktop()) {
+            return DesktopLicence::status($school);
+        }
+
         $current = $school ? static::current($school) : null;
 
         // Paid-ahead periods extend the end date.

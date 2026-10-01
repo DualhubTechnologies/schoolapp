@@ -6,6 +6,19 @@ folded into the change they belong to. Add an entry with every release.
 
 ## 1 October 2026
 
+- **Windows app, phase 3: licences control payment.** The school's
+  Licence page (Settings, Windows app) shows where it stands, the school
+  name and code to send SchoolHub after paying (with a WhatsApp button),
+  and a box for the key. Keys are signed with Ed25519 on the server
+  (`licence:keygen`, `LICENCE_PRIVATE_KEY`) and checked in the app with
+  the public key, without internet; a key only works for the school name
+  and code it was issued for. The app reads its state only from valid
+  keys, never from dates in its database: no key is the 30-day trial
+  from setup, then the key's plan limits and end date, grace days, then
+  locked (data kept). Setting the computer's clock back locks it until
+  the date is corrected. The platform owner issues, shows and renews
+  keys under Platform Management → Windows licences.
+
 - **Windows app, phase 2: the desktop edition** (`APP_EDITION=desktop`;
   the online system is `server`, the default, and is unchanged).
   First run asks for the school and its administrator and signs them in

@@ -4,17 +4,20 @@
 --}}
 @php
     $user = auth()->user();
+    // The Windows app's school renews on its Licence page.
+    $desktop = \App\Support\Edition::isDesktop();
+    $page = $desktop ? \App\Filament\Pages\Licence::class : \App\Filament\Pages\SchoolSubscription::class;
     $show = $user?->school_id && ! $user->hasRole('Super Admin') && \App\Support\Modules::hasFullAccess($user)
-        && ! request()->routeIs(\App\Filament\Pages\SchoolSubscription::getRouteName());
+        && ! request()->routeIs($page::getRouteName());
     $messages = [];
 
     if ($show) {
         $st = \App\Services\Subscriptions\SubscriptionManager::status($user->school_id);
 
         if ($st['state'] === 'grace') {
-            $messages[] = ['red', "Your SchoolHub subscription ended on {$st['ends_on']->format('j M Y')}. The system will be locked on {$st['grace_ends_on']->format('j M Y')} unless it is renewed."];
+            $messages[] = ['red', "Your SchoolHub ".($desktop ? 'licence' : 'subscription')." ended on {$st['ends_on']->format('j M Y')}. The system will be locked on {$st['grace_ends_on']->format('j M Y')} unless it is renewed."];
         } elseif ($st['expiring']) {
-            $what = $st['state'] === 'trial' ? 'free trial' : 'subscription';
+            $what = $st['state'] === 'trial' ? 'free trial' : ($desktop ? 'licence' : 'subscription');
             $messages[] = ['amber', "Your {$what} ends in {$st['days_left']} " . str('day')->plural($st['days_left']) . " ({$st['ends_on']->format('j M Y')})."];
         }
 
@@ -30,7 +33,7 @@
 @foreach ($messages as [$tone, $text])
     <div class="sh-sub-banner sh-sub-{{ $tone }}">
         <span>{{ $text }}</span>
-        <a href="{{ \App\Filament\Pages\SchoolSubscription::getUrl() }}">View subscription →</a>
+        <a href="{{ $page::getUrl() }}">{{ $desktop ? 'View licence' : 'View subscription' }} →</a>
     </div>
 @endforeach
 

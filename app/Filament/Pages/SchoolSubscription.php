@@ -7,6 +7,7 @@ use App\Models\Plan;
 use App\Models\School;
 use App\Models\SubscriptionPayment;
 use App\Services\Subscriptions\SubscriptionManager;
+use App\Support\Edition;
 use App\Support\Modules;
 use BackedEnum;
 use Filament\Notifications\Notification;
@@ -48,7 +49,8 @@ class SchoolSubscription extends Page
     {
         $user = auth()->user();
 
-        if (! $user?->school_id || $user->hasRole('Super Admin')) {
+        // The Windows app pays by licence key instead (Licence page).
+        if (! $user?->school_id || $user->hasRole('Super Admin') || Edition::isDesktop()) {
             return false;
         }
 

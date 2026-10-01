@@ -6,6 +6,18 @@ folded into the change they belong to. Add an entry with every release.
 
 ## 1 October 2026
 
+- **Website visitors** (platform owner only, Platform Management): visits
+  and unique visitors to the public pages for the last 7, 30 or 90 days
+  or 12 months, a visits-per-day chart, and the top countries, cities,
+  pages, how visitors arrived (Google, WhatsApp, Facebook, other pages…)
+  and devices. No IP address is stored; unique visitors are counted with
+  a one-way daily code. Bots, link previews, prefetches and the owner's
+  own visits are not counted. Visits are recorded after the page is
+  sent and kept for two years. Countries and cities come from MaxMind's
+  free GeoLite2 database on the server (`geoip:update`, weekly), once
+  `MAXMIND_ACCOUNT_ID` and `MAXMIND_LICENSE_KEY` are set; until then the
+  page explains how to switch them on.
+
 - **Public pages: About, Features, Pricing, Help and Contact**, each with
   its own address, title and description so Google can list them as
   sitelinks, in the menu and the sitemap. They reuse the home page's

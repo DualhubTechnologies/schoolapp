@@ -35,4 +35,15 @@ return [
         ],
     ],
 
+    // Where website visitors are (Website visitors page): MaxMind's free
+    // GeoLite2 City database, kept on this server so visitor addresses
+    // never leave it. A free MaxMind account gives the account ID and
+    // licence key; `php artisan geoip:update` downloads the database, and
+    // the scheduler refreshes it weekly.
+    'maxmind' => [
+        'account_id' => env('MAXMIND_ACCOUNT_ID'),
+        'license_key' => env('MAXMIND_LICENSE_KEY'),
+        'database' => env('MAXMIND_DATABASE', storage_path('app/geoip/GeoLite2-City.mmdb')),
+    ],
+
 ];

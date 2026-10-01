@@ -76,6 +76,27 @@ Shown to users (help link, error pages) and used for owner emails.
 | `CONTACT_WHATSAPP` | `256782863209` (international, no +) |
 | `CONTACT_EMAIL` | `dualhubtechnologies@gmail.com`: demo requests and error alerts go here |
 | `CONTACT_COMPANY` | `DualHub Technologies` |
+| `CONTACT_LOCATION` | `Wakiso, Uganda`: Contact page and footer |
+| `CONTACT_LOCALITY` | `Wakiso`: the town sent to Google |
+| `CONTACT_HOURS` | `Monday to Friday, 8:00 am – 6:00 pm` |
+| `CONTACT_OPENS` / `CONTACT_CLOSES` | `08:00` / `18:00`: hours sent to Google (days are Monday–Friday, in the file) |
+
+Keep these the same as the Google Business Profile, so Google matches the two.
+
+## Website visitor locations (`config/services.php` → `maxmind`)
+
+The Website visitors page (platform owner) shows each visitor's country
+and city from MaxMind's free GeoLite2 City database, kept on the server.
+Without it, visits are still counted but have no place.
+
+| Setting | Notes |
+|---|---|
+| `MAXMIND_ACCOUNT_ID` | From a free account at maxmind.com (GeoLite2). |
+| `MAXMIND_LICENSE_KEY` | Generated under *Manage license keys*. Secret. |
+| `MAXMIND_DATABASE` | Optional; default `storage/app/geoip/GeoLite2-City.mmdb`. |
+
+After setting them: `php artisan config:cache`, then `php artisan geoip:update`
+once. The scheduler refreshes the database every Wednesday at 03:15.
 
 ## Subscriptions (`config/subscriptions.php`)
 

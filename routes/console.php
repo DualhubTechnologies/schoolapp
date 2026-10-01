@@ -1,6 +1,7 @@
 <?php
 
 use App\Models\ErrorOccurrence;
+use App\Models\SiteVisit;
 use App\Support\SystemHealth;
 use Illuminate\Foundation\Inspiring;
 use Illuminate\Support\Facades\Artisan;
@@ -30,6 +31,21 @@ Schedule::command('backup:run')
     ->dailyAt('01:30')
     ->timezone('Africa/Kampala')
     ->withoutOverlapping()
+    ->onOneServer();
+
+// Visitor locations (Website visitors page): MaxMind publishes a new
+// GeoLite2 City database twice a week; refresh it weekly. Skipped until
+// the MaxMind account details are in .env.
+Schedule::command('geoip:update')
+    ->weeklyOn(3, '03:15')
+    ->timezone('Africa/Kampala')
+    ->when(fn (): bool => filled(config('services.maxmind.license_key')))
+    ->withoutOverlapping()
+    ->onOneServer();
+
+// Website visits older than two years.
+Schedule::command('model:prune', ['--model' => [SiteVisit::class]])
+    ->dailyAt('02:45')
     ->onOneServer();
 
 // Proof the scheduler is running, shown on System health.

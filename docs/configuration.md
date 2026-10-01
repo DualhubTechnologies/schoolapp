@@ -98,9 +98,15 @@ Set up once, on the server: `php artisan licence:keygen` writes both into
 Then `php artisan config:cache`. Making a new pair later stops every
 licence already issued, so the command refuses unless given `--force`.
 
-Issuing: Platform Management → **Windows licences** → *Issue licence*,
-with the school name and code exactly as the school's Licence page shows
-them. *Show key* gives the key to send; *Renew* issues the next period.
+Issuing: Platform Management → **Windows licences** → *Issue licence*
+gives a short licence code (`ABCD-EFGH-2345-JKLM`) to send the school:
+a free trial, a term or a year. Leave the school blank and the code
+belongs to whichever school enters it first. The school types it on its
+Licence page; the app swaps it once, online, for the signed licence
+(`POST /licence/activate`, `LICENCE_ACTIVATION_URL`) and then works
+offline. Even the free trial needs a code. *Show code* shows it again
+(and the long key, for a school that can never get online); *Renew*
+issues the next period.
 
 ## Website visitor locations (`config/services.php` → `maxmind`)
 

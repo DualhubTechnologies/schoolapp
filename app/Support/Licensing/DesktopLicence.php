@@ -7,7 +7,9 @@ use App\Models\Plan;
 use App\Models\School;
 use App\Models\Subscription;
 use Carbon\CarbonImmutable;
+use Illuminate\Http\Client\ConnectionException;
 use Illuminate\Support\Facades\DB;
+use Illuminate\Support\Facades\Http;
 use Illuminate\Support\Facades\Schema;
 use RuntimeException;
 
@@ -20,7 +22,9 @@ use RuntimeException;
  * Gives SubscriptionManager the same answer it gives online (state, plan,
  * end date, grace...), so locking, limits and banners work unchanged:
  *
- *   no key yet          the free trial, counted from when the school was set up
+ *   no key yet          locked: even the free trial needs a licence (a trial
+ *                       code from SchoolHub), so every school is known
+ *   a trial key         the trial, with the trial plan's limits
  *   a key in force      active, with the key's plan limits
  *   keys paid ahead     the end date is the latest key's
  *   ended               grace days, then locked until a new key is entered
@@ -53,6 +57,45 @@ class DesktopLicence
     }
 
     /**
+     * What the school types on its Licence page: a short code
+     * (FGDH-FWFH-2342-WETR), swapped once, online, for the signed licence;
+     * or, for a school that can never get online, the long key itself.
+     * Throws with a message for the school.
+     */
+    public static function enter(School $school, string $typed): LicenceKey
+    {
+        if (str_starts_with(trim($typed), LicenceKey::PREFIX.'.')) {
+            return static::activate($school, $typed);
+        }
+
+        if (! ShortCode::normalise($typed)) {
+            throw new RuntimeException('A licence code has 16 letters and numbers, like ABCD-EFGH-2345-JKLM. Check it and try again.');
+        }
+
+        try {
+            $response = Http::acceptJson()->timeout(20)->post((string) config('licence.activation_url'), [
+                'code' => $typed,
+                'school_name' => (string) $school->name,
+                'school_code' => (string) $school->unique_code,
+            ]);
+        } catch (ConnectionException) {
+            throw new RuntimeException('Entering a licence code needs the internet for a moment. Connect this computer (phone data is enough), then try again. After that SchoolHub works offline.');
+        }
+
+        if ($response->status() === 422 || $response->status() === 429) {
+            throw new RuntimeException((string) ($response->json('message') ?: 'That licence code was not accepted. Check it and try again.'));
+        }
+
+        $key = $response->json('key');
+
+        if (! $response->successful() || ! is_string($key)) {
+            throw new RuntimeException('SchoolHub could not be reached just now. Please try again in a few minutes.');
+        }
+
+        return static::activate($school, $key);
+    }
+
+    /**
      * Check a key and keep it. Throws with a message for the school when
      * the key is wrong, for another school, or already entered.
      */
@@ -69,7 +112,7 @@ class DesktopLicence
         }
 
         if (LicenceKeyRecord::where('licence_no', $licence->details['id'])->exists()) {
-            throw new RuntimeException('This licence key has already been entered.');
+            throw new RuntimeException('This licence has already been entered.');
         }
 
         LicenceKeyRecord::create([
@@ -151,37 +194,16 @@ class DesktopLicence
             return $period->setRelation('plan', $plan);
         }
 
-        // No key yet: the free trial, from the day the school was set up.
-        if (static::keys($school) !== [] || ! $school->created_at) {
-            return null;
-        }
-
-        $trialPlan = Plan::where('is_trial', true)->orderBy('sort_order')->first() ?? new Plan(['name' => 'Free Trial', 'max_students' => 1000, 'max_users' => 10, 'is_trial' => true]);
-        $starts = CarbonImmutable::parse($school->created_at)->startOfDay();
-
-        return (new Subscription([
-            'school_id' => $school->getKey(),
-            'cycle' => 'trial',
-            'starts_on' => $starts,
-            'ends_on' => static::trialEndsOn($school),
-        ]))->setRelation('plan', $trialPlan);
+        // No key yet: nothing in force (even the trial needs a licence).
+        return null;
     }
 
-    /** The last day paid for: the latest key's end, or the trial's. */
+    /** The last day paid for: the latest key's end; none without a key. */
     public static function endsOn(School $school): ?CarbonImmutable
     {
         $ends = array_map(fn (LicenceKey $k): CarbonImmutable => $k->endsOn(), static::keys($school));
 
-        if ($ends !== []) {
-            return max($ends);
-        }
-
-        return $school->created_at ? static::trialEndsOn($school) : null;
-    }
-
-    protected static function trialEndsOn(School $school): CarbonImmutable
-    {
-        return CarbonImmutable::parse($school->created_at)->startOfDay()->addDays(max(1, (int) config('subscriptions.trial_days', 30)) - 1);
+        return $ends === [] ? null : max($ends);
     }
 
     /**

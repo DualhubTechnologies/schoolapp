@@ -16,6 +16,10 @@ return [
 
     'private_key' => env('LICENCE_PRIVATE_KEY'),
 
+    // Where the Windows app swaps a short licence code (FGDH-FWFH-2342-WETR)
+    // for its signed licence, once, when the school enters it.
+    'activation_url' => env('LICENCE_ACTIVATION_URL', 'https://www.schoolhubug.com/licence/activate'),
+
     // A computer clock this far behind the latest time the app has seen is
     // treated as set back (to stretch a licence), and the app locks until
     // it is corrected.

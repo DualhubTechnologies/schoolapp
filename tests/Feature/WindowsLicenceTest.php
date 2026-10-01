@@ -13,11 +13,14 @@ use App\Services\Subscriptions\SubscriptionManager;
 use App\Support\Licensing\DesktopLicence;
 use App\Support\Licensing\LicenceIssuer;
 use App\Support\Licensing\LicenceKey;
+use App\Support\Licensing\ShortCode;
 use Carbon\CarbonImmutable;
 use Database\Seeders\RoleSeeder;
 use Filament\Facades\Filament;
+use Illuminate\Http\Client\ConnectionException;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\File;
+use Illuminate\Support\Facades\Http;
 use Livewire\Livewire;
 
 beforeEach(function () {
@@ -86,13 +89,20 @@ it('signs a key that only checks out unchanged, and with the right public key', 
         ->and(LicenceKey::verify('SHL1.nonsense', config('licence.public_key')))->toBeNull();
 });
 
-it('runs on the free trial until a key is entered', function () {
+it('stays locked until a licence is entered, even for the free trial', function () {
     $school = desktopSchool();
 
-    $status = SubscriptionManager::status($school);
+    expect(SubscriptionManager::status($school)['state'])->toBe('none')
+        ->and(SubscriptionManager::isLocked($school))->toBeTrue();
 
+    // A free trial code from SchoolHub.
+    $trial = issueFor($school, today()->toDateString(), today()->addDays(29)->toDateString(), ['cycle' => 'trial', 'plan_id' => Plan::where('is_trial', true)->value('id')]);
+    DesktopLicence::activate($school, $trial->key);
+
+    $status = SubscriptionManager::status($school);
     expect($status['state'])->toBe('trial')
-        ->and($status['ends_on']->toDateString())->toBe(today()->addDays(29)->toDateString());
+        ->and($status['ends_on']->toDateString())->toBe(today()->addDays(29)->toDateString())
+        ->and(SubscriptionManager::isLocked($school))->toBeFalse();
 });
 
 it('unlocks with the school\'s own key and takes its plan limits', function () {
@@ -183,8 +193,8 @@ it('brings a locked school to its Licence page, where the administrator enters t
     $issued = issueFor($school, today()->toDateString(), today()->addMonths(4)->toDateString());
 
     Livewire::test(Licence::class)
-        ->assertSee('SH48213')
-        ->assertSee('Light Secondary School')
+        ->assertSee('Enter a licence code to start')
+        ->assertSee('XXXX-XXXX-XXXX-XXXX')
         ->set('key', 'SHL1.wrong')
         ->call('activate')
         ->assertHasErrors('key')
@@ -260,4 +270,99 @@ it('lets the platform owner issue a licence from the Windows licences page', fun
     expect($issued->school_code)->toBe('SH48213')
         ->and($issued->cycle)->toBe('year')
         ->and(LicenceKey::verify($issued->key, config('licence.public_key'))?->details['ends'])->toBe('2027-09-30');
+});
+
+it('makes short codes like FGDH-FWFH-2342-WETR and reads them however they are typed', function () {
+    $code = ShortCode::generate();
+
+    expect($code)->toMatch('/^[A-HJ-NP-Z2-9]{4}(-[A-HJ-NP-Z2-9]{4}){3}$/')
+        ->and(ShortCode::normalise(strtolower(str_replace('-', ' ', $code))))->toBe($code)
+        ->and(ShortCode::normalise(str_replace('-', '', $code)))->toBe($code)
+        ->and(ShortCode::normalise('ABCD-EFGH-2345'))->toBeNull()
+        // O, 0, I and 1 are never used, so a code with them is a typing mistake.
+        ->and(ShortCode::normalise('ABCD-EFGH-2345-JK0L'))->toBeNull();
+});
+
+it('gives an open code to the first school that enters it, and to no other', function () {
+    config(['app.edition' => 'server']);
+    $issuer = app(LicenceIssuer::class);
+    $issued = $issuer->issue(['plan_id' => $this->standard->id, 'max_students' => 800, 'max_users' => 25, 'cycle' => 'term', 'starts_on' => today()->toDateString(), 'ends_on' => today()->addMonths(4)->toDateString()]);
+
+    expect($issued->short_code)->not->toBeNull()
+        ->and($issued->key)->toBeNull()
+        ->and($issued->school_code)->toBeNull();
+
+    $key = $issuer->activate(strtolower($issued->short_code), 'Light Secondary School', 'SH48213');
+    $licence = LicenceKey::verify($key, config('licence.public_key'));
+
+    expect($licence?->isFor('Light Secondary School', 'SH48213'))->toBeTrue()
+        ->and($issued->fresh()->activated_at)->not->toBeNull()
+        // The same school again (after reinstalling): the same licence.
+        ->and($issuer->activate($issued->short_code, 'light secondary school', 'sh48213'))->toBe($key)
+        ->and(fn () => $issuer->activate($issued->short_code, 'Hope Primary', 'SH11111'))->toThrow(RuntimeException::class, 'already been used by another school')
+        ->and(fn () => $issuer->activate('ABCD-EFGH-2345-JKLM', 'Hope Primary', 'SH11111'))->toThrow(RuntimeException::class, 'not valid');
+});
+
+it('starts an open free trial code on the day it is first used', function () {
+    config(['app.edition' => 'server']);
+    $issued = app(LicenceIssuer::class)->issue(['plan_id' => Plan::where('is_trial', true)->value('id'), 'max_students' => 1000, 'max_users' => 10, 'cycle' => 'trial', 'starts_on' => today()->toDateString(), 'ends_on' => today()->addDays(29)->toDateString()]);
+
+    $this->travel(10)->days();
+    $key = app(LicenceIssuer::class)->activate($issued->short_code, 'Light Secondary School', 'SH48213');
+
+    expect(LicenceKey::verify($key, config('licence.public_key'))?->details)->toMatchArray([
+        'cycle' => 'trial',
+        'starts' => today()->toDateString(),
+        'ends' => today()->addDays(29)->toDateString(),
+    ]);
+});
+
+it('swaps a code for the licence at the activation address, online only', function () {
+    config(['app.edition' => 'server']);
+    $issued = app(LicenceIssuer::class)->issue(['plan_id' => $this->standard->id, 'max_students' => null, 'max_users' => null, 'cycle' => 'year', 'starts_on' => today()->toDateString(), 'ends_on' => today()->addYear()->subDay()->toDateString()]);
+
+    $this->postJson('/licence/activate', ['code' => $issued->short_code, 'school_name' => 'Light Secondary School', 'school_code' => 'SH48213'])
+        ->assertOk()
+        ->assertJsonStructure(['key']);
+
+    $this->postJson('/licence/activate', ['code' => $issued->short_code, 'school_name' => 'Hope Primary', 'school_code' => 'SH11111'])
+        ->assertStatus(422)
+        ->assertJson(['message' => 'This licence code has already been used by another school.']);
+
+    config(['app.edition' => 'desktop']);
+    $this->postJson('/licence/activate', ['code' => $issued->short_code, 'school_name' => 'X', 'school_code' => 'Y'])->assertNotFound();
+});
+
+it('lets the school type a code: online once, then offline', function () {
+    $school = desktopSchool();
+    $issued = issueFor($school, today()->toDateString(), today()->addMonths(4)->toDateString());
+    config(['licence.activation_url' => 'https://schoolhub.test/licence/activate']);
+
+    Http::fake(['schoolhub.test/*' => Http::response(['key' => $issued->key])]);
+    $licence = DesktopLicence::enter($school, strtolower(str_replace('-', '', (string) $issued->short_code)));
+
+    expect($licence->details['id'])->toBe($issued->licence_no)
+        ->and(SubscriptionManager::status($school)['state'])->toBe('active');
+
+    Http::assertSent(fn ($request) => $request['school_code'] === 'SH48213' && $request['school_name'] === 'Light Secondary School');
+});
+
+it('explains when the code cannot be checked: no internet, or refused', function () {
+    $school = desktopSchool();
+    config(['licence.activation_url' => 'https://schoolhub.test/licence/activate']);
+
+    $online = false;
+    Http::fake(function () use (&$online) {
+        if (! $online) {
+            throw new ConnectionException('Could not resolve host');
+        }
+
+        return Http::response(['message' => 'This licence code has already been used by another school.'], 422);
+    });
+
+    expect(fn () => DesktopLicence::enter($school, 'ABCD-EFGH-2345-JKLM'))->toThrow(RuntimeException::class, 'needs the internet for a moment');
+
+    $online = true;
+    expect(fn () => DesktopLicence::enter($school, 'ABCD-EFGH-2345-JKLM'))->toThrow(RuntimeException::class, 'already been used by another school')
+        ->and(fn () => DesktopLicence::enter($school, 'ABCD-1234'))->toThrow(RuntimeException::class, '16 letters and numbers');
 });

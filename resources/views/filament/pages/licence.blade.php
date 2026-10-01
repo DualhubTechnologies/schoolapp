@@ -7,7 +7,7 @@
         'active' => ['Licensed', '#15803d', '#f0fdf4'],
         'grace' => ['Licence ended — renew now', '#b91c1c', '#fef2f2'],
         'expired' => ['Locked: licence ended', '#b91c1c', '#fef2f2'],
-        'none' => ['No licence', '#b91c1c', '#fef2f2'],
+        'none' => ['Enter a licence code to start', '#b91c1c', '#fef2f2'],
         'clock' => ['Locked: computer date is wrong', '#b91c1c', '#fef2f2'],
     ];
     [$label, $color, $bg] = $states[$st['state']] ?? [ucfirst($st['state']), '#334155', '#f8fafc'];
@@ -20,6 +20,8 @@
             <div class="lc-label" style="color: {{ $color }}">{{ $label }}</div>
             @if ($st['state'] === 'clock')
                 <p>This computer's date and time are earlier than SchoolHub has already seen, so the licence cannot be checked. Correct the date and time in Windows (Settings → Time &amp; language), then reopen SchoolHub. If the date is right, call SchoolHub on {{ config('contact.phone') }}.</p>
+            @elseif ($st['state'] === 'none')
+                <p>Every school needs a licence code, even for the free trial. Ask SchoolHub for one, then type it below.</p>
             @elseif ($st['ends_on'])
                 <p>
                     @if (in_array($st['state'], ['trial', 'active'], true))
@@ -43,27 +45,36 @@
 
     <div class="lc-grid">
         <div class="lc-card">
-            <h3>1. Pay and send these details</h3>
-            <p>Pay by mobile money or bank as agreed with SchoolHub, then send the school's name and code. SchoolHub replies with a licence key for one term or one year.</p>
-            <div class="lc-ids">
-                <div><span>School name</span><b>{{ $school->name }}</b></div>
-                <div><span>School code</span><b class="lc-code">{{ $school->unique_code }}</b></div>
-            </div>
-            <a class="lc-wa" href="{{ $this->whatsappUrl() }}" target="_blank" rel="noopener">Send on WhatsApp</a>
-            <p class="lc-muted">The licence only works for this school's name and code, which is why the school name cannot be changed in School Profile.</p>
+            <h3>1. Get a licence code</h3>
+            <p>Ask SchoolHub for a free trial code, or pay by mobile money or bank for a term or a year. SchoolHub sends a code like <strong class="lc-code">ABCD-EFGH-2345-JKLM</strong>.</p>
+            <a class="lc-wa" href="{{ $this->whatsappUrl() }}" target="_blank" rel="noopener">Ask on WhatsApp</a>
+            <p class="lc-muted">Or call {{ config('contact.phone') }}. A code works for one school only: once entered here it belongs to {{ $school->name }}.</p>
         </div>
 
         <div class="lc-card">
-            <h3>2. Enter the licence key</h3>
+            <h3>2. Enter the licence code</h3>
             @if ($this->canEnterKey())
                 <form wire:submit="activate">
-                    <textarea wire:model="key" rows="5" class="lc-key" placeholder="SHL1.…" aria-label="Licence key" spellcheck="false"></textarea>
+                    {{-- The dashes go in by themselves as the code is typed or pasted. --}}
+                    <input type="text" wire:model="key" class="lc-key" placeholder="XXXX-XXXX-XXXX-XXXX" aria-label="Licence code"
+                        autocomplete="off" spellcheck="false" autocapitalize="characters"
+                        x-data
+                        x-on:input="
+                            const raw = $el.value;
+                            if (raw.trim().startsWith('SHL1.')) { return; }
+                            const plain = raw.toUpperCase().replace(/[^A-Z0-9]/g, '').slice(0, 16);
+                            $el.value = (plain.match(/.{1,4}/g) || []).join('-');
+                            $el.dispatchEvent(new Event('change'));
+                        ">
                     @error('key')<div class="lc-error">{{ $message }}</div>@enderror
-                    <x-filament::button type="submit" icon="heroicon-m-key" class="lc-submit">Enter licence</x-filament::button>
+                    <x-filament::button type="submit" icon="heroicon-m-key" class="lc-submit">
+                        <span wire:loading.remove wire:target="activate">Enter licence</span>
+                        <span wire:loading wire:target="activate">Checking…</span>
+                    </x-filament::button>
                 </form>
-                <p class="lc-muted">No internet is needed: the key is checked on this computer.</p>
+                <p class="lc-muted">Entering a code needs the internet for a moment (phone data is enough). After that SchoolHub works without internet.</p>
             @else
-                <p>Ask the school administrator to enter the licence key.</p>
+                <p>Ask the school administrator to enter the licence code.</p>
             @endif
         </div>
     </div>
@@ -95,7 +106,7 @@
         .lc-ids b { color: #16233a; }
         .lc-code { font-family: ui-monospace, Consolas, monospace; font-size: 1.05rem; letter-spacing: .05em; }
         .lc-wa { display: inline-block; background: #16a34a; color: #fff; font-weight: 700; font-size: .85rem; padding: .5rem .9rem; border-radius: 8px; }
-        .lc-key { width: 100%; font-family: ui-monospace, Consolas, monospace; font-size: .8rem; border: 1px solid #cbd5e1; border-radius: 8px; padding: .6rem; resize: vertical; }
+        .lc-key { width: 100%; font-family: ui-monospace, Consolas, monospace; font-size: 1.15rem; letter-spacing: .08em; text-transform: uppercase; border: 1px solid #cbd5e1; border-radius: 8px; padding: .65rem .8rem; }
         .lc-error { color: #b91c1c; font-size: .85rem; margin-top: .35rem; }
         .lc-submit { margin-top: .6rem; }
         .lc-muted { color: #64748b !important; font-size: .78rem !important; }

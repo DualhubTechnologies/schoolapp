@@ -6,6 +6,20 @@ folded into the change they belong to. Add an entry with every release.
 
 ## 1 October 2026
 
+- **Short licence codes for the Windows app** (`FGDH-FWFH-2342-WETR`):
+  the owner issues a code (free trial, term or year); the school types
+  it with the dashes put in automatically; the app swaps it once, online,
+  for the signed licence and works offline after. A code works for one
+  school (open codes go to the first school that enters it; re-entering
+  at the same school after a reinstall works). Even the free trial now
+  needs a code: a new install is locked to its Licence page until one is
+  entered. Long keys still work, for a school that can never get online.
+- **Fixed: Import staff failed every time it opened.** A one-line
+  `@php(...)` before the template's `@php ... @endphp` blocks broke the
+  compiled view. A test now draws each step of the window.
+- The Windows download is hidden on the website until the next version
+  (`WINDOWS_DOWNLOAD_ENABLED`).
+
 - **SchoolHub for Windows 1.0.0 released.** The installer
   (SchoolHub-Setup.exe, 134 MB, Windows 10/11 64-bit) is on GitHub
   Releases (v1.0.0), built with NativePHP by desktop/build-windows.ps1.

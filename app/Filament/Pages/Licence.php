@@ -16,10 +16,11 @@ use Illuminate\Support\Collection;
 use RuntimeException;
 
 /**
- * The Windows app's licence: where the school stands, the details to send
- * SchoolHub when paying (school name and code), and the box for the key
- * SchoolHub sends back. A locked school is brought here; only those who
- * manage the school may enter a key.
+ * The Windows app's licence: where the school stands, and the box for the
+ * licence code SchoolHub sends (FGDH-FWFH-2342-WETR), for a free trial or
+ * after paying. A locked school is brought here; only those who manage the
+ * school may enter a code. Entering one needs the internet once
+ * (DesktopLicence::enter); after that the app works offline.
  */
 class Licence extends Page
 {
@@ -71,7 +72,7 @@ class Licence extends Page
     public function whatsappUrl(): string
     {
         $school = $this->school();
-        $text = "Hello SchoolHub, I would like a licence for the Windows app.\nSchool: {$school->name}\nSchool code: {$school->unique_code}";
+        $text = "Hello SchoolHub, I would like a licence code for the Windows app.\nSchool: {$school->name}";
 
         return 'https://wa.me/'.config('contact.whatsapp').'?text='.rawurlencode($text);
     }
@@ -81,13 +82,13 @@ class Licence extends Page
         abort_unless($this->canEnterKey(), 403);
 
         if (trim($this->key) === '') {
-            $this->addError('key', 'Paste the licence key SchoolHub sent you.');
+            $this->addError('key', 'Type the licence code SchoolHub sent you.');
 
             return;
         }
 
         try {
-            $licence = DesktopLicence::activate($this->school(), $this->key);
+            $licence = DesktopLicence::enter($this->school(), $this->key);
         } catch (RuntimeException $e) {
             $this->addError('key', $e->getMessage());
 

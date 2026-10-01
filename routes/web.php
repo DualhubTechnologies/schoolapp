@@ -1,6 +1,7 @@
 <?php
 
 use App\Http\Controllers\DesktopSetupController;
+use App\Http\Controllers\LicenceActivationController;
 use App\Http\Controllers\NssfScheduleController;
 use App\Http\Controllers\ParentPageController;
 use App\Http\Controllers\PayslipController;
@@ -27,6 +28,13 @@ Route::get('/payslips/{period}/all', [PayslipController::class, 'downloadAll'])
 // The Windows app's first run: the school and its administrator.
 Route::get('/setup', [DesktopSetupController::class, 'show'])->name('desktop.setup');
 Route::post('/setup', [DesktopSetupController::class, 'store'])->middleware('throttle:10,1')->name('desktop.setup.store');
+
+// The Windows app swaps a short licence code for its signed licence here,
+// once (LicenceActivationController). Not a browser form: no CSRF token
+// (bootstrap/app.php); rate limited instead.
+Route::post('/licence/activate', LicenceActivationController::class)
+    ->middleware(['throttle:10,1', ServerEditionOnly::class])
+    ->name('licence.activate');
 
 // For search engines: the public pages to list, and the old website's
 // privacy page, which Google still shows, sent to where it lives now

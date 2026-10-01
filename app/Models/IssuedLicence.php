@@ -14,8 +14,9 @@ use Illuminate\Support\Carbon;
  *
  * @property int $id
  * @property string $licence_no
- * @property string $school_name
- * @property string $school_code
+ * @property string|null $short_code
+ * @property string|null $school_name
+ * @property string|null $school_code
  * @property int|null $plan_id
  * @property string $plan_name
  * @property int|null $max_students
@@ -26,17 +27,18 @@ use Illuminate\Support\Carbon;
  * @property string $amount
  * @property string|null $payment_reference
  * @property string|null $notes
- * @property string $key
+ * @property string|null $key
+ * @property Carbon|null $activated_at
  * @property int|null $issued_by
  */
 class IssuedLicence extends Model
 {
     use Auditable;
 
-    public const CYCLES = ['term' => 'One term', 'year' => 'One year'];
+    public const CYCLES = ['trial' => 'Free trial', 'term' => 'One term', 'year' => 'One year'];
 
     protected $fillable = [
-        'licence_no', 'school_name', 'school_code', 'plan_id', 'plan_name', 'max_students', 'max_users',
+        'licence_no', 'short_code', 'school_name', 'school_code', 'activated_at', 'plan_id', 'plan_name', 'max_students', 'max_users',
         'cycle', 'starts_on', 'ends_on', 'amount', 'payment_reference', 'notes', 'key', 'issued_by',
     ];
 
@@ -45,6 +47,7 @@ class IssuedLicence extends Model
         return [
             'starts_on' => 'date',
             'ends_on' => 'date',
+            'activated_at' => 'datetime',
             'amount' => 'decimal:2',
             'max_students' => 'integer',
             'max_users' => 'integer',

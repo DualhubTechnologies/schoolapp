@@ -35,8 +35,8 @@
     <meta property="og:title" content="SchoolHub — School management software for Ugandan schools">
     <meta property="og:description" content="Fees, exams, report cards, payroll and finance in one system. Free {{ $trialDays }}-day trial.">
     <meta property="og:type" content="website">
-    <meta property="og:url" content="{{ url('/') }}">
-    <link rel="icon" href="{{ asset('images/schoolhub-icon-192.png') }}">
+    <meta property="og:url" content="{{ rtrim((string) config('app.url'), '/') }}/">
+    @include('partials.site-head', ['path' => '/'])
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">

@@ -39,7 +39,7 @@
     <meta name="viewport" content="width=device-width, initial-scale=1">
     <title>Terms and Conditions — SchoolHub</title>
     <meta name="description" content="The terms under which schools use SchoolHub, including the free trial, fees, and how school data is protected.">
-    <link rel="icon" href="{{ asset('images/schoolhub-icon-192.png') }}">
+    @include('partials.site-head', ['path' => '/terms-and-conditions'])
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">

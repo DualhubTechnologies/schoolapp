@@ -4,6 +4,15 @@ What changed in SchoolHub, newest first, in terms of what schools and the
 platform owner notice. Housekeeping commits (formatting, type fixes) are
 folded into the change they belong to. Add an entry with every release.
 
+## 1 October 2026
+
+- **Google shows the SchoolHub logo.** The site had no favicon.ico, so
+  Google showed a plain globe beside it in results. It now has one
+  (16/32/48px), a 48px icon, a canonical address on the public pages,
+  the logo as the publisher's logo, a sitemap.xml (named in robots.txt),
+  and the old website's /about and /privacy-policy, which Google still
+  lists, redirect to the home page and the privacy section of the terms.
+
 ## 30 September 2026
 
 - **Students by class chart** shows boys and girls side by side in each

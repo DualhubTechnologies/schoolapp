@@ -52,7 +52,7 @@
                 </div>
 
                 @unless ($signedIn)
-                    <p class="hero-signin">Already registered? <a href="{{ $loginUrl }}">Sign in to your school</a></p>
+                    <p class="hero-signin">Already registered? <a href="{{ $loginUrl }}">Sign in to your school</a> · No internet? <a href="#windows">Get SchoolHub for Windows</a></p>
                 @endunless
 
                 <div class="hero-points">
@@ -149,6 +149,8 @@
     @include('site.sections.modules')
 
     @include('site.sections.how')
+
+    @include('site.sections.windows')
 
     @include('site.sections.pricing')
 

@@ -6,5 +6,6 @@
 
 @section('content')
     @include('site.sections.pricing')
+    @include('site.sections.windows')
     @include('site.sections.faq')
 @endsection

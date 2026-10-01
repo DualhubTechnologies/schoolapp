@@ -67,3 +67,10 @@ it('returns a demo request from the Contact page to the Contact page', function 
 it('keeps unknown addresses as not found', function () {
     $this->get('/careers')->assertNotFound();
 });
+
+it('offers SchoolHub for Windows on the home, Features and Pricing pages', function (string $path) {
+    $this->get($path)->assertOk()
+        ->assertSee('SchoolHub for Windows')
+        ->assertSee('href="https://github.com/DualhubTechnologies/schoolapp/releases/latest/download/SchoolHub-Setup.exe"', false)
+        ->assertSee('Download for Windows');
+})->with(['/', '/features', '/pricing']);

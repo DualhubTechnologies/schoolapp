@@ -19,6 +19,7 @@
                 <h4>Get started</h4>
                 <ul>
                     <li><a href="{{ $registerUrl }}">Register your school</a></li>
+                    <li><a href="{{ $contact['windows_download'] }}" rel="nofollow">Download for Windows</a></li>
                     <li><a href="{{ $loginUrl }}">Sign in</a></li>
                     <li><a href="{{ filament()->getRequestPasswordResetUrl() }}">Reset password</a></li>
                     <li><a href="{{ route('filament.app.legal.terms') }}">Terms &amp; conditions</a></li>

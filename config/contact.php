@@ -26,4 +26,8 @@ return [
     'opens' => env('CONTACT_OPENS', '08:00'),
     'closes' => env('CONTACT_CLOSES', '18:00'),
     'days' => ['Monday', 'Tuesday', 'Wednesday', 'Thursday', 'Friday'],
+
+    // The Windows app installer: the newest GitHub release, so the website
+    // never needs changing for a new version (desktop/build-windows.ps1).
+    'windows_download' => env('WINDOWS_DOWNLOAD_URL', 'https://github.com/DualhubTechnologies/schoolapp/releases/latest/download/SchoolHub-Setup.exe'),
 ];

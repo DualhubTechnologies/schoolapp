@@ -6,6 +6,14 @@ folded into the change they belong to. Add an entry with every release.
 
 ## 1 October 2026
 
+- **SchoolHub for Windows 1.0.0 released.** The installer
+  (SchoolHub-Setup.exe, 134 MB, Windows 10/11 64-bit) is on GitHub
+  Releases (v1.0.0), built with NativePHP by desktop/build-windows.ps1.
+  The website offers it in a new "No internet? Run SchoolHub on your
+  school computer" section on the home, Features and Pricing pages, a
+  link under the home page's buttons, and the footer; the link always
+  points to the newest release (`WINDOWS_DOWNLOAD_URL` to change it).
+
 - **Windows app, phase 3: licences control payment.** The school's
   Licence page (Settings, Windows app) shows where it stands, the school
   name and code to send SchoolHub after paying (with a WhatsApp button),

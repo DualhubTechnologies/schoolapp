@@ -20,6 +20,8 @@ class Modules
     public const LIST = [
         'students' => ['Students', 'Student records, guardians'],
         'promotion' => ['Year-end promotion', 'Promote, repeat or complete students'],
+        'messages' => ['Messages (SMS)', 'Send SMS to parents of all learners, a class, those owing fees, or staff'],
+        'attendance' => ['Attendance', 'Take the daily class register, attendance reports, text parents of absent learners'],
         'id_cards' => ['Identity cards', 'Student and staff ID cards, and the card template'],
         'fees' => ['Fees', 'Receive payments, receipts, billing, balances, reminders, fee set-up'],
         'transport' => ['Transport', 'Van routes and fares, learners on the van, route lists'],
@@ -33,7 +35,7 @@ class Modules
 
     /** What each role opens until the administrator chooses otherwise. */
     public const ROLE_DEFAULTS = [
-        'Teacher' => ['exams', 'students'],
+        'Teacher' => ['exams', 'students', 'attendance'],
         'Accountant' => ['fees', 'transport', 'finance', 'hr'],
         'Bursar' => ['fees', 'transport', 'finance'],
         'Staff' => [],
@@ -52,6 +54,11 @@ class Modules
         'StudentResource' => 'students',
         'GuardianResource' => 'students',
         'PromoteStudents' => 'promotion',
+        // Attendance
+        'TakeAttendance' => 'attendance',
+        'AttendanceReport' => 'attendance',
+        // Messages
+        'SendMessages' => 'messages',
         // Identity cards
         'StudentIdCards' => 'id_cards',
         'StaffIdCards' => 'id_cards',
@@ -78,6 +85,7 @@ class Modules
         // Exams & results
         'AssessmentResource' => 'exams',
         'EnterMarks' => 'exams',
+        'MarksProgress' => 'exams',
         'ClassResults' => 'exams',
         'ReportCards' => 'exams',
         // HR & payroll

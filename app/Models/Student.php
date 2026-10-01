@@ -181,6 +181,7 @@ class Student extends Model
         return $this->belongsTo(Section::class);
     }
 
+    /** @return BelongsTo<Combination, $this> */
     public function combination(): BelongsTo
     {
         return $this->belongsTo(Combination::class);
@@ -190,6 +191,7 @@ class Student extends Model
      * Subjects the student has chosen: O-Level electives, and the A-Level
      * subsidiary when it differs from the combination's.
      */
+    /** @return BelongsToMany<Subject, $this> */
     public function electives(): BelongsToMany
     {
         return $this->belongsToMany(Subject::class, 'student_subject')->withTimestamps();

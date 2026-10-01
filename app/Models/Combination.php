@@ -10,6 +10,10 @@ use Illuminate\Database\Eloquent\Relations\HasMany;
 /**
  * An A-Level combination: three principal subjects plus a subsidiary
  * (General Paper is taken by everyone on top).
+ *
+ * @property int $id
+ * @property string $name
+ * @property int|null $subsidiary_subject_id
  */
 class Combination extends Model
 {
@@ -26,11 +30,13 @@ class Combination extends Model
         return ['is_active' => 'boolean'];
     }
 
+    /** @return BelongsToMany<Subject, $this> */
     public function subjects(): BelongsToMany
     {
         return $this->belongsToMany(Subject::class, 'combination_subject');
     }
 
+    /** @return BelongsTo<Subject, $this> */
     public function subsidiary(): BelongsTo
     {
         return $this->belongsTo(Subject::class, 'subsidiary_subject_id');

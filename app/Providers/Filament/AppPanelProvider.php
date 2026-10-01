@@ -32,6 +32,7 @@ use App\Http\Controllers\FeeDocumentController;
 use App\Http\Controllers\FinanceDocumentController;
 use App\Http\Controllers\IdCardController;
 use App\Http\Controllers\LandingController;
+use App\Http\Controllers\MarkSheetController;
 use App\Http\Controllers\PayrollDocumentController;
 use App\Http\Controllers\ReportCardController;
 use App\Http\Controllers\StudentDocumentController;
@@ -39,6 +40,7 @@ use App\Http\Controllers\TransportDocumentController;
 use App\Http\Middleware\EnsureSchoolSubscribed;
 use App\Support\UndoDelete;
 use Filafly\LogoTools\LogoToolsPlugin;
+use Filament\Auth\MultiFactor\App\AppAuthentication;
 use Filament\Http\Middleware\Authenticate;
 use Filament\Http\Middleware\AuthenticateSession;
 use Filament\Http\Middleware\DisableBladeIconComponents;
@@ -69,6 +71,12 @@ class AppPanelProvider extends PanelProvider
             ->id('app')
             ->path('/')                       // Serves at http://schoolapp.test
             ->login(Login::class)
+            // Name, email and password, and optional two-step sign-in with an
+            // authenticator app (with recovery codes if the phone is lost).
+            ->profile(isSimple: false)
+            ->multiFactorAuthentication([
+                AppAuthentication::make()->recoverable(),
+            ])
             // Schools sign themselves up; the person registering becomes its School Admin.
             ->registration(RegisterSchool::class)
             ->passwordReset(resetAction: ResetPassword::class)
@@ -160,6 +168,8 @@ class AppPanelProvider extends PanelProvider
                     ->name('payroll.schedule');
                 Route::get('/academics/report-cards', ReportCardController::class)
                     ->name('academics.report-cards');
+                Route::get('/academics/mark-sheet', MarkSheetController::class)
+                    ->name('academics.mark-sheet');
                 Route::get('/finance/vouchers/{entry}', [FinanceDocumentController::class, 'voucher'])
                     ->whereNumber('entry')
                     ->name('finance.voucher');

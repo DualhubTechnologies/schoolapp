@@ -13,6 +13,7 @@ use App\Filament\Support\ErrorNotices;
 use App\Filament\Support\Pages\RecordFormScope;
 use App\Filament\Widgets\StatsOverview;
 use Filafly\LogoTools\LogoToolsPlugin;
+use Filament\Auth\MultiFactor\App\AppAuthentication;
 use Filament\Http\Middleware\Authenticate;
 use Filament\Http\Middleware\AuthenticateSession;
 use Filament\Http\Middleware\DisableBladeIconComponents;
@@ -39,6 +40,12 @@ class AdminPanelProvider extends PanelProvider
             ->id('admin')
             ->path('admin')                   // Super Admin only — gated in User::canAccessPanel()
             ->login(Login::class)
+            // Name, email and password, and optional two-step sign-in with an
+            // authenticator app (with recovery codes if the phone is lost).
+            ->profile(isSimple: false)
+            ->multiFactorAuthentication([
+                AppAuthentication::make()->recoverable(),
+            ])
 
             ->passwordReset(resetAction: ResetPassword::class)
             ->viteTheme('resources/css/filament/admin/theme.css')

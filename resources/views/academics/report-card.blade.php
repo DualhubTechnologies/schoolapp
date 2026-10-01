@@ -12,6 +12,7 @@
     $style = $template->style();
     $show = fn (string $part): bool => $template->shows($part);
     $columns = $show('assessment_columns') ? $assessments : collect();
+    $exam = $results['exam'] ?? null;
 @endphp
 
 @section('title', "Report cards — {$class->name} — {$term->label()}")
@@ -108,7 +109,7 @@
 
             <div class="rc-title">
                 <h2>{{ $title }}</h2>
-                <p>{{ $term->label() }}</p>
+                <p>{{ $term->label() }}{{ $exam ? ' — '.$exam->name : '' }}</p>
             </div>
 
             <div class="info">
@@ -133,7 +134,7 @@
                         @foreach ($columns as $a)
                             <th class="c" title="{{ $a->name }}">{{ $a->shortLabel() }}<br><span style="font-weight:500">/{{ $a->max_score + 0 }}</span></th>
                         @endforeach
-                        <th class="c">Term %</th>
+                        <th class="c">{{ $exam ? '%' : 'Term %' }}</th>
                         <th class="c">Grade</th>
                         <th style="text-align:left">{{ $curriculum === 'o_level' ? 'Achievement' : 'Remark' }}</th>
                         @if ($show('teacher_initials'))<th class="c">Teacher</th>@endif
@@ -180,6 +181,12 @@
                         <div class="kv"><span>Position in stream</span><b>{{ $row['stream_position'] }} out of {{ $row['stream_out_of'] }}</b></div>
                     @endif
                     @if ($show('conduct') && $report?->conduct)<div class="kv"><span>Conduct</span><b>{{ $report->conduct }}</b></div>@endif
+                    @php $days = $attendance[$student->id] ?? null; @endphp
+                    @if ($report?->days_present)
+                        <div class="kv"><span>Days present</span><b>{{ $report->days_present }}</b></div>
+                    @elseif ($days && $days['days'])
+                        <div class="kv"><span>Attendance</span><b>{{ $days['present'] }} of {{ $days['days'] }} days</b></div>
+                    @endif
                     @if (! empty($promotionText[$student->id]))
                         <div class="kv"><span>Promotion</span><b style="color:var(--rc-primary)">{{ $promotionText[$student->id] }}</b></div>
                     @endif

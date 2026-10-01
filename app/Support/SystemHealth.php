@@ -4,6 +4,7 @@ namespace App\Support;
 
 use App\Console\Commands\BackupRun;
 use App\Models\ErrorReport;
+use App\Models\User;
 use Illuminate\Support\Carbon;
 use Illuminate\Support\Facades\Cache;
 use Illuminate\Support\Facades\DB;
@@ -12,7 +13,8 @@ use Throwable;
 /**
  * Whether the parts of SchoolHub that run outside the web pages are
  * actually working on this server: email, SMS, the queue worker, the
- * scheduler and backups. None of these fail loudly -- emails that are only
+ * scheduler and backups -- and whether it is set up safely for production
+ * (debug off, HTTPS, log rotation, disk space, two-step sign-in). None of these fail loudly -- emails that are only
  * logged, or a scheduler that never runs, look fine until someone asks why
  * nothing arrived -- so the platform owner sees them here (System health).
  */
@@ -33,6 +35,10 @@ class SystemHealth
             $this->scheduler(),
             $this->backups(),
             $this->debugMode(),
+            $this->https(),
+            $this->logs(),
+            $this->disk(),
+            $this->ownerSignIn(),
             $this->errors(),
         ];
 
@@ -151,6 +157,86 @@ class SystemHealth
         return config('app.debug') && app()->environment('production')
             ? $this->row('Debug mode', 'danger', 'APP_DEBUG is on in production: users would see code and settings instead of the friendly error pages.', 'Set APP_DEBUG=false in .env, then php artisan optimize.')
             : $this->row('Debug mode', 'ok', 'Off for users (APP_ENV='.app()->environment().').');
+    }
+
+    /**
+     * Production should only be reached over HTTPS, with the session cookie
+     * marked secure so it never travels over plain HTTP.
+     *
+     * @return array{label: string, status: 'ok'|'warning'|'danger', summary: string, fix: string|null}
+     */
+    protected function https(): array
+    {
+        if (! app()->environment('production')) {
+            return $this->row('HTTPS', 'ok', 'Not checked outside production.');
+        }
+
+        if (! str_starts_with((string) config('app.url'), 'https://')) {
+            return $this->row('HTTPS', 'danger', 'APP_URL is not https://: links in emails and SMS, and photo links, use plain HTTP.', 'Set APP_URL=https://your-domain in .env (with a certificate on the server), then php artisan optimize.');
+        }
+
+        return config('session.secure')
+            ? $this->row('HTTPS', 'ok', 'Links use HTTPS and the sign-in cookie is HTTPS-only.')
+            : $this->row('HTTPS', 'warning', 'The sign-in cookie is not marked HTTPS-only.', 'Set SESSION_SECURE_COOKIE=true in .env, then php artisan optimize.');
+    }
+
+    /**
+     * A single log file grows until the disk is full; daily files are
+     * cleaned up after LOG_DAILY_DAYS.
+     *
+     * @return array{label: string, status: 'ok'|'warning'|'danger', summary: string, fix: string|null}
+     */
+    protected function logs(): array
+    {
+        $channel = (string) config('logging.default');
+        $channels = $channel === 'stack' ? (array) config('logging.channels.stack.channels') : [$channel];
+        $level = (string) config('logging.channels.'.($channels[0] ?? 'single').'.level', 'debug');
+
+        if (in_array('single', $channels, true) && app()->environment('production')) {
+            return $this->row('Log files', 'warning', 'One log file that is never cleaned up: it grows until the disk is full.', 'Set LOG_STACK=daily and LOG_LEVEL=warning in .env (files are kept 14 days), then php artisan optimize.');
+        }
+
+        return $this->row('Log files', 'ok', 'Channel: '.implode(', ', $channels).", level {$level}.");
+    }
+
+    /**
+     * Photos, backups and logs all live on the server's disk.
+     *
+     * @return array{label: string, status: 'ok'|'warning'|'danger', summary: string, fix: string|null}
+     */
+    protected function disk(): array
+    {
+        $free = @disk_free_space(storage_path());
+        $total = @disk_total_space(storage_path());
+
+        if (! $free || ! $total) {
+            return $this->row('Disk space', 'warning', 'Could not read the free disk space.');
+        }
+
+        $gb = round($free / 1024 ** 3, 1);
+        $percent = (int) round($free / $total * 100);
+        $summary = "{$gb} GB free ({$percent}%).";
+
+        return match (true) {
+            $gb < 1 || $percent < 5 => $this->row('Disk space', 'danger', "Almost full: {$summary} Uploads, backups and logs will start failing.", 'Delete old backups once they are copied off the server, or add disk space.'),
+            $gb < 5 || $percent < 15 => $this->row('Disk space', 'warning', "Getting low: {$summary}", 'Plan more disk space; photos and backups grow every term.'),
+            default => $this->row('Disk space', 'ok', $summary),
+        };
+    }
+
+    /**
+     * The platform owner's account can open every school's data.
+     *
+     * @return array{label: string, status: 'ok'|'warning'|'danger', summary: string, fix: string|null}
+     */
+    protected function ownerSignIn(): array
+    {
+        $owners = User::role('Super Admin')->get();
+        $without = $owners->filter(fn (User $user) => blank($user->getAppAuthenticationSecret()))->count();
+
+        return $without > 0
+            ? $this->row('Owner sign-in', 'warning', "{$without} platform owner account(s) sign in with a password only.", 'Open your profile (top right) and set up two-step sign-in with an authenticator app.')
+            : $this->row('Owner sign-in', 'ok', 'Platform owner accounts use two-step sign-in.');
     }
 
     /**

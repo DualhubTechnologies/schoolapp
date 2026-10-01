@@ -114,3 +114,43 @@ it('shows System health to the platform owner only', function () {
 
     expect(SystemHealthPage::canAccess())->toBeFalse();
 });
+
+it('flags an unsafe production set-up: plain HTTP, an insecure cookie, a log that never rotates', function () {
+    app()->detectEnvironment(fn () => 'production');
+    config([
+        'app.url' => 'http://schoolhub.test',
+        'logging.default' => 'stack',
+        'logging.channels.stack.channels' => ['single'],
+    ]);
+
+    expect(healthCheck('HTTPS')['status'])->toBe('danger')
+        ->and(healthCheck('Log files')['status'])->toBe('warning');
+
+    config([
+        'app.url' => 'https://schoolhub.test',
+        'session.secure' => false,
+        'logging.channels.stack.channels' => ['daily'],
+    ]);
+
+    expect(healthCheck('HTTPS')['status'])->toBe('warning')
+        ->and(healthCheck('Log files')['status'])->toBe('ok');
+
+    config(['session.secure' => true]);
+
+    expect(healthCheck('HTTPS')['status'])->toBe('ok');
+});
+
+it('asks platform owners to turn on two-step sign-in', function () {
+    $owner = User::factory()->create(['school_id' => null])->assignRole('Super Admin');
+
+    expect(healthCheck('Owner sign-in')['status'])->toBe('warning');
+
+    $owner->saveAppAuthenticationSecret('JBSWY3DPEHPK3PXP');
+
+    expect(healthCheck('Owner sign-in')['status'])->toBe('ok')
+        ->and($owner->fresh()->getAttributes()['app_authentication_secret'])->not->toBe('JBSWY3DPEHPK3PXP');
+});
+
+it('reports the free disk space', function () {
+    expect(healthCheck('Disk space')['summary'])->toContain('GB free');
+});

@@ -18,6 +18,7 @@ without it.
 | `APP_LOCALE` / `APP_FALLBACK_LOCALE` | `en` | |
 | `APP_MAINTENANCE_DRIVER` | `file` | `php artisan down` / `up`. |
 | `BCRYPT_ROUNDS` | `12` | Password hashing cost. |
+| `LOG_STACK` / `LOG_LEVEL` | `daily` / `warning` | Daily log files kept `LOG_DAILY_DAYS` (14) days; a single file grows forever. |
 | `SUPER_ADMIN_EMAIL` | owner's email | Platform owner account created by `db:seed` (default `adrianmugizi8@gmail.com`). |
 | `SUPER_ADMIN_PASSWORD` | empty | Starting password for that account. Empty: a random one is generated and shown once. Only used when the account does not exist yet. |
 
@@ -30,6 +31,7 @@ without it.
 | `SESSION_DRIVER` | `database` | Sessions live in the `sessions` table. |
 | `SESSION_LIFETIME` | `120` | Minutes of inactivity before sign-out. Expired sessions show a "session timed out" page. |
 | `SESSION_ENCRYPT` | `false` | |
+| `SESSION_SECURE_COOKIE` | `true` | **Required with HTTPS.** Sign-in cookie sent over HTTPS only (checked on System health). |
 | `CACHE_STORE` | `database` | |
 | `QUEUE_CONNECTION` | `database` | **Required: a queue worker must run** (see Deployment), or emails and imports never go out. |
 
@@ -81,6 +83,7 @@ Shown to users (help link, error pages) and used for owner emails.
 |---|---|---|
 | `SUBSCRIPTION_TRIAL_DAYS` | `30` | Trial length after approval. |
 | `SUBSCRIPTION_REMINDER_TIME` | `08:00` | Daily reminder run, Africa/Kampala time. |
+| `LANDING_PRICE_MARKUP` | `10` | Percent added to plan prices where the public landing page shows them (nearest UGX 1,000). Billing uses the plan prices. `0` shows them as they are. |
 | `SUBSCRIPTION_MOMO`, `SUBSCRIPTION_AIRTEL`, `SUBSCRIPTION_BANK` | empty | How schools pay SchoolHub; shown on the Subscription page. |
 | `SUBSCRIPTION_CONTACT_PHONE`, `SUBSCRIPTION_CONTACT_EMAIL` | empty | Billing contact shown to schools. |
 

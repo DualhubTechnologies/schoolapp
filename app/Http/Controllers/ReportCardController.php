@@ -2,6 +2,7 @@
 
 namespace App\Http\Controllers;
 
+use App\Models\Assessment;
 use App\Models\FeeStructure;
 use App\Models\GradingScale;
 use App\Models\Promotion;
@@ -12,6 +13,7 @@ use App\Models\Term;
 use App\Services\Academics\PromotionAdvisor;
 use App\Services\Academics\PromotionService;
 use App\Services\Academics\ResultsCalculator;
+use App\Services\Attendance\AttendanceSummary;
 use App\Support\AcademicAccess;
 use Illuminate\Http\Request;
 use Illuminate\View\View;
@@ -35,23 +37,27 @@ class ReportCardController extends Controller
             403,
         );
 
+        // One exam only (a mid-term report), if it is one of this term's.
+        $examId = $request->integer('exam') ?: null;
+        abort_if($examId && ! Assessment::where('term_id', $term->getKey())->whereKey($examId)->exists(), 404);
+
         // ?students=1,2,3: just the learners the Report Cards page is showing
         // after a search or filter.
         $only = array_values(array_filter(array_map('intval', explode(',', (string) $request->query('students')))));
 
-        return $this->render($calculator, $class, $term, $request->integer('section') ?: null, $request->integer('student') ?: null, $request->boolean('fees'), $only);
+        return $this->render($calculator, $class, $term, $request->integer('section') ?: null, $request->integer('student') ?: null, $request->boolean('fees'), $only, $examId);
     }
 
     /**
      * The report cards themselves, once access has been checked: by the
      * school's staff above, or by the parent page for one learner.
-     */
-    /**
+     *
      * @param  list<int>  $only  when given, just these learners
+     * @param  int|null  $examId  one exam only (a mid-term report)
      */
-    public function render(ResultsCalculator $calculator, SchoolClass $class, Term $term, ?int $section, ?int $student, bool $showFees, array $only = []): View
+    public function render(ResultsCalculator $calculator, SchoolClass $class, Term $term, ?int $section, ?int $student, bool $showFees, array $only = [], ?int $examId = null): View
     {
-        $results = $calculator->forClass($class, $term, $section);
+        $results = $calculator->forClass($class, $term, $section, $examId);
         $rows = $results['rows']->filter(fn ($r) => $r['average'] !== null);
 
         if ($student) {
@@ -86,7 +92,7 @@ class ReportCardController extends Controller
         $isFinalTerm = ! $nextTerm || $nextTerm->academic_year_id !== $term->academic_year_id;
         $promotions = app(PromotionService::class);
 
-        if ($template->shows('promotion') && $isFinalTerm && ! $promotions->isFinalClass($class)) {
+        if ($template->shows('promotion') && $isFinalTerm && ! $examId && ! $promotions->isFinalClass($class)) {
             $nextClass = $promotions->nextClass($class)?->name ?? 'the next class';
             $made = Promotion::where('academic_year_id', $term->academic_year_id)
                 ->whereIn('student_id', $rows->pluck('student.id'))
@@ -110,6 +116,12 @@ class ReportCardController extends Controller
             }
         }
 
+        // Days present this term, from the class register (a number typed
+        // on the term report, if any, takes precedence in the view).
+        $attendance = $term->start_date
+            ? app(AttendanceSummary::class)->forStudents($rows->pluck('student.id')->all(), $term->start_date, $term->end_date)
+            : [];
+
         $scales = GradingScale::where('school_id', $class->school_id)
             ->where('curriculum', $class->curriculum())
             ->with('bands')
@@ -128,6 +140,7 @@ class ReportCardController extends Controller
             'teachers' => $teachers,
             'scales' => $scales,
             'promotionText' => $promotionText,
+            'attendance' => $attendance,
             'template' => $template,
         ]);
     }

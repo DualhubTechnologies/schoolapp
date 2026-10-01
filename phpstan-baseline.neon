@@ -121,12 +121,6 @@ parameters:
 			path: app/Filament/Admin/Resources/Schools/Tables/SchoolsTable.php
 
 		-
-			message: '#^Access to an undefined property Illuminate\\Database\\Eloquent\\Model\:\:\$academicYear\.$#'
-			identifier: property.notFound
-			count: 1
-			path: app/Filament/App/Resources/Assessments/AssessmentResource.php
-
-		-
 			message: '#^Method App\\Filament\\App\\Resources\\AuditTrail\\AuditTrailResource\:\:canDelete\(\) has parameter \$record with no type specified\.$#'
 			identifier: missingType.parameter
 			count: 1
@@ -211,12 +205,6 @@ parameters:
 			path: app/Filament/App/Resources/FeeBalances/FeeBalanceResource.php
 
 		-
-			message: '#^Parameter \#1 \$expression of method Illuminate\\Database\\Eloquent\\Builder\<Illuminate\\Database\\Eloquent\\Model\>\:\:selectRaw\(\) expects literal\-string, non\-falsy\-string given\.$#'
-			identifier: argument.type
-			count: 3
-			path: app/Filament/App/Resources/FeeBalances/FeeBalanceResource.php
-
-		-
 			message: '#^Access to an undefined property App\\Models\\Student\:\:\$total_charged\.$#'
 			identifier: property.notFound
 			count: 2
@@ -226,12 +214,6 @@ parameters:
 			message: '#^Access to an undefined property App\\Models\\Student\:\:\$total_paid\.$#'
 			identifier: property.notFound
 			count: 1
-			path: app/Filament/App/Resources/FeeBalances/Tables/FeeBalancesTable.php
-
-		-
-			message: '#^Parameter \#1 \$sql of method Illuminate\\Database\\Eloquent\\Builder\<Illuminate\\Database\\Eloquent\\Model\>\:\:whereRaw\(\) expects Illuminate\\Contracts\\Database\\Query\\Expression\|literal\-string, non\-falsy\-string given\.$#'
-			identifier: argument.type
-			count: 8
 			path: app/Filament/App/Resources/FeeBalances/Tables/FeeBalancesTable.php
 
 		-
@@ -255,18 +237,6 @@ parameters:
 		-
 			message: '#^Method App\\Filament\\App\\Resources\\FeeReminders\\Pages\\ListFeeReminders\:\:debtors\(\) has parameter \$classIds with no value type specified in iterable type array\.$#'
 			identifier: missingType.iterableValue
-			count: 1
-			path: app/Filament/App/Resources/FeeReminders/Pages/ListFeeReminders.php
-
-		-
-			message: '#^Parameter \#1 \$expression of method Illuminate\\Database\\Eloquent\\Builder\<App\\Models\\Student\>\:\:selectRaw\(\) expects literal\-string, non\-falsy\-string given\.$#'
-			identifier: argument.type
-			count: 1
-			path: app/Filament/App/Resources/FeeReminders/Pages/ListFeeReminders.php
-
-		-
-			message: '#^Parameter \#1 \$sql of method Illuminate\\Database\\Eloquent\\Builder\<App\\Models\\Student\>\:\:whereRaw\(\) expects Illuminate\\Contracts\\Database\\Query\\Expression\|literal\-string, non\-falsy\-string given\.$#'
-			identifier: argument.type
 			count: 1
 			path: app/Filament/App/Resources/FeeReminders/Pages/ListFeeReminders.php
 
@@ -913,18 +883,6 @@ parameters:
 			path: app/Filament/App/Widgets/TeacherMarksProgress.php
 
 		-
-			message: '#^Cannot call method diffInDays\(\) on string\.$#'
-			identifier: method.nonObject
-			count: 2
-			path: app/Filament/App/Widgets/WelcomeBanner.php
-
-		-
-			message: '#^Cannot call method lte\(\) on string\.$#'
-			identifier: method.nonObject
-			count: 1
-			path: app/Filament/App/Widgets/WelcomeBanner.php
-
-		-
 			message: '#^Method App\\Filament\\App\\Widgets\\WelcomeBanner\:\:actions\(\) should return list\<array\{label\: string, url\: string, icon\: string, primary\?\: bool\}\> but returns array\<int, array\{url\: mixed, label\: string, icon\: string, primary\: bool\}\>\.$#'
 			identifier: return.type
 			count: 1
@@ -997,30 +955,6 @@ parameters:
 			path: app/Filament/Pages/ClassResults.php
 
 		-
-			message: '#^Access to an undefined property App\\Filament\\Pages\\EnterMarks\:\:\$assessment\.$#'
-			identifier: property.notFound
-			count: 2
-			path: app/Filament/Pages/EnterMarks.php
-
-		-
-			message: '#^Access to an undefined property App\\Filament\\Pages\\EnterMarks\:\:\$schoolClass\.$#'
-			identifier: property.notFound
-			count: 4
-			path: app/Filament/Pages/EnterMarks.php
-
-		-
-			message: '#^Access to an undefined property App\\Filament\\Pages\\EnterMarks\:\:\$subject\.$#'
-			identifier: property.notFound
-			count: 3
-			path: app/Filament/Pages/EnterMarks.php
-
-		-
-			message: '#^Access to an undefined property App\\Models\\Subject\:\:\$pivot\.$#'
-			identifier: property.notFound
-			count: 1
-			path: app/Filament/Pages/EnterMarks.php
-
-		-
 			message: '#^Access to an undefined property Illuminate\\Database\\Eloquent\\Model\:\:\$grade\.$#'
 			identifier: property.notFound
 			count: 1
@@ -1029,24 +963,6 @@ parameters:
 		-
 			message: '#^Access to an undefined property Illuminate\\Database\\Eloquent\\Model\:\:\$min_score\.$#'
 			identifier: property.notFound
-			count: 1
-			path: app/Filament/Pages/EnterMarks.php
-
-		-
-			message: '#^Access to an undefined property Illuminate\\Database\\Eloquent\\Model\:\:\$subjects\.$#'
-			identifier: property.notFound
-			count: 1
-			path: app/Filament/Pages/EnterMarks.php
-
-		-
-			message: '#^Access to an undefined property Illuminate\\Database\\Eloquent\\Model\:\:\$subsidiary_subject_id\.$#'
-			identifier: property.notFound
-			count: 1
-			path: app/Filament/Pages/EnterMarks.php
-
-		-
-			message: '#^Call to an undefined method Illuminate\\Database\\Eloquent\\Model\:\:label\(\)\.$#'
-			identifier: method.notFound
 			count: 1
 			path: app/Filament/Pages/EnterMarks.php
 
@@ -1144,12 +1060,6 @@ parameters:
 			message: '#^Access to an undefined property App\\Filament\\Pages\\IncomeExpenditure\:\:\$report\.$#'
 			identifier: property.notFound
 			count: 1
-			path: app/Filament/Pages/IncomeExpenditure.php
-
-		-
-			message: '#^Cannot call method copy\(\) on string\.$#'
-			identifier: method.nonObject
-			count: 2
 			path: app/Filament/Pages/IncomeExpenditure.php
 
 		-
@@ -1429,12 +1339,6 @@ parameters:
 			path: app/Filament/Pages/SubjectChoices.php
 
 		-
-			message: '#^Access to an undefined property App\\Models\\Subject\:\:\$pivot\.$#'
-			identifier: property.notFound
-			count: 2
-			path: app/Filament/Pages/SubjectChoices.php
-
-		-
 			message: '#^Method App\\Filament\\Pages\\SubjectChoices\:\:compulsory\(\) return type with generic class Illuminate\\Support\\Collection does not specify its types\: TKey, TValue$#'
 			identifier: missingType.generics
 			count: 1
@@ -1449,18 +1353,6 @@ parameters:
 		-
 			message: '#^Method App\\Filament\\Pages\\SubjectChoices\:\:subsidiaryOptions\(\) return type with generic class Illuminate\\Support\\Collection does not specify its types\: TKey, TValue$#'
 			identifier: missingType.generics
-			count: 1
-			path: app/Filament/Pages/SubjectChoices.php
-
-		-
-			message: '#^Parameter \#1 \$callback of method Illuminate\\Database\\Eloquent\\Collection\<int,Illuminate\\Database\\Eloquent\\Model\>\:\:map\(\) expects callable\(Illuminate\\Database\\Eloquent\\Model, int\)\: string, Closure\(App\\Models\\Subject\)\: string given\.$#'
-			identifier: argument.type
-			count: 1
-			path: app/Filament/Pages/SubjectChoices.php
-
-		-
-			message: '#^Parameter \#1 \$callback of method Illuminate\\Support\\Collection\<int,Illuminate\\Database\\Eloquent\\Model\>\:\:reject\(\) expects bool\|\(callable\(Illuminate\\Database\\Eloquent\\Model, int\)\: bool\)\|Illuminate\\Database\\Eloquent\\Model, Closure\(App\\Models\\Subject\)\: mixed given\.$#'
-			identifier: argument.type
 			count: 1
 			path: app/Filament/Pages/SubjectChoices.php
 
@@ -1517,12 +1409,6 @@ parameters:
 			identifier: property.notFound
 			count: 1
 			path: app/Filament/Support/FinanceEntryResource.php
-
-		-
-			message: '#^Cannot call method copy\(\) on string\.$#'
-			identifier: method.nonObject
-			count: 2
-			path: app/Filament/Widgets/FinanceSnapshot.php
 
 		-
 			message: '#^Using nullsafe property access on non\-nullable type App\\Models\\Term\. Use \-\> instead\.$#'
@@ -1712,12 +1598,6 @@ parameters:
 			path: app/Http/Controllers/ReportCardController.php
 
 		-
-			message: '#^Parameter \#2 \$year of method App\\Services\\Academics\\PromotionAdvisor\:\:advise\(\) expects App\\Models\\AcademicYear\|null, Illuminate\\Database\\Eloquent\\Model\|null given\.$#'
-			identifier: argument.type
-			count: 1
-			path: app/Http/Controllers/ReportCardController.php
-
-		-
 			message: '#^Using nullsafe property access "\?\-\>action" on left side of \?\? is unnecessary\. Use \-\> instead\.$#'
 			identifier: nullsafe.neverNull
 			count: 1
@@ -1766,12 +1646,6 @@ parameters:
 			path: app/Models/Assessment.php
 
 		-
-			message: '#^Method App\\Models\\Assessment\:\:term\(\) return type with generic class Illuminate\\Database\\Eloquent\\Relations\\BelongsTo does not specify its types\: TRelatedModel, TDeclaringModel$#'
-			identifier: missingType.generics
-			count: 1
-			path: app/Models/Assessment.php
-
-		-
 			message: '#^Method App\\Models\\BudgetLine\:\:category\(\) return type with generic class Illuminate\\Database\\Eloquent\\Relations\\BelongsTo does not specify its types\: TRelatedModel, TDeclaringModel$#'
 			identifier: missingType.generics
 			count: 1
@@ -1802,25 +1676,7 @@ parameters:
 			path: app/Models/ClassLevel.php
 
 		-
-			message: '#^Call to an undefined method Illuminate\\Database\\Eloquent\\Model\:\:label\(\)\.$#'
-			identifier: method.notFound
-			count: 1
-			path: app/Models/Combination.php
-
-		-
 			message: '#^Method App\\Models\\Combination\:\:students\(\) return type with generic class Illuminate\\Database\\Eloquent\\Relations\\HasMany does not specify its types\: TRelatedModel, TDeclaringModel$#'
-			identifier: missingType.generics
-			count: 1
-			path: app/Models/Combination.php
-
-		-
-			message: '#^Method App\\Models\\Combination\:\:subjects\(\) return type with generic class Illuminate\\Database\\Eloquent\\Relations\\BelongsToMany does not specify its types\: TRelatedModel, TDeclaringModel, TPivotModel, TAccessor \(2\-4 required\)$#'
-			identifier: missingType.generics
-			count: 1
-			path: app/Models/Combination.php
-
-		-
-			message: '#^Method App\\Models\\Combination\:\:subsidiary\(\) return type with generic class Illuminate\\Database\\Eloquent\\Relations\\BelongsTo does not specify its types\: TRelatedModel, TDeclaringModel$#'
 			identifier: missingType.generics
 			count: 1
 			path: app/Models/Combination.php
@@ -2228,12 +2084,6 @@ parameters:
 			path: app/Models/SchoolClass.php
 
 		-
-			message: '#^Method App\\Models\\SchoolClass\:\:subjects\(\) return type with generic class Illuminate\\Database\\Eloquent\\Relations\\BelongsToMany does not specify its types\: TRelatedModel, TDeclaringModel, TPivotModel, TAccessor \(2\-4 required\)$#'
-			identifier: missingType.generics
-			count: 1
-			path: app/Models/SchoolClass.php
-
-		-
 			message: '#^Class App\\Models\\Section uses generic trait Illuminate\\Database\\Eloquent\\Factories\\HasFactory but does not specify its types\: TFactory$#'
 			identifier: missingType.generics
 			count: 1
@@ -2444,19 +2294,7 @@ parameters:
 			path: app/Models/Student.php
 
 		-
-			message: '#^Method App\\Models\\Student\:\:combination\(\) return type with generic class Illuminate\\Database\\Eloquent\\Relations\\BelongsTo does not specify its types\: TRelatedModel, TDeclaringModel$#'
-			identifier: missingType.generics
-			count: 1
-			path: app/Models/Student.php
-
-		-
 			message: '#^Method App\\Models\\Student\:\:discounts\(\) return type with generic class Illuminate\\Database\\Eloquent\\Relations\\HasMany does not specify its types\: TRelatedModel, TDeclaringModel$#'
-			identifier: missingType.generics
-			count: 1
-			path: app/Models/Student.php
-
-		-
-			message: '#^Method App\\Models\\Student\:\:electives\(\) return type with generic class Illuminate\\Database\\Eloquent\\Relations\\BelongsToMany does not specify its types\: TRelatedModel, TDeclaringModel, TPivotModel, TAccessor \(2\-4 required\)$#'
 			identifier: missingType.generics
 			count: 1
 			path: app/Models/Student.php
@@ -2678,31 +2516,7 @@ parameters:
 			path: app/Models/SubscriptionReminder.php
 
 		-
-			message: '#^Access to an undefined property Illuminate\\Database\\Eloquent\\Model\:\:\$name\.$#'
-			identifier: property.notFound
-			count: 1
-			path: app/Models/Term.php
-
-		-
-			message: '#^Access to an undefined property Illuminate\\Database\\Eloquent\\Model\:\:\$start_date\.$#'
-			identifier: property.notFound
-			count: 2
-			path: app/Models/Term.php
-
-		-
-			message: '#^Call to an undefined method Illuminate\\Database\\Eloquent\\Model\:\:previous\(\)\.$#'
-			identifier: method.notFound
-			count: 1
-			path: app/Models/Term.php
-
-		-
 			message: '#^Class App\\Models\\Term uses generic trait Illuminate\\Database\\Eloquent\\Factories\\HasFactory but does not specify its types\: TFactory$#'
-			identifier: missingType.generics
-			count: 1
-			path: app/Models/Term.php
-
-		-
-			message: '#^Method App\\Models\\Term\:\:academicYear\(\) return type with generic class Illuminate\\Database\\Eloquent\\Relations\\BelongsTo does not specify its types\: TRelatedModel, TDeclaringModel$#'
 			identifier: missingType.generics
 			count: 1
 			path: app/Models/Term.php
@@ -2972,18 +2786,6 @@ parameters:
 			path: app/Services/Academics/PromotionService.php
 
 		-
-			message: '#^Access to an undefined property Illuminate\\Database\\Eloquent\\Model\:\:\$subjects\.$#'
-			identifier: property.notFound
-			count: 1
-			path: app/Services/Academics/ResultsCalculator.php
-
-		-
-			message: '#^Access to an undefined property Illuminate\\Database\\Eloquent\\Model\:\:\$subsidiary_subject_id\.$#'
-			identifier: property.notFound
-			count: 1
-			path: app/Services/Academics/ResultsCalculator.php
-
-		-
 			message: '#^Method App\\Services\\Academics\\ResultsCalculator\:\:aLevelOverall\(\) has parameter \$results with no value type specified in iterable type array\.$#'
 			identifier: missingType.iterableValue
 			count: 1
@@ -3005,12 +2807,6 @@ parameters:
 			message: '#^Method App\\Services\\Academics\\ResultsCalculator\:\:forClass\(\) return type has no value type specified in iterable type array\.$#'
 			identifier: missingType.iterableValue
 			count: 3
-			path: app/Services/Academics/ResultsCalculator.php
-
-		-
-			message: '#^Method App\\Services\\Academics\\ResultsCalculator\:\:forClass\(\) should return array\{class\: App\\Models\\SchoolClass, term\: App\\Models\\Term, curriculum\: string\|null, assessments\: Illuminate\\Support\\Collection\<int, App\\Models\\Assessment\>, subjects\: Illuminate\\Support\\Collection\<int, App\\Models\\Subject\>, rows\: Illuminate\\Support\\Collection\<int, array\>, subject_stats\: array\<int, array\>, summary\: array\} but returns array\{class\: App\\Models\\SchoolClass, term\: App\\Models\\Term, curriculum\: string\|null, assessments\: Illuminate\\Database\\Eloquent\\Collection\<int, App\\Models\\Assessment\>, subjects\: Illuminate\\Database\\Eloquent\\Collection\<int, Illuminate\\Database\\Eloquent\\Model\>, rows\: Illuminate\\Support\\Collection\<int, array\>, subject_stats\: array, summary\: array\}\.$#'
-			identifier: return.type
-			count: 1
 			path: app/Services/Academics/ResultsCalculator.php
 
 		-
@@ -3194,32 +2990,8 @@ parameters:
 			path: app/Services/Dashboard/SchoolFigures.php
 
 		-
-			message: '#^Access to an undefined property App\\Models\\Subject\:\:\$pivot\.$#'
-			identifier: property.notFound
-			count: 1
-			path: app/Services/Dashboard/TeacherLoad.php
-
-		-
-			message: '#^Access to an undefined property Illuminate\\Database\\Eloquent\\Model\:\:\$subjects\.$#'
-			identifier: property.notFound
-			count: 1
-			path: app/Services/Dashboard/TeacherLoad.php
-
-		-
-			message: '#^Access to an undefined property Illuminate\\Database\\Eloquent\\Model\:\:\$subsidiary_subject_id\.$#'
-			identifier: property.notFound
-			count: 1
-			path: app/Services/Dashboard/TeacherLoad.php
-
-		-
 			message: '#^Method App\\Services\\Dashboard\\TeacherLoad\:\:rows\(\) should return Illuminate\\Support\\Collection\<int, array\{class\: App\\Models\\SchoolClass, subject\: App\\Models\\Subject, assessment\: App\\Models\\Assessment\|null, learners\: int, entered\: int, studentIds\: list\<int\>\}\> but returns Illuminate\\Database\\Eloquent\\Collection\<int, array\{class\: App\\Models\\SchoolClass, subject\: App\\Models\\Subject, assessment\: mixed, learners\: int, entered\: int, studentIds\: array\<mixed\>\}\>\.$#'
 			identifier: return.type
-			count: 1
-			path: app/Services/Dashboard/TeacherLoad.php
-
-		-
-			message: '#^Parameter \#1 \$callback of method Illuminate\\Database\\Eloquent\\Collection\<int,Illuminate\\Database\\Eloquent\\Model\>\:\:map\(\) expects callable\(Illuminate\\Database\\Eloquent\\Model, int\)\: array\{class\: App\\Models\\SchoolClass, subject\: App\\Models\\Subject, assessment\: mixed, learners\: int\<0, max\>, entered\: int\<0, max\>, studentIds\: array\<mixed\>\}, Closure\(App\\Models\\Subject\)\: array\{class\: App\\Models\\SchoolClass, subject\: App\\Models\\Subject, assessment\: mixed, learners\: int\<0, max\>, entered\: int\<0, max\>, studentIds\: array\<mixed\>\} given\.$#'
-			identifier: argument.type
 			count: 1
 			path: app/Services/Dashboard/TeacherLoad.php
 

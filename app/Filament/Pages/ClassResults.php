@@ -2,6 +2,7 @@
 
 namespace App\Filament\Pages;
 
+use App\Filament\Concerns\ChoosesExam;
 use App\Models\SchoolClass;
 use App\Models\Section;
 use App\Models\Term;
@@ -21,11 +22,13 @@ use Symfony\Component\HttpFoundation\StreamedResponse;
  */
 class ClassResults extends Page
 {
+    use ChoosesExam;
+
     protected static string|BackedEnum|null $navigationIcon = Heroicon::OutlinedTableCells;
 
     protected static string|\UnitEnum|null $navigationGroup = 'Exams & Results';
 
-    protected static ?int $navigationSort = 3;
+    protected static ?int $navigationSort = 4;
 
     protected static ?string $title = 'Results & Broadsheet';
 
@@ -48,6 +51,11 @@ class ClassResults extends Page
     public static function canAccess(): bool
     {
         return AcademicAccess::teaches();
+    }
+
+    public function updatedTermId(): void
+    {
+        $this->examId = null;
     }
 
     public function updatedClassId(): void
@@ -83,7 +91,7 @@ class ClassResults extends Page
         $class = $this->classId ? SchoolClass::where('school_id', auth()->user()?->school_id)->find($this->classId) : null;
         $term = $this->termId ? Term::where('school_id', auth()->user()?->school_id)->find($this->termId) : null;
 
-        return $class && $term ? app(ResultsCalculator::class)->forClass($class, $term, $this->sectionId) : null;
+        return $class && $term ? app(ResultsCalculator::class)->forClass($class, $term, $this->sectionId, $this->chosenExamId()) : null;
     }
 
     /**
@@ -99,7 +107,7 @@ class ClassResults extends Page
 
         $subjects = $r['subjects']->filter(fn ($s) => isset($r['subject_stats'][$s->id]));
         $overall = $this->overallColumns($r['curriculum']);
-        $filename = str($r['class']->name.' '.$r['term']->label().' results')->slug().'.csv';
+        $filename = str($r['class']->name.' '.$r['term']->label().' '.($r['exam']->name ?? '').' results')->slug().'.csv';
 
         return response()->streamDownload(function () use ($r, $subjects, $overall) {
             $out = fopen('php://output', 'w');

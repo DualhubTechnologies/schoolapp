@@ -46,6 +46,8 @@ class FeeBalanceResource extends Resource
 
     /**
      * Everything ever charged to this student, after discounts.
+     *
+     * @return literal-string
      */
     public static function chargedSql(): string
     {
@@ -56,6 +58,8 @@ class FeeBalanceResource extends Resource
 
     /**
      * Everything ever paid by this student.
+     *
+     * @return literal-string
      */
     public static function paidSql(): string
     {

@@ -4,6 +4,7 @@ namespace App\Filament\Widgets;
 
 use App\Filament\Widgets\Concerns\SchoolScoped;
 use App\Models\Student;
+use App\Support\Sql;
 use Filament\Support\RawJs;
 use Filament\Widgets\ChartWidget;
 
@@ -47,7 +48,7 @@ class AdmissionsTrendChart extends ChartWidget
         $admitted = Student::where('school_id', $this->schoolId())
             ->whereNotNull('admission_date')
             ->where('admission_date', '>=', $from)
-            ->selectRaw("DATE_FORMAT(admission_date, '%Y-%m') as ym, COUNT(*) as n")
+            ->selectRaw(Sql::yearMonth('admission_date').' as ym, COUNT(*) as n')
             ->groupBy('ym')
             ->pluck('n', 'ym');
 

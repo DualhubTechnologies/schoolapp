@@ -4,15 +4,23 @@ namespace App\Console\Commands;
 
 use Illuminate\Console\Command;
 use Illuminate\Support\Facades\Cache;
+use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\File;
 use Illuminate\Support\Facades\Process;
 use RuntimeException;
+use ZipArchive;
 
 /**
- * Nightly backup, on the server: the whole database (compressed SQL) and
- * the uploaded files (photos, signatures, logos), kept for a set number
- * of days in storage/app/backups. Scheduled in routes/console.php; shown
- * on System health.
+ * Nightly backup: the whole database and the uploaded files (photos,
+ * signatures, logos), kept for a set number of days in
+ * storage/app/backups. Scheduled in routes/console.php; shown on System
+ * health.
+ *
+ * On the server (MySQL) the database is a compressed SQL dump and the
+ * files a .tar.gz. In the Windows app (SQLite) the database is a
+ * compressed copy of the database file, made with VACUUM INTO so it is
+ * consistent even while the app is in use, and the files are a .zip,
+ * since Windows has no mysqldump or tar to rely on.
  *
  * These copies are on the same server as the data. Copy the folder off
  * the server as well (see docs/operations.md): a backup that dies with
@@ -39,8 +47,8 @@ class BackupRun extends Command
         $stamp = now()->format('Y-m-d-His');
 
         try {
-            $database = $this->backupDatabase("{$folder}/schoolhub-db-{$stamp}.sql.gz");
-            $files = $this->option('no-files') ? null : $this->backupFiles("{$folder}/schoolhub-files-{$stamp}.tar.gz");
+            $database = $this->backupDatabase("{$folder}/schoolhub-db-{$stamp}");
+            $files = $this->option('no-files') ? null : $this->backupFiles("{$folder}/schoolhub-files-{$stamp}");
         } catch (RuntimeException $e) {
             report($e);
             $this->error($e->getMessage());
@@ -64,9 +72,16 @@ class BackupRun extends Command
         return storage_path('app/backups');
     }
 
-    protected function backupDatabase(string $target): string
+    /** $base: the path without its extension, which depends on the database. */
+    protected function backupDatabase(string $base): string
     {
         $db = config('database.connections.'.config('database.default'));
+
+        if (($db['driver'] ?? null) === 'sqlite') {
+            return $this->backupSqlite((string) $db['database'], $base.'.sqlite.gz');
+        }
+
+        $target = $base.'.sql.gz';
 
         if (($db['driver'] ?? null) !== 'mysql') {
             throw new RuntimeException('Database backup needs MySQL; the current connection is '.($db['driver'] ?? 'unknown').'.');
@@ -92,7 +107,52 @@ class BackupRun extends Command
         return $target;
     }
 
-    protected function backupFiles(string $target): ?string
+    /**
+     * A consistent copy of the SQLite database (VACUUM INTO writes a clean
+     * snapshot while the app keeps working), gzipped.
+     */
+    protected function backupSqlite(string $database, string $target): string
+    {
+        if ($database === '' || $database === ':memory:' || ! is_file($database)) {
+            throw new RuntimeException('Database backup failed: the SQLite database file was not found.');
+        }
+
+        $copy = $target.'.tmp';
+        File::delete($copy);
+
+        try {
+            DB::statement('VACUUM INTO ?', [$copy]);
+
+            $in = fopen($copy, 'rb');
+            $out = gzopen($target, 'wb6');
+
+            if (! $in || ! $out) {
+                throw new RuntimeException('Database backup failed: could not write '.$target.'.');
+            }
+
+            while (! feof($in)) {
+                gzwrite($out, (string) fread($in, 1 << 20));
+            }
+
+            fclose($in);
+            gzclose($out);
+        } catch (RuntimeException $e) {
+            File::delete($target);
+
+            throw $e;
+        } catch (\Throwable $e) {
+            File::delete($target);
+
+            throw new RuntimeException('Database backup failed: '.$e->getMessage(), previous: $e);
+        } finally {
+            File::delete($copy);
+        }
+
+        return $target;
+    }
+
+    /** $base: the path without its extension (.tar.gz on the server, .zip where tar is missing). */
+    protected function backupFiles(string $base): ?string
     {
         $folders = array_values(array_filter(['private/uploads', 'public'], fn (string $path): bool => is_dir(storage_path('app/'.$path))));
 
@@ -100,12 +160,46 @@ class BackupRun extends Command
             return null;
         }
 
+        if (PHP_OS_FAMILY === 'Windows') {
+            return $this->zipFiles($folders, $base.'.zip');
+        }
+
+        $target = $base.'.tar.gz';
+
         $result = Process::timeout(1800)->run(['tar', '-czf', $target, '-C', storage_path('app'), ...$folders]);
 
         if ($result->failed()) {
             File::delete($target);
 
             throw new RuntimeException('File backup failed: '.trim($result->errorOutput() ?: $result->output()));
+        }
+
+        return $target;
+    }
+
+    /**
+     * The uploaded files as a .zip, for Windows.
+     *
+     * @param  list<string>  $folders  relative to storage/app
+     */
+    protected function zipFiles(array $folders, string $target): string
+    {
+        $zip = new ZipArchive;
+
+        if ($zip->open($target, ZipArchive::CREATE | ZipArchive::OVERWRITE) !== true) {
+            throw new RuntimeException('File backup failed: could not create '.$target.'.');
+        }
+
+        foreach ($folders as $folder) {
+            foreach (File::allFiles(storage_path('app/'.$folder)) as $file) {
+                $zip->addFile($file->getPathname(), $folder.'/'.str_replace('\\', '/', $file->getRelativePathname()));
+            }
+        }
+
+        if (! $zip->close()) {
+            File::delete($target);
+
+            throw new RuntimeException('File backup failed: could not finish '.$target.'.');
         }
 
         return $target;

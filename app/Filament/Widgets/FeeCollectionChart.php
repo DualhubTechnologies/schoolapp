@@ -5,6 +5,7 @@ namespace App\Filament\Widgets;
 use App\Filament\Widgets\Concerns\SchoolScoped;
 use App\Models\StudentCharge;
 use App\Models\StudentPayment;
+use App\Support\Sql;
 use Filament\Support\RawJs;
 use Filament\Widgets\ChartWidget;
 use Illuminate\Support\Carbon;
@@ -58,13 +59,13 @@ class FeeCollectionChart extends ChartWidget
 
         $billed = StudentCharge::where('school_id', $this->schoolId())
             ->where('charged_on', '>=', $from)
-            ->selectRaw("DATE_FORMAT(charged_on, '%Y-%m') as ym, SUM(amount - discount_amount) as total")
+            ->selectRaw(Sql::yearMonth('charged_on').' as ym, SUM(amount - discount_amount) as total')
             ->groupBy('ym')
             ->pluck('total', 'ym');
 
         $collected = StudentPayment::where('school_id', $this->schoolId())
             ->where('paid_on', '>=', $from)
-            ->selectRaw("DATE_FORMAT(paid_on, '%Y-%m') as ym, SUM(amount) as total")
+            ->selectRaw(Sql::yearMonth('paid_on').' as ym, SUM(amount) as total')
             ->groupBy('ym')
             ->pluck('total', 'ym');
 

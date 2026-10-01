@@ -7,6 +7,7 @@ use App\Models\School;
 use App\Observers\SchoolObserver;
 use App\Support\ErrorRecorder;
 use App\Support\PasswordStrength;
+use App\Support\SqliteDates;
 use App\Support\UndoDelete;
 use Carbon\CarbonImmutable;
 use Filament\Actions\Action as NotificationAction;
@@ -48,6 +49,8 @@ class AppServiceProvider extends ServiceProvider
     public function boot(): void
     {
         $this->configureDefaults();
+        // Date-only values saved as "2026-10-01" on SQLite (the Windows app), as MySQL does.
+        SqliteDates::register();
         $this->configureAuthLogging();
         $this->configureObservers();
         $this->configureDuplicateEntryHandling();

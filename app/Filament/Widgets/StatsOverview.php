@@ -11,6 +11,7 @@ use App\Models\Student;
 use App\Models\StudentCharge;
 use App\Models\StudentPayment;
 use App\Models\User;
+use App\Support\Sql;
 use Filament\Widgets\StatsOverviewWidget;
 use Filament\Widgets\StatsOverviewWidget\Stat;
 use Illuminate\Support\Carbon;
@@ -103,7 +104,7 @@ class StatsOverview extends StatsOverviewWidget
 
         $counts = Student::where('school_id', $this->schoolId())
             ->where('admission_date', '>=', $from)
-            ->selectRaw("DATE_FORMAT(admission_date, '%Y-%m') as ym, COUNT(*) as n")
+            ->selectRaw(Sql::yearMonth('admission_date').' as ym, COUNT(*) as n')
             ->groupBy('ym')
             ->pluck('n', 'ym');
 

@@ -65,8 +65,11 @@ try {
         $composer | Add-Member -NotePropertyName 'repositories' -NotePropertyValue @($path) -Force
     }
     [IO.File]::WriteAllText("$BuildDir\composer.json", ($composer | ConvertTo-Json -Depth 20), (New-Object Text.UTF8Encoding $false))
-    composer update nativephp/desktop nativephp/php-bin --with-dependencies --no-interaction
+    composer update nativephp/desktop nativephp/php-bin --with-dependencies --no-interaction --no-scripts
     if ($LASTEXITCODE -ne 0) { throw 'Composer could not install NativePHP.' }
+    # Without the scripts (they call dev-only commands like boost:update), so discover the packages here.
+    php artisan package:discover --ansi
+    if ($LASTEXITCODE -ne 0) { throw 'Laravel could not discover the packages.' }
 
     php artisan key:generate --force
     php artisan native:install --no-interaction
@@ -85,7 +88,7 @@ try {
     if ($LASTEXITCODE -ne 0) { throw 'native:build failed.' }
 
     Step 'Done'
-    Get-ChildItem "$BuildDir\dist" -Filter '*.exe' | ForEach-Object { Write-Host "$($_.FullName)  ($([math]::Round($_.Length / 1MB)) MB)" }
+    Get-ChildItem "$BuildDir\nativephp\electron\dist" -Filter "*$Version-setup.exe" | ForEach-Object { Write-Host "$($_.FullName)  ($([math]::Round($_.Length / 1MB)) MB)" }
 }
 finally {
     Pop-Location

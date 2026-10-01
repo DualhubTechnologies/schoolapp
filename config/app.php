@@ -17,6 +17,19 @@ return [
 
     /*
     |--------------------------------------------------------------------------
+    | Edition
+    |--------------------------------------------------------------------------
+    |
+    | "server" for the online system (the default), "desktop" for the Windows
+    | app: one school, offline, no public website or owner panel. See
+    | App\Support\Edition.
+    |
+    */
+
+    'edition' => env('APP_EDITION', 'server'),
+
+    /*
+    |--------------------------------------------------------------------------
     | Application Environment
     |--------------------------------------------------------------------------
     |

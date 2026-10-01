@@ -2,9 +2,11 @@
 
 namespace App\Http\Controllers;
 
+use App\Support\Edition;
 use App\Support\PublicSite;
 use App\Support\SiteVisits;
 use Illuminate\Contracts\View\View;
+use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
 
 /**
@@ -15,8 +17,13 @@ use Illuminate\Http\Request;
  */
 class LandingController extends Controller
 {
-    public function __invoke(Request $request, SiteVisits $visits): View
+    public function __invoke(Request $request, SiteVisits $visits): View|RedirectResponse
     {
+        // The Windows app has no public website: straight to the school.
+        if (Edition::isDesktop()) {
+            return redirect()->to(filament()->getPanel('app')->getUrl());
+        }
+
         $visits->recordLater($request, '/');
 
         // On the home page "Book a demo" scrolls to its own form.

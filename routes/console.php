@@ -2,6 +2,7 @@
 
 use App\Models\ErrorOccurrence;
 use App\Models\SiteVisit;
+use App\Support\Edition;
 use App\Support\SystemHealth;
 use Illuminate\Foundation\Inspiring;
 use Illuminate\Support\Facades\Artisan;
@@ -46,6 +47,13 @@ Schedule::command('geoip:update')
 // Website visits older than two years.
 Schedule::command('model:prune', ['--model' => [SiteVisit::class]])
     ->dailyAt('02:45')
+    ->onOneServer();
+
+// Windows app: texts written while offline go out once it is back online.
+Schedule::command('sms:send-queued')
+    ->everyFiveMinutes()
+    ->when(fn (): bool => Edition::isDesktop())
+    ->withoutOverlapping()
     ->onOneServer();
 
 // Proof the scheduler is running, shown on System health.

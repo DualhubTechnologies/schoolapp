@@ -12,6 +12,7 @@ use App\Filament\Pages\Auth\ResetPassword;
 use App\Filament\Support\ErrorNotices;
 use App\Filament\Support\Pages\RecordFormScope;
 use App\Filament\Widgets\StatsOverview;
+use App\Http\Middleware\ServerEditionOnly;
 use Filafly\LogoTools\LogoToolsPlugin;
 use Filament\Auth\MultiFactor\App\AppAuthentication;
 use Filament\Http\Middleware\Authenticate;
@@ -146,6 +147,8 @@ class AdminPanelProvider extends PanelProvider
 
             // --- Middleware ---
             ->middleware([
+                // The platform owner's panel is online only: not in the Windows app.
+                ServerEditionOnly::class,
                 EncryptCookies::class,
                 AddQueuedCookiesToResponse::class,
                 StartSession::class,

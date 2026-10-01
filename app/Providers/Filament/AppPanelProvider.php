@@ -38,6 +38,9 @@ use App\Http\Controllers\ReportCardController;
 use App\Http\Controllers\StudentDocumentController;
 use App\Http\Controllers\TransportDocumentController;
 use App\Http\Middleware\EnsureSchoolSubscribed;
+use App\Http\Middleware\RequireDesktopSetup;
+use App\Http\Middleware\ServerEditionOnly;
+use App\Support\Edition;
 use App\Support\PublicSite;
 use App\Support\UndoDelete;
 use Filafly\LogoTools\LogoToolsPlugin;
@@ -78,8 +81,10 @@ class AppPanelProvider extends PanelProvider
             ->multiFactorAuthentication([
                 AppAuthentication::make()->recoverable(),
             ])
-            // Schools sign themselves up; the person registering becomes its School Admin.
-            ->registration(RegisterSchool::class)
+            // Schools sign themselves up; the person registering becomes its
+            // School Admin. Not in the Windows app: its one school is set up
+            // on first run (DesktopSetupController).
+            ->registration(Edition::isDesktop() ? null : RegisterSchool::class)
             ->passwordReset(resetAction: ResetPassword::class)
 
             // Public landing page at the site root. Registered here (not in
@@ -90,6 +95,7 @@ class AppPanelProvider extends PanelProvider
                 // The other public pages: About, Features, Pricing, Help, Contact.
                 Route::get('/{page}', [LandingController::class, 'page'])
                     ->whereIn('page', array_keys(PublicSite::PAGES))
+                    ->middleware(ServerEditionOnly::class)
                     ->name('site.page');
                 // Terms and conditions, linked from registration and the site footers.
                 Route::view('/terms-and-conditions', 'legal.terms')->name('legal.terms');   // /terms is the academic Terms resource
@@ -100,7 +106,7 @@ class AppPanelProvider extends PanelProvider
                 Route::get('/app-icon/{size}.png', [AppInstallController::class, 'icon'])->whereNumber('size')->name('app.icon');
                 // "Book a demo" form on the landing page.
                 Route::post('/demo-request', DemoRequestController::class)
-                    ->middleware('throttle:5,10')
+                    ->middleware(['throttle:5,10', ServerEditionOnly::class])
                     ->name('demo-request');
             })
 
@@ -328,6 +334,8 @@ class AppPanelProvider extends PanelProvider
                 SubstituteBindings::class,
                 DisableBladeIconComponents::class,
                 DispatchServingFilamentEvent::class,
+                // Windows app: to the first-run setup until the school exists.
+                RequireDesktopSetup::class,
             ])
             ->authMiddleware([
                 Authenticate::class,

@@ -32,11 +32,17 @@ class UndoDelete
      */
     public static function snapshot(Model $record, string $label): ?array
     {
-        if (DB::connection($record->getConnectionName())->getDriverName() !== 'mysql') {
+        $driver = DB::connection($record->getConnectionName())->getDriverName();
+
+        if (! in_array($driver, ['mysql', 'sqlite'], true)) {
             return null;
         }
 
-        foreach (static::dependentsOf($record->getTable()) as [$table, $column]) {
+        $dependents = $driver === 'sqlite'
+            ? static::sqliteDependentsOf($record->getTable())
+            : static::dependentsOf($record->getTable());
+
+        foreach ($dependents as [$table, $column]) {
             if (DB::table($table)->where($column, $record->getKey())->exists()) {
                 return null;
             }
@@ -99,5 +105,34 @@ class UndoDelete
             ->get(['k.TABLE_NAME as dependent', 'k.COLUMN_NAME as column'])
             ->map(fn ($row) => [(string) $row->dependent, (string) $row->column])
             ->all());
+    }
+
+    /**
+     * The same on SQLite (the Windows app), which has no information_schema:
+     * every table's foreign keys, keeping those that point at this table.
+     *
+     * @return list<array{0: string, 1: string}>
+     */
+    protected static function sqliteDependentsOf(string $table): array
+    {
+        if (isset(static::$dependents[$table])) {
+            return static::$dependents[$table];
+        }
+
+        $dependents = [];
+
+        foreach (Schema::getTables() as $other) {
+            foreach (Schema::getForeignKeys($other['name']) as $key) {
+                if ($key['foreign_table'] !== $table || ! in_array(strtolower((string) $key['on_delete']), ['cascade', 'set null'], true)) {
+                    continue;
+                }
+
+                foreach ($key['columns'] as $column) {
+                    $dependents[] = [(string) $other['name'], (string) $column];
+                }
+            }
+        }
+
+        return static::$dependents[$table] = $dependents;
     }
 }

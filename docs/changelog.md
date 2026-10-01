@@ -6,6 +6,21 @@ folded into the change they belong to. Add an entry with every release.
 
 ## 1 October 2026
 
+- **Windows app, phase 2: the desktop edition** (`APP_EDITION=desktop`;
+  the online system is `server`, the default, and is unchanged).
+  First run asks for the school and its administrator and signs them in
+  (no email code or approval); there is only ever one school. The public
+  website, sitemap, parents' links, demo form, registration and the
+  platform owner's panel are not there. A Backups page (Settings) makes
+  a backup and downloads it to save on a flash disk. Texts that cannot
+  go out because the computer is offline wait in an outbox and are sent
+  every five minutes once it is online (`sms:send-queued`); after the
+  first connection failure the rest of a batch goes straight to the
+  outbox. Undo delete now works on SQLite as well. Settings for the
+  edition are in `.env.desktop.example`.
+- **Windows app, phase 1** (pushed earlier today): month charts, backups
+  and date-only values work on SQLite.
+
 - **Website visitors** (platform owner only, Platform Management): visits
   and unique visitors to the public pages for the last 7, 30 or 90 days
   or 12 months, a visits-per-day chart, and the top countries, cities,

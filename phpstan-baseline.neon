@@ -3134,24 +3134,6 @@ parameters:
 			path: app/Services/Payroll/PayrollService.php
 
 		-
-			message: '#^Method App\\Services\\SmsSender\:\:send\(\) should return array\{ok\: bool, ref\: string\|null, error\: string\|null\} but returns array\.$#'
-			identifier: return.type
-			count: 1
-			path: app/Services/SmsSender.php
-
-		-
-			message: '#^Method App\\Services\\SmsSender\:\:viaAfricasTalking\(\) return type has no value type specified in iterable type array\.$#'
-			identifier: missingType.iterableValue
-			count: 1
-			path: app/Services/SmsSender.php
-
-		-
-			message: '#^Method App\\Services\\SmsSender\:\:viaLog\(\) return type has no value type specified in iterable type array\.$#'
-			identifier: missingType.iterableValue
-			count: 1
-			path: app/Services/SmsSender.php
-
-		-
 			message: '#^Cannot call method diffInSeconds\(\) on string\.$#'
 			identifier: method.nonObject
 			count: 1

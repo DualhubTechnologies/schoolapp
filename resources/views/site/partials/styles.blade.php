@@ -98,7 +98,7 @@
         .app-head { display: flex; align-items: center; justify-content: space-between; margin-bottom: 1rem; }
         .app-head strong { font-size: .9375rem; color: var(--slate-900); }
         .app-head span { font-size: .6875rem; color: var(--slate-500); }
-        .chip { padding: .3125rem .625rem; border-radius: .375rem; background: var(--blue-600); color: #fff; font-size: .6875rem; font-weight: 600; }
+        .app-head .chip { padding: .3125rem .625rem; border-radius: .375rem; background: var(--blue-600); color: #fff; font-size: .6875rem; font-weight: 600; }
         .kpis { display: grid; grid-template-columns: repeat(4, 1fr); gap: .75rem; }
         .kpi { padding: .875rem; border: 1px solid var(--slate-200); border-radius: .625rem; background: #fff; }
         .kpi small { display: block; font-size: .625rem; font-weight: 500; color: var(--slate-500); }
@@ -321,6 +321,23 @@
         .pf-2 { top: 22%; right: -3.5rem; animation-delay: -2s; }
         .pf-3 { bottom: -1.5rem; left: 14%; animation-delay: -4s; }
         @keyframes float { 0%, 100% { transform: translateY(0); } 50% { transform: translateY(-8px); } }
+
+        /* Wide screens: copy on the left, the product preview beside it, both above the fold. */
+        @media (min-width: 1101px) {
+            .hero-grid { display: grid; grid-template-columns: minmax(0, 1fr) minmax(0, 1.15fr); align-items: center; gap: 3.5rem; }
+            .hero-grid .hero-copy { max-width: none; margin: 0; text-align: left; }
+            .hero-grid h1 { font-size: clamp(2.5rem, 4vw, 3.375rem); }
+            .hero-grid .hero-lead { margin-left: 0; font-size: 1.125rem; }
+            .hero-grid .hero-actions, .hero-grid .hero-points { justify-content: flex-start; }
+            .hero-grid .hero-points { gap: .5rem 1.25rem; }
+            .hero-grid .preview { margin: 0; max-width: none; }
+            .hero-grid .app { grid-template-columns: 1fr; min-height: 0; }
+            .hero-grid .app-side { display: none; }
+            .hero-grid .kpis { grid-template-columns: repeat(2, 1fr); }
+            .hero-grid .pf-1 { top: -1.25rem; left: auto; right: 1.5rem; }
+            .hero-grid .pf-2 { display: none; }
+            .hero-grid .pf-3 { bottom: -1.25rem; left: -1.5rem; }
+        }
 
         .fact b { background: var(--gradient-text); -webkit-background-clip: text; background-clip: text; color: transparent; }
         .section-alt { background: linear-gradient(180deg, var(--slate-50), #fff 85%); }

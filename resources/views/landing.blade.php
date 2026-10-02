@@ -36,7 +36,7 @@
 
     {{-- ── Hero ── --}}
     <section class="hero">
-        <div class="container">
+        <div class="container hero-grid">
             <div class="hero-copy">
                 <span class="badge"><b>New</b> Built for the lower-secondary competency curriculum</span>
                 <h1>Run your whole school from <span>one smart system</span></h1>

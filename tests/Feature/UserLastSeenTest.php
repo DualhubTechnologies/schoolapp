@@ -48,7 +48,7 @@ it('writes last seen at most once every few minutes, without touching updated_at
         ->and($admin->updated_at->equalTo($updatedAt))->toBeTrue();
 });
 
-it('shows last seen on the users list', function () {
+it('shows last seen on the users list, and Active now for anyone using it', function () {
     $this->freezeSecond();
     $this->admin->forceFill(['last_seen_at' => now()])->saveQuietly();
 
@@ -62,5 +62,5 @@ it('shows last seen on the users list', function () {
     Livewire::test(ListUsers::class)
         ->assertOk()
         ->assertCanSeeTableRecords([$bursar, $teacher])
-        ->assertSee(['Last seen', '3 hours ago', 'Never']);
+        ->assertSee(['Last seen', 'Active now', '3 hours ago', 'Never']);
 });

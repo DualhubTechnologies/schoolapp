@@ -76,6 +76,15 @@ class User extends Authenticatable implements FilamentUser, HasAppAuthentication
     }
 
     /**
+     * Used SchoolHub in the last few minutes: "Active now" on the Users list.
+     */
+    public function isActiveNow(): bool
+    {
+        return $this->last_seen_at !== null
+            && $this->last_seen_at->gte(now()->subMinutes(UserSession::ACTIVE_MINUTES));
+    }
+
+    /**
      * The staff record this login belongs to (teachers, bursars...).
      */
     public function staff(): HasOne

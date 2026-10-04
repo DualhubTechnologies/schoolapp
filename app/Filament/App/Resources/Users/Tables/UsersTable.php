@@ -44,7 +44,9 @@ class UsersTable
                     ->wrap(),
                 TextColumn::make('last_seen_at')
                     ->label('Last seen')
-                    ->since()
+                    ->formatStateUsing(fn (User $record): string => $record->isActiveNow() ? 'Active now' : (string) $record->last_seen_at?->diffForHumans())
+                    ->badge(fn (User $record): bool => $record->isActiveNow())
+                    ->color(fn (User $record): ?string => $record->isActiveNow() ? 'success' : null)
                     ->dateTimeTooltip('d M Y H:i')
                     ->placeholder('Never')
                     ->sortable(),

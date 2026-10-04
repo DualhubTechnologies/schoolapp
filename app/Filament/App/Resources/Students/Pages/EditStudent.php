@@ -3,6 +3,7 @@
 namespace App\Filament\App\Resources\Students\Pages;
 
 use App\Filament\App\Resources\Students\StudentResource;
+use App\Filament\Support\ConfirmWithPassword;
 use App\Filament\Support\Pages\EditRecordPage;
 use App\Models\Student;
 use Filament\Actions\Action;
@@ -43,7 +44,7 @@ class EditStudent extends EditRecordPage
                 ->color('gray')
                 ->url(fn () => route('filament.app.students.admission-letter', $this->record))
                 ->openUrlInNewTab(),
-            DeleteAction::make(),
+            ConfirmWithPassword::on(DeleteAction::make()),
         ];
     }
 }

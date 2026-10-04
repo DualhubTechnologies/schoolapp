@@ -4,6 +4,7 @@ namespace App\Filament\Admin\Resources\Schools\Pages;
 
 use App\Filament\Admin\Resources\Schools\SchoolResource;
 use App\Filament\Admin\Resources\Schools\SubscriptionActions;
+use App\Filament\Support\ConfirmWithPassword;
 use App\Filament\Support\Pages\EditRecordPage;
 use Filament\Actions\ActionGroup;
 use Filament\Actions\DeleteAction;
@@ -38,7 +39,7 @@ class EditSchool extends EditRecordPage
                 SubscriptionActions::changePlan(),
                 SubscriptionActions::extend(),
                 SubscriptionActions::suspend(),
-                DeleteAction::make(),
+                ConfirmWithPassword::on(DeleteAction::make()),
             ])
                 ->label('More')
                 ->icon('heroicon-m-ellipsis-vertical')

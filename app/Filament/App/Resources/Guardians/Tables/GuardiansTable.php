@@ -2,6 +2,7 @@
 
 namespace App\Filament\App\Resources\Guardians\Tables;
 
+use App\Filament\Support\ConfirmWithPassword;
 use App\Models\Guardian;
 use Filament\Actions\BulkActionGroup;
 use Filament\Actions\DeleteBulkAction;
@@ -57,7 +58,7 @@ class GuardiansTable
             ])
             ->toolbarActions([
                 BulkActionGroup::make([
-                    DeleteBulkAction::make(),
+                    ConfirmWithPassword::on(DeleteBulkAction::make()),
                 ]),
             ])
             ->paginationPageOptions([5, 10, 25, 50])

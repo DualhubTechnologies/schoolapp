@@ -3,6 +3,7 @@
 namespace App\Filament\App\Resources\PayrollPeriods\Pages;
 
 use App\Filament\App\Resources\PayrollPeriods\PayrollPeriodResource;
+use App\Filament\Support\ConfirmWithPassword;
 use App\Models\PayrollPeriod;
 use App\Services\Payroll\PayrollService;
 use Filament\Actions\Action;
@@ -131,9 +132,9 @@ class ViewPayrollPeriod extends ViewRecord
                 ->color('gray')
                 ->visible(fn () => $this->record->staff_count > 0),
 
-            DeleteAction::make()
+            ConfirmWithPassword::on(DeleteAction::make()
                 ->visible(fn () => $this->record->isDraft())
-                ->modalDescription('Deletes this draft payroll and its payslips. Nothing else is affected.'),
+                ->modalDescription('Deletes this draft payroll and its payslips. Nothing else is affected.')),
         ];
     }
 }

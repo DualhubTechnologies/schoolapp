@@ -2,6 +2,7 @@
 
 namespace App\Filament\App\Resources\Users\Tables;
 
+use App\Filament\Support\ConfirmWithPassword;
 use App\Models\User;
 use App\Support\Modules;
 use Filament\Actions\BulkActionGroup;
@@ -71,7 +72,7 @@ class UsersTable
             ])
             ->toolbarActions([
                 BulkActionGroup::make([
-                    DeleteBulkAction::make(),
+                    ConfirmWithPassword::on(DeleteBulkAction::make()),
                 ]),
             ]);
     }

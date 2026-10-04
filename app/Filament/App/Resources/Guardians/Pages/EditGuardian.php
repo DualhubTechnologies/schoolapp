@@ -3,6 +3,7 @@
 namespace App\Filament\App\Resources\Guardians\Pages;
 
 use App\Filament\App\Resources\Guardians\GuardianResource;
+use App\Filament\Support\ConfirmWithPassword;
 use App\Filament\Support\Pages\EditRecordPage;
 use Filament\Actions\DeleteAction;
 
@@ -13,7 +14,7 @@ class EditGuardian extends EditRecordPage
     protected function getHeaderActions(): array
     {
         return [
-            DeleteAction::make(),
+            ConfirmWithPassword::on(DeleteAction::make()),
         ];
     }
 }

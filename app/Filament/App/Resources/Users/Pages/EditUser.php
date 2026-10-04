@@ -4,6 +4,7 @@ namespace App\Filament\App\Resources\Users\Pages;
 
 use App\Filament\App\Resources\Users\Pages\Concerns\SyncsUserAccess;
 use App\Filament\App\Resources\Users\UserResource;
+use App\Filament\Support\ConfirmWithPassword;
 use App\Filament\Support\Pages\EditRecordPage;
 use Filament\Actions\DeleteAction;
 
@@ -31,8 +32,8 @@ class EditUser extends EditRecordPage
     protected function getHeaderActions(): array
     {
         return [
-            DeleteAction::make()
-                ->hidden(fn () => $this->record->is(auth()->user())), // no deleting yourself
+            ConfirmWithPassword::on(DeleteAction::make()
+                ->hidden(fn () => $this->record->is(auth()->user()))), // no deleting yourself
         ];
     }
 }

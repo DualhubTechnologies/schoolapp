@@ -3,6 +3,7 @@
 namespace App\Filament\Admin\Resources\Schools\Tables;
 
 use App\Filament\Admin\Resources\Schools\SubscriptionActions;
+use App\Filament\Support\ConfirmWithPassword;
 use App\Models\School;
 use App\Models\User;
 use App\Services\Subscriptions\SubscriptionManager;
@@ -159,7 +160,7 @@ class SchoolsTable
             ])
             ->toolbarActions([
                 BulkActionGroup::make([
-                    DeleteBulkAction::make(),
+                    ConfirmWithPassword::on(DeleteBulkAction::make()),
                 ]),
             ]);
     }

@@ -5,6 +5,7 @@ namespace App\Filament\App\Resources\Students\Tables;
 use App\Filament\Pages\ReceivePayment;
 use App\Filament\Pages\StudentAccount;
 use App\Filament\Pages\StudentIdCards;
+use App\Filament\Support\ConfirmWithPassword;
 use App\Models\Student;
 use App\Support\Modules;
 use App\Support\OwnSchool;
@@ -242,7 +243,7 @@ class StudentsTable
                         ->color('gray')
                         ->visible(fn (): bool => Modules::allows('id_cards'))
                         ->action(fn (Collection $records) => redirect(StudentIdCards::getUrl(['ids' => $records->pluck('id')->implode(',')]))),
-                    DeleteBulkAction::make(),
+                    ConfirmWithPassword::on(DeleteBulkAction::make()),
                 ]),
             ])
             ->paginationPageOptions([10, 25, 50, 100])

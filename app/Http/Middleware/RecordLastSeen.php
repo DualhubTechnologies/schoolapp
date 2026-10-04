@@ -15,7 +15,7 @@ use Symfony\Component\HttpFoundation\Response;
 class RecordLastSeen
 {
     /** Minutes between writes: "Last seen" is shown to about this accuracy. */
-    public const EVERY_MINUTES = 5;
+    public const EVERY_MINUTES = 3;
 
     public function handle(Request $request, Closure $next): Response
     {

@@ -8,6 +8,7 @@ use Carbon\CarbonImmutable;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\HasMany;
 use Illuminate\Database\Eloquent\Relations\HasOne;
+use Illuminate\Support\Facades\DB;
 
 /**
  * @property CarbonImmutable|null $approved_at
@@ -56,6 +57,23 @@ class School extends Model
         'setup_completed_at',
         'setup_choice',
     ];
+
+    /**
+     * Deleting a school removes everything it owns through the database's
+     * cascades. Two kinds of row block that, because they point at other
+     * rows of the same school that may not be deleted while in use:
+     * finance entries (their category) and students (their class). They go
+     * first, in one transaction with the school, so it is all or nothing.
+     */
+    public function delete(): ?bool
+    {
+        return DB::transaction(function (): ?bool {
+            DB::table('finance_entries')->where('school_id', $this->getKey())->delete();
+            DB::table('students')->where('school_id', $this->getKey())->delete();
+
+            return parent::delete();
+        });
+    }
 
     protected function casts(): array
     {

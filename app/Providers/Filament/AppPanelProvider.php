@@ -39,6 +39,7 @@ use App\Http\Controllers\ReportCardController;
 use App\Http\Controllers\StudentDocumentController;
 use App\Http\Controllers\TransportDocumentController;
 use App\Http\Middleware\EnsureSchoolSubscribed;
+use App\Http\Middleware\RecordLastSeen;
 use App\Http\Middleware\RequireDesktopSetup;
 use App\Http\Middleware\ServerEditionOnly;
 use App\Support\Edition;
@@ -339,6 +340,8 @@ class AppPanelProvider extends PanelProvider
             ])
             ->authMiddleware([
                 Authenticate::class,
+                // For "Last seen" on the Users list.
+                RecordLastSeen::class,
                 // Expired or suspended schools see only their Subscription page.
                 EnsureSchoolSubscribed::class,
             ]);

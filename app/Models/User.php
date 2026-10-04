@@ -32,6 +32,7 @@ use Spatie\Permission\Traits\HasRoles;
  * @property string $password
  * @property int|null $school_id
  * @property string|null $remember_token
+ * @property Carbon|null $last_seen_at when this login last used SchoolHub (App\Http\Middleware\RecordLastSeen)
  * @property Carbon|null $created_at
  * @property Carbon|null $updated_at
  */
@@ -55,6 +56,7 @@ class User extends Authenticatable implements FilamentUser, HasAppAuthentication
         return [
             'email_verified_at' => 'datetime',
             'email_verification_sent_at' => 'datetime',
+            'last_seen_at' => 'datetime',
             'password' => 'hashed',
             // Modules chosen by the administrator; null = the role's defaults.
             'modules' => 'array',

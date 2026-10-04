@@ -25,6 +25,7 @@ use Filament\Tables\Table;
 use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Support\Collection;
+use Illuminate\Support\Js;
 use Illuminate\Support\Str;
 
 /**
@@ -131,6 +132,7 @@ class ErrorReportResource extends Resource
             ])
             ->recordActions([
                 ViewAction::make(),
+                static::copyAction(),
                 static::resolveAction(),
             ])
             ->toolbarActions([
@@ -147,6 +149,20 @@ class ErrorReportResource extends Resource
             ->emptyStateHeading('No errors')
             ->emptyStateDescription('Unexpected errors from any school appear here, with the reference the user was shown.')
             ->emptyStateIcon('heroicon-o-check-badge');
+    }
+
+    /**
+     * Copy the whole error (message, where, page, stack trace) to the
+     * clipboard in the browser, with no round trip to the server.
+     */
+    public static function copyAction(): Action
+    {
+        return Action::make('copy')
+            ->label('Copy error')
+            ->icon('heroicon-o-clipboard-document')
+            ->color('gray')
+            ->alpineClickHandler(fn (ErrorReport $record): string => 'window.navigator.clipboard.writeText('.Js::from($record->copyText()).')'
+                .'.then(() => $tooltip('.Js::from('Copied').', { theme: $store.theme, timeout: 2000 }))');
     }
 
     /** Mark an open error resolved, or reopen a resolved one. */

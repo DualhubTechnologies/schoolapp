@@ -85,6 +85,32 @@ class ErrorReport extends Model
         return $this->resolved_at !== null;
     }
 
+    /**
+     * The whole error as plain text, for the "Copy error" button: ready to
+     * paste into a message or an issue. Paths are from the app root.
+     */
+    public function copyText(): string
+    {
+        $lines = [
+            class_basename($this->exception_class).': '.$this->message,
+            '',
+            'Exception: '.$this->exception_class,
+            'Where: '.$this->shortFile().':'.$this->line,
+            'Times: '.$this->occurrences.' (first '.$this->first_seen_at?->format('d M Y H:i').', last '.$this->last_seen_at?->format('d M Y H:i').')',
+            'Status: '.($this->isResolved() ? 'Resolved' : 'Open'),
+            'Last page: '.($this->last_url ?: '—'),
+            'Last school: '.($this->lastSchool->name ?? '—'),
+        ];
+
+        if (filled($this->trace)) {
+            $lines[] = '';
+            $lines[] = 'Stack trace:';
+            $lines[] = str_replace(base_path().'/', '', $this->trace);
+        }
+
+        return implode("\n", $lines);
+    }
+
     /** The file path from the app root, e.g. "app/Services/IdCardService.php". */
     public function shortFile(): string
     {

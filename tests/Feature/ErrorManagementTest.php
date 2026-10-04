@@ -97,6 +97,28 @@ it('lets the platform owner find an error by the reference a user quotes', funct
     expect($report->fresh()->isResolved())->toBeTrue();
 });
 
+it('gives every error a button that copies it in full', function () {
+    $this->get('/_test/boom');
+    $report = ErrorReport::sole();
+
+    expect($report->copyText())
+        ->toStartWith('RuntimeException: Boom from the test')
+        ->toContain('Where: '.$report->shortFile().':'.$report->line)
+        ->toContain('Stack trace:')
+        ->not->toContain(base_path().'/');
+
+    $this->actingAs(User::factory()->create()->assignRole('Super Admin'));
+    Filament::setCurrentPanel('admin');
+
+    Livewire::test(ListErrorReports::class)
+        ->assertTableActionVisible('copy', $report)
+        ->assertSee('Copy error');
+
+    Livewire::test(ViewErrorReport::class, ['record' => $report->getRouteKey()])
+        ->assertActionVisible('copy')
+        ->assertSee('Copy error');
+});
+
 it('keeps error reports from school users', function () {
     $school = School::create(['name' => 'Hope Primary', 'slug' => 'hope', 'email' => 'hope@example.com', 'school_type' => 'primary']);
     SubscriptionManager::startTrial($school);

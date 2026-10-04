@@ -13,6 +13,7 @@ class ViewErrorReport extends ViewRecord
     protected function getHeaderActions(): array
     {
         return [
+            ErrorReportResource::copyAction(),
             ErrorReportResource::resolveAction(),
             DeleteAction::make(),
         ];

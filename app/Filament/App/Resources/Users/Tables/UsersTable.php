@@ -42,6 +42,12 @@ class UsersTable
                     ->tooltip(fn (User $record) => $record->modules !== null ? 'Chosen for this user' : 'Role defaults')
                     ->placeholder('Nothing')
                     ->wrap(),
+                TextColumn::make('last_seen_at')
+                    ->label('Last seen')
+                    ->since()
+                    ->dateTimeTooltip('d M Y H:i')
+                    ->placeholder('Never')
+                    ->sortable(),
                 TextColumn::make('staff.name')
                     ->label('Staff record')
                     ->placeholder('Not linked')

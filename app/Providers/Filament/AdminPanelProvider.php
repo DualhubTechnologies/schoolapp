@@ -13,6 +13,7 @@ use App\Filament\Pages\Auth\ResetPassword;
 use App\Filament\Support\ErrorNotices;
 use App\Filament\Support\Pages\RecordFormScope;
 use App\Filament\Widgets\StatsOverview;
+use App\Http\Middleware\RecordLastSeen;
 use App\Http\Middleware\ServerEditionOnly;
 use Filafly\LogoTools\LogoToolsPlugin;
 use Filament\Http\Middleware\Authenticate;
@@ -161,6 +162,8 @@ class AdminPanelProvider extends PanelProvider
             ])
             ->authMiddleware([
                 Authenticate::class,
+                // For "Last seen" on the Users list.
+                RecordLastSeen::class,
             ]);
     }
 }

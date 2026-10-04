@@ -105,10 +105,11 @@ class ErrorReport extends Model
         if (filled($this->trace)) {
             $lines[] = '';
             $lines[] = 'Stack trace:';
-            $lines[] = str_replace(base_path().'/', '', $this->trace);
+            $lines[] = $this->trace;
         }
 
-        return implode("\n", $lines);
+        // Server paths anywhere in the text (trace, closure names, arguments).
+        return str_replace([base_path().DIRECTORY_SEPARATOR, base_path()], ['', '.'], implode("\n", $lines));
     }
 
     /** The file path from the app root, e.g. "app/Services/IdCardService.php". */

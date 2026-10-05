@@ -5,6 +5,7 @@ namespace App\Http\Controllers;
 use App\Models\Assessment;
 use App\Models\FeeStructure;
 use App\Models\GradingScale;
+use App\Models\Mark;
 use App\Models\Promotion;
 use App\Models\ReportCardTemplate;
 use App\Models\SchoolClass;
@@ -17,6 +18,7 @@ use App\Services\Academics\TopicAssessment;
 use App\Services\Attendance\AttendanceSummary;
 use App\Support\AcademicAccess;
 use Illuminate\Http\Request;
+use Illuminate\Support\Collection;
 use Illuminate\View\View;
 
 /**
@@ -129,6 +131,16 @@ class ReportCardController extends Controller
             ->get()
             ->keyBy('purpose');
 
+        // Project work gets its own section: one line per project mark.
+        $projects = $template->shows('projects') && ! $examId
+            ? $this->projects($results['assessments'], $rows->pluck('student.id')->all(), $class, $scales->get($class->curriculum() === 'a_level' ? 'principal' : 'subject'), $teachers->all())
+            : [];
+
+        // Each term's average so far this year, for the trend table.
+        $termAverages = $template->shows('term_trend') && ! $examId
+            ? $this->termAverages($calculator, $class, $term, $results)
+            : [];
+
         // NCDC topic levels (O-Level), when teachers have recorded them.
         $topicScores = $class->curriculum() === 'o_level' && $template->shows('topics') && ! $examId
             ? app(TopicAssessment::class)->forReport($term, $rows->pluck('student.id')->all())
@@ -149,6 +161,92 @@ class ReportCardController extends Controller
             'attendance' => $attendance,
             'template' => $template,
             'topicScores' => $topicScores,
+            'projects' => $projects,
+            'termAverages' => $termAverages,
         ]);
+    }
+
+    /**
+     * Project work marks per learner: the project (the exam's name), the
+     * subject it was marked under, score, grade, remark and teacher.
+     *
+     * @param  Collection<int, Assessment>  $assessments
+     * @param  array<int, mixed>  $studentIds
+     * @param  array<array-key, mixed>  $teachers  staff id => initials
+     * @return array<int, list<array{title: string, subject: string, score: float, max: float, percent: float, grade: string|null, remark: string|null, teacher: string|null}>>
+     */
+    protected function projects(Collection $assessments, array $studentIds, SchoolClass $class, ?GradingScale $scale, array $teachers): array
+    {
+        $projectExams = $assessments->filter(fn (Assessment $a): bool => $a->type === 'project')->keyBy('id');
+
+        if ($projectExams->isEmpty()) {
+            return [];
+        }
+
+        $subjects = $class->subjects->keyBy('id');
+        $out = [];
+
+        $marks = Mark::whereIn('assessment_id', $projectExams->keys())
+            ->whereIn('student_id', $studentIds)
+            ->whereNotNull('score')
+            ->orderBy('assessment_id')
+            ->get();
+
+        foreach ($marks as $mark) {
+            $exam = $projectExams->get($mark->assessment_id);
+            $subject = $subjects->get($mark->subject_id);
+
+            if (! $exam || (float) $exam->max_score <= 0) {
+                continue;
+            }
+
+            $percent = round(min(100, (float) $mark->score / (float) $exam->max_score * 100), 1);
+            $band = $scale?->bandFor($percent);
+
+            $out[$mark->student_id][] = [
+                'title' => $exam->name,
+                'subject' => $subject->name ?? '',
+                'score' => (float) $mark->score,
+                'max' => (float) $exam->max_score,
+                'percent' => $percent,
+                'grade' => $band?->grade,
+                'remark' => $mark->comment ?: $band?->descriptor,
+                'teacher' => is_string($initials = $teachers[$subject?->pivot->teacher_id ?? 0] ?? null) ? $initials : null,
+            ];
+        }
+
+        return $out;
+    }
+
+    /**
+     * Every learner's average in each term of the year up to this one:
+     * student id => term label => average.
+     *
+     * @param  array<string, mixed>  $current  this term's results, already worked out
+     * @return array<int, array<string, float|null>>
+     */
+    protected function termAverages(ResultsCalculator $calculator, SchoolClass $class, Term $term, array $current): array
+    {
+        $terms = Term::where('academic_year_id', $term->academic_year_id)
+            ->with('academicYear')
+            ->orderBy('sequence')
+            ->get()
+            ->filter(fn (Term $t): bool => $t->sequence <= $term->sequence);
+
+        if ($terms->count() < 2) {
+            return [];
+        }
+
+        $out = [];
+
+        foreach ($terms as $t) {
+            $rows = $t->is($term) ? $current['rows'] : $calculator->forClass($class, $t)['rows'];
+
+            foreach ($rows as $row) {
+                $out[$row['student']->id][$t->name] = $row['average'];
+            }
+        }
+
+        return $out;
     }
 }

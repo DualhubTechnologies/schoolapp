@@ -121,6 +121,7 @@ class ResultsCalculator
             'curriculum' => $curriculum,
             'assessments' => $assessments,
             'exam' => $assessmentId ? $assessments->first() : null,
+            'split' => $this->split($assessments),
             'subjects' => $subjects,
             'rows' => $rows,
             'subject_stats' => $this->subjectStats($rows, $subjects),
@@ -135,6 +136,7 @@ class ResultsCalculator
         foreach ($subjects as $subject) {
             $scores = [];
             $weighted = 0.0;
+            $schoolBasedWeighted = 0.0;
             $weights = 0.0;
             $plain = [];
             $comment = null;
@@ -155,6 +157,10 @@ class ResultsCalculator
 
                 if ($pct !== null) {
                     $weighted += $pct * (float) $assessment->weight;
+
+                    if (in_array($assessment->type, self::SCHOOL_BASED_TYPES, true)) {
+                        $schoolBasedWeighted += $pct * (float) $assessment->weight;
+                    }
                     $weights += (float) $assessment->weight;
                     $plain[] = $pct;
                 }
@@ -171,6 +177,10 @@ class ResultsCalculator
                 'subject' => $subject,
                 'scores' => $scores,
                 'final' => $final === null ? null : round($final, 1),
+                // The final score split into its school-based (formative)
+                // and exam (summative) parts, e.g. 16.9 + 46.4 = 63.3.
+                'formative' => $weights > 0 ? round($schoolBasedWeighted / $weights, 1) : null,
+                'summative' => $weights > 0 ? round(($weighted - $schoolBasedWeighted) / $weights, 1) : null,
                 'grade' => $band?->grade,
                 'value' => $band ? (float) $band->value : null,
                 'descriptor' => $band?->descriptor,
@@ -387,6 +397,36 @@ class ResultsCalculator
         }
 
         return false;
+    }
+
+    /**
+     * How the term's weight divides between school-based assessment and
+     * exams, as whole percentages, e.g. ['formative' => 20, 'summative' => 80].
+     * Null unless both carry weight.
+     *
+     * @param  Collection<int, Assessment>  $assessments
+     * @return array{formative: int, summative: int}|null
+     */
+    protected function split(Collection $assessments): ?array
+    {
+        $formative = 0.0;
+        $total = 0.0;
+
+        foreach ($assessments as $assessment) {
+            $total += (float) $assessment->weight;
+
+            if (in_array($assessment->type, self::SCHOOL_BASED_TYPES, true)) {
+                $formative += (float) $assessment->weight;
+            }
+        }
+
+        if ($formative <= 0 || $formative >= $total) {
+            return null;
+        }
+
+        $share = (int) round($formative / $total * 100);
+
+        return ['formative' => $share, 'summative' => 100 - $share];
     }
 
     /**

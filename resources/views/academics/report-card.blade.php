@@ -12,6 +12,11 @@
     $style = $template->style();
     $show = fn (string $part): bool => $template->shows($part);
     $columns = $show('assessment_columns') ? $assessments : collect();
+    // Project marks are printed in their own section instead.
+    if ($show('projects') && $projects) {
+        $columns = $columns->reject(fn ($a) => $a->type === 'project');
+    }
+    $split = $show('split_columns') ? ($results['split'] ?? null) : null;
     $exam = $results['exam'] ?? null;
 @endphp
 
@@ -61,6 +66,10 @@
     .fees { margin-top: .6rem; background: #f8fafc; }
     .rc-footer { margin-top: .7rem; padding-top: .35rem; border-top: 1px solid var(--rc-accent); text-align: center; font-size: .68rem; color: #4b5563; white-space: pre-line; }
     .header-note { font-weight: 600; }
+    .section-title { margin: .7rem 0 .25rem; font-size: .7rem; font-weight: 800; letter-spacing: .08em; text-transform: uppercase; color: var(--rc-primary); }
+    .trend { margin-top: .6rem; display: flex; flex-wrap: wrap; gap: .3rem 1.2rem; align-items: baseline; }
+    .trend .label { font-size: .62rem; }
+    .trend-term b { color: var(--rc-primary); }
     td.topics { white-space: normal; }
     .tp { display: inline-flex; align-items: center; gap: 2px; margin: 1px 4px 1px 0; font-size: .62rem; color: #4b5563; }
     .lv { display: inline-grid; place-items: center; width: 14px; height: 14px; border-radius: 3px; color: #fff; font-style: normal; font-weight: 700; font-size: .6rem; }
@@ -148,7 +157,11 @@
                         @foreach ($columns as $a)
                             <th class="c" title="{{ $a->name }}">{{ $a->shortLabel() }}<br><span style="font-weight:500">/{{ $a->max_score + 0 }}</span></th>
                         @endforeach
-                        <th class="c">{{ $exam ? '%' : 'Term %' }}</th>
+                        @if ($split)
+                            <th class="c">Formative<br><span style="font-weight:500">/{{ $split['formative'] }}</span></th>
+                            <th class="c">Exam<br><span style="font-weight:500">/{{ $split['summative'] }}</span></th>
+                        @endif
+                        <th class="c">{{ $exam ? '%' : ($split ? 'Total /100' : 'Term %') }}</th>
                         <th class="c">Grade</th>
                         <th style="text-align:left">{{ $curriculum === 'o_level' ? 'Achievement' : 'Remark' }}</th>
                         @if ($show('teacher_initials'))<th class="c">Teacher</th>@endif
@@ -165,6 +178,10 @@
                                 @php $s = $res['scores'][$a->id] ?? null; @endphp
                                 <td class="c">{{ $s ? ($s['absent'] ? 'AB' : $n($s['raw'])) : '' }}</td>
                             @endforeach
+                            @if ($split)
+                                <td class="c">{{ $n($res['formative']) }}</td>
+                                <td class="c">{{ $n($res['summative']) }}</td>
+                            @endif
                             <td class="c"><strong>{{ $n($res['final']) }}</strong></td>
                             <td class="grade">{{ $res['grade'] ?? '—' }}</td>
                             <td>{{ $res['comment'] ?: $res['descriptor'] }}</td>
@@ -217,6 +234,45 @@
                     @endif
                 </div>
             </div>
+
+            @if (! empty($projects[$student->id]))
+                <div class="section-title">Project work</div>
+                <table class="marks projects">
+                    <thead>
+                        <tr>
+                            <th style="text-align:left">Project</th>
+                            <th style="text-align:left">Subject</th>
+                            <th class="c">Score</th>
+                            <th class="c">%</th>
+                            <th class="c">Grade</th>
+                            <th style="text-align:left">Remark</th>
+                            @if ($show('teacher_initials'))<th class="c">Teacher</th>@endif
+                        </tr>
+                    </thead>
+                    <tbody>
+                        @foreach ($projects[$student->id] as $project)
+                            <tr>
+                                <td><strong>{{ $project['title'] }}</strong></td>
+                                <td>{{ $project['subject'] }}</td>
+                                <td class="c">{{ $n($project['score']) }} / {{ $n($project['max']) }}</td>
+                                <td class="c">{{ $n($project['percent']) }}%</td>
+                                <td class="grade">{{ $project['grade'] ?? '—' }}</td>
+                                <td>{{ $project['remark'] }}</td>
+                                @if ($show('teacher_initials'))<td class="c">{{ $project['teacher'] }}</td>@endif
+                            </tr>
+                        @endforeach
+                    </tbody>
+                </table>
+            @endif
+
+            @if (! empty($termAverages[$student->id]))
+                <div class="box trend">
+                    <span class="label">Average by term</span>
+                    @foreach ($termAverages[$student->id] as $termName => $average)
+                        <span class="trend-term">{{ $termName }} <b>{{ $average === null ? '—' : $n($average).'%' }}</b></span>
+                    @endforeach
+                </div>
+            @endif
 
             @if ($allTopics->isNotEmpty())
                 <div class="box topics-box">

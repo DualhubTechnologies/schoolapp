@@ -37,7 +37,7 @@ beforeEach(function () {
     $this->exam = Assessment::create(['school_id' => $this->school->id, 'term_id' => $this->term->id, 'name' => 'End of year', 'type' => 'eot', 'max_score' => 100, 'weight' => 80]);
 });
 
-function learner(string $name): Student
+function uceLearner(string $name): Student
 {
     return Student::create(['school_id' => test()->school->id, 'school_class_id' => test()->class->id, 'name' => $name, 'admission_no' => 'ADM-'.$name, 'status' => 'active']);
 }
@@ -45,7 +45,7 @@ function learner(string $name): Student
 /**
  * @param  array<string, float>  $examScores  subject name => exam score; others get $default
  */
-function sit(Student $student, float $default, array $examScores = [], array $skip = [], array $noProject = []): void
+function uceSit(Student $student, float $default, array $examScores = [], array $skip = [], array $noProject = []): void
 {
     foreach (test()->subjects as $subject) {
         if (in_array($subject->name, $skip, true)) {
@@ -60,25 +60,25 @@ function sit(Student $student, float $default, array $examScores = [], array $sk
     }
 }
 
-function resultFor(Student $student): array
+function uceResultFor(Student $student): array
 {
     return app(ResultsCalculator::class)->forClass(test()->class, test()->term)['rows']->firstWhere('student.id', $student->id);
 }
 
 it('gives Result 1 to a learner who sat every subject with project scores and got D or better', function () {
-    sit($sarah = learner('Sarah'), 20, ['English' => 60]);
+    uceSit($sarah = uceLearner('Sarah'), 20, ['English' => 60]);
 
-    expect(resultFor($sarah))
+    expect(uceResultFor($sarah))
         ->uce_result->toBe(1)
         ->uce_label->toBe('Result 1')
         ->uce_reasons->toBe([]);
 });
 
 it('gives Result 2 and says why when a requirement is missing', function () {
-    sit($brian = learner('Brian'), 70, skip: ['Chemistry'], noProject: ['ICT']);
-    sit(learner('Other'), 70); // the class has project scores in every subject
+    uceSit($brian = uceLearner('Brian'), 70, skip: ['Chemistry'], noProject: ['ICT']);
+    uceSit(uceLearner('Other'), 70); // the class has project scores in every subject
 
-    $row = resultFor($brian);
+    $row = uceResultFor($brian);
 
     expect($row['uce_result'])->toBe(2)
         ->and($row['uce_reasons'])->toBe([
@@ -89,14 +89,14 @@ it('gives Result 2 and says why when a requirement is missing', function () {
 });
 
 it('gives Result 3 when every subject is at the lowest level', function () {
-    sit($eve = learner('Eve'), 10);
+    uceSit($eve = uceLearner('Eve'), 10);
 
-    expect(resultFor($eve)['uce_result'])->toBe(3);
+    expect(uceResultFor($eve)['uce_result'])->toBe(3);
 });
 
 it('only asks for project scores in subjects the class has them for', function () {
     Mark::where('assessment_id', $this->project->id)->delete();
-    sit($sarah = learner('Sarah'), 70, noProject: test()->subjects->pluck('name')->all());
+    uceSit($sarah = uceLearner('Sarah'), 70, noProject: test()->subjects->pluck('name')->all());
 
-    expect(resultFor($sarah)['uce_result'])->toBe(1);
+    expect(uceResultFor($sarah)['uce_result'])->toBe(1);
 });

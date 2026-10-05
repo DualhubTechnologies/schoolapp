@@ -55,15 +55,17 @@ function printCard(): TestResponse
     return test()->get(route('filament.app.academics.report-cards', ['term' => test()->term->id, 'class' => test()->class->id, 'fees' => 1]));
 }
 
-it('prints every part with the defaults until the school saves a template', function () {
+it('prints the default parts until the school saves a template', function () {
     $template = ReportCardTemplate::forSchool($this->school->id);
 
     expect($template->exists)->toBeFalse()
-        ->and($template->shownSections())->toHaveCount(count(ReportCardTemplate::SECTIONS));
+        ->and($template->shownSections())->toHaveCount(count(ReportCardTemplate::SECTIONS) - 2)
+        ->and($template->shows('class_position'))->toBeFalse()
+        ->and($template->shows('stream_position'))->toBeFalse();
 
     printCard()->assertOk()
         ->assertSee('Progress Report')
-        ->assertSee('Position in class')
+        ->assertDontSee('Position in class')
         ->assertSee('Fees balance')
         ->assertSee('Works hard.')
         ->assertSee('design-classic', false);
@@ -103,6 +105,12 @@ it('saves the school\'s template and prints with it from then on', function () {
         ->assertDontSee('Position in class')
         ->assertDontSee('Key:')
         ->assertSee('Works hard.');
+});
+
+it('prints the position in class when the school ticks it', function () {
+    ReportCardTemplate::create(['school_id' => $this->school->id, ...ReportCardTemplate::DEFAULTS, 'show' => ReportCardTemplate::showFromTicked(['class_position'])]);
+
+    printCard()->assertOk()->assertSee('Position in class');
 });
 
 it('leaves the exam columns out when the school hides them', function () {

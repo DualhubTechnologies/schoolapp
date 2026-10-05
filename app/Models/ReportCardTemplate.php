@@ -55,7 +55,8 @@ class ReportCardTemplate extends Model
 
     /**
      * The parts of the card a school can leave out, and whether each is
-     * printed by default.
+     * printed by default. Positions are off until a school ticks them:
+     * the new curriculum reports achievement, not rank.
      */
     public const SECTIONS = [
         'photo' => ['Student photo', true],
@@ -63,8 +64,8 @@ class ReportCardTemplate extends Model
         'assessment_columns' => ['Marks for each exam (BOT, MOT, EOT…)', true],
         'teacher_initials' => ['Subject teacher initials', true],
         'total_marks' => ['Total marks', true],
-        'class_position' => ['Position in class', true],
-        'stream_position' => ['Position in stream', true],
+        'class_position' => ['Position in class', false],
+        'stream_position' => ['Position in stream', false],
         'conduct' => ['Conduct', true],
         'promotion' => ['Promotion decision (last term of the year)', true],
         'next_term' => ['Next term begins', true],

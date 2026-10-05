@@ -9,6 +9,7 @@ use App\Filament\App\Resources\PayrollPeriods\PayrollPeriodResource;
 use App\Filament\App\Resources\SalaryArrears\SalaryArrearResource;
 use App\Filament\App\Resources\Terms\TermResource;
 use App\Filament\Pages\SchoolSubscription;
+use App\Filament\Pages\StartTermBilling;
 use App\Filament\Widgets\SetupChecklist;
 use App\Models\DemoRequest;
 use App\Models\PayrollPeriod;
@@ -94,6 +95,12 @@ class AttentionItems
             $items[] = static::item('term', 'warning', 'heroicon-o-calendar',
                 'No current term is set',
                 'Fees, marks and reports need a current term.', TermResource::getUrl(panel: 'app'));
+        }
+
+        if (StartTermBilling::canAccess() && ($term = Term::current($schoolId)) && app(BillingService::class)->termNeedsBilling($term)) {
+            $items[] = static::item('term-billing', 'warning', 'heroicon-o-play-circle',
+                $term->label().' has not been billed',
+                'Keep or update the fees, then bill every learner.', StartTermBilling::getUrl(panel: 'app'));
         }
 
         if (Modules::allows('fees')) {

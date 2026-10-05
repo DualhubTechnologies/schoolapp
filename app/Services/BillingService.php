@@ -72,6 +72,65 @@ class BillingService
      * @param  array<int>|null  $classIds  null = every class
      * @return array{students_examined: int, charges_added: int, students_changed: int}
      */
+    /**
+     * A term that has started but not been billed: it is the current term,
+     * the school has active learners in classes, and none of them has been
+     * charged a fee for it yet. Prompts the bursar (dashboard and bell).
+     */
+    public function termNeedsBilling(Term $term): bool
+    {
+        $hasLearners = Student::where('school_id', $term->school_id)
+            ->where('status', 'active')
+            ->whereNotNull('school_class_id')
+            ->exists();
+
+        return $term->is_current
+            && $hasLearners
+            && ! StudentCharge::where('school_id', $term->school_id)
+                ->where('term_id', $term->getKey())
+                ->whereNotNull('fee_structure_id')
+                ->exists();
+    }
+
+    /**
+     * Set the termly fees for a term before billing it. Each changed
+     * amount becomes a new version of the fee starting in this term, so
+     * earlier terms keep the amount they were billed at (the Fee structure
+     * sheet shows any term as it was). A fee already starting in this term
+     * is simply corrected.
+     *
+     * @param  array<int, float|int|string>  $amounts  fee structure id => new amount
+     * @return int fees changed
+     */
+    public function setTermFees(Term $term, array $amounts): int
+    {
+        $changed = 0;
+
+        DB::transaction(function () use ($term, $amounts, &$changed): void {
+            foreach (FeeStructure::termlyFor($term) as $fee) {
+                if (! array_key_exists($fee->getKey(), $amounts)) {
+                    continue;
+                }
+
+                $amount = round((float) $amounts[$fee->getKey()], 2);
+
+                if ($amount <= 0 || abs($amount - (float) $fee->amount) < 0.005) {
+                    continue;
+                }
+
+                if ((int) $fee->term_id === (int) $term->getKey()) {
+                    $fee->update(['amount' => $amount]);
+                } else {
+                    $fee->replicate()->forceFill(['term_id' => $term->getKey(), 'amount' => $amount])->save();
+                }
+
+                $changed++;
+            }
+        });
+
+        return $changed;
+    }
+
     public function billTerm(Term $term, ?array $classIds = null): array
     {
         $students = Student::query()

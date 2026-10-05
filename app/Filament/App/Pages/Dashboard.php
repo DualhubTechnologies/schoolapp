@@ -18,6 +18,7 @@ use App\Filament\Widgets\PaymentMethodsChart;
 use App\Filament\Widgets\RecentPaymentsTable;
 use App\Filament\Widgets\SetupChecklist;
 use App\Filament\Widgets\StudentsByClassChart;
+use App\Filament\Widgets\TermBillingPrompt;
 use App\Filament\Widgets\TopDebtorsTable;
 use App\Models\School;
 use App\Services\SchoolStarterSetup;
@@ -176,6 +177,7 @@ class Dashboard extends BaseDashboard
             DashboardProfile::LEADERSHIP => [
                 WelcomeBanner::class,
                 SetupChecklist::class,
+                TermBillingPrompt::class,
                 LeadershipKpis::class,
                 FeeCollectionChart::class,
                 StudentsByClassChart::class,
@@ -188,6 +190,7 @@ class Dashboard extends BaseDashboard
             ],
             DashboardProfile::BURSAR => [
                 WelcomeBanner::class,
+                TermBillingPrompt::class,
                 BursarKpis::class,
                 FeeCollectionChart::class,
                 PaymentMethodsChart::class,

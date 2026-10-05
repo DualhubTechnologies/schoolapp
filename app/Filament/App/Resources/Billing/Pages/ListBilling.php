@@ -3,6 +3,7 @@
 namespace App\Filament\App\Resources\Billing\Pages;
 
 use App\Filament\App\Resources\Billing\BillingResource;
+use App\Filament\Pages\StartTermBilling;
 use App\Models\FeeStructure;
 use App\Models\SchoolClass;
 use App\Models\Student;
@@ -34,6 +35,12 @@ class ListBilling extends ListRecords
     protected function getHeaderActions(): array
     {
         return [
+            Action::make('startTerm')
+                ->label('Start the term')
+                ->icon('heroicon-o-play-circle')
+                ->color('gray')
+                ->url(StartTermBilling::getUrl())
+                ->visible(fn (): bool => StartTermBilling::canAccess()),
             $this->billTermAction(),
             $this->billClassAction(),
             $this->billStudentAction(),

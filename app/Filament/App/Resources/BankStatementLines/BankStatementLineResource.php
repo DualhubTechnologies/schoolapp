@@ -23,6 +23,7 @@ use Filament\Tables\Filters\SelectFilter;
 use Filament\Tables\Table;
 use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Database\Eloquent\Model;
+use Illuminate\Support\Carbon;
 use RuntimeException;
 
 /**
@@ -286,7 +287,7 @@ class BankStatementLineResource extends Resource
     public static function candidateLabel(Model $record): string
     {
         if ($record instanceof StudentPayment) {
-            return "Receipt {$record->receipt_no} · {$record->paid_on->format('j M')} · ".($record->student->name ?? 'Learner').' · '.$record->methodLabel();
+            return "Receipt {$record->receipt_no} · ".Carbon::parse($record->paid_on)->format('j M').' · '.($record->student->name ?? 'Learner').' · '.$record->methodLabel();
         }
 
         return $record->getAttribute('voucher_no').' · '.$record->getAttribute('entry_date')?->format('j M').' · '.($record->getAttribute('party') ?: $record->getAttribute('description'));

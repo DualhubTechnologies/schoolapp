@@ -79,7 +79,7 @@ class BankStatementReader
                 $rows = [];
 
                 foreach ($sheet->toArray(null, true, false, false) as $row) {
-                    $rows[] = array_map(fn ($cell): string => $this->cell($cell), $row);
+                    $rows[] = array_values(array_map(fn ($cell): string => $this->cell($cell), $row));
                 }
 
                 return $rows;
@@ -117,7 +117,7 @@ class BankStatementReader
         $rows = [];
 
         while (($row = fgetcsv($handle, null, $delimiter, '"', '')) !== false) {
-            $rows[] = array_map(fn ($cell): string => trim((string) $cell), $row);
+            $rows[] = array_values(array_map(fn ($cell): string => trim((string) $cell), $row));
         }
 
         fclose($handle);

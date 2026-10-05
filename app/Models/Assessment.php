@@ -13,6 +13,19 @@ use Illuminate\Database\Eloquent\Relations\HasMany;
  */
 class Assessment extends Model
 {
+    /**
+     * Project work is reported on its own (marked out of 10, printed in the
+     * report card's Project work section), never weighted in the term result.
+     */
+    protected static function booted(): void
+    {
+        static::saving(function (Assessment $assessment): void {
+            if ($assessment->type === 'project') {
+                $assessment->weight = 0;
+            }
+        });
+    }
+
     protected $fillable = [
         'school_id',
         'term_id',

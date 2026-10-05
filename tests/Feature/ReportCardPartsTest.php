@@ -42,9 +42,12 @@ beforeEach(function () {
 
     $this->student = Student::create(['school_id' => $this->school->id, 'school_class_id' => $this->class->id, 'name' => 'Joram Mulungi', 'admission_no' => 'U3562/002', 'status' => 'active']);
 
-    // Term 2: Apiculture project 8.5/10 at 20%, end of term 60/100 at 80%.
+    // Term 2: AOI 2.4/3 at 20%, end of term 60/100 at 80%, and an
+    // Apiculture project 8.5/10 reported on its own.
+    $aoi = Assessment::create(['school_id' => $this->school->id, 'term_id' => $this->term2->id, 'name' => 'Activity of Integration', 'type' => 'ca', 'max_score' => 3, 'weight' => 20]);
     $project = Assessment::create(['school_id' => $this->school->id, 'term_id' => $this->term2->id, 'name' => 'Apiculture', 'type' => 'project', 'max_score' => 10, 'weight' => 20]);
     $eot = Assessment::create(['school_id' => $this->school->id, 'term_id' => $this->term2->id, 'name' => 'End of term', 'type' => 'eot', 'max_score' => 100, 'weight' => 80]);
+    Mark::create(['assessment_id' => $aoi->id, 'student_id' => $this->student->id, 'subject_id' => $this->agric->id, 'score' => 2.4]);
     Mark::create(['assessment_id' => $project->id, 'student_id' => $this->student->id, 'subject_id' => $this->agric->id, 'score' => 8.5, 'comment' => 'Well kept hives']);
     Mark::create(['assessment_id' => $eot->id, 'student_id' => $this->student->id, 'subject_id' => $this->agric->id, 'score' => 60]);
 
@@ -60,9 +63,13 @@ it('splits the term score into its formative and exam parts', function () {
     $agric = $results['rows']->first()['subjects'][$this->agric->id];
 
     expect($results['split'])->toBe(['formative' => 20, 'summative' => 80])
-        ->and($agric['formative'])->toBe(17.0)
+        ->and($agric['formative'])->toBe(16.0)
         ->and($agric['summative'])->toBe(48.0)
-        ->and($agric['final'])->toBe(65.0);
+        ->and($agric['final'])->toBe(64.0);
+});
+
+it('keeps project work out of the term result, whatever weight is typed', function () {
+    expect((float) Assessment::where('type', 'project')->sole()->weight)->toBe(0.0);
 });
 
 it('prints formative and exam columns, a project work section and each term\'s average', function () {
@@ -75,7 +82,7 @@ it('prints formative and exam columns, a project work section and each term\'s a
         ->assertSee('85%')
         ->assertSee('Well kept hives')
         ->assertSee('Average by term')
-        ->assertSeeInOrder(['Term 1', '50%', 'Term 2', '65%']);
+        ->assertSeeInOrder(['Term 1', '50%', 'Term 2', '64%']);
 });
 
 it('averages a subject\'s papers in each exam and prints each paper', function () {
@@ -86,10 +93,10 @@ it('averages a subject\'s papers in each exam and prints each paper', function (
 
     $agric = app(ResultsCalculator::class)->forClass($this->class, $this->term2)['rows']->first()['subjects'][$this->agric->id];
 
-    // Papers 60 and 70 average 65; 85% project at 20% + 65 at 80% = 69.
+    // Papers 60 and 70 average 65; AOI 80% at 20% + 65 at 80% = 68.
     expect($agric['scores'][$eot->id]['raw'])->toBe(65.0)
         ->and($agric['scores'][$eot->id]['papers'])->toBe([1 => '60.00', 2 => '70.00'])
-        ->and($agric['final'])->toBe(69.0);
+        ->and($agric['final'])->toBe(68.0);
 
     $this->get(route('filament.app.academics.report-cards', ['term' => $this->term2->id, 'class' => $this->class->id]))
         ->assertOk()

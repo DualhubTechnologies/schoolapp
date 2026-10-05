@@ -195,7 +195,7 @@ class SchoolPayPayments
             'method' => 'schoolpay',
             'reference' => $transaction->receipt_number,
             'paid_by' => $payer,
-            'recorded_by' => auth()->user()?->name ?? 'SchoolPay',
+            'recorded_by' => auth()->user()->name ?? 'SchoolPay',
             'notes' => trim('SchoolPay'.($transaction->channel ? " via {$transaction->channel}" : '')
                 .($transaction->channel_transaction_id ? ", transaction {$transaction->channel_transaction_id}" : '')),
         ]);

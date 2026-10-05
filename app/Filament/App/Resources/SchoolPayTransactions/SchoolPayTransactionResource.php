@@ -195,7 +195,7 @@ class SchoolPayTransactionResource extends Resource
                         ->get()
                         ->mapWithKeys(fn (Student $s): array => [$s->id => "{$s->name} ({$s->admission_no})"])
                         ->all())
-                    ->getOptionLabelUsing(fn ($value): ?string => Student::where('school_id', auth()->user()?->school_id)->find($value)?->name)
+                    ->getOptionLabelUsing(fn ($value): ?string => Student::where('school_id', auth()->user()?->school_id)->whereKey($value)->first()?->name)
                     ->required(),
                 Toggle::make('remember_code')
                     ->label('Save this SchoolPay code on the learner, so their next payments are recorded by themselves')
@@ -204,7 +204,7 @@ class SchoolPayTransactionResource extends Resource
             ])
             ->modalSubmitActionLabel('Record payment')
             ->action(function (SchoolPayTransaction $record, array $data, SchoolPayPayments $payments): void {
-                $student = Student::where('school_id', auth()->user()?->school_id)->findOrFail($data['student_id']);
+                $student = Student::where('school_id', auth()->user()?->school_id)->whereKey($data['student_id'])->firstOrFail();
 
                 try {
                     $payment = $payments->assign($record, $student, (bool) ($data['remember_code'] ?? false));

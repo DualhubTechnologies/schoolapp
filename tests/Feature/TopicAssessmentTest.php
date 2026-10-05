@@ -28,7 +28,8 @@ beforeEach(function () {
     SubscriptionManager::startTrial($this->school);
     $year = AcademicYear::create(['school_id' => $this->school->id, 'name' => '2026', 'is_current' => true]);
     $this->term = Term::create(['school_id' => $this->school->id, 'academic_year_id' => $year->id, 'name' => 'Term 3', 'sequence' => 3, 'is_current' => true]);
-    $level = ClassLevel::create(['school_id' => $this->school->id, 'name' => 'O-Level', 'curriculum' => 'o_level']);
+    $level = ClassLevel::firstOrCreate(['school_id' => $this->school->id, 'name' => 'O-Level'], ['curriculum' => 'o_level']);
+    $level->update(['curriculum' => 'o_level']);
     $this->class = SchoolClass::create(['school_id' => $this->school->id, 'class_level_id' => $level->id, 'name' => 'S.2']);
     $this->chemistry = Subject::create(['school_id' => $this->school->id, 'name' => 'Chemistry', 'curriculum' => 'o_level']);
     $this->class->subjects()->attach($this->chemistry->id, ['is_compulsory' => true]);

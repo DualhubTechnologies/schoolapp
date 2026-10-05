@@ -5,6 +5,7 @@ use App\Http\Controllers\LicenceActivationController;
 use App\Http\Controllers\NssfScheduleController;
 use App\Http\Controllers\ParentPageController;
 use App\Http\Controllers\PayslipController;
+use App\Http\Controllers\SchoolPayWebhookController;
 use App\Http\Middleware\ServerEditionOnly;
 use App\Support\PublicSite;
 use Illuminate\Support\Facades\Route;
@@ -35,6 +36,14 @@ Route::post('/setup', [DesktopSetupController::class, 'store'])->middleware('thr
 Route::post('/licence/activate', LicenceActivationController::class)
     ->middleware(['throttle:10,1', ServerEditionOnly::class])
     ->name('licence.activate');
+
+// SchoolPay posts each payment to a school's learners here (the school
+// sets this address in its SchoolPay portal). Signed per school; no CSRF
+// token (bootstrap/app.php).
+Route::post('/webhooks/schoolpay/{token}', SchoolPayWebhookController::class)
+    ->where('token', '[A-Za-z0-9]{40,64}')
+    ->middleware(['throttle:120,1', ServerEditionOnly::class])
+    ->name('schoolpay.webhook');
 
 // For search engines: the public pages to list, and the old website's
 // privacy page, which Google still shows, sent to where it lives now

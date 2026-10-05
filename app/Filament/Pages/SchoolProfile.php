@@ -39,7 +39,10 @@ class SchoolProfile extends Page implements HasForms
 
     public function form(Schema $schema): Schema
     {
+        // Bound to the school, so its fields can show what is saved (the
+        // SchoolPay web hook address, whether a password is set).
         return SchoolForm::configure($schema)
+            ->model(auth()->user()?->school)
             ->statePath('data');
     }
 

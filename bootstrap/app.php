@@ -18,8 +18,9 @@ return Application::configure(basePath: dirname(__DIR__))
     ->withMiddleware(function (Middleware $middleware): void {
         $middleware->append(SecurityHeaders::class);
 
-        // Called by the Windows app, not a browser form (rate limited instead).
-        $middleware->validateCsrfTokens(except: ['licence/activate']);
+        // Called by the Windows app and by SchoolPay, not browser forms
+        // (rate limited and signed instead).
+        $middleware->validateCsrfTokens(except: ['licence/activate', 'webhooks/schoolpay/*']);
     })
     ->withExceptions(function (Exceptions $exceptions): void {
         $exceptions->shouldRenderJsonWhen(

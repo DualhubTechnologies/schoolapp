@@ -57,6 +57,15 @@ Schedule::command('sms:send-queued')
     ->withoutOverlapping()
     ->onOneServer();
 
+// SchoolPay sends each payment once by web hook; morning and evening,
+// record any it missed over the last three days.
+Schedule::command('schoolpay:sync')
+    ->twiceDaily(6, 21)
+    ->timezone('Africa/Kampala')
+    ->when(fn (): bool => Edition::isServer())
+    ->withoutOverlapping()
+    ->onOneServer();
+
 // Proof the scheduler is running, shown on System health.
 Schedule::call(fn () => Cache::forever(SystemHealth::SCHEDULER_HEARTBEAT, now()->getTimestamp()))
     ->everyMinute()

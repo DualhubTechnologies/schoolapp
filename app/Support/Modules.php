@@ -65,6 +65,7 @@ class Modules
         // Fees
         'ReceivePayment' => 'fees',
         'PaymentResource' => 'fees',
+        'SchoolPayTransactionResource' => 'fees',
         'FeeBalanceResource' => 'fees',
         'StudentAccount' => 'fees',
         'BillingResource' => 'fees',

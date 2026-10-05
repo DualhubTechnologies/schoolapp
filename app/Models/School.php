@@ -9,10 +9,17 @@ use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\HasMany;
 use Illuminate\Database\Eloquent\Relations\HasOne;
 use Illuminate\Support\Facades\DB;
+use Illuminate\Support\Str;
 
 /**
  * @property CarbonImmutable|null $approved_at
  * @property CarbonImmutable|null $terms_accepted_at
+ * @property bool $schoolpay_enabled
+ * @property string|null $schoolpay_school_code
+ * @property string|null $schoolpay_api_password
+ * @property string|null $schoolpay_webhook_token
+ * @property \Illuminate\Support\Carbon|null $schoolpay_synced_at
+ * @property string|null $schoolpay_sync_error
  */
 class School extends Model
 {
@@ -56,7 +63,21 @@ class School extends Model
         'terms_accepted_ip',
         'setup_completed_at',
         'setup_choice',
+        'schoolpay_enabled',
+        'schoolpay_school_code',
+        'schoolpay_api_password',
     ];
+
+    /**
+     * Never in the audit trail, nor in the page sent to the browser: the
+     * SchoolPay API password, and the secret in the school's web hook
+     * address.
+     *
+     * @var list<string>
+     */
+    protected array $auditIgnore = ['schoolpay_api_password'];
+
+    protected $hidden = ['schoolpay_api_password', 'schoolpay_webhook_token'];
 
     /**
      * Deleting a school removes everything it owns through the database's
@@ -77,7 +98,43 @@ class School extends Model
 
     protected function casts(): array
     {
-        return ['approved_at' => 'datetime', 'terms_accepted_at' => 'datetime', 'setup_completed_at' => 'datetime'];
+        return [
+            'approved_at' => 'datetime',
+            'terms_accepted_at' => 'datetime',
+            'setup_completed_at' => 'datetime',
+            'schoolpay_enabled' => 'boolean',
+            'schoolpay_api_password' => 'encrypted',
+            'schoolpay_synced_at' => 'datetime',
+        ];
+    }
+
+    /**
+     * A school that turns SchoolPay on gets the secret part of its web
+     * hook address, once.
+     */
+    protected static function booted(): void
+    {
+        static::saving(function (School $school): void {
+            if ($school->schoolpay_enabled && blank($school->schoolpay_webhook_token)) {
+                $school->schoolpay_webhook_token = Str::random(48);
+            }
+        });
+    }
+
+    /** SchoolPay is switched on and has what SchoolHub needs to talk to it. */
+    public function usesSchoolPay(): bool
+    {
+        return $this->schoolpay_enabled
+            && filled($this->schoolpay_school_code)
+            && filled($this->schoolpay_api_password);
+    }
+
+    /** Where SchoolPay posts this school's payments (set in the SchoolPay portal). */
+    public function schoolPayWebhookUrl(): ?string
+    {
+        return filled($this->schoolpay_webhook_token)
+            ? route('schoolpay.webhook', ['token' => $this->schoolpay_webhook_token])
+            : null;
     }
 
     public const STATUSES = [

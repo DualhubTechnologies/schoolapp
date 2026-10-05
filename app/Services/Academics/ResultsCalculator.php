@@ -3,6 +3,7 @@
 namespace App\Services\Academics;
 
 use App\Models\Assessment;
+use App\Models\GradingBand;
 use App\Models\GradingScale;
 use App\Models\Mark;
 use App\Models\SchoolClass;
@@ -39,7 +40,7 @@ class ResultsCalculator
     public const UCE_MIN_SUBJECTS = 8;
 
     /** Assessment types that are school-based (the 20% UNEB requires). */
-    public const SCHOOL_BASED_TYPES = ['ca', 'project'];
+    public const SCHOOL_BASED_TYPES = ['ca', 'project', 'topics'];
 
     /** What each UCE result means, for report cards. */
     public const UCE_MEANINGS = [
@@ -92,7 +93,9 @@ class ResultsCalculator
         ]);
 
         if ($curriculum === 'o_level') {
-            $rows = $this->withUceResults($rows, $subjects, $assessments, $class->school_id);
+            foreach ($this->uceResults($rows->all(), $subjects, $assessments, $class->school_id) as $id => $uce) {
+                $rows[$id] = $rows[$id] + $uce;
+            }
         }
 
         $this->rank($rows, $curriculum, 'position', 'out_of');
@@ -281,31 +284,57 @@ class ResultsCalculator
      *   Result 2  one of those requirements is missing (the reasons say which)
      *   Result 3  only the lowest level (E) in every subject
      *
-     * A subject's continuous assessment / project score is required only
-     * where the class has such scores for that subject this term.
+     * A subject's school-based score is required only where the class has
+     * such scores for that subject this term.
      *
-     * @param  Collection<int, array<string, mixed>>  $rows
+     * @param  array<array-key, array<string, mixed>>  $rows
      * @param  Collection<int, Subject>  $subjects
      * @param  Collection<int, Assessment>  $assessments
-     * @return Collection<int, array<string, mixed>>
+     * @return array<array-key, array{uce_result: int|null, uce_label: string|null, uce_reasons: list<string>}>
      */
-    protected function withUceResults(Collection $rows, Collection $subjects, Collection $assessments, int $schoolId): Collection
+    protected function uceResults(array $rows, Collection $subjects, Collection $assessments, int $schoolId): array
     {
-        $schoolBased = $assessments->filter(fn (Assessment $a): bool => in_array($a->type, self::SCHOOL_BASED_TYPES, true))->pluck('id')->all();
+        $schoolBased = [];
 
-        $hasSchoolBasedScore = fn (array $result): bool => collect($result['scores'])
-            ->some(fn (array $score, int $assessmentId): bool => $score['pct'] !== null && in_array($assessmentId, $schoolBased, true));
+        foreach ($assessments as $assessment) {
+            if (in_array($assessment->type, self::SCHOOL_BASED_TYPES, true)) {
+                $schoolBased[] = (int) $assessment->getKey();
+            }
+        }
 
-        $assessedSubjects = $rows->flatMap(fn (array $row): array => array_keys(array_filter($row['subjects'], $hasSchoolBasedScore)))->unique()->all();
+        // Subjects in which anyone in the class has a school-based score.
+        $assessedSubjects = [];
 
-        $compulsory = $subjects->filter(fn (Subject $subject): bool => (bool) $subject->pivot->is_compulsory);
-        $lowestGrade = $this->scale($schoolId, 'o_level', 'subject')?->bands->last()?->grade;
+        foreach ($rows as $row) {
+            foreach ((array) $row['subjects'] as $subjectId => $result) {
+                if ($this->hasSchoolBasedScore((array) $result, $schoolBased)) {
+                    $assessedSubjects[(int) $subjectId] = true;
+                }
+            }
+        }
 
-        return $rows->map(function (array $row) use ($compulsory, $assessedSubjects, $hasSchoolBasedScore, $lowestGrade): array {
-            $graded = array_filter($row['subjects'], fn (array $result): bool => $result['grade'] !== null);
+        $compulsory = [];
+
+        foreach ($subjects as $subject) {
+            if ($subject->pivot->is_compulsory) {
+                $compulsory[(int) $subject->getKey()] = $subject->name;
+            }
+        }
+
+        $bands = $this->scale($schoolId, 'o_level', 'subject')?->bands;
+        /** @var GradingBand|null $lowestBand */
+        $lowestBand = $bands?->last();
+        $lowestGrade = $lowestBand?->grade;
+
+        $out = [];
+
+        foreach ($rows as $id => $row) {
+            $graded = array_filter((array) $row['subjects'], fn ($result): bool => is_array($result) && $result['grade'] !== null);
 
             if ($graded === []) {
-                return $row + ['uce_result' => null, 'uce_label' => null, 'uce_reasons' => []];
+                $out[$id] = ['uce_result' => null, 'uce_label' => null, 'uce_reasons' => []];
+
+                continue;
             }
 
             $reasons = [];
@@ -314,28 +343,50 @@ class ResultsCalculator
                 $reasons[] = 'Graded in '.count($graded).' of the '.self::UCE_MIN_SUBJECTS.' subjects needed';
             }
 
-            $missing = $compulsory->reject(fn (Subject $subject): bool => isset($graded[$subject->getKey()]));
+            $missing = array_diff_key($compulsory, $graded);
 
-            if ($missing->isNotEmpty()) {
-                $reasons[] = 'No marks in '.$missing->map(fn (Subject $subject): string => $subject->name)->implode(', ');
+            if ($missing !== []) {
+                $reasons[] = 'No marks in '.implode(', ', $missing);
             }
 
-            $noSchoolBased = collect($graded)
-                ->filter(fn (array $result, int $subjectId): bool => in_array($subjectId, $assessedSubjects, true) && ! $hasSchoolBasedScore($result))
-                ->map(fn (array $result): string => $result['subject']->name);
+            $noSchoolBased = [];
+            $allLowest = $lowestGrade !== null;
 
-            if ($noSchoolBased->isNotEmpty()) {
-                $reasons[] = 'No project / continuous assessment score in '.$noSchoolBased->implode(', ');
+            foreach ($graded as $subjectId => $result) {
+                if (isset($assessedSubjects[(int) $subjectId]) && ! $this->hasSchoolBasedScore($result, $schoolBased)) {
+                    $noSchoolBased[] = $result['subject']->name;
+                }
+
+                if ($result['grade'] !== $lowestGrade) {
+                    $allLowest = false;
+                }
             }
 
-            $result = match (true) {
-                $reasons !== [] => 2,
-                $lowestGrade !== null && collect($graded)->every(fn (array $r): bool => $r['grade'] === $lowestGrade) => 3,
-                default => 1,
-            };
+            if ($noSchoolBased !== []) {
+                $reasons[] = 'No project / continuous assessment score in '.implode(', ', $noSchoolBased);
+            }
 
-            return $row + ['uce_result' => $result, 'uce_label' => "Result {$result}", 'uce_reasons' => $reasons];
-        });
+            $result = $reasons !== [] ? 2 : ($allLowest ? 3 : 1);
+
+            $out[$id] = ['uce_result' => $result, 'uce_label' => "Result {$result}", 'uce_reasons' => $reasons];
+        }
+
+        return $out;
+    }
+
+    /**
+     * @param  array<array-key, mixed>  $result  one subject's result row
+     * @param  list<int>  $schoolBased  ids of the term's school-based assessments
+     */
+    protected function hasSchoolBasedScore(array $result, array $schoolBased): bool
+    {
+        foreach ((array) ($result['scores'] ?? []) as $assessmentId => $score) {
+            if (is_array($score) && $score['pct'] !== null && in_array((int) $assessmentId, $schoolBased, true)) {
+                return true;
+            }
+        }
+
+        return false;
     }
 
     /**

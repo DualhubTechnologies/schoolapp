@@ -128,7 +128,7 @@
                                 <td class="cr-c">{{ $row['total'] + 0 }}</td>
                                 <td class="cr-c cr-strong">{{ $row['average'] ?? '—' }}</td>
                                 @foreach (array_keys($overall) as $key)
-                                    <td class="cr-c cr-strong">{{ $row[$key] ?? '—' }}</td>
+                                    <td class="cr-c cr-strong" @if ($key === 'uce_label' && ! empty($row['uce_reasons'])) title="{{ implode('; ', $row['uce_reasons']) }}" @endif>{{ $row[$key] ?? '—' }}</td>
                                 @endforeach
                             </tr>
                         @endforeach

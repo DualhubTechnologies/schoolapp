@@ -18,7 +18,8 @@ use Illuminate\Support\Collection;
  *
  *   primary   aggregate of the four core subjects (1 = D1 ... 9 = F9) and
  *             the PLE-style division
- *   o_level   average score and overall achievement level (A–E)
+ *   o_level   UNEB's UCE result (Result 1, 2 or 3), plus the average
+ *             score read against the A–E scale
  *   a_level   points: principal subjects A–F (6–0) + subsidiaries (1
  *             each), out of 20
  *
@@ -34,6 +35,19 @@ use Illuminate\Support\Collection;
  */
 class ResultsCalculator
 {
+    /** Subjects a learner must sit for the UCE certificate (Result 1). */
+    public const UCE_MIN_SUBJECTS = 8;
+
+    /** Assessment types that are school-based (the 20% UNEB requires). */
+    public const SCHOOL_BASED_TYPES = ['ca', 'project'];
+
+    /** What each UCE result means, for report cards. */
+    public const UCE_MEANINGS = [
+        1 => 'Qualifies for the UCE certificate',
+        2 => 'Does not yet qualify for the certificate',
+        3 => 'Below the basic level (E) in every subject',
+    ];
+
     /** @var array<string, GradingScale|null> */
     protected array $scales = [];
 
@@ -76,6 +90,10 @@ class ResultsCalculator
         $rows = $students->mapWithKeys(fn (Student $student) => [
             $student->getKey() => $this->studentRow($student, $curriculum, $class->school_id, $subjects, $assessments, $marks, $reports->get($student->getKey())),
         ]);
+
+        if ($curriculum === 'o_level') {
+            $rows = $this->withUceResults($rows, $subjects, $assessments, $class->school_id);
+        }
 
         $this->rank($rows, $curriculum, 'position', 'out_of');
 
@@ -254,6 +272,73 @@ class ResultsCalculator
     }
 
     /**
+     * UNEB's UCE result for the new lower-secondary curriculum, as the
+     * learner's marks stand:
+     *
+     *   Result 1  qualifies for the certificate: at least UCE_MIN_SUBJECTS
+     *             subjects, every compulsory subject, continuous assessment /
+     *             project scores in, and D or better in at least one subject
+     *   Result 2  one of those requirements is missing (the reasons say which)
+     *   Result 3  only the lowest level (E) in every subject
+     *
+     * A subject's continuous assessment / project score is required only
+     * where the class has such scores for that subject this term.
+     *
+     * @param  Collection<int, array<string, mixed>>  $rows
+     * @param  Collection<int, Subject>  $subjects
+     * @param  Collection<int, Assessment>  $assessments
+     * @return Collection<int, array<string, mixed>>
+     */
+    protected function withUceResults(Collection $rows, Collection $subjects, Collection $assessments, int $schoolId): Collection
+    {
+        $schoolBased = $assessments->filter(fn (Assessment $a): bool => in_array($a->type, self::SCHOOL_BASED_TYPES, true))->pluck('id')->all();
+
+        $hasSchoolBasedScore = fn (array $result): bool => collect($result['scores'])
+            ->some(fn (array $score, int $assessmentId): bool => $score['pct'] !== null && in_array($assessmentId, $schoolBased, true));
+
+        $assessedSubjects = $rows->flatMap(fn (array $row): array => array_keys(array_filter($row['subjects'], $hasSchoolBasedScore)))->unique()->all();
+
+        $compulsory = $subjects->filter(fn (Subject $subject): bool => (bool) $subject->pivot->is_compulsory);
+        $lowestGrade = $this->scale($schoolId, 'o_level', 'subject')?->bands->last()?->grade;
+
+        return $rows->map(function (array $row) use ($compulsory, $assessedSubjects, $hasSchoolBasedScore, $lowestGrade): array {
+            $graded = array_filter($row['subjects'], fn (array $result): bool => $result['grade'] !== null);
+
+            if ($graded === []) {
+                return $row + ['uce_result' => null, 'uce_label' => null, 'uce_reasons' => []];
+            }
+
+            $reasons = [];
+
+            if (count($graded) < self::UCE_MIN_SUBJECTS) {
+                $reasons[] = 'Graded in '.count($graded).' of the '.self::UCE_MIN_SUBJECTS.' subjects needed';
+            }
+
+            $missing = $compulsory->reject(fn (Subject $subject): bool => isset($graded[$subject->getKey()]));
+
+            if ($missing->isNotEmpty()) {
+                $reasons[] = 'No marks in '.$missing->map(fn (Subject $subject): string => $subject->name)->implode(', ');
+            }
+
+            $noSchoolBased = collect($graded)
+                ->filter(fn (array $result, int $subjectId): bool => in_array($subjectId, $assessedSubjects, true) && ! $hasSchoolBasedScore($result))
+                ->map(fn (array $result): string => $result['subject']->name);
+
+            if ($noSchoolBased->isNotEmpty()) {
+                $reasons[] = 'No project / continuous assessment score in '.$noSchoolBased->implode(', ');
+            }
+
+            $result = match (true) {
+                $reasons !== [] => 2,
+                $lowestGrade !== null && collect($graded)->every(fn (array $r): bool => $r['grade'] === $lowestGrade) => 3,
+                default => 1,
+            };
+
+            return $row + ['uce_result' => $result, 'uce_label' => "Result {$result}", 'uce_reasons' => $reasons];
+        });
+    }
+
+    /**
      * Competition ranking ("1, 2, 2, 4"): primary by aggregate (lowest
      * first), A-Level by points, everyone by average as the tie-break.
      * Students with no results are not ranked.
@@ -322,6 +407,7 @@ class ResultsCalculator
             'distribution' => match ($curriculum) {
                 'primary' => $ranked->countBy(fn ($r) => $r['division'] ?? '—')->all(),
                 'a_level' => $ranked->countBy(fn ($r) => $r['points'] === null ? '—' : $r['points'].' pts')->sortKeysDesc()->all(),
+                'o_level' => $ranked->countBy(fn ($r) => $r['uce_label'] ?? '—')->sortKeys()->all(),
                 default => $ranked->countBy(fn ($r) => $r['overall_grade'] ?? '—')->sortKeys()->all(),
             },
         ];

@@ -134,6 +134,7 @@ class ClassResults extends Page
         return match ($curriculum) {
             'primary' => ['aggregate' => 'Agg.', 'division' => 'Div.'],
             'a_level' => ['result_code' => 'Result', 'points' => 'Points'],
+            'o_level' => ['uce_label' => 'Result', 'overall_grade' => 'Level'],
             default => ['overall_grade' => 'Level', 'overall_descriptor' => 'Descriptor'],
         };
     }

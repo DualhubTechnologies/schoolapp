@@ -5,6 +5,7 @@
     $overall = fn ($row) => match ($r['curriculum'] ?? null) {
         'primary' => $row['division'] ? ($row['aggregate'] !== null ? "Agg. {$row['aggregate']} · {$row['division']}" : 'Incomplete') : '—',
         'a_level' => $row['points'] !== null ? "{$row['points']} points · {$row['result_code']}" : '—',
+        'o_level' => $row['uce_label'] ?? '—',
         default => ($row['overall_grade'] ?? null) ? "{$row['overall_grade']} · {$row['overall_descriptor']}" : '—',
     };
 @endphp

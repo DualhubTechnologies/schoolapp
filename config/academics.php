@@ -56,6 +56,7 @@ return [
         'mot' => 'Mid-Term',
         'eot' => 'End of Term',
         'ca' => 'Continuous Assessment / Activity of Integration',
+        'project' => 'Project work',
         'other' => 'Other test',
     ],
 

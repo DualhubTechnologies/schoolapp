@@ -61,6 +61,7 @@
     .fees { margin-top: .6rem; background: #f8fafc; }
     .rc-footer { margin-top: .7rem; padding-top: .35rem; border-top: 1px solid var(--rc-accent); text-align: center; font-size: .68rem; color: #4b5563; white-space: pre-line; }
     .header-note { font-weight: 600; }
+    .uce-note { font-size: .68rem; color: #4b5563; margin-bottom: .15rem; }
 
     /* Modern: the school's name on a coloured band. */
     .design-modern .rc-top { background: var(--rc-primary); color: var(--rc-on-primary); border-bottom: 4px solid var(--rc-accent); padding: .7rem .9rem; border-radius: 6px 6px 0 0; }
@@ -166,6 +167,11 @@
                         <div class="kv"><span>Total points (out of 20)</span><b class="big">{{ $row['points'] ?? '—' }}</b></div>
                         <div class="kv"><span>Principal grades</span><b>{{ $row['principal_grades'] ?: '—' }}</b></div>
                         <div class="kv"><span>Result</span><b>{{ $row['result_code'] ?: '—' }}</b></div>
+                    @elseif ($curriculum === 'o_level')
+                        <div class="kv"><span>Result</span><b class="big">{{ $row['uce_label'] ?? '—' }}</b></div>
+                        @if ($row['uce_result'] ?? null)
+                            <div class="uce-note">{{ \App\Services\Academics\ResultsCalculator::UCE_MEANINGS[$row['uce_result']] }}@if ($row['uce_reasons']): {{ implode('; ', $row['uce_reasons']) }}@endif.</div>
+                        @endif
                     @else
                         <div class="kv"><span>Overall achievement</span><b class="big">{{ $row['overall_grade'] ?? '—' }}</b></div>
                         <div class="kv"><span>Descriptor</span><b>{{ $row['overall_descriptor'] ?? '—' }}</b></div>
@@ -242,6 +248,7 @@
                         <span>{{ $band->grade }} {{ $band->min_score + 0 }}–{{ $band->max_score + 0 }}{{ $band->descriptor ? ' ' . $band->descriptor : '' }}</span>
                     @endforeach
                     @if ($curriculum === 'a_level')<span>· Subsidiary pass (D1–C6) = 1 point</span>@endif
+                    @if ($curriculum === 'o_level')<br><strong>Result:</strong> <span>1 qualifies for the UCE certificate</span><span>2 requirements missing</span><span>3 E in every subject</span>@endif
                 </div>
             @endif
 

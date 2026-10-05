@@ -67,12 +67,6 @@ class BillingService
     protected array $termlyCache = [];
 
     /**
-     * Bill a term: charge every applicable fee to every active student.
-     *
-     * @param  array<int>|null  $classIds  null = every class
-     * @return array{students_examined: int, charges_added: int, students_changed: int}
-     */
-    /**
      * A term that has started but not been billed: it is the current term,
      * the school has active learners in classes, and none of them has been
      * charged a fee for it yet. Prompts the bursar (dashboard and bell).
@@ -131,6 +125,12 @@ class BillingService
         return $changed;
     }
 
+    /**
+     * Bill a term: charge every applicable fee to every active student.
+     *
+     * @param  array<int>|null  $classIds  null = every class
+     * @return array{students_examined: int, charges_added: int, students_changed: int}
+     */
     public function billTerm(Term $term, ?array $classIds = null): array
     {
         $students = Student::query()

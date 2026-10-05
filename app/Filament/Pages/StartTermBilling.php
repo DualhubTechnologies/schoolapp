@@ -5,6 +5,7 @@ namespace App\Filament\Pages;
 use App\Filament\App\Resources\Billing\BillingResource;
 use App\Filament\App\Resources\FeeStructures\FeeStructureResource;
 use App\Models\FeeStructure;
+use App\Models\ResidencyType;
 use App\Models\Term;
 use App\Services\AttentionItems;
 use App\Services\BillingService;
@@ -15,6 +16,8 @@ use Filament\Forms\Components\Radio;
 use Filament\Forms\Components\Repeater;
 use Filament\Forms\Components\TextInput;
 use Filament\Forms\Components\Toggle;
+use Filament\Forms\Concerns\InteractsWithForms;
+use Filament\Forms\Contracts\HasForms;
 use Filament\Notifications\Notification;
 use Filament\Pages\Page;
 use Filament\Schemas\Components\Utilities\Get;
@@ -29,8 +32,10 @@ use Filament\Support\Icons\Heroicon;
  * The bursar is sent here by the dashboard and the bell until the current
  * term is billed (BillingService::termNeedsBilling).
  */
-class StartTermBilling extends Page
+class StartTermBilling extends Page implements HasForms
 {
+    use InteractsWithForms;
+
     protected static string|BackedEnum|null $navigationIcon = Heroicon::OutlinedPlayCircle;
 
     protected static bool $shouldRegisterNavigation = false;
@@ -68,16 +73,16 @@ class StartTermBilling extends Page
             'bill_now' => true,
             'fees' => $term
                 ? FeeStructure::termlyFor($term)
-                    ->load(['schoolClass', 'residencyType', 'term.academicYear'])
+                    ->load('schoolClass')
                     ->sortBy(fn (FeeStructure $fee): string => ($fee->schoolClass->name ?? '').'|'.$fee->name)
                     ->map(fn (FeeStructure $fee): array => [
                         'fee_id' => $fee->getKey(),
-                        'label' => collect([
+                        'label' => implode(' · ', array_filter([
                             $fee->schoolClass->name ?? 'All classes',
                             $fee->name,
-                            $fee->residencyType?->name,
-                        ])->filter()->implode(' · '),
-                        'since' => $fee->term ? 'Since '.$fee->term->label() : 'Since before terms were set',
+                            ResidencyType::whereKey($fee->residency_type_id)->value('name'),
+                        ])),
+                        'since' => ($since = Term::with('academicYear')->whereKey($fee->term_id)->first()) ? 'Since '.$since->label() : 'Since before terms were set',
                         'amount' => (float) $fee->amount,
                     ])
                     ->values()
@@ -148,10 +153,13 @@ class StartTermBilling extends Page
         $changed = 0;
 
         if (($data['mode'] ?? 'keep') === 'update') {
-            $amounts = collect($data['fees'] ?? [])
-                ->filter(fn ($row): bool => is_array($row) && isset($row['fee_id'], $row['amount']))
-                ->mapWithKeys(fn ($row): array => [(int) $row['fee_id'] => $row['amount']])
-                ->all();
+            $amounts = [];
+
+            foreach ((array) ($data['fees'] ?? []) as $row) {
+                if (is_array($row) && isset($row['fee_id'], $row['amount'])) {
+                    $amounts[(int) $row['fee_id']] = $row['amount'];
+                }
+            }
 
             $changed = $billing->setTermFees($term, $amounts);
         }

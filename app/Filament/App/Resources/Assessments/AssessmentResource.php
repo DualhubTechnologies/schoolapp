@@ -124,7 +124,9 @@ class AssessmentResource extends Resource
                 ->maxValue(100)
                 ->default(0)
                 ->required()
-                ->helperText('e.g. CA 20% + End of Term 80%. If none of a student\'s exams has a weight, they count equally.'),
+                ->helperText(fn (Get $get): string => $get('type') === 'project'
+                    ? 'Project work is marked out of 10 and printed in its own section of the report card. Leave 0% to keep it out of the term result.'
+                    : 'e.g. CA 20% + End of Term 80%. If none of a student\'s exams has a weight, they count equally.'),
             DatePicker::make('held_on')->label('Date')->native(false)->displayFormat('j M Y'),
             TextInput::make('sort_order')->label('Order on report card')->numeric()->default(0),
         ]);

@@ -116,11 +116,11 @@ it('enters marks for each paper on its own', function () {
     expect(Mark::where('assessment_id', $eot->id)->orderBy('paper')->pluck('score', 'paper')->all())->toBe([1 => '60.00', 2 => '70.00']);
 });
 
-it('suggests O-Level weights that add up to 100%: AOIs 10, project work 10, end of term 80', function () {
+it('suggests O-Level weights of AOIs 20% and end of term 80%, with project work reported on its own', function () {
     $weights = config('academics.default_weights.o_level');
 
-    expect($weights['ca'])->toBe(10)
-        ->and($weights['project'])->toBe(10)
+    expect($weights['ca'])->toBe(20)
+        ->and($weights['project'])->toBe(0)
         ->and($weights['eot'])->toBe(80)
         ->and(array_sum($weights))->toBe(100);
 });

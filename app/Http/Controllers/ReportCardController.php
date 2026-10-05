@@ -13,6 +13,7 @@ use App\Models\Term;
 use App\Services\Academics\PromotionAdvisor;
 use App\Services\Academics\PromotionService;
 use App\Services\Academics\ResultsCalculator;
+use App\Services\Academics\TopicAssessment;
 use App\Services\Attendance\AttendanceSummary;
 use App\Support\AcademicAccess;
 use Illuminate\Http\Request;
@@ -128,6 +129,11 @@ class ReportCardController extends Controller
             ->get()
             ->keyBy('purpose');
 
+        // NCDC topic levels (O-Level), when teachers have recorded them.
+        $topicScores = $class->curriculum() === 'o_level' && $template->shows('topics') && ! $examId
+            ? app(TopicAssessment::class)->forReport($term, $rows->pluck('student.id')->all())
+            : [];
+
         return view('academics.report-card', [
             'results' => $results,
             'rows' => $rows,
@@ -142,6 +148,7 @@ class ReportCardController extends Controller
             'promotionText' => $promotionText,
             'attendance' => $attendance,
             'template' => $template,
+            'topicScores' => $topicScores,
         ]);
     }
 }

@@ -62,6 +62,7 @@ class ReportCardTemplate extends Model
         'photo' => ['Student photo', true],
         'identifiers' => ['LIN / combination', true],
         'assessment_columns' => ['Marks for each exam (BOT, MOT, EOT…)', true],
+        'topics' => ['Topic levels 0–3 (O-Level)', true],
         'teacher_initials' => ['Subject teacher initials', true],
         'total_marks' => ['Total marks', true],
         'class_position' => ['Position in class', false],

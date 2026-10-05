@@ -139,6 +139,8 @@ class EnterMarks extends Page
         $current = Term::current()?->getKey();
 
         return Assessment::where('school_id', auth()->user()?->school_id)
+            // Topic assessment marks come from the Assess Topics page.
+            ->where('type', '!=', 'topics')
             ->with('term.academicYear')
             ->get()
             ->sortBy([

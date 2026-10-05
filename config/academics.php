@@ -57,6 +57,7 @@ return [
         'eot' => 'End of Term',
         'ca' => 'Continuous Assessment / Activity of Integration',
         'project' => 'Project work',
+        'topics' => 'Topic assessment (0–3, filled from Assess Topics)',
         'other' => 'Other test',
     ],
 

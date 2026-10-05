@@ -61,6 +61,11 @@
     .fees { margin-top: .6rem; background: #f8fafc; }
     .rc-footer { margin-top: .7rem; padding-top: .35rem; border-top: 1px solid var(--rc-accent); text-align: center; font-size: .68rem; color: #4b5563; white-space: pre-line; }
     .header-note { font-weight: 600; }
+    td.topics { white-space: normal; }
+    .tp { display: inline-flex; align-items: center; gap: 2px; margin: 1px 4px 1px 0; font-size: .62rem; color: #4b5563; }
+    .lv { display: inline-grid; place-items: center; width: 14px; height: 14px; border-radius: 3px; color: #fff; font-style: normal; font-weight: 700; font-size: .6rem; }
+    .lv0 { background: #c2410c; } .lv1 { background: #d97706; } .lv2 { background: #65a30d; } .lv3 { background: #15803d; }
+    .topics-box { margin-top: .6rem; }
     .uce-note { font-size: .68rem; color: #4b5563; margin-bottom: .15rem; }
 
     /* Modern: the school's name on a coloured band. */
@@ -91,6 +96,13 @@
             $report = $row['report'];
             $photo = $student->photoUrl();
             $counted = $row['counted_subject_ids'] ?? null;
+            $topics = $topicScores[$student->id] ?? [];
+            $allTopics = collect($topics)->flatten(1);
+            $achieved = $allTopics->filter(fn ($t) => $t->level >= \App\Models\TopicScore::ACHIEVED_FROM);
+            $needsSupport = collect($topics)
+                ->map(fn ($list, $subjectId) => collect($list)->filter(fn ($t) => $t->level < \App\Models\TopicScore::ACHIEVED_FROM))
+                ->filter(fn ($list) => $list->isNotEmpty())
+                ->map(fn ($list, $subjectId) => ($row['subjects'][$subjectId]['subject']->name ?? 'Subject').' '.$list->map(fn ($t) => $t->topic->shortLabel())->implode(', '));
         @endphp
         <div class="sheet design-{{ $style['design'] }} font-{{ $style['font'] }} border-{{ $style['border'] }}">
             @if ($template->watermark && $logo)
@@ -132,6 +144,7 @@
                 <thead>
                     <tr>
                         <th style="text-align:left">Subject</th>
+                        @if ($topicScores)<th style="text-align:left">Topics (0–3)</th>@endif
                         @foreach ($columns as $a)
                             <th class="c" title="{{ $a->name }}">{{ $a->shortLabel() }}<br><span style="font-weight:500">/{{ $a->max_score + 0 }}</span></th>
                         @endforeach
@@ -145,6 +158,9 @@
                     @foreach ($row['subjects'] as $subjectId => $res)
                         <tr @class(['not-counted' => $counted !== null && ! in_array($subjectId, $counted, true)])>
                             <td><strong>{{ $res['subject']->name }}</strong></td>
+                            @if ($topicScores)
+                                <td class="topics">@foreach ($topics[$subjectId] ?? [] as $t)<span class="tp" title="{{ $t->topic->label() }}"><i class="lv lv{{ $t->level }}">{{ $t->level }}</i>{{ $t->topic->shortLabel() }}</span>@endforeach</td>
+                            @endif
                             @foreach ($columns as $a)
                                 @php $s = $res['scores'][$a->id] ?? null; @endphp
                                 <td class="c">{{ $s ? ($s['absent'] ? 'AB' : $n($s['raw'])) : '' }}</td>
@@ -202,6 +218,15 @@
                 </div>
             </div>
 
+            @if ($allTopics->isNotEmpty())
+                <div class="box topics-box">
+                    <div class="kv"><span>Topics achieved (level 2 or 3)</span><b>{{ $achieved->count() }} of {{ $allTopics->count() }}</b></div>
+                    @if ($needsSupport->isNotEmpty())
+                        <div class="kv"><span>Needs support in</span><b>{{ $needsSupport->implode('; ') }}</b></div>
+                    @endif
+                </div>
+            @endif
+
             @if ($showFees)
                 @php
                     $balance = $student->balance();
@@ -248,6 +273,7 @@
                         <span>{{ $band->grade }} {{ $band->min_score + 0 }}–{{ $band->max_score + 0 }}{{ $band->descriptor ? ' ' . $band->descriptor : '' }}</span>
                     @endforeach
                     @if ($curriculum === 'a_level')<span>· Subsidiary pass (D1–C6) = 1 point</span>@endif
+                    @if ($topicScores)<br><strong>Topics:</strong> <span>3 all outcomes, with ease</span><span>2 most, enough to achieve</span><span>1 some, not enough</span><span>0 none yet</span>@endif
                     @if ($curriculum === 'o_level')<br><strong>Result:</strong> <span>1 qualifies for the UCE certificate</span><span>2 requirements missing</span><span>3 E in every subject</span>@endif
                 </div>
             @endif

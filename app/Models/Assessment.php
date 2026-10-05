@@ -87,9 +87,13 @@ class Assessment extends Model
         return config('academics.assessment_types')[$this->type] ?? ucfirst((string) $this->type);
     }
 
-    /** Short column heading for report cards: BOT, MOT, EOT, CA. */
+    /** Short column heading for report cards: BOT, MOT, EOT, CA, Topics. */
     public function shortLabel(): string
     {
+        if ($this->type === 'topics') {
+            return 'Topics';
+        }
+
         return in_array($this->type, ['bot', 'mot', 'eot', 'ca'], true)
             ? strtoupper($this->type)
             : mb_strimwidth($this->name, 0, 8, '…');

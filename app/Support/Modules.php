@@ -91,6 +91,8 @@ class Modules
         'MarksProgress' => 'exams',
         'ClassResults' => 'exams',
         'ReportCards' => 'exams',
+        'SyllabusTopicResource' => 'exams',
+        'AssessTopics' => 'exams',
         // HR & payroll
         'StaffResource' => 'hr',
         'PayrollPeriodResource' => 'hr',

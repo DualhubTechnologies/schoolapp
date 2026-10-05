@@ -51,6 +51,7 @@ class MarkSheetController extends Controller
 
         $marks = $blank ? collect() : Mark::where('assessment_id', $assessment->getKey())
             ->where('subject_id', $subject->getKey())
+            ->where('paper', max(1, $request->integer('paper', 1)))
             ->whereIn('student_id', $roster->pluck('id'))
             ->get()
             ->keyBy('student_id');

@@ -111,16 +111,25 @@
                 <div>
                     <div class="em-title">{{ $subject->name }} — {{ $class->name }}{{ $this->sectionId ? ' ' . $this->sectionOptions()[$this->sectionId] : '' }}</div>
                     <div class="em-muted">
-                        {{ $assessment->name }} · marked out of <strong>{{ $max + 0 }}</strong> · {{ $entered }} of {{ $students->count() }} entered
+                        {{ $assessment->name }}{{ $this->paperCount() > 1 ? ' · Paper '.$this->paper : '' }} · marked out of <strong>{{ $max + 0 }}</strong> · {{ $entered }} of {{ $students->count() }} entered
                         @if ($locked) · <span class="em-locked">{{ $this->readOnlyReason() ?? 'Closed' }} — read only</span> @endif
                     </div>
                     @if (! $subject->pivot->is_compulsory && ! $sheet['filtered'])
                         <div class="em-note">Elective with no student choices recorded: everyone in the class is listed. Leave the score blank for students who don't take it.</div>
                     @endif
                 </div>
-                <label class="em-toggle">
-                    <input type="checkbox" wire:model.live="showComments"> Comments
-                </label>
+                <div class="em-head-tools">
+                    @if ($this->paperCount() > 1)
+                        <div class="em-papers" role="group" aria-label="Paper">
+                            @foreach (range(1, $this->paperCount()) as $p)
+                                <button type="button" wire:click="$set('paper', {{ $p }})" @class(['em-paper', 'is-active' => $this->paper === $p])>Paper {{ $p }}</button>
+                            @endforeach
+                        </div>
+                    @endif
+                    <label class="em-toggle">
+                        <input type="checkbox" wire:model.live="showComments"> Comments
+                    </label>
+                </div>
             </div>
 
             <div class="em-bar">
@@ -223,6 +232,11 @@
         .em-muted { color: #64748b; font-size: .8rem; }
         .em-locked { color: #b91c1c; font-weight: 600; }
         .em-note { margin-top: .5rem; font-size: .8rem; color: #92400e; background: #fffbeb; padding: .4rem .6rem; border-radius: 6px; }
+        .em-head-tools { display: flex; flex-wrap: wrap; align-items: center; gap: .6rem; }
+        .em-papers { display: inline-flex; border: 1px solid #cbd5e1; border-radius: 8px; overflow: hidden; }
+        .em-paper { padding: .3rem .7rem; font-size: .8rem; font-weight: 600; color: #374151; background: #fff; border-right: 1px solid #cbd5e1; }
+        .em-paper:last-child { border-right: 0; }
+        .em-paper.is-active { background: #1a5fa8; color: #fff; }
         .em-toggle { display: flex; align-items: center; gap: .4rem; font-size: .82rem; color: #374151; white-space: nowrap; }
         .em-scroll { overflow-x: auto; }
         .em-table { width: 100%; border-collapse: collapse; font-size: .875rem; }

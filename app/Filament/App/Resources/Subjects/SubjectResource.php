@@ -84,6 +84,13 @@ class SubjectResource extends Resource
                 ->required()
                 ->native(false)
                 ->helperText('Primary: the four core subjects make the aggregate. A-Level: principal subjects earn 6–0 points, subsidiaries 1.'),
+            Select::make('papers')
+                ->label('Papers')
+                ->options([1 => 'One paper', 2 => 'Paper 1 and 2', 3 => 'Papers 1–3', 4 => 'Papers 1–4'])
+                ->default(1)
+                ->required()
+                ->native(false)
+                ->helperText('Subjects sat as several papers (e.g. A-Level Biology P1, P2) get a mark per paper; the papers are averaged.'),
             TextInput::make('sort_order')
                 ->label('Order')
                 ->numeric()

@@ -70,6 +70,7 @@
     .trend { margin-top: .6rem; display: flex; flex-wrap: wrap; gap: .3rem 1.2rem; align-items: baseline; }
     .trend .label { font-size: .62rem; }
     .trend-term b { color: var(--rc-primary); }
+    .paper { display: block; font-size: .62rem; white-space: nowrap; }
     td.topics { white-space: normal; }
     .tp { display: inline-flex; align-items: center; gap: 2px; margin: 1px 4px 1px 0; font-size: .62rem; color: #4b5563; }
     .lv { display: inline-grid; place-items: center; width: 14px; height: 14px; border-radius: 3px; color: #fff; font-style: normal; font-weight: 700; font-size: .6rem; }
@@ -176,7 +177,13 @@
                             @endif
                             @foreach ($columns as $a)
                                 @php $s = $res['scores'][$a->id] ?? null; @endphp
-                                <td class="c">{{ $s ? ($s['absent'] ? 'AB' : $n($s['raw'])) : '' }}</td>
+                                <td class="c">
+                                    @if ($s && ! empty($s['papers']))
+                                        @foreach ($s['papers'] as $paper => $paperScore)<span class="paper">P{{ $paper }} {{ $paperScore === null ? 'AB' : $n($paperScore) }}</span>@endforeach
+                                    @else
+                                        {{ $s ? ($s['absent'] ? 'AB' : $n($s['raw'])) : '' }}
+                                    @endif
+                                </td>
                             @endforeach
                             @if ($split)
                                 <td class="c">{{ $n($res['formative']) }}</td>

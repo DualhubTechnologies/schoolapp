@@ -26,6 +26,9 @@ use Illuminate\Support\Collection;
  *
  * and positions in the class and stream.
  *
+ * A subject sat as several papers has a mark per paper in each exam;
+ * the exam's score is their average.
+ *
  * A subject's term score is the weighted average of the term's
  * assessments the student has a score in, each converted to a percentage
  * of its "out of" value. When none of those assessments carries a weight,
@@ -142,18 +145,44 @@ class ResultsCalculator
             $comment = null;
 
             foreach ($assessments as $assessment) {
-                $mark = $marks->get("{$student->getKey()}:{$subject->getKey()}")?->firstWhere('assessment_id', $assessment->getKey());
+                // One mark, or one per paper for a subject sat as several
+                // papers: the papers' scores are averaged.
+                $paperMarks = [];
 
-                if (! $mark) {
+                foreach ($marks->get("{$student->getKey()}:{$subject->getKey()}") ?? [] as $mark) {
+                    if ($mark->assessment_id === $assessment->getKey()) {
+                        $paperMarks[(int) $mark->paper] = $mark;
+                    }
+                }
+
+                if ($paperMarks === []) {
                     continue;
                 }
 
-                $pct = $mark->score !== null && (float) $assessment->max_score > 0
-                    ? min(100, (float) $mark->score / (float) $assessment->max_score * 100)
+                ksort($paperMarks);
+                $papers = [];
+                $sum = 0.0;
+                $scored = 0;
+                $absent = true;
+
+                foreach ($paperMarks as $paper => $mark) {
+                    $papers[$paper] = $mark->is_absent ? null : $mark->score;
+                    $absent = $absent && $mark->is_absent;
+                    $comment = $mark->comment ?: $comment;
+
+                    if ($mark->score !== null) {
+                        $sum += (float) $mark->score;
+                        $scored++;
+                    }
+                }
+
+                $raw = $scored > 0 ? round($sum / $scored, 2) : null;
+
+                $pct = $raw !== null && (float) $assessment->max_score > 0
+                    ? min(100, $raw / (float) $assessment->max_score * 100)
                     : null;
 
-                $scores[$assessment->getKey()] = ['raw' => $mark->score, 'pct' => $pct, 'absent' => $mark->is_absent];
-                $comment = $mark->comment ?: $comment;
+                $scores[$assessment->getKey()] = ['raw' => $raw, 'pct' => $pct, 'absent' => $absent, 'papers' => count($papers) > 1 ? $papers : null];
 
                 if ($pct !== null) {
                     $weighted += $pct * (float) $assessment->weight;

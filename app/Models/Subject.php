@@ -8,8 +8,11 @@ use Illuminate\Database\Eloquent\Relations\BelongsToMany;
 use Illuminate\Database\Eloquent\Relations\HasMany;
 
 /**
- * A subject the school teaches, within one curriculum.
+ * A subject the school teaches, within one curriculum. Some are sat as
+ * more than one paper (A-Level Paper 1, Paper 2...); marks are then
+ * entered per paper and averaged.
  *
+ * @property int $papers
  * @property-read ClassSubject $pivot when loaded through a class's subjects()
  */
 class Subject extends Model
@@ -21,6 +24,7 @@ class Subject extends Model
         'short_name',
         'code',
         'category',
+        'papers',
         'sort_order',
         'is_active',
     ];
@@ -30,6 +34,7 @@ class Subject extends Model
         return [
             'is_active' => 'boolean',
             'sort_order' => 'integer',
+            'papers' => 'integer',
         ];
     }
 

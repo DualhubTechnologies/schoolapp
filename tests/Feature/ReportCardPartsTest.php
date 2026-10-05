@@ -1,5 +1,6 @@
 <?php
 
+use App\Filament\Pages\EnterMarks;
 use App\Models\AcademicYear;
 use App\Models\Assessment;
 use App\Models\ClassLevel;
@@ -15,6 +16,7 @@ use App\Services\Academics\ResultsCalculator;
 use App\Services\Subscriptions\SubscriptionManager;
 use Database\Seeders\RoleSeeder;
 use Filament\Facades\Filament;
+use Livewire\Livewire;
 
 beforeEach(function () {
     $this->seed(RoleSeeder::class);
@@ -74,4 +76,42 @@ it('prints formative and exam columns, a project work section and each term\'s a
         ->assertSee('Well kept hives')
         ->assertSee('Average by term')
         ->assertSeeInOrder(['Term 1', '50%', 'Term 2', '65%']);
+});
+
+it('averages a subject\'s papers in each exam and prints each paper', function () {
+    $this->agric->update(['papers' => 2]);
+    $eot = Assessment::where('term_id', $this->term2->id)->where('type', 'eot')->sole();
+    Mark::where('assessment_id', $eot->id)->update(['paper' => 1]);
+    Mark::create(['assessment_id' => $eot->id, 'student_id' => $this->student->id, 'subject_id' => $this->agric->id, 'paper' => 2, 'score' => 70]);
+
+    $agric = app(ResultsCalculator::class)->forClass($this->class, $this->term2)['rows']->first()['subjects'][$this->agric->id];
+
+    // Papers 60 and 70 average 65; 85% project at 20% + 65 at 80% = 69.
+    expect($agric['scores'][$eot->id]['raw'])->toBe(65.0)
+        ->and($agric['scores'][$eot->id]['papers'])->toBe([1 => '60.00', 2 => '70.00'])
+        ->and($agric['final'])->toBe(69.0);
+
+    $this->get(route('filament.app.academics.report-cards', ['term' => $this->term2->id, 'class' => $this->class->id]))
+        ->assertOk()
+        ->assertSee('P1 60')
+        ->assertSee('P2 70');
+});
+
+it('enters marks for each paper on its own', function () {
+    $this->agric->update(['papers' => 2]);
+    $eot = Assessment::where('term_id', $this->term2->id)->where('type', 'eot')->sole();
+
+    Livewire::test(EnterMarks::class)
+        ->set('assessmentId', $eot->id)
+        ->set('classId', $this->class->id)
+        ->set('subjectId', $this->agric->id)
+        ->assertSee('Paper 2')
+        ->assertSet("scores.{$this->student->id}", '60')
+        ->set('paper', 2)
+        ->assertSet("scores.{$this->student->id}", null)
+        ->set("scores.{$this->student->id}", '70')
+        ->call('save')
+        ->assertNotified('Marks saved (1)');
+
+    expect(Mark::where('assessment_id', $eot->id)->orderBy('paper')->pluck('score', 'paper')->all())->toBe([1 => '60.00', 2 => '70.00']);
 });

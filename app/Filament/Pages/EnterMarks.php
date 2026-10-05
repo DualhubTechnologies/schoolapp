@@ -57,6 +57,9 @@ class EnterMarks extends Page
 
     public ?int $subjectId = null;
 
+    /** Which paper of a subject sat as several papers (A-Level P1, P2...). */
+    public int $paper = 1;
+
     /** @var array<int, string|null> student id => score as typed */
     public array $scores = [];
 
@@ -111,8 +114,22 @@ class EnterMarks extends Page
         $this->loadSheet();
     }
 
+    public function updatedPaper(): void
+    {
+        $this->paper = max(1, min($this->paper, $this->paperCount()));
+        $this->loadSheet();
+    }
+
+    /** How many papers the chosen subject is sat as (1 for most). */
+    public function paperCount(): int
+    {
+        return max(1, (int) ($this->subject->papers ?? 1));
+    }
+
     public function updatedSubjectId(): void
     {
+        $this->paper = 1;
+
         $limit = $this->streamLimit();
 
         if ($limit !== null && ! in_array($this->sectionId, $limit, true)) {
@@ -276,6 +293,7 @@ class EnterMarks extends Page
 
         $marks = Mark::where('assessment_id', $this->assessmentId)
             ->where('subject_id', $this->subjectId)
+            ->where('paper', $this->paper)
             ->whereIn('student_id', $ids)
             ->get()
             ->keyBy('student_id');
@@ -362,7 +380,7 @@ class EnterMarks extends Page
                 $raw = trim((string) ($this->scores[$id] ?? ''));
                 $absent = (bool) ($this->absent[$id] ?? false);
                 $comment = trim((string) ($this->comments[$id] ?? '')) ?: null;
-                $key = ['assessment_id' => $this->assessmentId, 'student_id' => $id, 'subject_id' => $this->subjectId];
+                $key = ['assessment_id' => $this->assessmentId, 'student_id' => $id, 'subject_id' => $this->subjectId, 'paper' => $this->paper];
 
                 if ($raw === '' && ! $absent) {
                     Mark::where($key)->delete();

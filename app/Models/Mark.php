@@ -18,6 +18,7 @@ class Mark extends Model
         'assessment_id',
         'student_id',
         'subject_id',
+        'paper',
         'score',
         'is_absent',
         'comment',
@@ -29,6 +30,7 @@ class Mark extends Model
         return [
             'score' => 'decimal:2',
             'is_absent' => 'boolean',
+            'paper' => 'integer',
         ];
     }
 

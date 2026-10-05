@@ -63,7 +63,8 @@ class TeacherLoad
                                 ->where('subject_id', $subject->getKey())
                                 ->whereIn('student_id', $ids)
                                 ->where(fn ($q) => $q->whereNotNull('score')->orWhere('is_absent', true))
-                                ->count()
+                                ->distinct()
+                                ->count('student_id')
                             : 0,
                         'studentIds' => $ids,
                     ];

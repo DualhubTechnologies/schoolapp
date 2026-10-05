@@ -18,7 +18,7 @@ use Illuminate\Support\Str;
  * @property string|null $schoolpay_school_code
  * @property string|null $schoolpay_api_password
  * @property string|null $schoolpay_webhook_token
- * @property \Illuminate\Support\Carbon|null $schoolpay_synced_at
+ * @property CarbonImmutable|null $schoolpay_synced_at
  * @property string|null $schoolpay_sync_error
  */
 class School extends Model

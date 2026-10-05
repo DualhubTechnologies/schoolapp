@@ -140,12 +140,14 @@ class SchoolPayPayments
                             continue;
                         }
 
-                        match (true) {
-                            ! $isNew => $counts['already']++,
-                            $transaction->status === 'recorded' => $counts['recorded']++,
-                            $transaction->status === 'unmatched' => $counts['unmatched']++,
-                            default => $counts['other_fees']++,
+                        $key = match (true) {
+                            ! $isNew => 'already',
+                            $transaction->status === 'recorded' => 'recorded',
+                            $transaction->status === 'unmatched' => 'unmatched',
+                            default => 'other_fees',
                         };
+
+                        $counts[$key] += 1;
                     }
                 }
             }

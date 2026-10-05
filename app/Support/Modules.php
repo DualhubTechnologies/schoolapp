@@ -83,6 +83,8 @@ class Modules
         'IncomeResource' => 'finance',
         'TermBudget' => 'finance',
         'FinanceCategoryResource' => 'finance',
+        'BankAccountResource' => 'finance',
+        'BankStatementLineResource' => 'finance',
         // Exams & results
         'AssessmentResource' => 'exams',
         'EnterMarks' => 'exams',

@@ -117,7 +117,7 @@ class BankStatementReader
         $rows = [];
 
         while (($row = fgetcsv($handle, null, $delimiter, '"', '')) !== false) {
-            $rows[] = array_values(array_map(fn ($cell): string => trim((string) $cell), $row));
+            $rows[] = array_map(fn ($cell): string => trim((string) $cell), $row);
         }
 
         fclose($handle);

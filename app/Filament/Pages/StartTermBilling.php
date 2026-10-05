@@ -16,8 +16,6 @@ use Filament\Forms\Components\Radio;
 use Filament\Forms\Components\Repeater;
 use Filament\Forms\Components\TextInput;
 use Filament\Forms\Components\Toggle;
-use Filament\Forms\Concerns\InteractsWithForms;
-use Filament\Forms\Contracts\HasForms;
 use Filament\Notifications\Notification;
 use Filament\Pages\Page;
 use Filament\Schemas\Components\Utilities\Get;
@@ -31,11 +29,11 @@ use Filament\Support\Icons\Heroicon;
  * keep what they were billed (the Fee structure sheet shows any term).
  * The bursar is sent here by the dashboard and the bell until the current
  * term is billed (BillingService::termNeedsBilling).
+ *
+ * @property-read Schema $form
  */
-class StartTermBilling extends Page implements HasForms
+class StartTermBilling extends Page
 {
-    use InteractsWithForms;
-
     protected static string|BackedEnum|null $navigationIcon = Heroicon::OutlinedPlayCircle;
 
     protected static bool $shouldRegisterNavigation = false;

@@ -67,7 +67,11 @@ class AssessmentResource extends Resource
 
             $set('weight', config("academics.default_weights.{$curriculum}.{$type}", 0));
             $set('name', config('academics.assessment_types')[$type] ?? '');
-            $set('max_score', $type === 'ca' && $curriculum === 'o_level' ? 3 : 100);
+            $set('max_score', match (true) {
+                $type === 'ca' && $curriculum === 'o_level' => 3,
+                $type === 'project' => 10,
+                default => 100,
+            });
         };
 
         return $schema->columns(2)->components([
@@ -90,7 +94,12 @@ class AssessmentResource extends Resource
                 ->live()
                 ->afterStateUpdated($applyDefaults),
             Select::make('type')
-                ->options(config('academics.assessment_types'))
+                // Topic assessment is created by Assess Topics, never by hand.
+                ->options(fn (?Assessment $record): array => array_filter(
+                    (array) config('academics.assessment_types'),
+                    fn (string $type): bool => $type !== 'topics' || $record?->type === 'topics',
+                    ARRAY_FILTER_USE_KEY,
+                ))
                 ->required()
                 ->native(false)
                 ->live()

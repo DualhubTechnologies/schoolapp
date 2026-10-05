@@ -63,13 +63,14 @@ return [
 
     /*
      * Suggested weights (% of the term result) when an exam is created.
-     * New lower-secondary curriculum: school-based assessment 20%,
-     * end-of-term 80%, mirroring UNEB's 20/80 split at UCE.
+     * New lower-secondary curriculum: school-based assessment 20% (AOIs
+     * 10% + project work 10%), end-of-term 80%, mirroring UNEB's 20/80
+     * split at UCE.
      */
     'default_weights' => [
         'primary' => ['bot' => 20, 'mot' => 30, 'eot' => 50, 'ca' => 0, 'other' => 0],
         'nursery' => ['bot' => 20, 'mot' => 30, 'eot' => 50, 'ca' => 0, 'other' => 0],
-        'o_level' => ['bot' => 0, 'mot' => 0, 'eot' => 80, 'ca' => 20, 'other' => 0],
+        'o_level' => ['bot' => 0, 'mot' => 0, 'eot' => 80, 'ca' => 10, 'project' => 10, 'other' => 0],
         'a_level' => ['bot' => 20, 'mot' => 30, 'eot' => 50, 'ca' => 0, 'other' => 0],
     ],
 

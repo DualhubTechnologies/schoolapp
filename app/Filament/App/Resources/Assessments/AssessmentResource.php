@@ -119,6 +119,7 @@ class AssessmentResource extends Resource
                 ->helperText(fn (Get $get): string => match ($get('type')) {
                     'eot' => 'Mark out of whatever the paper is set out of, e.g. 100 or 80. Its weight below decides how much it counts.',
                     'project' => 'Project work is marked out of 10.',
+                    'ca' => 'Activities of Integration are usually scored out of 3, but mark out of whatever suits the school, e.g. 3, 10 or 20. Its weight below decides how much it counts.',
                     default => 'New curriculum Activities of Integration are usually scored out of 3.',
                 }),
             TextInput::make('weight')

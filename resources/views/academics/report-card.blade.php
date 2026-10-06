@@ -32,18 +32,22 @@
 @section('title', "Report cards — {$class->name} — {$term->label()}")
 
 @section('styles')
-    /* One report card = one A4 page. The page margin is the sheet's padding,
-       so the comments, signatures and key always sit at the foot of the page,
-       and a long report is scaled down to fit (see the script below). */
-    @page { size: A4; margin: 0; }
+    /* One report card = one A4 page. The card is a fixed box a little
+       smaller than what's left of A4 inside any browser's print margins
+       (Safari on iPhone adds its own, with the address and date), so it
+       never spills onto a second page. The comments, signatures and key sit
+       at the foot of the box, and a long report is scaled down to fit it
+       (see the script below). */
+    @page { size: A4; margin: 12mm; }
     .sheet { --rc-primary: {{ $style['primary'] }}; --rc-accent: {{ $style['accent'] }}; --rc-on-primary: {{ $style['onPrimary'] }}; }
-    .sheet { width: 210mm; max-width: 100%; height: 297mm; padding: 11mm 12mm; font-size: 12px; display: flex; flex-direction: column; }
+    .sheet { width: 184mm; max-width: 100%; height: 256mm; padding: 4mm 5mm; font-size: 12px; display: flex; flex-direction: column; box-sizing: border-box; }
+    @media screen { .sheet { box-shadow: 0 0 0 12mm #fff, 0 2px 10px 12mm rgba(13,31,56,.08); margin: calc(1.5rem + 12mm) auto; } }
+    @media print { .sheet { width: 184mm; max-width: none; height: 256mm; break-inside: avoid; } .sheet:last-child { break-after: auto; } }
     .rc-fit { flex: 1; display: flex; flex-direction: column; min-height: 0; }
     .rc-bottom { margin-top: auto; padding-top: .6rem; }
     /* Spare room on a short report, shared out by the script below. */
     .rc-fit table.marks:not(.projects) tbody td { padding-top: calc(.32rem + var(--rc-row-extra, 0px)); padding-bottom: calc(.32rem + var(--rc-row-extra, 0px)); }
     .rc-fit .comment .line { min-height: calc(2.2rem + var(--rc-line-extra, 0px)); }
-    @media print { .sheet { width: 210mm; max-width: none; height: 297mm; } }
     .sheet.font-serif { font-family: Georgia, "Times New Roman", Times, serif; }
     .sheet.border-line { outline: 2px solid var(--rc-primary); outline-offset: -8px; }
     .sheet.border-double { outline: 5px double var(--rc-primary); outline-offset: -9px; }
@@ -105,7 +109,7 @@
     .design-modern .box { border-left: 4px solid var(--rc-accent); }
 
     /* Compact: smaller type and spacing so long subject lists fit one page. */
-    .sheet.design-compact { font-size: 10.5px; padding: 9mm 10mm; }
+    .sheet.design-compact { font-size: 10.5px; }
     .design-compact .rc-top { padding-bottom: .45rem; }
     .design-compact .rc-top img.logo, .design-compact .rc-top .photo { width: 3.3rem; height: 3.6rem; }
     .design-compact .rc-top h1 { font-size: 1.05rem; }

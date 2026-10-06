@@ -19,14 +19,14 @@ return [
     'company' => env('CONTACT_COMPANY', 'FERO TECH SMC LIMITED'),
     'founder' => env('CONTACT_FOUNDER', 'Adrian Mugizi'),
 
-    // The Team page, in order. 'photo' is a file in public/images/team
+    // The Team page, in order. 'photo' is a file in public/images/team, e.g. a background-free WebP
     // (square, at least 400px), or null for a silhouette. Social links and
     // email are optional; each one shows as an icon.
     'team' => [
         [
             'name' => env('CONTACT_FOUNDER', 'Adrian Mugizi'),
             'role' => 'Founder, FERO TECH SMC LIMITED & SchoolHub.',
-            'photo' => null,
+            'photo' => 'adrian-mugizi.webp',
             'linkedin' => null,
             'facebook' => null,
             'x' => null,

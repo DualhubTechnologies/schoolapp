@@ -433,7 +433,7 @@
         .team-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(13rem, 16rem)); justify-content: center; gap: 2rem; }
         .team-card { display: flex; flex-direction: column; align-items: center; text-align: center; padding: 1rem 1rem 1.75rem; border-radius: var(--radius-lg); background: var(--slate-100); }
         .team-photo { display: grid; place-items: end center; width: 100%; max-width: 12.25rem; aspect-ratio: 1; overflow: hidden; border-radius: 50%; background: #e0e3fb; color: #8f96c8; }
-        .team-photo img { width: 100%; height: 100%; object-fit: cover; }
+        .team-photo img { place-self: stretch; width: 100%; height: 100%; object-fit: cover; }
         .team-photo svg { width: 80%; height: 80%; }
         .team-card h2 { margin-top: 1.25rem; font-size: 1rem; font-weight: 800; color: var(--slate-900); }
         .team-role { margin-top: .25rem; font-size: .9375rem; line-height: 1.4; color: var(--blue-600); }

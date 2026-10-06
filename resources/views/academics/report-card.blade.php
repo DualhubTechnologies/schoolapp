@@ -32,17 +32,18 @@
 @section('title', "Report cards — {$class->name} — {$term->label()}")
 
 @section('styles')
-    /* One report card = one A4 page. The card is a fixed box a little
-       smaller than what's left of A4 inside any browser's print margins
-       (Safari on iPhone adds its own, with the address and date), so it
-       never spills onto a second page. The comments, signatures and key sit
-       at the foot of the box, and a long report is scaled down to fit it
-       (see the script below). */
-    @page { size: A4; margin: 12mm; }
+    /* One report card = one A4 page, with a thin 6mm margin. In print the
+       card fills whatever the browser leaves of the page (100vh), so Safari
+       on iPhone, which adds its own margins with the address and date, gets
+       a slightly shorter card instead of a blank second page. The content
+       is fitted to a height every printer leaves (see the script below), and
+       the comments, signatures and key sit at the foot of the card. */
+    @page { size: A4; margin: 6mm; }
     .sheet { --rc-primary: {{ $style['primary'] }}; --rc-accent: {{ $style['accent'] }}; --rc-on-primary: {{ $style['onPrimary'] }}; }
-    .sheet { width: 184mm; max-width: 100%; height: 256mm; padding: 4mm 5mm; font-size: 12px; display: flex; flex-direction: column; box-sizing: border-box; }
-    @media screen { .sheet { box-shadow: 0 0 0 12mm #fff, 0 2px 10px 12mm rgba(13,31,56,.08); margin: calc(1.5rem + 12mm) auto; } }
-    @media print { .sheet { width: 184mm; max-width: none; height: 256mm; break-inside: avoid; } .sheet:last-child { break-after: auto; } }
+    .sheet { width: 198mm; max-width: none; height: 285mm; padding: 3mm 4mm; font-size: 12px; display: flex; flex-direction: column; box-sizing: border-box; }
+    @media screen { .sheet { box-shadow: 0 0 0 6mm #fff, 0 2px 10px 6mm rgba(13,31,56,.08); margin: calc(1.5rem + 6mm) auto; } }
+    @media screen { .rc-pages { overflow: hidden; padding-bottom: 1px; } }
+    @media print { .sheet { width: 100%; max-width: none; height: 100vh; break-inside: avoid; transform: none !important; margin: 0 !important; } .sheet:last-child { break-after: auto; } }
     .rc-fit { flex: 1; display: flex; flex-direction: column; min-height: 0; }
     .rc-bottom { margin-top: auto; padding-top: .6rem; }
     /* Spare room on a short report, shared out by the script below. */
@@ -122,6 +123,7 @@
 @endsection
 
 @section('content')
+    <div class="rc-pages">
     @foreach ($rows as $row)
         @php
             $student = $row['student'];
@@ -399,6 +401,7 @@
             </div>
         </div>
     @endforeach
+    </div>
 
     <script>
         // Fit each report card on one A4 page: a short one gets more room
@@ -411,7 +414,10 @@
                     return;
                 }
                 const style = getComputedStyle(sheet);
-                const room = sheet.clientHeight - parseFloat(style.paddingTop) - parseFloat(style.paddingBottom);
+                // Fit to 15mm less than the card on screen: the most a
+                // browser's own print margins take away (Safari on iPhone).
+                const spareForPrinters = 15 * 96 / 25.4;
+                const room = sheet.clientHeight - parseFloat(style.paddingTop) - parseFloat(style.paddingBottom) - spareForPrinters;
                 const needed = () => {
                     fit.style.flex = 'none';
                     fit.style.height = 'auto';
@@ -439,7 +445,8 @@
                         }
                     }
                     fit.style.zoom = low;
-                    fit.style.height = (room / low) + 'px';
+                    fit.style.flex = '1';
+                    fit.style.height = '';
                     return;
                 }
 
@@ -474,9 +481,33 @@
                 fit.style.height = '';
             });
         }
+        // The card is always laid out at A4 width, so it is fitted the same
+        // on a phone as on a computer; a phone just shows it smaller.
+        function showReportCardsSmall() {
+            const pages = document.querySelector('.rc-pages');
+            const available = pages ? pages.clientWidth : window.innerWidth;
+            const border = 6 * 96 / 25.4;
+            document.querySelectorAll('.sheet').forEach((sheet) => {
+                sheet.style.transform = '';
+                sheet.style.margin = '';
+                const paper = sheet.offsetWidth + 2 * border + 16;
+                if (available >= paper) {
+                    return;
+                }
+                const scale = available / paper;
+                sheet.style.transformOrigin = 'top left';
+                sheet.style.transform = 'scale(' + scale + ')';
+                const edge = (available - sheet.offsetWidth * scale) / 2;
+                sheet.style.margin = (16 + border * scale) + 'px 0 ' + (16 + border * scale - sheet.offsetHeight * (1 - scale)) + 'px ' + edge + 'px';
+            });
+        }
         fitReportCards();
+        showReportCardsSmall();
+        window.addEventListener('resize', showReportCardsSmall);
         window.addEventListener('load', fitReportCards);
-        window.addEventListener('beforeprint', fitReportCards);
+
         document.fonts?.ready.then(fitReportCards);
+        // Fitted once, on screen: the print layout only stretches the card
+        // to the page (100vh), so nothing needs measuring while printing.
     </script>
 @endsection

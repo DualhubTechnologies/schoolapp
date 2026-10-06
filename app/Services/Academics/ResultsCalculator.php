@@ -124,7 +124,7 @@ class ResultsCalculator
             'curriculum' => $curriculum,
             'assessments' => $assessments,
             'exam' => $assessmentId ? $assessments->first() : null,
-            'split' => $this->split($assessments),
+            'split' => $this->split($assessments, $curriculum),
             'subjects' => $subjects,
             'rows' => $rows,
             'subject_stats' => $this->subjectStats($rows, $subjects),
@@ -143,6 +143,8 @@ class ResultsCalculator
             $weights = 0.0;
             $plain = [];
             $comment = null;
+            $averaged = [];
+            $averagedWeight = 0.0;
 
             foreach ($assessments as $assessment) {
                 // One mark, or one per paper for a subject sat as several
@@ -184,7 +186,11 @@ class ResultsCalculator
 
                 $scores[$assessment->getKey()] = ['raw' => $raw, 'pct' => $pct, 'absent' => $absent, 'papers' => count($papers) > 1 ? $papers : null];
 
-                if ($pct !== null) {
+                if ($pct !== null && $assessment->isAveragedIn($curriculum)) {
+                    $averaged[] = $pct;
+                    $averagedWeight = max($averagedWeight, (float) $assessment->weight);
+                    $plain[] = $pct;
+                } elseif ($pct !== null) {
                     $weighted += $pct * (float) $assessment->weight;
 
                     if (in_array($assessment->type, self::SCHOOL_BASED_TYPES, true)) {
@@ -197,6 +203,14 @@ class ResultsCalculator
 
             if (! $scores) {
                 continue; // the student does not take this subject, or has no marks yet
+            }
+
+            // e.g. AOIs of 2/3 and 3/3 count as one 83.3% at the CA weight.
+            if ($averaged !== []) {
+                $averagePct = array_sum($averaged) / count($averaged);
+                $weighted += $averagePct * $averagedWeight;
+                $schoolBasedWeighted += $averagePct * $averagedWeight; // CA is school-based
+                $weights += $averagedWeight;
             }
 
             $final = $weights > 0 ? $weighted / $weights : ($plain ? array_sum($plain) / count($plain) : null);
@@ -436,18 +450,13 @@ class ResultsCalculator
      * @param  Collection<int, Assessment>  $assessments
      * @return array{formative: int, summative: int}|null
      */
-    protected function split(Collection $assessments): ?array
+    protected function split(Collection $assessments, ?string $curriculum = null): ?array
     {
-        $formative = 0.0;
-        $total = 0.0;
-
-        foreach ($assessments as $assessment) {
-            $total += (float) $assessment->weight;
-
-            if (in_array($assessment->type, self::SCHOOL_BASED_TYPES, true)) {
-                $formative += (float) $assessment->weight;
-            }
-        }
+        $total = Assessment::totalWeight($assessments, $curriculum);
+        $formative = Assessment::totalWeight(
+            $assessments->filter(fn (Assessment $a): bool => in_array($a->type, self::SCHOOL_BASED_TYPES, true)),
+            $curriculum,
+        );
 
         if ($formative <= 0 || $formative >= $total) {
             return null;

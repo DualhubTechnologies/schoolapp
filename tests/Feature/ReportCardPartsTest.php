@@ -69,6 +69,22 @@ it('splits the term score into its formative and exam parts', function () {
         ->and($agric['final'])->toBe(64.0);
 });
 
+it('averages an O-Level term\'s Activities of Integration into one 20% share', function () {
+    // A second AOI, 3/3 at 20%: the AOIs average (80% + 100%) / 2 = 90%,
+    // which counts 20%, not 40%.
+    $aoi2 = Assessment::create(['school_id' => $this->school->id, 'term_id' => $this->term2->id, 'name' => 'Activity of Integration 2', 'type' => 'ca', 'max_score' => 3, 'weight' => 20]);
+    Mark::create(['assessment_id' => $aoi2->id, 'student_id' => $this->student->id, 'subject_id' => $this->agric->id, 'score' => 3]);
+
+    $results = app(ResultsCalculator::class)->forClass($this->class, $this->term2);
+    $agric = $results['rows']->first()['subjects'][$this->agric->id];
+
+    expect($results['split'])->toBe(['formative' => 20, 'summative' => 80])
+        ->and($agric['formative'])->toBe(18.0)
+        ->and($agric['summative'])->toBe(48.0)
+        ->and($agric['final'])->toBe(66.0)
+        ->and(Assessment::weightProblems($this->school->id, $this->term2->id, ['o_level' => 'O-Level']))->toBe([]);
+});
+
 it('keeps project work out of the term result, whatever weight is typed', function () {
     expect((float) Assessment::where('type', 'project')->sole()->weight)->toBe(0.0);
 });

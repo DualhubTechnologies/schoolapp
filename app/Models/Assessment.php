@@ -70,6 +70,42 @@ class Assessment extends Model
     }
 
     /**
+     * Exam types whose exams are averaged into one share of the term
+     * result: an O-Level term's Activities of Integration, each out of 3,
+     * together make the 20% however many there are.
+     *
+     * @var array<string, list<string>>
+     */
+    public const AVERAGED_TYPES = ['o_level' => ['ca']];
+
+    public function isAveragedIn(?string $curriculum): bool
+    {
+        return in_array($this->type, self::AVERAGED_TYPES[$curriculum] ?? [], true);
+    }
+
+    /**
+     * The exams' total weight for a curriculum. Averaged exams count once,
+     * at the highest weight among them.
+     *
+     * @param  iterable<self>  $assessments
+     */
+    public static function totalWeight(iterable $assessments, ?string $curriculum): float
+    {
+        $total = 0.0;
+        $averaged = 0.0;
+
+        foreach ($assessments as $assessment) {
+            if ($assessment->isAveragedIn($curriculum)) {
+                $averaged = max($averaged, (float) $assessment->weight);
+            } else {
+                $total += (float) $assessment->weight;
+            }
+        }
+
+        return $total + $averaged;
+    }
+
+    /**
      * Where a term's exam weights do not add up to 100% for a curriculum,
      * e.g. "Primary: 90%". Exams for every class count towards each
      * curriculum. A curriculum whose exams all have no weight is fine:
@@ -80,12 +116,12 @@ class Assessment extends Model
      */
     public static function weightProblems(int $schoolId, int $termId, array $curricula): array
     {
-        $exams = static::where('school_id', $schoolId)->where('term_id', $termId)->get(['curriculum', 'weight']);
+        $exams = static::where('school_id', $schoolId)->where('term_id', $termId)->get(['curriculum', 'type', 'weight']);
         $problems = [];
 
         foreach ($curricula as $key => $label) {
             $applies = $exams->filter(fn (self $a) => $a->appliesTo($key));
-            $total = round((float) $applies->sum(fn (self $a) => (float) $a->weight), 2);
+            $total = round(self::totalWeight($applies, $key), 2);
 
             if ($applies->isNotEmpty() && $total > 0 && abs($total - 100) > 0.01) {
                 $problems[$label] = $total;

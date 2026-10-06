@@ -65,7 +65,9 @@ use Illuminate\Foundation\Http\Middleware\PreventRequestForgery;
 use Illuminate\Routing\Middleware\SubstituteBindings;
 use Illuminate\Session\Middleware\StartSession;
 use Illuminate\Support\Facades\Route;
+use Illuminate\Support\Facades\Storage;
 use Illuminate\View\Middleware\ShareErrorsFromSession;
+use Illuminate\View\View;
 
 class AppPanelProvider extends PanelProvider
 {
@@ -119,8 +121,10 @@ class AppPanelProvider extends PanelProvider
 
             // --- Branding ---
             ->brandName('SchoolHub')
-            ->brandLogo(fn () => asset('images/schoolhub-logo-sidebar.svg'))  // tightly cropped, so the height below is all logo
-            ->brandLogoHeight('2.25rem')
+            // A signed-in school sees its own logo and name; the sign-in
+            // pages (no school yet) show SchoolHub's.
+            ->brandLogo(fn () => self::schoolBrand() ?? asset('images/schoolhub-logo-sidebar.svg'))  // tightly cropped, so the height below is all logo
+            ->brandLogoHeight(fn (): string => auth()->user()?->school_id ? '2.75rem' : '2.25rem')
             ->favicon(asset('images/schoolhub-icon-192.png'))
 
             // --- Colors ---
@@ -345,5 +349,24 @@ class AppPanelProvider extends PanelProvider
                 // Expired or suspended schools see only their Subscription page.
                 EnsureSchoolSubscribed::class,
             ]);
+    }
+
+    /** The signed-in school's logo and name for the sidebar, or null outside a school. */
+    protected static function schoolBrand(): ?View
+    {
+        $school = auth()->user()?->school;
+
+        if (! $school) {
+            return null;
+        }
+
+        $words = preg_split('/\s+/', trim((string) $school->name)) ?: [];
+        $initials = mb_strtoupper(implode('', array_map(fn (string $word): string => mb_substr($word, 0, 1), array_slice($words, 0, 2))));
+
+        return view('filament.partials.school-brand', [
+            'logo' => $school->logo ? Storage::disk('public')->url($school->logo) : null,
+            'name' => $school->name,
+            'initials' => $initials,
+        ]);
     }
 }

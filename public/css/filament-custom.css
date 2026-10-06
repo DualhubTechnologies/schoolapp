@@ -338,6 +338,30 @@ html .fi-sidebar .fi-sidebar-group-collapse-btn {
 
 }
 
+/* The signed-in school's own logo and name (partials/school-brand). */
+.sh-school-brand { display: flex; align-items: center; gap: .65rem; height: 100%; min-width: 0; max-width: 13.5rem; }
+.sh-school-brand-logo,
+.sh-school-brand-initials {
+    flex: none;
+    width: 2.6rem;
+    height: 2.6rem;
+    border-radius: .6rem;
+    background: #fff;
+}
+.sh-school-brand-logo { object-fit: contain; padding: .15rem; }
+.sh-school-brand-initials { display: grid; place-items: center; color: #0d1f38; font-weight: 800; font-size: .95rem; letter-spacing: .02em; }
+.sh-school-brand-text { display: flex; flex-direction: column; min-width: 0; line-height: 1.15; }
+.sh-school-brand-name {
+    color: #fff;
+    font-weight: 700;
+    font-size: .92rem;
+    display: -webkit-box;
+    -webkit-line-clamp: 2;
+    -webkit-box-orient: vertical;
+    overflow: hidden;
+}
+.sh-school-brand-by { color: #7c8aa5; font-size: .68rem; font-weight: 500; margin-top: .1rem; }
+
 .fi-sidebar-nav {
 
     padding: 0.75rem 0.5rem 1.25rem !important;

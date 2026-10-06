@@ -97,17 +97,22 @@ it('keeps project work out of the term result, whatever weight is typed', functi
     expect((float) Assessment::where('type', 'project')->sole()->weight)->toBe(0.0);
 });
 
-it('prints formative and exam columns, a project work section and each term\'s average', function () {
+it('prints each CA as a percentage, their average, CA /20 and End of Term /80, a project work section and each term\'s average', function () {
+    // A second AOI, 3/3: CA1 80%, CA2 100%, average 90%, so CA 18/20.
+    $aoi2 = Assessment::create(['school_id' => $this->school->id, 'term_id' => $this->term2->id, 'name' => 'Activity of Integration 2', 'type' => 'ca', 'max_score' => 3, 'weight' => 20]);
+    Mark::create(['assessment_id' => $aoi2->id, 'student_id' => $this->student->id, 'subject_id' => $this->agric->id, 'score' => 3]);
+
     $this->get(route('filament.app.academics.report-cards', ['term' => $this->term2->id, 'class' => $this->class->id]))
         ->assertOk()
-        ->assertSeeInOrder(['Formative', '/20', 'Exam', '/80', 'Total /100'], false)
+        ->assertSeeInOrder(['CA1', 'CA2', 'CA avg', 'CA', '/20', 'End of Term', '/80', 'Total /100'], false)
+        ->assertSeeInOrder(['Agriculture', '80', '100', '90', '18', '48', '66'], false)
         ->assertSee('Project work')
         ->assertSee('Apiculture')
         ->assertSee('8.5 / 10')
         ->assertSee('85%')
         ->assertSee('Well kept hives')
         ->assertSee('Average by term')
-        ->assertSeeInOrder(['Term 1', '50%', 'Term 2', '64%']);
+        ->assertSeeInOrder(['Term 1', '50%', 'Term 2', '66%']);
 });
 
 it('averages a subject\'s papers in each exam and prints each paper', function () {

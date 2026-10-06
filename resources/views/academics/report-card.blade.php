@@ -18,6 +18,13 @@
     }
     $split = $show('split_columns') ? ($results['split'] ?? null) : null;
     $exam = $results['exam'] ?? null;
+    // O-Level with the formative/exam split: each CA as a percentage (CA1,
+    // CA2, ...), their average, the CA out of 20 and End of Term out of 80.
+    $caColumns = $split && ! $exam ? $columns->filter(fn ($a) => $a->isAveragedIn($curriculum))->values() : collect();
+    $eotColumns = $caColumns->isNotEmpty() ? $columns->where('type', 'eot')->values() : collect();
+    if ($caColumns->isNotEmpty()) {
+        $columns = $columns->reject(fn ($a) => $a->isAveragedIn($curriculum) || $a->type === 'eot');
+    }
 @endphp
 
 @section('title', "Report cards — {$class->name} — {$term->label()}")
@@ -158,9 +165,15 @@
                         @foreach ($columns as $a)
                             <th class="c" title="{{ $a->name }}">{{ $a->shortLabel() }}<br><span style="font-weight:500">/{{ $a->max_score + 0 }}</span></th>
                         @endforeach
+                        @foreach ($caColumns as $a)
+                            <th class="c" title="{{ $a->name }}">CA{{ $loop->iteration }}<br><span style="font-weight:500">%</span></th>
+                        @endforeach
+                        @if ($caColumns->isNotEmpty())
+                            <th class="c">CA avg<br><span style="font-weight:500">%</span></th>
+                        @endif
                         @if ($split)
-                            <th class="c">Formative<br><span style="font-weight:500">/{{ $split['formative'] }}</span></th>
-                            <th class="c">Exam<br><span style="font-weight:500">/{{ $split['summative'] }}</span></th>
+                            <th class="c">{{ $caColumns->isNotEmpty() ? 'CA' : 'Formative' }}<br><span style="font-weight:500">/{{ $split['formative'] }}</span></th>
+                            <th class="c">{{ $caColumns->isNotEmpty() ? 'End of Term' : 'Exam' }}<br><span style="font-weight:500">/{{ $split['summative'] }}</span></th>
                         @endif
                         <th class="c">{{ $exam ? '%' : ($split ? 'Total /100' : 'Term %') }}</th>
                         <th class="c">Grade</th>
@@ -185,9 +198,30 @@
                                     @endif
                                 </td>
                             @endforeach
+                            @if ($caColumns->isNotEmpty())
+                                @php
+                                    $caPcts = [];
+                                @endphp
+                                @foreach ($caColumns as $a)
+                                    @php
+                                        $s = $res['scores'][$a->id] ?? null;
+                                        if ($s && $s['pct'] !== null) {
+                                            $caPcts[] = $s['pct'];
+                                        }
+                                    @endphp
+                                    <td class="c">{{ $s ? ($s['absent'] ? 'AB' : $n($s['pct'])) : '' }}</td>
+                                @endforeach
+                                <td class="c">{{ $caPcts ? $n(array_sum($caPcts) / count($caPcts)) : '—' }}</td>
+                            @endif
                             @if ($split)
                                 <td class="c">{{ $n($res['formative']) }}</td>
-                                <td class="c">{{ $n($res['summative']) }}</td>
+                                <td class="c">
+                                    {{ $n($res['summative']) }}
+                                    {{-- A subject sat as several papers: each paper's End of Term mark. --}}
+                                    @foreach ($eotColumns as $a)
+                                        @foreach ($res['scores'][$a->id]['papers'] ?? [] as $paper => $paperScore)<span class="paper">P{{ $paper }} {{ $paperScore === null ? 'AB' : $n($paperScore) }}</span>@endforeach
+                                    @endforeach
+                                </td>
                             @endif
                             <td class="c"><strong>{{ $n($res['final']) }}</strong></td>
                             <td class="grade">{{ $res['grade'] ?? '—' }}</td>

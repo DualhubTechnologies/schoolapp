@@ -3295,11 +3295,6 @@ parameters:
 			count: 1
 			path: app/Support/Modules.php
 
-		-
-			message: '#^Method App\\Support\\Modules\:\:forUser\(\) should return list\<string\> but returns array\<int, string\>\.$#'
-			identifier: return.type
-			count: 1
-			path: app/Support/Modules.php
 
 		-
 			message: '#^Parameter \#1 \$array of function array_values contains unresolvable type\.$#'

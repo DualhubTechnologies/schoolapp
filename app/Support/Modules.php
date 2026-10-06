@@ -2,6 +2,7 @@
 
 namespace App\Support;
 
+use App\Models\School;
 use App\Models\User;
 
 /**
@@ -42,6 +43,9 @@ class Modules
         'Parent' => [],
         'Student' => [],
     ];
+
+    /** Modules only primary schools have: the school van is a primary thing. */
+    public const PRIMARY_ONLY = ['transport'];
 
     /** Roles that always have every module. */
     public const FULL_ACCESS_ROLES = ['Super Admin', 'School Admin'];
@@ -144,21 +148,39 @@ class Modules
             return [];
         }
 
+        $available = static::availableKeys($user->school);
+
         if (static::hasFullAccess($user)) {
-            return array_keys(self::LIST);
+            return $available;
         }
 
         // Chosen by the administrator...
         if (is_array($user->modules)) {
-            return array_values(array_intersect($user->modules, array_keys(self::LIST)));
+            return array_values(array_intersect($user->modules, $available));
         }
 
         // ...or the role's defaults.
-        return collect($user->getRoleNames())
-            ->flatMap(fn ($role) => self::ROLE_DEFAULTS[$role] ?? [])
-            ->unique()
-            ->values()
-            ->all();
+        return array_values(array_intersect(
+            collect($user->getRoleNames())->flatMap(fn ($role) => self::ROLE_DEFAULTS[$role] ?? [])->unique()->all(),
+            $available,
+        ));
+    }
+
+    /**
+     * The modules a school can use: all of them, except the primary-only
+     * ones (transport) for a secondary school.
+     *
+     * @return list<string>
+     */
+    public static function availableKeys(?School $school = null): array
+    {
+        $keys = array_keys(self::LIST);
+
+        if ($school && $school->school_type === School::TYPE_SECONDARY) {
+            $keys = array_values(array_diff($keys, self::PRIMARY_ONLY));
+        }
+
+        return $keys;
     }
 
     public static function allows(string $module): bool
@@ -183,10 +205,16 @@ class Modules
         return $module === null || static::allows($module);
     }
 
-    /** @return array<string, string> key => "Label — what it covers" */
+    /**
+     * The modules an administrator can hand out in this school.
+     *
+     * @return array<string, string> key => "Label — what it covers"
+     */
     public static function options(): array
     {
-        return collect(self::LIST)->mapWithKeys(fn ($m, $key) => [$key => $m[0]])->all();
+        $available = static::availableKeys(auth()->user()?->school);
+
+        return collect(self::LIST)->only($available)->mapWithKeys(fn ($m, $key) => [$key => $m[0]])->all();
     }
 
     /** @return array<string, string> */

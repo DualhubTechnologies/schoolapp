@@ -133,7 +133,7 @@ class StartTermBilling extends Page
 
                 Toggle::make('bill_now')
                     ->label('Bill every learner now')
-                    ->helperText('Adds this term\'s fees, transport and discounts to each learner\'s account. Running it again never charges twice.'),
+                    ->helperText(fn (): string => (Modules::allows('transport') ? 'Adds this term\'s fees, transport and discounts' : 'Adds this term\'s fees and discounts').' to each learner\'s account. Running it again never charges twice.'),
             ]);
     }
 

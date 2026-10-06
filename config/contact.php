@@ -14,8 +14,10 @@ return [
 
     'email' => env('CONTACT_EMAIL', 'dualhubtechnologies@gmail.com'),
 
-    // Who builds and supports SchoolHub.
-    'company' => env('CONTACT_COMPANY', 'DualHub Technologies'),
+    // Who builds and supports SchoolHub, and who founded it: on the About
+    // page's team section, the footer and the terms.
+    'company' => env('CONTACT_COMPANY', 'FERO TECH SMC LIMITED'),
+    'founder' => env('CONTACT_FOUNDER', 'Adrian Mugizi'),
 
     // Where the team is and when it answers: on the Contact page and in the
     // footer, and in the details Google reads. Keep these the same as the

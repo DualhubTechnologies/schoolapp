@@ -32,6 +32,8 @@
         '@context' => 'https://schema.org',
         '@type' => 'Organization',
         'name' => 'SchoolHub',
+        'legalName' => config('contact.company'),
+        'founder' => ['@type' => 'Person', 'name' => config('contact.founder')],
         'url' => $site.'/',
         'logo' => $logo,
         'email' => config('contact.email'),

@@ -3907,8 +3907,34 @@ html .fi-body {
 .sh-mnav,
 .sh-install { display: none; }
 
+/* Phones and tablets: the sidebar opens as a drawer. Size it to the
+   visible screen (100vh is taller than the screen in mobile browsers,
+   which pushed the last menu items out of reach) and let its menu
+   scroll on its own. */
+@media (max-width: 1023px) {
+    .fi-sidebar {
+        min-height: 0 !important;
+        height: 100vh !important;
+        height: 100dvh !important;
+        max-height: 100dvh !important;
+        display: flex !important;
+        flex-direction: column;
+    }
+    .fi-sidebar-header { flex: none; }
+    .fi-sidebar-nav {
+        flex: 1 1 auto;
+        min-height: 0;
+        overflow-y: auto !important;
+        overscroll-behavior: contain;
+        -webkit-overflow-scrolling: touch;
+    }
+}
+
 @media (max-width: 768px) {
     body.fi-body { padding-bottom: calc(4.1rem + env(safe-area-inset-bottom)); }
+
+    /* Room under the last menu item so the bottom bar never covers it. */
+    .fi-sidebar-nav { padding-bottom: calc(6rem + env(safe-area-inset-bottom)) !important; }
 
     .sh-mnav {
         position: fixed;

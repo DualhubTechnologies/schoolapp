@@ -38,7 +38,7 @@ class StudentForm
                 // The learner at a glance: photo, class, status, parent,
                 // fees balance, profile completeness and quick actions.
                 View::make('filament.app.students.profile-summary')
-                    ->visible(fn (?Student $record): bool => $record?->exists ?? false)
+                    ->visible(fn (?Student $record): bool => $record !== null && $record->exists)
                     ->columnSpanFull(),
 
                 Grid::make(['default' => 1, 'xl' => 12])

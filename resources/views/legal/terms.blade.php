@@ -24,6 +24,7 @@
         'privacy' => 'How we look after data',
         'accounts' => 'Accounts and security',
         'use' => 'Acceptable use',
+        'ownership' => 'Ownership of SchoolHub',
         'service' => 'Availability and support',
         'leaving' => 'Leaving SchoolHub',
         'liability' => 'Our liability',
@@ -156,7 +157,7 @@
 
         <section id="about">
             <h2><span>{{ ++$n }}</span>About these terms</h2>
-            <p>SchoolHub is a school management system provided by <b>{{ $company }}</b> ("we", "us"). These terms apply to every school that uses SchoolHub ("the school", "you") and to everyone the school gives a login to.</p>
+            <p>SchoolHub is owned and operated by <b>{{ $company }}</b> ("we", "us"), headquartered in {{ $contact['location'] }}. These terms apply to every school that uses SchoolHub ("the school", "you") and to everyone the school gives a login to.</p>
             <p>By registering a school, or by using SchoolHub, you agree to these terms. If you do not agree, please do not register or use the service.</p>
         </section>
 
@@ -245,6 +246,12 @@
             <p>We may suspend an account that breaks these rules, and will tell the school why unless the law prevents us.</p>
         </section>
 
+        <section id="ownership">
+            <h2><span>{{ ++$n }}</span>Ownership of SchoolHub</h2>
+            <p>SchoolHub, including its software, design, text, logos and other content, is the intellectual property of <b>{{ $company }}</b>. Your subscription lets your school use SchoolHub; it does not transfer any ownership of it.</p>
+            <p>You are not allowed to copy, modify, distribute, resell or create derivative works from SchoolHub without our written permission. Your school's own records stay yours (see <a href="#data">Your school's data</a>).</p>
+        </section>
+
         <section id="service">
             <h2><span>{{ ++$n }}</span>Availability and support</h2>
             <ul>
@@ -289,6 +296,7 @@
             <p>Questions about these terms, your data, or a deletion request:</p>
             <div class="contact-card">
                 <span><b>{{ $company }}</b></span>
+                <span>Address: {{ $company }}, {{ $contact['location'] }}</span>
                 <span>Phone / WhatsApp: <a href="tel:+256{{ ltrim(preg_replace('/\D/', '', $contact['phone']), '0') }}">{{ $contact['phone'] }}</a></span>
                 <span>Email: <a href="mailto:{{ $contact['email'] }}">{{ $contact['email'] }}</a></span>
             </div>

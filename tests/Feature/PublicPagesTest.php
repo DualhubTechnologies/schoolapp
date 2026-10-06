@@ -39,6 +39,13 @@ it('shows the team: the founder, the company and a card to join', function () {
     $this->get('/about')->assertOk()->assertSee('/team');
 });
 
+it('says in the terms who owns SchoolHub and that it may not be copied', function () {
+    $this->get(route('filament.app.legal.terms'))->assertOk()
+        ->assertSee('SchoolHub is owned and operated by <b>FERO TECH SMC LIMITED</b>', false)
+        ->assertSee('Ownership of SchoolHub')
+        ->assertSee('Address: FERO TECH SMC LIMITED, Wakiso, Uganda');
+});
+
 it('tells Google the business phone, place and hours', function () {
     $this->get('/')->assertOk()
         ->assertSee('"telephone": "+256782863209"', false)

@@ -9,7 +9,7 @@
  */
 return [
 
-    'terms_version' => '2026-09-22',
+    'terms_version' => '2026-10-06',
 
     // How long a locked (unpaid) school's data is kept before it may be deleted.
     'locked_retention_months' => 12,

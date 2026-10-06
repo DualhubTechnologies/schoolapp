@@ -313,8 +313,11 @@ class SchoolForm
                     ->dehydrated(fn (?string $state): bool => filled($state))
                     ->required(fn (Get $get, ?School $record): bool => (bool) $get('schoolpay_enabled') && blank($record?->schoolpay_api_password)),
 
+                // Only once the API password is saved: until then there is
+                // nothing for SchoolPay to send payments to.
                 TextEntry::make('schoolpay_webhook')
                     ->label('Web hook address for the SchoolPay portal')
+                    ->visible(fn (?School $record): bool => filled($record?->schoolpay_api_password))
                     ->state(fn (?School $record): ?string => $record?->schoolPayWebhookUrl())
                     ->placeholder('Shown here once SchoolPay is turned on and saved.')
                     ->helperText('Paste this into "Web Hook URL" in your SchoolPay school portal and enable web hooks. Keep it private.')
@@ -324,6 +327,7 @@ class SchoolForm
 
                 TextEntry::make('schoolpay_status')
                     ->label('Last check with SchoolPay')
+                    ->visible(fn (?School $record): bool => filled($record?->schoolpay_api_password))
                     ->state(function (?School $record): ?string {
                         if (! $record) {
                             return null;

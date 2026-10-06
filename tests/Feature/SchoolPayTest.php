@@ -197,12 +197,15 @@ it('lets the school set up SchoolPay from its own Settings page', function () {
     Livewire::test(SchoolPaySettings::class)
         ->assertOk()
         ->assertSee('How to set it up')
+        ->assertSee('images/schoolpay-logo.png')
+        ->assertDontSee('Web hook address for the SchoolPay portal')
         ->set('data.schoolpay_enabled', true)
         ->set('data.schoolpay_school_code', '809')
         ->set('data.schoolpay_api_password', 'sp-new-secret')
         ->call('save')
         ->assertHasNoErrors()
-        ->assertNotified('SchoolPay settings saved');
+        ->assertNotified('SchoolPay settings saved')
+        ->assertSee('Web hook address for the SchoolPay portal');
 
     $school = $this->school->fresh();
 

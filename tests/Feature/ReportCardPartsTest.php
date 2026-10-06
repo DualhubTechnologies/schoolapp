@@ -1,5 +1,6 @@
 <?php
 
+use App\Filament\App\Resources\Assessments\AssessmentResource;
 use App\Filament\Pages\EnterMarks;
 use App\Models\AcademicYear;
 use App\Models\Assessment;
@@ -130,4 +131,15 @@ it('suggests O-Level weights of AOIs 20% and end of term 80%, with project work 
         ->and($weights['project'])->toBe(0)
         ->and($weights['eot'])->toBe(80)
         ->and(array_sum($weights))->toBe(100);
+});
+
+it('offers O-Level only the standard exam types: CA, end of term and project work', function () {
+    expect(array_keys(AssessmentResource::typeOptions('o_level')))->toBe(['eot', 'ca', 'project'])
+        ->and(array_keys(AssessmentResource::typeOptions('a_level')))->toContain('bot', 'mot', 'eot', 'other')
+        ->and(AssessmentResource::typeOptions('a_level'))->not->toHaveKey('topics');
+
+    // An O-Level Mid-Term made before the change keeps its type when edited.
+    $midTerm = Assessment::create(['school_id' => $this->school->id, 'term_id' => $this->term2->id, 'curriculum' => 'o_level', 'name' => 'Mid-Term', 'type' => 'mot', 'max_score' => 100, 'weight' => 0]);
+
+    expect(AssessmentResource::typeOptions('o_level', $midTerm))->toHaveKey('mot');
 });

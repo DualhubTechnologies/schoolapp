@@ -57,7 +57,7 @@ class AssessmentResource extends Resource
 
     public static function form(Schema $schema): Schema
     {
-        $applyDefaults = function (Get $get, Set $set) {
+        $applyDefaults = function (Get $get, Set $set): void {
             $type = $get('type');
             $curriculum = $get('curriculum') ?: 'primary';
 
@@ -92,14 +92,16 @@ class AssessmentResource extends Resource
                 ->placeholder('All classes')
                 ->native(false)
                 ->live()
-                ->afterStateUpdated($applyDefaults),
+                ->afterStateUpdated(function (Get $get, Set $set, ?Assessment $record) use ($applyDefaults): void {
+                    // e.g. a Mid-Term picked before switching to O-Level, which has none.
+                    if (! array_key_exists((string) $get('type'), self::typeOptions($get('curriculum'), $record))) {
+                        $set('type', null);
+                    }
+
+                    $applyDefaults($get, $set);
+                }),
             Select::make('type')
-                // Topic assessment is created by Assess Topics, never by hand.
-                ->options(fn (?Assessment $record): array => array_filter(
-                    (array) config('academics.assessment_types'),
-                    fn (string $type): bool => $type !== 'topics' || $record?->type === 'topics',
-                    ARRAY_FILTER_USE_KEY,
-                ))
+                ->options(fn (Get $get, ?Assessment $record): array => self::typeOptions($get('curriculum'), $record))
                 ->required()
                 ->native(false)
                 ->live()
@@ -130,6 +132,29 @@ class AssessmentResource extends Resource
             DatePicker::make('held_on')->label('Date')->native(false)->displayFormat('j M Y'),
             TextInput::make('sort_order')->label('Order on report card')->numeric()->default(0),
         ]);
+    }
+
+    /**
+     * The exam types a school can pick for a curriculum. Topic assessment is
+     * created by Assess Topics, never by hand, and O-Level follows the new
+     * curriculum (CA, End of Term, Project work). An existing exam always
+     * keeps its own type.
+     *
+     * @return array<string, string>
+     */
+    public static function typeOptions(?string $curriculum, ?Assessment $record = null): array
+    {
+        // "All classes" in a school that only runs O-Level is O-Level.
+        $keys = SchoolType::keys();
+        $curriculum ??= count($keys) === 1 ? $keys[0] : null;
+        $allowed = $curriculum ? config("academics.curriculum_assessment_types.{$curriculum}") : null;
+
+        return array_filter(
+            (array) config('academics.assessment_types'),
+            fn (string $type): bool => $type === $record?->type
+                || ($type !== 'topics' && ($allowed === null || in_array($type, (array) $allowed, true))),
+            ARRAY_FILTER_USE_KEY,
+        );
     }
 
     public static function table(Table $table): Table

@@ -62,6 +62,17 @@ return [
     ],
 
     /*
+     * The only exam types offered for a curriculum. The new lower-secondary
+     * standard assesses a term by continuous assessment / AOIs and the
+     * end-of-term exam, with project work reported on its own, so O-Level
+     * has no Beginning of Term, Mid-Term or other tests. Curricula not
+     * listed get every type.
+     */
+    'curriculum_assessment_types' => [
+        'o_level' => ['ca', 'eot', 'project'],
+    ],
+
+    /*
      * Suggested weights (% of the term result) when an exam is created.
      * New lower-secondary curriculum: continuous assessment / AOIs 20%,
      * end-of-term 80%, mirroring UNEB's 20/80 split at UCE. Project work

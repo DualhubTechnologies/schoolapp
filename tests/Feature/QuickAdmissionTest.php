@@ -94,7 +94,7 @@ it('opens the full profile after "Admit & add more details", saying what is miss
 
     Livewire::test(EditStudent::class, ['record' => $student->getRouteKey()])
         ->assertSee('Profile 33% complete')
-        ->assertSee('still to add: photo, date of birth, LIN, home address.');
+        ->assertSee('Still to add: photo, date of birth, LIN, home address.');
 });
 
 it('asks for a stream only when the class has streams', function () {

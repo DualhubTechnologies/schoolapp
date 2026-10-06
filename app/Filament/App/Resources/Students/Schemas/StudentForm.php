@@ -22,6 +22,7 @@ use Filament\Schemas\Components\Group;
 use Filament\Schemas\Components\Section;
 use Filament\Schemas\Components\Utilities\Get;
 use Filament\Schemas\Components\Utilities\Set;
+use Filament\Schemas\Components\View;
 use Filament\Schemas\Schema;
 use Illuminate\Database\Eloquent\Builder;
 
@@ -29,104 +30,74 @@ class StudentForm
 {
     public static function configure(Schema $schema): Schema
     {
+        $card = fn (string $name): array => ['class' => 'sh-student-card sh-student-card--'.$name];
+
         return $schema
             ->columns(1)
             ->components([
-                Grid::make([
-                    'default' => 1,
-                    'xl' => 12,
-                ])
-                    ->columnSpanFull()
-                    ->extraAttributes([
-                        'class' => 'sh-student-form sh-student-layout',
-                    ])
-                    ->schema([
-                        /*
-                         |----------------------------------------------------------
-                         | LEFT: Student identity
-                         |----------------------------------------------------------
-                         | This intentionally stays tall. The two sections on the
-                         | right stack beside it, so the first row is fully used.
-                         */
-                        Section::make('Student Identity')
-                            ->description('Personal details, identification and student photo.')
-                            ->extraAttributes([
-                                'class' => 'sh-student-card sh-student-card--identity sh-student-identity',
-                            ])
-                            ->columnSpan([
-                                'default' => 1,
-                                'xl' => 6,
-                            ])
-                            ->columns([
-                                'default' => 1,
-                                'md' => 6,
-                            ])
-                            ->schema(static::identityFields()),
+                // The learner at a glance: photo, class, status, parent,
+                // fees balance, profile completeness and quick actions.
+                View::make('filament.app.students.profile-summary')
+                    ->visible(fn (?Student $record): bool => $record?->exists ?? false)
+                    ->columnSpanFull(),
 
-                        /*
-                         |----------------------------------------------------------
-                         | RIGHT: two stacked cards
-                         |----------------------------------------------------------
-                         */
+                Grid::make(['default' => 1, 'xl' => 12])
+                    ->columnSpanFull()
+                    ->extraAttributes(['class' => 'sh-student-form sh-student-layout'])
+                    ->schema([
                         Group::make()
-                            ->columnSpan([
-                                'default' => 1,
-                                'xl' => 6,
-                            ])
-                            ->extraAttributes([
-                                'class' => 'sh-student-right-stack',
-                            ])
+                            ->columnSpan(['default' => 1, 'xl' => 7])
                             ->schema([
-                                Section::make('Class and Enrollment')
-                                    ->description('Academic placement and school grouping.')
-                                    ->extraAttributes([
-                                        'class' => 'sh-student-card sh-student-card--enrollment',
-                                    ])
-                                    ->columns([
-                                        'default' => 1,
-                                        'md' => 2,
-                                    ])
+                                Section::make('Personal details')
+                                    ->description('Photo, name and personal information.')
+                                    ->icon('heroicon-o-user')
+                                    ->extraAttributes($card('identity'))
+                                    ->columns(['default' => 1, 'md' => 3])
+                                    ->schema(static::personalFields()),
+
+                                Section::make('Admission and identification')
+                                    ->description('Registration number, status and official identifiers.')
+                                    ->icon('heroicon-o-identification')
+                                    ->extraAttributes($card('admission'))
+                                    ->columns(['default' => 1, 'sm' => 2, 'lg' => 3])
+                                    ->schema(static::admissionFields()),
+                            ]),
+
+                        Group::make()
+                            ->columnSpan(['default' => 1, 'xl' => 5])
+                            ->schema([
+                                Section::make('Class and enrolment')
+                                    ->description('Class, stream, subjects, residency and house.')
+                                    ->icon('heroicon-o-academic-cap')
+                                    ->extraAttributes($card('enrollment'))
+                                    ->columns(['default' => 1, 'md' => 2])
                                     ->schema(static::enrollmentFields()),
 
-                                Section::make('Parent and Contact Details')
-                                    ->description('Guardian and direct student contact information.')
-                                    ->extraAttributes([
-                                        'class' => 'sh-student-card sh-student-card--contact',
-                                    ])
-                                    ->columns([
-                                        'default' => 1,
-                                        'md' => 2,
-                                    ])
+                                Section::make('Parent and contact')
+                                    ->description('Parent or guardian, and the learner\'s own contacts.')
+                                    ->icon('heroicon-o-phone')
+                                    ->extraAttributes($card('contact'))
+                                    ->columns(['default' => 1, 'md' => 2])
                                     ->schema(static::contactFields()),
                             ]),
 
-                        /*
-                         |----------------------------------------------------------
-                         | BOTTOM: full width
-                         |----------------------------------------------------------
-                         */
-                        Section::make('Address and Student Welfare')
-                            ->description('Home address and information staff may need for student safety.')
-                            ->extraAttributes([
-                                'class' => 'sh-student-card sh-student-card--welfare',
-                            ])
+                        Section::make('Address and welfare')
+                            ->description('Home address and what staff may need to know for the learner\'s safety.')
+                            ->icon('heroicon-o-heart')
+                            ->extraAttributes($card('welfare'))
                             ->columnSpanFull()
-                            ->columns([
-                                'default' => 1,
-                                'md' => 2,
-                            ])
+                            ->columns(['default' => 1, 'md' => 2])
                             ->schema(static::welfareFields()),
                     ]),
             ]);
     }
 
     /**
-     * Photo, name, identifiers. Used by the single-page edit form and by
-     * the first step of the admission wizard.
+     * Photo, name and personal details.
      *
      * @return array<int, Component>
      */
-    public static function identityFields(): array
+    public static function personalFields(): array
     {
         return [
             ImageShrinker::noBrowserResize(FileUpload::make('photo')
@@ -148,19 +119,10 @@ class StudentForm
                 ->extraFieldWrapperAttributes([
                     'class' => 'sh-student-photo',
                 ])
-                ->columnSpan([
-                    'default' => 1,
-                    'md' => 2,
-                ])),
+                ->columnSpan(['default' => 1, 'md' => 1])),
 
-            Grid::make([
-                'default' => 1,
-                'sm' => 2,
-            ])
-                ->columnSpan([
-                    'default' => 1,
-                    'md' => 4,
-                ])
+            Grid::make(['default' => 1, 'sm' => 2])
+                ->columnSpan(['default' => 1, 'md' => 2])
                 ->schema([
                     TextInput::make('first_name')
                         ->label('First name')
@@ -174,8 +136,6 @@ class StudentForm
                         ->required()
                         ->maxLength(100),
 
-                    static::admissionNumberField(),
-
                     Select::make('gender')
                         ->label('Sex')
                         ->options(Student::GENDERS)
@@ -186,43 +146,55 @@ class StudentForm
                         ->label('Birth date')
                         ->maxDate(now()),
 
-                    DatePicker::make('admission_date')
-                        ->label('Admission date')
-                        ->default(now()),
-
-                    TextInput::make('lin')
-                        ->hintIcon('heroicon-m-question-mark-circle', tooltip: "Learner Identification Number from the Ministry of Education's EMIS system.")
-                        ->label('LIN')
-                        ->placeholder('Learner Identification Number')
-                        ->maxLength(100),
-
-                    TextInput::make('schoolpay_code')
-                        ->label('SchoolPay code')
-                        ->hintIcon('heroicon-m-question-mark-circle', tooltip: 'Only if your school uses SchoolPay: the code parents pay fees to for this learner. It is shown on fee reminders, letters and the parent page.')
-                        ->placeholder('e.g. 1004567890')
-                        ->maxLength(30),
-
                     TextInput::make('nin')
                         ->hintIcon('heroicon-m-question-mark-circle', tooltip: 'National Identification Number, if the learner has a national ID.')
                         ->label('National ID')
                         ->maxLength(100),
-
-                    Select::make('status')
-                        ->label('Status')
-                        ->options(Student::STATUSES)
-                        ->default('active')
-                        ->native(false)
-                        ->required(),
-
-                    // Only the platform owner picks a school; everyone else's
-                    // students belong to their own school (set on create).
-                    Select::make('school_id')
-                        ->label('School')
-                        ->relationship('school', 'name')
-                        ->default(fn () => auth()->user()?->school_id)
-                        ->visible(fn () => auth()->user()?->hasRole('Super Admin') ?? false)
-                        ->required(),
                 ]),
+        ];
+    }
+
+    /**
+     * Registration number, admission date, status and official identifiers.
+     *
+     * @return array<int, Component>
+     */
+    public static function admissionFields(): array
+    {
+        return [
+            static::admissionNumberField(),
+
+            DatePicker::make('admission_date')
+                ->label('Admission date')
+                ->default(now()),
+
+            Select::make('status')
+                ->label('Status')
+                ->options(Student::STATUSES)
+                ->default('active')
+                ->native(false)
+                ->required(),
+
+            TextInput::make('lin')
+                ->hintIcon('heroicon-m-question-mark-circle', tooltip: "Learner Identification Number from the Ministry of Education's EMIS system.")
+                ->label('LIN')
+                ->placeholder('Learner Identification Number')
+                ->maxLength(100),
+
+            TextInput::make('schoolpay_code')
+                ->label('SchoolPay code')
+                ->hintIcon('heroicon-m-question-mark-circle', tooltip: 'Only if your school uses SchoolPay: the code parents pay fees to for this learner. It is shown on fee reminders, letters and the parent page.')
+                ->placeholder('e.g. 1004567890')
+                ->maxLength(30),
+
+            // Only the platform owner picks a school; everyone else's
+            // students belong to their own school (set on create).
+            Select::make('school_id')
+                ->label('School')
+                ->relationship('school', 'name')
+                ->default(fn () => auth()->user()?->school_id)
+                ->visible(fn () => auth()->user()?->hasRole('Super Admin') ?? false)
+                ->required(),
         ];
     }
 

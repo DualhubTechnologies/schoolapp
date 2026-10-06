@@ -116,7 +116,11 @@ class AssessmentResource extends Resource
                 ->minValue(1)
                 ->default(100)
                 ->required()
-                ->helperText('New curriculum Activities of Integration are usually scored out of 3.'),
+                ->helperText(fn (Get $get): string => match ($get('type')) {
+                    'eot' => 'Mark out of whatever the paper is set out of, e.g. 100 or 80. Its weight below decides how much it counts.',
+                    'project' => 'Project work is marked out of 10.',
+                    default => 'New curriculum Activities of Integration are usually scored out of 3.',
+                }),
             TextInput::make('weight')
                 ->hintIcon('heroicon-m-question-mark-circle', tooltip: "How much this exam counts in the term's final mark, e.g. BOT 20%, MOT 30%, EOT 50%.")
                 ->label('Weight in term result')

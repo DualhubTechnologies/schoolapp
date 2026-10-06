@@ -441,18 +441,30 @@
 
                 // Room to spare: taller subject rows, more space to write the
                 // comments, then even gaps between the parts; whatever is
-                // left goes above the comments and signatures.
+                // left goes above the comments and signatures. Scaled back
+                // together if that is more than the page holds.
+                const spare = room - height;
                 const rows = fit.querySelectorAll('table.marks:not(.projects) tbody tr').length || 1;
-                fit.style.setProperty('--rc-row-extra', Math.min((room - height) * 0.35 / rows / 2, 9) + 'px');
                 const lines = fit.querySelectorAll('.comment .line').length || 1;
-                height = needed();
-                fit.style.setProperty('--rc-line-extra', Math.max(0, Math.min((room - height) * 0.35 / lines, 40)) + 'px');
-                height = needed();
-                fit.style.rowGap = Math.max(0, Math.min((room - height) / Math.max(fit.children.length - 1, 1), 14)) + 'px';
-                if (needed() > room) {
-                    fit.style.rowGap = '';
-                    fit.style.setProperty('--rc-row-extra', '0px');
-                    fit.style.setProperty('--rc-line-extra', '0px');
+                const gaps = Math.max(fit.children.length - 1, 1);
+                const share = (part) => {
+                    fit.style.setProperty('--rc-row-extra', Math.min(spare * 0.35 * part / rows / 2, 9) + 'px');
+                    fit.style.setProperty('--rc-line-extra', Math.min(spare * 0.25 * part / lines, 40) + 'px');
+                    fit.style.rowGap = Math.min(spare * 0.2 * part / gaps, 14) + 'px';
+                    return needed() <= room;
+                };
+                if (! share(1)) {
+                    let low = 0;
+                    let high = 1;
+                    for (let i = 0; i < 10; i++) {
+                        const part = (low + high) / 2;
+                        if (share(part)) {
+                            low = part;
+                        } else {
+                            high = part;
+                        }
+                    }
+                    share(low);
                 }
                 fit.style.flex = '';
                 fit.style.height = '';

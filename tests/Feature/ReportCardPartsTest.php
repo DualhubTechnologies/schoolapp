@@ -93,6 +93,12 @@ it('gives O-Level exams the standard weight, whatever is typed', function () {
         ->and((float) $eot->weight)->toBe(80.0);
 });
 
+it('prints a project\'s remark with the project, not as the subject\'s remark', function () {
+    $agric = app(ResultsCalculator::class)->forClass($this->class, $this->term2)['rows']->first()['subjects'][$this->agric->id];
+
+    expect($agric['comment'])->not->toBe('Well kept hives');
+});
+
 it('keeps project work out of the term result, whatever weight is typed', function () {
     expect((float) Assessment::where('type', 'project')->sole()->weight)->toBe(0.0);
 });

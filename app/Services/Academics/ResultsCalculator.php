@@ -170,7 +170,10 @@ class ResultsCalculator
                 foreach ($paperMarks as $paper => $mark) {
                     $papers[$paper] = $mark->is_absent ? null : $mark->score;
                     $absent = $absent && $mark->is_absent;
-                    $comment = $mark->comment ?: $comment;
+                    // A project's remark is printed with the project, not the subject.
+                    if ($assessment->type !== 'project') {
+                        $comment = $mark->comment ?: $comment;
+                    }
 
                     if ($mark->score !== null) {
                         $sum += (float) $mark->score;

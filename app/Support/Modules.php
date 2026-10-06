@@ -112,6 +112,7 @@ class Modules
         'GradingScaleResource' => 'academics',
         // Settings
         'SchoolProfile' => 'settings',
+        'SchoolPaySettings' => 'settings',
         'UserResource' => 'settings',
         'AuditTrailResource' => 'settings',
     ];

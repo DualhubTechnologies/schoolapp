@@ -2,6 +2,7 @@
 
 namespace App\Filament\Admin\Resources\Schools\Schemas;
 
+use App\Filament\Pages\SchoolProfile;
 use App\Models\School;
 use App\Services\ParentMessages;
 use App\Support\Edition;
@@ -233,65 +234,10 @@ class SchoolForm
                             ->required(),
                     ]),
 
-                // Parents pay to the learner's SchoolPay code; SchoolHub
-                // records each payment itself (App\Services\SchoolPay).
-                Section::make('SchoolPay')
-                    ->description('If parents pay fees through SchoolPay, SchoolHub can record each payment for you. Ask SchoolPay (support@schoolpay.co.ug) for your API password.')
-                    ->icon('heroicon-o-credit-card')
-                    ->columnSpanFull()
-                    ->columns(['default' => 1, 'md' => 2])
-                    ->collapsible()
-                    ->hidden(fn (): bool => Edition::isDesktop())
-                    ->schema([
-                        Toggle::make('schoolpay_enabled')
-                            ->label('Record SchoolPay payments automatically')
-                            ->live()
-                            ->columnSpanFull(),
-
-                        TextInput::make('schoolpay_school_code')
-                            ->label('SchoolPay school code')
-                            ->helperText('Your school\'s number on SchoolPay.')
-                            ->maxLength(20)
-                            ->regex('/^\d+$/')
-                            ->validationMessages(['regex' => 'Digits only, as SchoolPay gives it.'])
-                            ->required(fn (Get $get): bool => (bool) $get('schoolpay_enabled')),
-
-                        TextInput::make('schoolpay_api_password')
-                            ->label('SchoolPay API password')
-                            ->password()
-                            ->autocomplete('new-password')
-                            ->maxLength(255)
-                            ->placeholder(fn (?School $record): ?string => filled($record?->schoolpay_api_password) ? 'Saved. Type a new one only to change it' : null)
-                            ->helperText('Not your SchoolPay login password: the API password SchoolPay gives the school.')
-                            ->dehydrated(fn (?string $state): bool => filled($state))
-                            ->required(fn (Get $get, ?School $record): bool => (bool) $get('schoolpay_enabled') && blank($record?->schoolpay_api_password)),
-
-                        TextEntry::make('schoolpay_webhook')
-                            ->label('Web hook address for the SchoolPay portal')
-                            ->state(fn (?School $record): ?string => $record?->schoolPayWebhookUrl())
-                            ->placeholder('Shown here once SchoolPay is turned on and saved.')
-                            ->helperText('Paste this into "Web Hook URL" in your SchoolPay school portal and enable web hooks. Keep it private.')
-                            ->fontFamily('mono')
-                            ->copyable()
-                            ->columnSpanFull(),
-
-                        TextEntry::make('schoolpay_status')
-                            ->label('Last check with SchoolPay')
-                            ->state(function (?School $record): ?string {
-                                if (! $record) {
-                                    return null;
-                                }
-
-                                if (filled($record->schoolpay_sync_error)) {
-                                    return 'Failed: '.$record->schoolpay_sync_error;
-                                }
-
-                                return $record->schoolpay_synced_at ? 'OK, '.$record->schoolpay_synced_at->diffForHumans() : null;
-                            })
-                            ->placeholder('Not yet. SchoolHub checks every morning and evening.')
-                            ->color(fn (?School $record): ?string => filled($record?->schoolpay_sync_error) ? 'danger' : null)
-                            ->columnSpanFull(),
-                    ]),
+                // On its own page (Settings -> SchoolPay) for schools; here
+                // for the platform owner editing a school.
+                self::schoolPaySection()
+                    ->hidden(fn ($livewire): bool => Edition::isDesktop() || $livewire instanceof SchoolProfile),
 
                 Section::make('Branding')
                     ->icon('heroicon-o-identification')
@@ -326,6 +272,72 @@ class SchoolForm
                             ->acceptedFileTypes(['image/jpeg', 'image/png', 'image/webp'])
                             ->maxSize(10240),
                     ]),
+            ]);
+    }
+
+    /**
+     * SchoolPay: parents pay to the learner's SchoolPay code and SchoolHub
+     * records each payment itself (App\Services\SchoolPay). Used by the
+     * school's own SchoolPay page and by the platform owner's school form.
+     */
+    public static function schoolPaySection(): Section
+    {
+        return Section::make('SchoolPay')
+            ->description('If parents pay fees through SchoolPay, SchoolHub can record each payment for you. Ask SchoolPay (support@schoolpay.co.ug) for your API password.')
+            ->icon('heroicon-o-credit-card')
+            ->columnSpanFull()
+            ->columns(['default' => 1, 'md' => 2])
+            ->collapsible()
+            ->hidden(fn (): bool => Edition::isDesktop())
+            ->schema([
+                Toggle::make('schoolpay_enabled')
+                    ->label('Record SchoolPay payments automatically')
+                    ->live()
+                    ->columnSpanFull(),
+
+                TextInput::make('schoolpay_school_code')
+                    ->label('SchoolPay school code')
+                    ->helperText('Your school\'s number on SchoolPay.')
+                    ->maxLength(20)
+                    ->regex('/^\d+$/')
+                    ->validationMessages(['regex' => 'Digits only, as SchoolPay gives it.'])
+                    ->required(fn (Get $get): bool => (bool) $get('schoolpay_enabled')),
+
+                TextInput::make('schoolpay_api_password')
+                    ->label('SchoolPay API password')
+                    ->password()
+                    ->autocomplete('new-password')
+                    ->maxLength(255)
+                    ->placeholder(fn (?School $record): ?string => filled($record?->schoolpay_api_password) ? 'Saved. Type a new one only to change it' : null)
+                    ->helperText('Not your SchoolPay login password: the API password SchoolPay gives the school.')
+                    ->dehydrated(fn (?string $state): bool => filled($state))
+                    ->required(fn (Get $get, ?School $record): bool => (bool) $get('schoolpay_enabled') && blank($record?->schoolpay_api_password)),
+
+                TextEntry::make('schoolpay_webhook')
+                    ->label('Web hook address for the SchoolPay portal')
+                    ->state(fn (?School $record): ?string => $record?->schoolPayWebhookUrl())
+                    ->placeholder('Shown here once SchoolPay is turned on and saved.')
+                    ->helperText('Paste this into "Web Hook URL" in your SchoolPay school portal and enable web hooks. Keep it private.')
+                    ->fontFamily('mono')
+                    ->copyable()
+                    ->columnSpanFull(),
+
+                TextEntry::make('schoolpay_status')
+                    ->label('Last check with SchoolPay')
+                    ->state(function (?School $record): ?string {
+                        if (! $record) {
+                            return null;
+                        }
+
+                        if (filled($record->schoolpay_sync_error)) {
+                            return 'Failed: '.$record->schoolpay_sync_error;
+                        }
+
+                        return $record->schoolpay_synced_at ? 'OK, '.$record->schoolpay_synced_at->diffForHumans() : null;
+                    })
+                    ->placeholder('Not yet. SchoolHub checks every morning and evening.')
+                    ->color(fn (?School $record): ?string => filled($record?->schoolpay_sync_error) ? 'danger' : null)
+                    ->columnSpanFull(),
             ]);
     }
 }

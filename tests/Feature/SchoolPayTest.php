@@ -1,6 +1,7 @@
 <?php
 
 use App\Filament\App\Resources\SchoolPayTransactions\Pages\ListSchoolPayTransactions;
+use App\Filament\Pages\SchoolPaySettings;
 use App\Models\AcademicYear;
 use App\Models\School;
 use App\Models\SchoolPayTransaction;
@@ -186,4 +187,39 @@ it('notes on the school when SchoolPay refuses the check', function () {
         ->toThrow(RuntimeException::class, 'Invalid request hash');
 
     expect($this->school->fresh()->schoolpay_sync_error)->toContain('Invalid request hash');
+});
+
+it('lets the school set up SchoolPay from its own Settings page', function () {
+    Filament::setCurrentPanel('app');
+    $this->school->update(['schoolpay_enabled' => false, 'schoolpay_school_code' => null, 'schoolpay_api_password' => null]);
+    $this->actingAs(User::factory()->create(['school_id' => $this->school->id])->assignRole('School Admin'));
+
+    Livewire::test(SchoolPaySettings::class)
+        ->assertOk()
+        ->assertSee('How to set it up')
+        ->set('data.schoolpay_enabled', true)
+        ->set('data.schoolpay_school_code', '809')
+        ->set('data.schoolpay_api_password', 'sp-new-secret')
+        ->call('save')
+        ->assertHasNoErrors()
+        ->assertNotified('SchoolPay settings saved');
+
+    $school = $this->school->fresh();
+
+    expect($school->schoolpay_enabled)->toBeTrue()
+        ->and($school->schoolpay_school_code)->toBe('809')
+        ->and($school->schoolpay_api_password)->toBe('sp-new-secret')
+        ->and($school->schoolPayWebhookUrl())->not->toBeNull();
+
+    // Saving again without retyping keeps the password.
+    Livewire::test(SchoolPaySettings::class)->call('save')->assertHasNoErrors();
+
+    expect($this->school->fresh()->schoolpay_api_password)->toBe('sp-new-secret');
+});
+
+it('keeps the SchoolPay page from staff without Settings', function () {
+    Filament::setCurrentPanel('app');
+    $this->actingAs(User::factory()->create(['school_id' => $this->school->id])->assignRole('Teacher'));
+
+    $this->get(SchoolPaySettings::getUrl())->assertForbidden();
 });

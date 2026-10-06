@@ -32,9 +32,18 @@
 @section('title', "Report cards — {$class->name} — {$term->label()}")
 
 @section('styles')
-    @page { size: A4; margin: 10mm; }
+    /* One report card = one A4 page. The page margin is the sheet's padding,
+       so the comments, signatures and key always sit at the foot of the page,
+       and a long report is scaled down to fit (see the script below). */
+    @page { size: A4; margin: 0; }
     .sheet { --rc-primary: {{ $style['primary'] }}; --rc-accent: {{ $style['accent'] }}; --rc-on-primary: {{ $style['onPrimary'] }}; }
-    .sheet { max-width: 210mm; padding: 1.4rem 1.6rem; font-size: 12px; }
+    .sheet { width: 210mm; max-width: 100%; height: 297mm; padding: 11mm 12mm; font-size: 12px; display: flex; flex-direction: column; }
+    .rc-fit { flex: 1; display: flex; flex-direction: column; min-height: 0; }
+    .rc-bottom { margin-top: auto; padding-top: .6rem; }
+    /* Spare room on a short report, shared out by the script below. */
+    .rc-fit table.marks:not(.projects) tbody td { padding-top: calc(.32rem + var(--rc-row-extra, 0px)); padding-bottom: calc(.32rem + var(--rc-row-extra, 0px)); }
+    .rc-fit .comment .line { min-height: calc(2.2rem + var(--rc-line-extra, 0px)); }
+    @media print { .sheet { width: 210mm; max-width: none; height: 297mm; } }
     .sheet.font-serif { font-family: Georgia, "Times New Roman", Times, serif; }
     .sheet.border-line { outline: 2px solid var(--rc-primary); outline-offset: -8px; }
     .sheet.border-double { outline: 5px double var(--rc-primary); outline-offset: -9px; }
@@ -96,7 +105,7 @@
     .design-modern .box { border-left: 4px solid var(--rc-accent); }
 
     /* Compact: smaller type and spacing so long subject lists fit one page. */
-    .sheet.design-compact { font-size: 10.5px; padding: 1rem 1.2rem; }
+    .sheet.design-compact { font-size: 10.5px; padding: 9mm 10mm; }
     .design-compact .rc-top { padding-bottom: .45rem; }
     .design-compact .rc-top img.logo, .design-compact .rc-top .photo { width: 3.3rem; height: 3.6rem; }
     .design-compact .rc-top h1 { font-size: 1.05rem; }
@@ -127,6 +136,7 @@
             @if ($template->watermark && $logo)
                 <div class="watermark"><img src="{{ $logo }}" alt=""></div>
             @endif
+            <div class="rc-fit">
             <div class="rc-top">
                 @if ($logo)<img class="logo" src="{{ $logo }}" alt="">@endif
                 <div class="who">
@@ -343,6 +353,7 @@
                 </div>
             @endif
 
+            <div class="rc-bottom">
             @if ($show('class_teacher_comment'))
                 <div class="comment">
                     <div class="label">Class teacher's comment</div>
@@ -380,6 +391,76 @@
             @if ($template->footer_text)
                 <div class="rc-footer">{{ $template->footer_text }}</div>
             @endif
+            </div>
+            </div>
         </div>
     @endforeach
+
+    <script>
+        // Fit each report card on one A4 page: a short one gets more room
+        // between rows, a long one is scaled down until it fits. The bottom
+        // part (comments, signatures, key) stays at the foot either way.
+        function fitReportCards() {
+            document.querySelectorAll('.sheet').forEach((sheet) => {
+                const fit = sheet.querySelector('.rc-fit');
+                if (! fit) {
+                    return;
+                }
+                const style = getComputedStyle(sheet);
+                const room = sheet.clientHeight - parseFloat(style.paddingTop) - parseFloat(style.paddingBottom);
+                const needed = () => {
+                    fit.style.flex = 'none';
+                    fit.style.height = 'auto';
+                    return fit.scrollHeight;
+                };
+
+                fit.style.zoom = 1;
+                fit.style.rowGap = '';
+                fit.style.setProperty('--rc-row-extra', '0px');
+                fit.style.setProperty('--rc-line-extra', '0px');
+
+                let height = needed();
+                if (height > room) {
+                    // Too long: the largest scale at which the whole card
+                    // fits the page (text wraps less as it shrinks, so search).
+                    let low = 0.3;
+                    let high = 1;
+                    for (let i = 0; i < 12; i++) {
+                        const zoom = (low + high) / 2;
+                        fit.style.zoom = zoom;
+                        if (needed() * zoom <= room) {
+                            low = zoom;
+                        } else {
+                            high = zoom;
+                        }
+                    }
+                    fit.style.zoom = low;
+                    fit.style.height = (room / low) + 'px';
+                    return;
+                }
+
+                // Room to spare: taller subject rows, more space to write the
+                // comments, then even gaps between the parts; whatever is
+                // left goes above the comments and signatures.
+                const rows = fit.querySelectorAll('table.marks:not(.projects) tbody tr').length || 1;
+                fit.style.setProperty('--rc-row-extra', Math.min((room - height) * 0.35 / rows / 2, 9) + 'px');
+                const lines = fit.querySelectorAll('.comment .line').length || 1;
+                height = needed();
+                fit.style.setProperty('--rc-line-extra', Math.max(0, Math.min((room - height) * 0.35 / lines, 40)) + 'px');
+                height = needed();
+                fit.style.rowGap = Math.max(0, Math.min((room - height) / Math.max(fit.children.length - 1, 1), 14)) + 'px';
+                if (needed() > room) {
+                    fit.style.rowGap = '';
+                    fit.style.setProperty('--rc-row-extra', '0px');
+                    fit.style.setProperty('--rc-line-extra', '0px');
+                }
+                fit.style.flex = '';
+                fit.style.height = '';
+            });
+        }
+        fitReportCards();
+        window.addEventListener('load', fitReportCards);
+        window.addEventListener('beforeprint', fitReportCards);
+        document.fonts?.ready.then(fitReportCards);
+    </script>
 @endsection

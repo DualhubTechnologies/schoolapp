@@ -430,12 +430,17 @@
         .prose ul.ticks { margin-top: 1rem; }
         .prose a { color: var(--blue-600); font-weight: 600; text-decoration: underline; text-underline-offset: 2px; }
         .info-grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: 1.25rem; }
-        .team-grid { display: flex; flex-wrap: wrap; justify-content: center; gap: 1.25rem; max-width: 46rem; margin: 1.75rem auto 0; }
-        .team-card { display: flex; flex-direction: column; align-items: center; text-align: center; width: 100%; max-width: 16rem; padding: 1.75rem 1.5rem; border: 1px solid var(--slate-200); border-radius: var(--radius-lg); background: #fff; }
-        .team-avatar { display: grid; place-items: center; width: 4.5rem; height: 4.5rem; border-radius: 50%; background: var(--blue-600); color: #fff; font-size: 1.5rem; font-weight: 800; letter-spacing: .02em; }
-        .team-card b { margin-top: 1rem; font-size: 1.125rem; color: var(--slate-900); }
-        .team-role { margin-top: .25rem; font-size: .9375rem; font-weight: 600; color: var(--blue-600); }
-        .team-org { margin-top: .25rem; font-size: .875rem; color: var(--slate-500); }
+        .team-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(13rem, 16rem)); justify-content: center; gap: 2rem; }
+        .team-card { display: flex; flex-direction: column; align-items: center; text-align: center; padding: 1rem 1rem 1.75rem; border-radius: var(--radius-lg); background: var(--slate-100); }
+        .team-photo { display: grid; place-items: end center; width: 100%; max-width: 12.25rem; aspect-ratio: 1; overflow: hidden; border-radius: 50%; background: #e0e3fb; color: #8f96c8; }
+        .team-photo img { width: 100%; height: 100%; object-fit: cover; }
+        .team-photo svg { width: 80%; height: 80%; }
+        .team-card h2 { margin-top: 1.25rem; font-size: 1rem; font-weight: 800; color: var(--slate-900); }
+        .team-role { margin-top: .25rem; font-size: .9375rem; line-height: 1.4; color: var(--blue-600); }
+        .team-links { display: flex; gap: .875rem; justify-content: center; margin-top: auto; padding-top: 1.25rem; }
+        .team-links a:not(.btn) { display: inline-flex; color: var(--slate-700); }
+        .team-links a:not(.btn):hover { color: var(--blue-600); }
+        .team-links svg { width: 1.25rem; height: 1.25rem; }
         .info { padding: 1.5rem; border: 1px solid var(--slate-200); border-radius: var(--radius-lg); background: #fff; }
         .info small { display: block; font-size: .8125rem; font-weight: 600; color: var(--slate-500); text-transform: uppercase; letter-spacing: .04em; }
         .info b { display: block; margin-top: .4rem; font-size: 1.125rem; color: var(--slate-900); }

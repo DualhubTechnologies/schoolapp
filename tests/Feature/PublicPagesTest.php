@@ -30,6 +30,15 @@ it('shows the phone, location and opening hours on the Contact page', function (
         ->assertSee('Request a demo');
 });
 
+it('shows the team: the founder, the company and a card to join', function () {
+    $this->get('/team')->assertOk()
+        ->assertSee('Adrian Mugizi')
+        ->assertSee('Founder, FERO TECH SMC LIMITED &amp; SchoolHub.', false)
+        ->assertSee('You — Join us');
+
+    $this->get('/about')->assertOk()->assertSee('/team');
+});
+
 it('tells Google the business phone, place and hours', function () {
     $this->get('/')->assertOk()
         ->assertSee('"telephone": "+256782863209"', false)

@@ -17,6 +17,7 @@ class PublicSite
         'features' => ['Features', 'Features — School management for Ugandan schools', 'Students, fees, exams and report cards, ID cards, attendance, payroll and finance in one system, with the calculations done for you.'],
         'pricing' => ['Pricing', 'Pricing — Simple per-term plans', 'SchoolHub plans by number of learners, paid per term or per year in Uganda shillings. Every plan includes every module and starts with a free trial.'],
         'about' => ['About', 'About SchoolHub — Made in Uganda for Ugandan schools', 'Who builds SchoolHub, why, and how we look after your school\'s data.'],
+        'team' => ['Team', 'SchoolHub Team — The people behind SchoolHub', 'Meet the team at FERO TECH SMC LIMITED who build SchoolHub and support Ugandan schools.'],
         'help' => ['Help', 'Help — Getting started and common questions', 'How to set up SchoolHub, import learners, and answers to common questions from schools.'],
         'contact' => ['Contact', 'Contact SchoolHub — Call, WhatsApp or book a demo', 'Call or WhatsApp the SchoolHub team, visit us in Wakiso, or book a free demo for your school.'],
     ];

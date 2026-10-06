@@ -23,23 +23,8 @@
                 <p>SchoolHub is developed and supported by {{ $contact['company'] }}, based in {{ $contact['location'] }}. We set schools up, train their staff and answer their questions by phone and WhatsApp ({{ $contact['hours'] }}).</p>
 
                 <h2>Our team</h2>
-                <p>The people behind SchoolHub.</p>
-            </div>
+                <p>Meet the people who build SchoolHub and look after your school: <a href="{{ route('filament.app.site.page', 'team') }}">the SchoolHub team</a>.</p>
 
-            @php
-                $founder = (string) config('contact.founder');
-                $initials = collect(preg_split('/\s+/', trim($founder)))->map(fn ($word) => mb_substr($word, 0, 1))->take(2)->implode('');
-            @endphp
-            <div class="team-grid">
-                <div class="team-card">
-                    <span class="team-avatar" aria-hidden="true">{{ $initials }}</span>
-                    <b>{{ $founder }}</b>
-                    <span class="team-role">Founder</span>
-                    <span class="team-org">{{ $contact['company'] }}</span>
-                </div>
-            </div>
-
-            <div class="prose" style="margin-top: 2.5rem">
                 <h2>How we look after your school's data</h2>
                 <p>Your school owns its data. Under Uganda's Data Protection and Privacy Act, 2019, the school decides how its learners' and staff records are used, and we look after them on the school's behalf: access by role, every change recorded, and nightly backups. Read the details in <a href="{{ route('filament.app.legal.terms') }}#privacy">How we look after data</a>.</p>
             </div>

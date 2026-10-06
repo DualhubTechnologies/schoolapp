@@ -19,6 +19,21 @@ return [
     'company' => env('CONTACT_COMPANY', 'FERO TECH SMC LIMITED'),
     'founder' => env('CONTACT_FOUNDER', 'Adrian Mugizi'),
 
+    // The Team page, in order. 'photo' is a file in public/images/team
+    // (square, at least 400px), or null for a silhouette. Social links and
+    // email are optional; each one shows as an icon.
+    'team' => [
+        [
+            'name' => env('CONTACT_FOUNDER', 'Adrian Mugizi'),
+            'role' => 'Founder, FERO TECH SMC LIMITED & SchoolHub.',
+            'photo' => null,
+            'linkedin' => null,
+            'facebook' => null,
+            'x' => null,
+            'email' => env('CONTACT_EMAIL', 'dualhubtechnologies@gmail.com'),
+        ],
+    ],
+
     // Where the team is and when it answers: on the Contact page and in the
     // footer, and in the details Google reads. Keep these the same as the
     // Google Business Profile so Google matches the two.

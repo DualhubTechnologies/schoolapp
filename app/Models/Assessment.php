@@ -16,7 +16,6 @@ class Assessment extends Model
     /**
      * Project work is reported on its own (marked out of 10, printed in the
      * report card's Project work section), never weighted in the term result.
-     * O-Level Activities of Integration are entered as a percentage.
      */
     protected static function booted(): void
     {
@@ -26,16 +25,16 @@ class Assessment extends Model
             }
         });
 
-        // Only new exams: an older AOI keeps the score its marks were entered out of.
-        static::creating(function (Assessment $assessment): void {
-            if ($assessment->type === 'ca' && $assessment->curriculum === 'o_level') {
-                $assessment->max_score = self::O_LEVEL_CA_MAX;
-            }
-        });
     }
 
-    /** O-Level Activities of Integration are entered as a percentage, out of 100. */
-    public const O_LEVEL_CA_MAX = 100;
+    /**
+     * What a new O-Level Activity of Integration is marked out of; a school
+     * may set 100 instead. Report cards show each one out of 3.
+     */
+    public const O_LEVEL_CA_DEFAULT_MAX = 20;
+
+    /** The scale report cards show O-Level Activities of Integration on (NCDC's 0-3). */
+    public const O_LEVEL_CA_REPORT_SCALE = 3;
 
     protected $fillable = [
         'school_id',

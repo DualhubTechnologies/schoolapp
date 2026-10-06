@@ -18,8 +18,10 @@
     }
     $split = $show('split_columns') ? ($results['split'] ?? null) : null;
     $exam = $results['exam'] ?? null;
-    // O-Level with the formative/exam split: each CA as a percentage (CA1,
-    // CA2, ...), their average, the CA out of 20 and End of Term out of 80.
+    // O-Level with the formative/exam split: each CA out of 3 (CA1, CA2, ...),
+    // whatever it was marked out of, their average, the CA out of 20 and End
+    // of Term out of 80.
+    $outOf3 = fn ($pct) => $pct === null ? '—' : rtrim(rtrim(number_format($pct * \App\Models\Assessment::O_LEVEL_CA_REPORT_SCALE / 100, 2), '0'), '.');
     $caColumns = $split && ! $exam ? $columns->filter(fn ($a) => $a->isAveragedIn($curriculum))->values() : collect();
     $eotColumns = $caColumns->isNotEmpty() ? $columns->where('type', 'eot')->values() : collect();
     if ($caColumns->isNotEmpty()) {
@@ -166,10 +168,10 @@
                             <th class="c" title="{{ $a->name }}">{{ $a->shortLabel() }}<br><span style="font-weight:500">/{{ $a->max_score + 0 }}</span></th>
                         @endforeach
                         @foreach ($caColumns as $a)
-                            <th class="c" title="{{ $a->name }}">CA{{ $loop->iteration }}<br><span style="font-weight:500">%</span></th>
+                            <th class="c" title="{{ $a->name }}">CA{{ $loop->iteration }}<br><span style="font-weight:500">/3</span></th>
                         @endforeach
                         @if ($caColumns->isNotEmpty())
-                            <th class="c">CA avg<br><span style="font-weight:500">%</span></th>
+                            <th class="c">CA avg<br><span style="font-weight:500">/3</span></th>
                         @endif
                         @if ($split)
                             <th class="c">{{ $caColumns->isNotEmpty() ? 'CA' : 'Formative' }}<br><span style="font-weight:500">/{{ $split['formative'] }}</span></th>
@@ -209,9 +211,9 @@
                                             $caPcts[] = $s['pct'];
                                         }
                                     @endphp
-                                    <td class="c">{{ $s ? ($s['absent'] ? 'AB' : $n($s['pct'])) : '' }}</td>
+                                    <td class="c">{{ $s ? ($s['absent'] ? 'AB' : $outOf3($s['pct'])) : '' }}</td>
                                 @endforeach
-                                <td class="c">{{ $caPcts ? $n(array_sum($caPcts) / count($caPcts)) : '—' }}</td>
+                                <td class="c">{{ $caPcts ? $outOf3(array_sum($caPcts) / count($caPcts)) : '—' }}</td>
                             @endif
                             @if ($split)
                                 <td class="c">{{ $n($res['formative']) }}</td>

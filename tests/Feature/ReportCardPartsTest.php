@@ -85,27 +85,20 @@ it('averages an O-Level term\'s Activities of Integration into one 20% share', f
         ->and(Assessment::weightProblems($this->school->id, $this->term2->id, ['o_level' => 'O-Level']))->toBe([]);
 });
 
-it('enters O-Level Activities of Integration as a percentage, whatever is typed', function () {
-    $aoi = Assessment::create(['school_id' => $this->school->id, 'term_id' => $this->term2->id, 'curriculum' => 'o_level', 'name' => 'AOI', 'type' => 'ca', 'max_score' => 3, 'weight' => 20]);
-    $primaryCa = Assessment::create(['school_id' => $this->school->id, 'term_id' => $this->term2->id, 'curriculum' => 'primary', 'name' => 'CA', 'type' => 'ca', 'max_score' => 10, 'weight' => 20]);
-
-    expect((float) $aoi->max_score)->toBe(100.0)
-        ->and((float) $primaryCa->max_score)->toBe(10.0);
-});
-
 it('keeps project work out of the term result, whatever weight is typed', function () {
     expect((float) Assessment::where('type', 'project')->sole()->weight)->toBe(0.0);
 });
 
-it('prints each CA as a percentage, their average, CA /20 and End of Term /80, a project work section and each term\'s average', function () {
-    // A second AOI, 3/3: CA1 80%, CA2 100%, average 90%, so CA 18/20.
-    $aoi2 = Assessment::create(['school_id' => $this->school->id, 'term_id' => $this->term2->id, 'name' => 'Activity of Integration 2', 'type' => 'ca', 'max_score' => 3, 'weight' => 20]);
-    Mark::create(['assessment_id' => $aoi2->id, 'student_id' => $this->student->id, 'subject_id' => $this->agric->id, 'score' => 3]);
+it('prints each CA out of 3, their average, CA /20 and End of Term /80, a project work section and each term\'s average', function () {
+    // A second AOI marked out of 20: 20/20. CA1 2.4/3 (80%), CA2 3/3
+    // (100%), average 2.7/3 (90%), so CA 18/20.
+    $aoi2 = Assessment::create(['school_id' => $this->school->id, 'term_id' => $this->term2->id, 'name' => 'Activity of Integration 2', 'type' => 'ca', 'max_score' => 20, 'weight' => 20]);
+    Mark::create(['assessment_id' => $aoi2->id, 'student_id' => $this->student->id, 'subject_id' => $this->agric->id, 'score' => 20]);
 
     $this->get(route('filament.app.academics.report-cards', ['term' => $this->term2->id, 'class' => $this->class->id]))
         ->assertOk()
         ->assertSeeInOrder(['CA1', 'CA2', 'CA avg', 'CA', '/20', 'End of Term', '/80', 'Total /100'], false)
-        ->assertSeeInOrder(['Agriculture', '80', '100', '90', '18', '48', '66'], false)
+        ->assertSeeInOrder(['Agriculture', '2.4', '3', '2.7', '18', '48', '66'], false)
         ->assertSee('Project work')
         ->assertSee('Apiculture')
         ->assertSee('8.5 / 10')

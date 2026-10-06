@@ -68,7 +68,7 @@ class AssessmentResource extends Resource
             $set('weight', config("academics.default_weights.{$curriculum}.{$type}", 0));
             $set('name', config('academics.assessment_types')[$type] ?? '');
             $set('max_score', match (true) {
-                $type === 'ca' && $curriculum === 'o_level' => Assessment::O_LEVEL_CA_MAX,
+                $type === 'ca' && $curriculum === 'o_level' => Assessment::O_LEVEL_CA_DEFAULT_MAX,
                 $type === 'project' => 10,
                 default => 100,
             });
@@ -116,11 +116,8 @@ class AssessmentResource extends Resource
                 ->minValue(1)
                 ->default(100)
                 ->required()
-                // O-Level AOIs are entered as a percentage; the model enforces it too.
-                ->disabled(fn (Get $get): bool => $get('type') === 'ca' && $get('curriculum') === 'o_level')
-                ->dehydrated()
                 ->helperText(fn (Get $get): string => match (true) {
-                    $get('type') === 'ca' && $get('curriculum') === 'o_level' => 'Teachers enter each learner\'s Activity of Integration as a percentage (0 to 100). The term\'s AOIs are averaged to make the 20%.',
+                    $get('type') === 'ca' && $get('curriculum') === 'o_level' => 'Out of 20 by default, or 100 if teachers mark in percentages. The report card shows each one out of 3 (e.g. 5/20 = 0.75), and the term\'s AOIs are averaged to make the 20%.',
                     $get('type') === 'eot' => 'Mark out of whatever the paper is set out of, e.g. 100 or 80. Its weight below decides how much it counts.',
                     $get('type') === 'project' => 'Project work is marked out of 10.',
                     default => 'New curriculum Activities of Integration are usually scored out of 3.',

@@ -362,6 +362,21 @@ html .fi-sidebar .fi-sidebar-group-collapse-btn {
 }
 .sh-school-brand-by { color: #7c8aa5; font-size: .68rem; font-weight: 500; margin-top: .1rem; }
 
+/* The same brand in the top bar, on screens where the sidebar is a drawer. */
+.sh-topbar-brand { display: none; }
+@media (max-width: 1023px) {
+    .sh-topbar-left { flex-wrap: nowrap !important; flex: 1 1 auto; gap: .5rem !important; }
+    .sh-topbar-left > .sh-icon-btn { flex: none; }
+    .sh-topbar { gap: .5rem !important; }
+    .sh-topbar-brand { display: flex; align-items: center; min-width: 0; flex: 1 1 auto; }
+    .sh-topbar-brand .sh-school-brand { max-width: none; min-width: 0; }
+    .sh-topbar-brand .sh-school-brand-logo,
+    .sh-topbar-brand .sh-school-brand-initials { width: 2.3rem; height: 2.3rem; border: 1px solid #e4e8f0; }
+    .sh-topbar-brand .sh-school-brand-initials { background: #0d1f38; color: #fff; border-color: #0d1f38; }
+    .sh-topbar-brand .sh-school-brand-name { color: #0d1f38; font-size: .85rem; -webkit-line-clamp: 1; word-break: break-word; }
+    .sh-topbar-brand .sh-school-brand-by { color: #94a3b8; }
+}
+
 .fi-sidebar-nav {
 
     padding: 0.75rem 0.5rem 1.25rem !important;

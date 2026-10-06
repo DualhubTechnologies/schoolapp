@@ -62,6 +62,12 @@
         </button>
         @endif
 
+        {{-- Phones and tablets: the school's logo and name (the sidebar, where
+             they sit on wide screens, opens below this bar there). --}}
+        @if ($topbarBrand = \App\Providers\Filament\AppPanelProvider::schoolBrand())
+            <div class="sh-topbar-brand">{{ $topbarBrand }}</div>
+        @endif
+
         {{-- Date + live clock --}}
         <div class="sh-chip" x-data="{
                 time: '',

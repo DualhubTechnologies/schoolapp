@@ -352,7 +352,7 @@ class AppPanelProvider extends PanelProvider
     }
 
     /** The signed-in school's logo and name for the sidebar, or null outside a school. */
-    protected static function schoolBrand(): ?View
+    public static function schoolBrand(): ?View
     {
         $school = auth()->user()?->school;
 

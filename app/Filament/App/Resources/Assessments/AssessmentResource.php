@@ -116,11 +116,11 @@ class AssessmentResource extends Resource
                 ->minValue(1)
                 ->default(100)
                 ->required()
-                // The new curriculum scores O-Level AOIs 0-3; the model enforces it too.
+                // O-Level AOIs are entered as a percentage; the model enforces it too.
                 ->disabled(fn (Get $get): bool => $get('type') === 'ca' && $get('curriculum') === 'o_level')
                 ->dehydrated()
                 ->helperText(fn (Get $get): string => match (true) {
-                    $get('type') === 'ca' && $get('curriculum') === 'o_level' => 'Activities of Integration are scored 0 to 3, as the new curriculum guidelines set. The term\'s AOIs are averaged to make the 20%.',
+                    $get('type') === 'ca' && $get('curriculum') === 'o_level' => 'Teachers enter each learner\'s Activity of Integration as a percentage (0 to 100). The term\'s AOIs are averaged to make the 20%.',
                     $get('type') === 'eot' => 'Mark out of whatever the paper is set out of, e.g. 100 or 80. Its weight below decides how much it counts.',
                     $get('type') === 'project' => 'Project work is marked out of 10.',
                     default => 'New curriculum Activities of Integration are usually scored out of 3.',

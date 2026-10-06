@@ -16,8 +16,7 @@ class Assessment extends Model
     /**
      * Project work is reported on its own (marked out of 10, printed in the
      * report card's Project work section), never weighted in the term result.
-     * O-Level Activities of Integration are scored 0-3, as the new
-     * curriculum's guidelines set.
+     * O-Level Activities of Integration are entered as a percentage.
      */
     protected static function booted(): void
     {
@@ -35,8 +34,8 @@ class Assessment extends Model
         });
     }
 
-    /** New lower-secondary Activities of Integration are scored 0-3. */
-    public const O_LEVEL_CA_MAX = 3;
+    /** O-Level Activities of Integration are entered as a percentage, out of 100. */
+    public const O_LEVEL_CA_MAX = 100;
 
     protected $fillable = [
         'school_id',
@@ -83,7 +82,7 @@ class Assessment extends Model
 
     /**
      * Exam types whose exams are averaged into one share of the term
-     * result: an O-Level term's Activities of Integration, each out of 3,
+     * result: an O-Level term's Activities of Integration, each a percentage,
      * together make the 20% however many there are.
      *
      * @var array<string, list<string>>

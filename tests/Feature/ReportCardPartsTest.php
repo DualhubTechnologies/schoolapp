@@ -85,6 +85,14 @@ it('averages an O-Level term\'s Activities of Integration into one 20% share', f
         ->and(Assessment::weightProblems($this->school->id, $this->term2->id, ['o_level' => 'O-Level']))->toBe([]);
 });
 
+it('scores O-Level Activities of Integration out of 3, whatever is typed', function () {
+    $aoi = Assessment::create(['school_id' => $this->school->id, 'term_id' => $this->term2->id, 'curriculum' => 'o_level', 'name' => 'AOI', 'type' => 'ca', 'max_score' => 10, 'weight' => 20]);
+    $primaryCa = Assessment::create(['school_id' => $this->school->id, 'term_id' => $this->term2->id, 'curriculum' => 'primary', 'name' => 'CA', 'type' => 'ca', 'max_score' => 10, 'weight' => 20]);
+
+    expect((float) $aoi->max_score)->toBe(3.0)
+        ->and((float) $primaryCa->max_score)->toBe(10.0);
+});
+
 it('keeps project work out of the term result, whatever weight is typed', function () {
     expect((float) Assessment::where('type', 'project')->sole()->weight)->toBe(0.0);
 });

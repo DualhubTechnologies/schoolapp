@@ -131,11 +131,15 @@ class AssessmentResource extends Resource
                 ->maxValue(100)
                 ->default(0)
                 ->required()
+                // Read-only: set from the exam type's standard weight
+                // (config/academics.php default_weights), e.g. CA 20%, End of Term 80%.
+                ->disabled()
+                ->dehydrated()
                 // Project work is reported on its own and carries no weight.
                 ->hidden(fn (Get $get): bool => $get('type') === 'project')
                 ->helperText(fn (Get $get): string => $get('type') === 'ca' && $get('curriculum') === 'o_level'
                     ? 'All of the term\'s Activities of Integration are averaged, and together count this much.'
-                    : 'e.g. CA 20% + End of Term 80%. If none of a student\'s exams has a weight, they count equally.'),
+                    : 'Set by the exam type, e.g. CA 20% + End of Term 80%.'),
             DatePicker::make('held_on')->label('Date')->native(false)->displayFormat('j M Y'),
             TextInput::make('sort_order')->label('Order on report card')->numeric()->default(0),
         ]);

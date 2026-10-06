@@ -16,12 +16,19 @@ class Assessment extends Model
     /**
      * Project work is reported on its own (marked out of 10, printed in the
      * report card's Project work section), never weighted in the term result.
+     * O-Level exams always carry the standard weight for their type.
      */
     protected static function booted(): void
     {
         static::saving(function (Assessment $assessment): void {
             if ($assessment->type === 'project') {
                 $assessment->weight = 0;
+            }
+
+            // O-Level weights are the standard's (CA 20%, End of Term 80%), not typed.
+            $standard = (array) config('academics.default_weights.o_level');
+            if ($assessment->curriculum === 'o_level' && array_key_exists((string) $assessment->type, $standard)) {
+                $assessment->weight = (float) $standard[$assessment->type];
             }
         });
 

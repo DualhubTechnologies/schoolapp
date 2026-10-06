@@ -85,6 +85,14 @@ it('averages an O-Level term\'s Activities of Integration into one 20% share', f
         ->and(Assessment::weightProblems($this->school->id, $this->term2->id, ['o_level' => 'O-Level']))->toBe([]);
 });
 
+it('gives O-Level exams the standard weight, whatever is typed', function () {
+    $aoi = Assessment::create(['school_id' => $this->school->id, 'term_id' => $this->term2->id, 'curriculum' => 'o_level', 'name' => 'AOI', 'type' => 'ca', 'max_score' => 20, 'weight' => 50]);
+    $eot = Assessment::create(['school_id' => $this->school->id, 'term_id' => $this->term2->id, 'curriculum' => 'o_level', 'name' => 'EOT', 'type' => 'eot', 'max_score' => 100, 'weight' => 10]);
+
+    expect((float) $aoi->weight)->toBe(20.0)
+        ->and((float) $eot->weight)->toBe(80.0);
+});
+
 it('keeps project work out of the term result, whatever weight is typed', function () {
     expect((float) Assessment::where('type', 'project')->sole()->weight)->toBe(0.0);
 });

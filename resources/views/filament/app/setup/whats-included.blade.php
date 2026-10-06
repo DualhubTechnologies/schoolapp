@@ -38,9 +38,9 @@
 <div>
     <p class="text-sm font-medium text-gray-950 dark:text-white">What will be added</p>
 
-    <ul class="mt-3 divide-y divide-gray-100 overflow-hidden rounded-xl border border-gray-200 dark:divide-white/5 dark:border-white/10">
+    <ul class="mt-3 grid gap-3 sm:grid-cols-2 lg:grid-cols-3">
         @foreach ($items as $item)
-            <li class="flex gap-3 p-3">
+            <li class="flex gap-3 rounded-xl border border-gray-200 p-3 dark:border-white/10">
                 <span class="flex h-8 w-8 shrink-0 items-center justify-center rounded-lg bg-primary-50 text-primary-600 dark:bg-primary-500/10 dark:text-primary-400">
                     <x-filament::icon :icon="$item['icon']" class="h-5 w-5" />
                 </span>

@@ -30,6 +30,7 @@ use Filament\Forms\Components\Radio;
 use Filament\Notifications\Notification;
 use Filament\Pages\Dashboard as BaseDashboard;
 use Filament\Schemas\Components\Callout;
+use Filament\Schemas\Components\Grid;
 use Filament\Schemas\Components\View;
 use Filament\Support\Enums\Width;
 use Filament\Support\Icons\Heroicon;
@@ -70,7 +71,7 @@ class Dashboard extends BaseDashboard
             ->modalIcon(Heroicon::OutlinedSparkles)
             ->modalHeading(fn (): string => 'Welcome! Let\'s set up '.$this->school()?->name)
             ->modalDescription('We can fill in the standard Ugandan school structure for you, so you can start adding learners and fees today instead of building everything from scratch.')
-            ->modalWidth(Width::TwoExtraLarge)
+            ->modalWidth(Width::FiveExtraLarge)
             ->modalCloseButton(false)
             ->closeModalByClickingAway(false)
             ->closeModalByEscaping(false)
@@ -86,20 +87,22 @@ class Dashboard extends BaseDashboard
                 'boarding_type' => $this->school()?->boarding_type ?: 'day',
             ])
             ->schema([
-                CheckboxList::make('sections')
-                    ->label('Sections your school runs')
-                    ->options(fn (): array => SchoolType::curricula($this->school()))
-                    ->descriptions(SchoolStarterSetup::SECTION_HINTS)
-                    ->columns(2),
-                Radio::make('boarding_type')
-                    ->label('Your learners are')
-                    ->options([
-                        'day' => 'Day scholars',
-                        'boarding' => 'Boarders',
-                        'mixed' => 'Both day and boarding',
-                    ])
-                    ->inline()
-                    ->required(),
+                Grid::make(['default' => 1, 'md' => 2])
+                    ->schema([
+                        CheckboxList::make('sections')
+                            ->label('Sections your school runs')
+                            ->options(fn (): array => SchoolType::curricula($this->school()))
+                            ->descriptions(SchoolStarterSetup::SECTION_HINTS)
+                            ->columns(2),
+                        Radio::make('boarding_type')
+                            ->label('Your learners are')
+                            ->options([
+                                'day' => 'Day scholars',
+                                'boarding' => 'Boarders',
+                                'mixed' => 'Both day and boarding',
+                            ])
+                            ->required(),
+                    ]),
                 View::make('filament.app.setup.whats-included')
                     ->viewData(fn (): array => [
                         'terms' => $terms = SchoolStarterSetup::termsFor(),

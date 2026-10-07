@@ -146,6 +146,7 @@ it('enters marks for each paper on its own', function () {
     $eot = Assessment::where('term_id', $this->term2->id)->where('type', 'eot')->sole();
 
     Livewire::test(EnterMarks::class)
+        ->set('allExams', false)
         ->set('assessmentId', $eot->id)
         ->set('classId', $this->class->id)
         ->set('subjectId', $this->agric->id)

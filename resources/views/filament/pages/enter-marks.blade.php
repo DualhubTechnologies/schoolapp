@@ -102,7 +102,7 @@
                       return Math.round((parseFloat(v) / this.max) * 1000) / 10 + '%';
                   },
                   next(el) {
-                      const inputs = [...this.$root.querySelectorAll('.em-score:not([disabled])')];
+                      const inputs = [...this.$root.querySelectorAll('.em-score:not([disabled])')].filter((i) => i.dataset.exam === el.dataset.exam);
                       const i = inputs.indexOf(el);
                       if (inputs[i + 1]) { inputs[i + 1].focus(); inputs[i + 1].select(); }
                   },
@@ -111,14 +111,22 @@
                 <div>
                     <div class="em-title">{{ $subject->name }} — {{ $class->name }}{{ $this->sectionId ? ' ' . $this->sectionOptions()[$this->sectionId] : '' }}</div>
                     <div class="em-muted">
+                        @if ($this->allExams)
+                            All exams of {{ $assessment->term?->label() }}{{ $this->paperCount() > 1 ? ' · Paper '.$this->paper : '' }} · {{ $students->count() }} {{ str('learner')->plural($students->count()) }} · type a mark, or AB for absent
+                        @else
                         {{ $assessment->name }}{{ $this->paperCount() > 1 ? ' · Paper '.$this->paper : '' }} · marked out of <strong>{{ $max + 0 }}</strong> · {{ $entered }} of {{ $students->count() }} entered
-                        @if ($locked) · <span class="em-locked">{{ $this->readOnlyReason() ?? 'Closed' }} — read only</span> @endif
+                        @endif
+                        @if ($locked && ! $this->allExams) · <span class="em-locked">{{ $this->readOnlyReason() ?? 'Closed' }} — read only</span> @endif
                     </div>
                     @if (! $subject->pivot->is_compulsory && ! $sheet['filtered'])
-                        <div class="em-note">Elective with no student choices recorded: everyone in the class is listed. Leave the score blank for students who don't take it.</div>
+                        <div class="em-note">Elective with no learners chosen yet: everyone in the class is listed. Use <strong>Who takes this subject</strong> to tick the learners who take it, and the others leave this sheet.</div>
                     @endif
                 </div>
                 <div class="em-head-tools">
+                    <div class="em-papers" role="group" aria-label="View">
+                        <button type="button" wire:click="$set('allExams', false)" @class(['em-paper', 'is-active' => ! $this->allExams])>This exam</button>
+                        <button type="button" wire:click="$set('allExams', true)" @class(['em-paper', 'is-active' => $this->allExams])>All exams this term</button>
+                    </div>
                     @if ($this->paperCount() > 1)
                         <div class="em-papers" role="group" aria-label="Paper">
                             @foreach (range(1, $this->paperCount()) as $p)
@@ -126,15 +134,20 @@
                             @endforeach
                         </div>
                     @endif
-                    <label class="em-toggle">
-                        <input type="checkbox" wire:model.live="showComments"> Comments
-                    </label>
+                    @unless ($this->allExams)
+                        <label class="em-toggle">
+                            <input type="checkbox" wire:model.live="showComments"> Comments
+                        </label>
+                    @endunless
                 </div>
             </div>
 
             <div class="em-bar">
                 <div class="em-bar-status">
-                    @php($state = $markSheet?->status ?? 'open')
+                    @if ($this->allExams)
+                        <span class="em-muted">To submit, approve, download or print a sheet, switch to <strong>This exam</strong>.</span>
+                    @else
+                    @php $state = $markSheet?->status ?? 'open'; @endphp
                     <span @class(['em-pill', 'is-'.$state, 'is-returned' => $state === 'open' && $markSheet?->returned_note])>
                         {{ $state === 'open' && $markSheet?->returned_note ? 'Returned for correction' : $markSheet?->statusLabel() }}
                     </span>
@@ -146,18 +159,73 @@
                     @if ($state === 'open' && $markSheet?->returned_note)
                         <span class="em-returned">“{{ $markSheet->returned_note }}”</span>
                     @endif
+                    @endif
                 </div>
                 <div class="em-bar-actions">
-                    <x-filament::button type="button" size="sm" color="gray" icon="heroicon-o-arrow-down-tray" wire:click="downloadSheet">Download sheet</x-filament::button>
-                    {{ $this->uploadSheetAction }}
-                    <x-filament::button tag="a" size="sm" color="gray" icon="heroicon-o-printer" :href="$this->printUrl()" target="_blank">Print</x-filament::button>
-                    <x-filament::button tag="a" size="sm" color="gray" icon="heroicon-o-document" :href="$this->printUrl(blank: true)" target="_blank">Blank sheet</x-filament::button>
-                    {{ $this->returnSheetAction }}
-                    {{ $this->submitSheetAction }}
-                    {{ $this->approveSheetAction }}
+                    {{ $this->chooseLearnersAction }}
+                    @unless ($this->allExams)
+                        <x-filament::button type="button" size="sm" color="gray" icon="heroicon-o-arrow-down-tray" wire:click="downloadSheet">Download sheet</x-filament::button>
+                        {{ $this->uploadSheetAction }}
+                        <x-filament::button tag="a" size="sm" color="gray" icon="heroicon-o-printer" :href="$this->printUrl()" target="_blank">Print</x-filament::button>
+                        <x-filament::button tag="a" size="sm" color="gray" icon="heroicon-o-document" :href="$this->printUrl(blank: true)" target="_blank">Blank sheet</x-filament::button>
+                        {{ $this->returnSheetAction }}
+                        {{ $this->submitSheetAction }}
+                        {{ $this->approveSheetAction }}
+                    @endunless
                 </div>
             </div>
 
+            @if ($this->allExams)
+                @php
+                    $exams = $this->termAssessments();
+                    $headings = $this->gridHeadings();
+                    $editable = $exams->mapWithKeys(fn ($e) => [$e->id => $this->gridEditable($e)]);
+                @endphp
+                <div class="em-scroll">
+                    <table class="em-table em-grid">
+                        <thead>
+                            <tr>
+                                <th class="em-n">#</th>
+                                <th>Student</th>
+                                @foreach ($exams as $exam)
+                                    <th class="em-c" title="{{ $exam->name }}">
+                                        {{ $headings[$exam->id] }}<br><span class="em-out">/{{ $exam->max_score + 0 }}</span>
+                                        @unless ($editable[$exam->id])<br><span class="em-closed">closed</span>@endunless
+                                    </th>
+                                @endforeach
+                            </tr>
+                        </thead>
+                        <tbody>
+                            @foreach ($students as $i => $student)
+                                @php $id = $student->id; @endphp
+                                <tr wire:key="grid-{{ $id }}">
+                                    <td class="em-n">{{ $i + 1 }}</td>
+                                    <td>
+                                        <div class="em-name">{{ $student->name ?: 'No name' }}</div>
+                                        <div class="em-muted">{{ $student->admission_no }}</div>
+                                    </td>
+                                    @foreach ($exams as $exam)
+                                        <td class="em-c">
+                                            <input type="text" autocomplete="off"
+                                                   data-exam="{{ $exam->id }}"
+                                                   class="em-score em-cell @error('grid.'.$exam->id.'.'.$id) is-error @enderror"
+                                                   wire:model="grid.{{ $exam->id }}.{{ $id }}"
+                                                   x-data="{ v: @js($this->grid[$exam->id][$id] ?? ''), max: {{ (float) $exam->max_score }} }"
+                                                   x-model="v"
+                                                   :class="{ 'is-bad': v !== null && v !== '' && !['ab','abs','absent'].includes(String(v).toLowerCase()) && (isNaN(v) || parseFloat(v) < 0 || parseFloat(v) > max) }"
+                                                   title="{{ $exam->name }}: 0 to {{ $exam->max_score + 0 }}, or AB"
+                                                   @input="changed()"
+                                                   @keydown.enter.prevent="next($el)"
+                                                   @focus="$el.select()"
+                                                   @disabled(! $editable[$exam->id])>
+                                        </td>
+                                    @endforeach
+                                </tr>
+                            @endforeach
+                        </tbody>
+                    </table>
+                </div>
+            @else
             <div class="em-scroll">
                 <table class="em-table">
                     <thead>
@@ -173,7 +241,7 @@
                     </thead>
                     <tbody>
                         @foreach ($students as $i => $student)
-                            @php($id = $student->id)
+                            @php $id = $student->id; @endphp
                             <tr wire:key="row-{{ $id }}" x-data="{ v: @js($this->scores[$id] ?? ''), ab: @js((bool) ($this->absent[$id] ?? false)) }">
                                 <td class="em-n">{{ $i + 1 }}</td>
                                 <td>
@@ -205,10 +273,11 @@
                     </tbody>
                 </table>
             </div>
+            @endif
 
-            @unless ($locked)
+            @unless ($locked && ! $this->allExams)
                 <div class="em-foot">
-                    <span class="em-muted">Press <kbd>Enter</kbd> to move to the next student. Blank = no mark. Marks save by themselves as you type.</span>
+                    <span class="em-muted">Press <kbd>Enter</kbd> to move to the next {{ $this->allExams ? 'mark' : 'student' }}. Blank = no mark{{ $this->allExams ? ', AB = absent' : '' }}. Marks save by themselves as you type.</span>
                     <span class="em-save">
                         <span class="em-status" x-show="dirty" x-cloak>Unsaved changes…</span>
                         @if ($this->savedAt)
@@ -253,6 +322,9 @@
         .em-save { display: flex; align-items: center; gap: .75rem; }
         .em-status { font-size: .8rem; color: #b45309; white-space: nowrap; }
         .em-status.is-saved { color: #15803d; font-weight: 600; }
+        .em-grid .em-cell { width: 4.2rem; }
+        .em-out { font-weight: 500; text-transform: none; }
+        .em-closed { font-size: .62rem; color: #b91c1c; text-transform: none; }
         .em-grade { display: inline-block; min-width: 2.2rem; font-weight: 700; color: #1a5fa8; }
         .em-comment { width: 100%; min-width: 12rem; padding: .3rem .5rem; border: 1px solid #e2e8f0; border-radius: 6px; font-size: .82rem; }
         .em-foot { display: flex; justify-content: space-between; align-items: center; gap: 1rem; padding: .85rem 1.25rem; border-top: 1px solid #eef2f7; background: #fafbfd; position: sticky; bottom: 0; }

@@ -15,6 +15,7 @@ use App\Services\Academics\MarkSheets;
 use App\Support\AcademicAccess;
 use BackedEnum;
 use Filament\Actions\Action;
+use Filament\Forms\Components\CheckboxList;
 use Filament\Forms\Components\FileUpload;
 use Filament\Forms\Components\Textarea;
 use Filament\Notifications\Notification;
@@ -74,6 +75,16 @@ class EnterMarks extends Page
     /** When the sheet was last saved, shown beside the Save button. */
     public ?string $savedAt = null;
 
+    /**
+     * Every exam of the chosen exam's term side by side (CA1, CA2, End of
+     * Term...), entered on one sheet. The default; "This exam" shows one
+     * exam with its hand-in, download and print tools.
+     */
+    public bool $allExams = true;
+
+    /** @var array<int, array<int, string|null>> exam id => student id => score as typed, or "AB" */
+    public array $grid = [];
+
     public function mount(): void
     {
         $this->assessmentId = request()->integer('assessment') ?: $this->assessmentOptions()->keys()->first();
@@ -120,6 +131,12 @@ class EnterMarks extends Page
         $this->loadSheet();
     }
 
+    public function updatedAllExams(): void
+    {
+        $this->resetErrorBag();
+        $this->loadSheet();
+    }
+
     /** How many papers the chosen subject is sat as (1 for most). */
     public function paperCount(): int
     {
@@ -143,7 +160,7 @@ class EnterMarks extends Page
     {
         unset($this->markSheet);
         $this->subjectId = null;
-        $this->scores = $this->absent = $this->comments = [];
+        $this->scores = $this->absent = $this->comments = $this->grid = [];
     }
 
     /**
@@ -283,9 +300,15 @@ class EnterMarks extends Page
     protected function loadSheet(): void
     {
         unset($this->markSheet);
-        $this->scores = $this->absent = $this->comments = [];
+        $this->scores = $this->absent = $this->comments = $this->grid = [];
 
         if (! $this->assessmentId || ! $this->subjectId) {
+            return;
+        }
+
+        if ($this->allExams) {
+            $this->loadGrid();
+
             return;
         }
 
@@ -310,7 +333,7 @@ class EnterMarks extends Page
 
     public function save(): void
     {
-        $this->persist(quiet: false);
+        $this->allExams ? $this->persistGrid(quiet: false) : $this->persist(quiet: false);
     }
 
     /**
@@ -319,7 +342,7 @@ class EnterMarks extends Page
      */
     public function autosave(): void
     {
-        $this->persist(quiet: true);
+        $this->allExams ? $this->persistGrid(quiet: true) : $this->persist(quiet: true);
     }
 
     /**
@@ -405,6 +428,230 @@ class EnterMarks extends Page
         }
 
         return true;
+    }
+
+    // ── All exams of the term on one sheet ──
+
+    /**
+     * The chosen exam's term: every exam for the chosen class's curriculum
+     * (CA, End of Term, project work...), in report card order. Topic
+     * assessment marks come from Assess Topics, so it is left out.
+     *
+     * @return Collection<int, Assessment>
+     */
+    public function termAssessments(): Collection
+    {
+        $assessment = $this->assessment;
+        $curriculum = $this->schoolClass?->curriculum();
+
+        if (! $assessment) {
+            return collect();
+        }
+
+        return Assessment::where('school_id', $assessment->school_id)
+            ->where('term_id', $assessment->term_id)
+            ->where('type', '!=', 'topics')
+            ->orderBy('sort_order')
+            ->orderBy('id')
+            ->get()
+            ->filter(fn (Assessment $a) => $a->appliesTo($curriculum))
+            ->values();
+    }
+
+    /**
+     * Column headings: CA1, CA2, EOT, or the exam's short name.
+     *
+     * @return array<int, string> exam id => heading
+     */
+    public function gridHeadings(): array
+    {
+        $exams = $this->termAssessments();
+        $counts = $exams->countBy('type');
+        $seen = [];
+        $headings = [];
+
+        foreach ($exams as $exam) {
+            $seen[$exam->type] = ($seen[$exam->type] ?? 0) + 1;
+            // Numbered when a term has several of a kind (CA1, CA2); a project shows its own name.
+            $headings[$exam->id] = in_array($exam->type, ['bot', 'mot', 'eot', 'ca'], true)
+                ? $exam->shortLabel().(($counts[$exam->type] ?? 0) > 1 ? $seen[$exam->type] : '')
+                : mb_strimwidth($exam->name, 0, 14, '…');
+        }
+
+        return $headings;
+    }
+
+    /** Can this exam's column still be changed (not locked, approved, or submitted for a teacher)? */
+    public function gridEditable(Assessment $exam): bool
+    {
+        return $this->classId && $this->subjectId
+            && MarkSheets::isEditable($exam, MarkSheet::for($exam, $this->classId, (int) $this->subjectId));
+    }
+
+    protected function loadGrid(): void
+    {
+        $ids = $this->sheetStudents()['students']->pluck('id');
+        $exams = $this->termAssessments();
+
+        $marks = Mark::whereIn('assessment_id', $exams->pluck('id'))
+            ->where('subject_id', $this->subjectId)
+            ->where('paper', $this->paper)
+            ->whereIn('student_id', $ids)
+            ->get()
+            ->groupBy('assessment_id');
+
+        foreach ($exams as $exam) {
+            $byStudent = ($marks->get($exam->id) ?? collect())->keyBy('student_id');
+
+            foreach ($ids as $id) {
+                $mark = $byStudent->get($id);
+                $this->grid[$exam->id][$id] = match (true) {
+                    (bool) $mark?->is_absent => 'AB',
+                    $mark?->score !== null => rtrim(rtrim(number_format((float) $mark->score, 2, '.', ''), '0'), '.'),
+                    default => null,
+                };
+            }
+        }
+    }
+
+    /**
+     * Save every editable column. A cell takes a score from 0 to the exam's
+     * "out of", AB for absent, or blank for no mark.
+     */
+    protected function persistGrid(bool $quiet): bool
+    {
+        $subject = $this->subject;
+
+        if (! $subject || ! $this->classId) {
+            return false;
+        }
+
+        abort_unless(AcademicAccess::canEnterMarksFor($subject->pivot->teacher_id, $this->classId), 403);
+
+        $ids = $this->sheetStudents()['students']->pluck('id');
+        $exams = $this->termAssessments()->filter(fn (Assessment $exam) => $this->gridEditable($exam));
+        $errors = [];
+
+        foreach ($exams as $exam) {
+            $max = (float) $exam->max_score;
+
+            foreach ($ids as $id) {
+                $raw = trim((string) ($this->grid[$exam->id][$id] ?? ''));
+
+                if ($raw !== '' && ! $this->isAbsentText($raw) && (! is_numeric($raw) || (float) $raw < 0 || (float) $raw > $max)) {
+                    $errors["grid.{$exam->id}.{$id}"] = 'Enter a number from 0 to '.$max.', or AB.';
+                }
+            }
+        }
+
+        if ($errors) {
+            $this->setErrorBag($errors);
+            $this->savedAt = null;
+
+            if (! $quiet) {
+                Notification::make()->title(count($errors).' '.str('mark')->plural(count($errors)).' need fixing')->body('Each mark must be from 0 to that exam\'s "out of", or AB for absent.')->danger()->send();
+            }
+
+            return false;
+        }
+
+        $this->resetErrorBag();
+        $saved = 0;
+
+        DB::transaction(function () use ($exams, $ids, &$saved) {
+            foreach ($exams as $exam) {
+                foreach ($ids as $id) {
+                    $raw = trim((string) ($this->grid[$exam->id][$id] ?? ''));
+                    $key = ['assessment_id' => $exam->id, 'student_id' => $id, 'subject_id' => $this->subjectId, 'paper' => $this->paper];
+
+                    if ($raw === '') {
+                        Mark::where($key)->delete();
+
+                        continue;
+                    }
+
+                    $absent = $this->isAbsentText($raw);
+                    $mark = Mark::firstOrNew($key);
+                    $mark->fill(['score' => $absent ? null : (float) $raw, 'is_absent' => $absent, 'entered_by' => auth()->user()?->name])->save();
+                    $saved++;
+                }
+            }
+        });
+
+        $this->savedAt = now()->format('g:i a');
+
+        if (! $quiet) {
+            Notification::make()->title("Marks saved ({$saved})")->success()->send();
+        }
+
+        return true;
+    }
+
+    protected function isAbsentText(string $raw): bool
+    {
+        return in_array(mb_strtolower($raw), ['ab', 'abs', 'absent'], true);
+    }
+
+    // ── Elective subjects: who takes them ──
+
+    /**
+     * Tick the learners in the class who take an elective subject. Only
+     * they are listed on its mark sheet (and on report cards for it).
+     */
+    public function chooseLearnersAction(): Action
+    {
+        return Action::make('chooseLearners')
+            ->label('Who takes this subject')
+            ->icon('heroicon-o-user-group')
+            ->color('gray')
+            ->visible(fn (): bool => $this->subject !== null && ! $this->subject->pivot->is_compulsory)
+            ->modalHeading(fn (): string => 'Who takes '.($this->subject?->name ?? 'this subject').'?')
+            ->modalDescription('Tick the learners who take this elective. Only they appear on its mark sheet. Learners whose A-Level combination includes it are always listed.')
+            ->fillForm(fn (): array => ['students' => $this->classLearners()
+                ->filter(fn (Student $s) => $s->electives->contains('id', $this->subjectId))
+                ->pluck('id')->all()])
+            ->schema([
+                CheckboxList::make('students')
+                    ->hiddenLabel()
+                    ->options(fn (): array => $this->classLearners()->mapWithKeys(fn (Student $s) => [$s->id => $s->name.' ('.$s->admission_no.')'])->all())
+                    ->bulkToggleable()
+                    ->searchable()
+                    ->columns(2),
+            ])
+            ->modalSubmitActionLabel('Save')
+            ->action(function (array $data): void {
+                $subject = $this->subject;
+
+                abort_unless($subject && AcademicAccess::canEnterMarksFor($subject->pivot->teacher_id, $this->classId), 403);
+
+                $chosen = array_map('intval', $data['students'] ?? []);
+
+                foreach ($this->classLearners() as $student) {
+                    in_array($student->id, $chosen, true)
+                        ? $student->electives()->syncWithoutDetaching([$subject->id])
+                        : $student->electives()->detach($subject->id);
+                }
+
+                $this->loadSheet();
+
+                Notification::make()->title(count($chosen).' '.str('learner')->plural(count($chosen)).' take '.$subject->name)->success()->send();
+            });
+    }
+
+    /**
+     * Active learners in the chosen class (or stream) the user may mark.
+     *
+     * @return Collection<int, Student>
+     */
+    protected function classLearners(): Collection
+    {
+        return Student::where('school_class_id', $this->classId)
+            ->where('status', 'active')
+            ->when($this->sectionId, fn ($q) => $q->where('section_id', $this->sectionId))
+            ->when(($limit = $this->streamLimit()) !== null, fn ($q) => $q->whereIn('section_id', $limit))
+            ->with('electives')
+            ->orderBy('name')
+            ->get();
     }
 
     // ── Hand-in and approval ──

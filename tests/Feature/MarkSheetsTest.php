@@ -48,6 +48,7 @@ beforeEach(function () {
 function openSheet(Assessment $assessment)
 {
     return Livewire::test(EnterMarks::class)
+        ->set('allExams', false)
         ->set('assessmentId', $assessment->id)
         ->set('classId', test()->class->id)
         ->set('subjectId', test()->subject->id);

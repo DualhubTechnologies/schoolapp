@@ -541,8 +541,7 @@ class ReportCards extends Page
         [$id, $field] = array_pad(explode('.', $key, 2), 2, null);
         $id = (int) $id;
 
-        if (! in_array($field, ['class_teacher_comment', 'conduct'], true)
-            || ! collect($this->results['rows'] ?? [])->contains(fn ($row) => $row['student']->id === $id)) {
+        if (! in_array($field, ['class_teacher_comment', 'conduct'], true) || ! in_array($id, $this->rowStudentIds(), true)) {
             return;
         }
 
@@ -561,9 +560,25 @@ class ReportCards extends Page
 
         $head = trim((string) $this->headComment) ?: null;
 
-        foreach (collect($this->results['rows'] ?? [])->pluck('student.id') as $id) {
+        foreach ($this->rowStudentIds() as $id) {
             TermReport::updateOrCreate(['student_id' => $id, 'term_id' => $this->termId], ['head_teacher_comment' => $head]);
         }
+    }
+
+    /**
+     * The learners on the page.
+     *
+     * @return list<int>
+     */
+    protected function rowStudentIds(): array
+    {
+        $ids = [];
+
+        foreach ((array) ($this->results['rows'] ?? []) as $row) {
+            $ids[] = (int) $row['student']->id;
+        }
+
+        return $ids;
     }
 
     public function saveComments(): void

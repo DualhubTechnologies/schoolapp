@@ -10,6 +10,12 @@ use Illuminate\Database\Eloquent\Relations\HasMany;
  * One exam or piece of continuous assessment in a term, e.g. "Mid-Term
  * Examination" or "Activity of Integration 1". Its weight is its share of
  * the term result.
+ *
+ * An exam can be set in some classes and subjects only (a CA in S.2
+ * Biology, say); none chosen means every class and subject.
+ *
+ * @property array<int, int|string>|null $class_ids
+ * @property array<int, int|string>|null $subject_ids
  */
 class Assessment extends Model
 {

@@ -17,7 +17,7 @@
     <title>{{ $code ? $code.' — ' : '' }}Verify a document | SchoolHub</title>
     <link rel="icon" type="image/svg+xml" href="{{ $site }}/images/schoolhub-icon.svg">
     <style>
-        :root { --ink: #0d1f38; --muted: #5b6b80; --line: #e2e8f0; --bg: #f4f7fb; --ok: #0f7a4a; --ok-bg: #e8f6ef; --warn: #9a5b00; --warn-bg: #fff4e0; --bad: #b42318; --bad-bg: #fdecea; --brand: #1e3a5f; }
+        :root { --ink: #0d1f38; --muted: #5b6b80; --line: #e2e8f0; --bg: #f4f7fb; --ok: #0f7a4a; --ok-bg: #e8f6ef; --info: #1d4f91; --info-bg: #e8f0fb; --bad: #b42318; --bad-bg: #fdecea; --brand: #1e3a5f; }
         * { box-sizing: border-box; }
         body { margin: 0; font-family: -apple-system, "Segoe UI", Roboto, Inter, Arial, sans-serif; background: var(--bg); color: var(--ink); line-height: 1.5; }
         header { background: #fff; border-bottom: 1px solid var(--line); }
@@ -31,7 +31,7 @@
         .status h1 { margin: 0; font-size: 1.1rem; }
         .status p { margin: .1rem 0 0; font-size: .9rem; }
         .genuine { background: var(--ok-bg); color: var(--ok); } .genuine .icon { background: var(--ok); }
-        .replaced { background: var(--warn-bg); color: var(--warn); } .replaced .icon { background: var(--warn); }
+        .replaced { background: var(--info-bg); color: var(--info); } .replaced .icon { background: var(--info); font-family: Georgia, serif; font-style: italic; }
         .missing { background: var(--bad-bg); color: var(--bad); } .missing .icon { background: var(--bad); }
         dl { margin: 0; padding: 8px 20px 16px; }
         dl div { display: flex; justify-content: space-between; gap: 1rem; padding: 9px 0; border-bottom: 1px solid var(--line); }
@@ -59,7 +59,7 @@
         @if ($state === 'genuine')
             <div class="status genuine"><span class="icon">✓</span><div><h1>Genuine {{ strtolower($document->typeLabel()) }}</h1><p>Issued by {{ $summary['school'] ?? $document->school?->name }} through SchoolHub.</p></div></div>
         @elseif ($state === 'replaced')
-            <div class="status replaced"><span class="icon">!</span><div><h1>This {{ strtolower($document->typeLabel()) }} was replaced</h1><p>A newer copy was issued on {{ $document->replaced_at?->format('j M Y') }}. Ask the school for the current one; the details below are what this copy showed.</p></div></div>
+            <div class="status replaced"><span class="icon">i</span><div><h1>Genuine {{ strtolower($document->typeLabel()) }}, since updated</h1><p>{{ $summary['school'] ?? 'The school' }} issued this card, then issued an updated version on {{ $document->replaced_at?->format('j M Y') }}. The details below are what this copy showed; the school can give you the latest one.</p></div></div>
         @elseif ($state === 'missing')
             <div class="status missing"><span class="icon">✕</span><div><h1>No document with this code</h1><p>The code <span class="code">{{ $code }}</span> was not issued by SchoolHub. Check it was typed correctly; if it was, the document may not be genuine.</p></div></div>
         @endif
@@ -90,7 +90,7 @@
         @endif
     </div>
 
-    <p class="note">Compare these details with the paper copy. If the marks or result differ, the copy has been changed. Only the headline result is shown here; full marks stay with the school.</p>
+    <p class="note">Compare these details with the paper copy. If they differ, the paper copy has been altered. Only the headline result is shown here; full marks stay with the school.</p>
 </main>
 </body>
 </html>

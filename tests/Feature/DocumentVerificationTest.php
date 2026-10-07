@@ -85,7 +85,7 @@ it('keeps the code when a card is reprinted unchanged, and replaces it when the 
         ->and($current->code)->not->toBe($first->code)
         ->and($current->summary['result']['Average'])->toBe('85%');
 
-    $this->get(route('verify.show', $first->code))->assertOk()->assertSee('was replaced');
+    $this->get(route('verify.show', $first->code))->assertOk()->assertSee('since updated');
 });
 
 it('says when a code was never issued', function () {

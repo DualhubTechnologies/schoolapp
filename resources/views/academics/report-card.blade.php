@@ -470,12 +470,11 @@
                                 </div>
                             @endif
                             @if ($show('signatures'))
-                                {{-- At the far end of the comment: who signs, their signature and the date. --}}
+                                {{-- At the far end of the comment: who signs, and their signature. --}}
                                 <div class="remark-sign">
                                     <span class="who">{{ $signer }}</span>
                                     <span class="space">@if ($signatureImage)<img src="{{ $signatureImage }}" alt="">@endif</span>
                                     <span class="field"><b>Signature:</b><i>{{ str_repeat('.', 60) }}</i></span>
-                                    <span class="field"><b>Date:</b><i>{{ str_repeat('.', 60) }}</i></span>
                                 </div>
                             @endif
                         </div>

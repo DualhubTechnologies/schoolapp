@@ -97,10 +97,11 @@
     .remark-write.ruled { background-image: repeating-linear-gradient(to bottom, transparent 0, transparent calc(1.45rem - 1px), #cbd5e1 calc(1.45rem - 1px), #cbd5e1 1.45rem); background-position: 0 .2rem; }
     .remark-sign { flex: 0 0 30%; display: flex; flex-direction: column; border-left: 1px solid #cbd5e1; padding: .45rem .8rem .5rem; font-size: .66rem; color: #4b5563; }
     .remark-sign .who { font-size: .62rem; font-weight: 700; letter-spacing: .06em; text-transform: uppercase; color: var(--rc-primary); }
-    .remark-sign .space { flex: 1 0 1.3rem; display: flex; align-items: flex-end; justify-content: center; }
+    .remark-sign .space { flex: 1 0 .4rem; display: flex; align-items: flex-end; }
     .remark-sign img { max-height: 2.2rem; }
-    .remark-sign .line { border-top: 1px solid #374151; padding-top: .15rem; text-align: center; }
-    .remark-sign .date { margin-top: .6rem; border-top: 1px solid #374151; padding-top: .15rem; text-align: center; }
+    .remark-sign .field { display: flex; align-items: baseline; gap: .3rem; margin-top: .55rem; white-space: nowrap; overflow: hidden; }
+    .remark-sign .field b { font-weight: 600; color: #374151; }
+    .remark-sign .field i { flex: 1; font-style: normal; overflow: hidden; color: #6b7280; letter-spacing: .05em; }
     .key { margin-top: .5rem; padding: .35rem .6rem; background: #f8fafc; border-radius: 4px; font-size: .66rem; color: #4b5563; }
     .key span { display: inline-block; margin-right: .6rem; }
     .fees { margin-top: .6rem; background: #f8fafc; }
@@ -473,8 +474,8 @@
                                 <div class="remark-sign">
                                     <span class="who">{{ $signer }}</span>
                                     <span class="space">@if ($signatureImage)<img src="{{ $signatureImage }}" alt="">@endif</span>
-                                    <span class="line">Signature</span>
-                                    <span class="date">Date</span>
+                                    <span class="field"><b>Signature:</b><i>{{ str_repeat('.', 60) }}</i></span>
+                                    <span class="field"><b>Date:</b><i>{{ str_repeat('.', 60) }}</i></span>
                                 </div>
                             @endif
                         </div>

@@ -1,11 +1,13 @@
 {{--
     The page a printed document's QR code opens (VerifyDocumentController):
-    genuine and current, replaced by a newer copy, or not found. Shows the
+    genuine (with a note for the school's admin if it was reissued) or not found. Shows the
     headline result as printed, nothing private.
 --}}
 @php
     $site = rtrim((string) config('app.url'), '/');
-    $state = ! $document ? ($code ? 'missing' : 'form') : ($document->replaced_at ? 'replaced' : 'genuine');
+    // Every card the school issued reads as genuine; only the school's
+    // admin is told it was later reissued ($adminNote).
+    $state = ! $document ? ($code ? 'missing' : 'form') : 'genuine';
     $summary = $document?->summary ?? [];
 @endphp
 <!DOCTYPE html>
@@ -31,7 +33,7 @@
         .status h1 { margin: 0; font-size: 1.1rem; }
         .status p { margin: .1rem 0 0; font-size: .9rem; }
         .genuine { background: var(--ok-bg); color: var(--ok); } .genuine .icon { background: var(--ok); }
-        .replaced { background: var(--info-bg); color: var(--info); } .replaced .icon { background: var(--info); font-family: Georgia, serif; font-style: italic; }
+        .admin-note { margin: 14px 20px 0; padding: 10px 12px; border-radius: 10px; background: var(--info-bg); color: var(--info); font-size: .88rem; }
         .missing { background: var(--bad-bg); color: var(--bad); } .missing .icon { background: var(--bad); }
         dl { margin: 0; padding: 8px 20px 16px; }
         dl div { display: flex; justify-content: space-between; gap: 1rem; padding: 9px 0; border-bottom: 1px solid var(--line); }
@@ -58,10 +60,12 @@
     <div class="card">
         @if ($state === 'genuine')
             <div class="status genuine"><span class="icon">✓</span><div><h1>Genuine {{ strtolower($document->typeLabel()) }}</h1><p>Issued by {{ $summary['school'] ?? $document->school?->name }} through SchoolHub.</p></div></div>
-        @elseif ($state === 'replaced')
-            <div class="status replaced"><span class="icon">i</span><div><h1>Genuine {{ strtolower($document->typeLabel()) }}, since updated</h1><p>{{ $summary['school'] ?? 'The school' }} issued this card, then issued an updated version on {{ $document->replaced_at?->format('j M Y') }}. The details below are what this copy showed; the school can give you the latest one.</p></div></div>
         @elseif ($state === 'missing')
             <div class="status missing"><span class="icon">✕</span><div><h1>No document with this code</h1><p>The code <span class="code">{{ $code }}</span> was not issued by SchoolHub. Check it was typed correctly; if it was, the document may not be genuine.</p></div></div>
+        @endif
+
+        @if ($adminNote)
+            <div class="admin-note"><b>Only you can see this, as the school's admin:</b> an updated version of this card was issued on {{ $adminNote['replaced_at']->format('j M Y') }}@if ($adminNote['current']) (code <span class="code">{{ $adminNote['current'] }}</span>)@endif. The details below are what this copy showed.</div>
         @endif
 
         @if ($document)

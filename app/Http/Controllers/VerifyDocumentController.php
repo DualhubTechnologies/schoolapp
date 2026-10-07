@@ -24,16 +24,31 @@ class VerifyDocumentController extends Controller
             return redirect()->route('verify.show', DocumentVerification::normalise($typed));
         }
 
-        return view('verify', ['document' => null, 'code' => null]);
+        return view('verify', ['document' => null, 'code' => null, 'adminNote' => null]);
     }
 
     public function show(string $code): View
     {
         $code = DocumentVerification::normalise($code);
+        $document = DocumentVerification::with('school')->where('code', $code)->first();
+
+        // Everyone sees a card the school issued as genuine. Only the
+        // school's own admin, signed in, is told when it was later
+        // reissued with changed results, and the current card's code.
+        $user = auth()->user();
+        $isSchoolAdmin = $document && $user && $user->school_id === $document->school_id && $user->hasRole('School Admin');
+        $current = $isSchoolAdmin && $document->replaced_at
+            ? DocumentVerification::where('school_id', $document->school_id)
+                ->where('subject_key', $document->subject_key)
+                ->whereNull('replaced_at')
+                ->latest('id')
+                ->first()
+            : null;
 
         return view('verify', [
-            'document' => DocumentVerification::with('school')->where('code', $code)->first(),
+            'document' => $document,
             'code' => $code,
+            'adminNote' => $isSchoolAdmin && $document->replaced_at ? ['replaced_at' => $document->replaced_at, 'current' => $current?->code] : null,
         ]);
     }
 }

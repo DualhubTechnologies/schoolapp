@@ -85,7 +85,19 @@ it('keeps the code when a card is reprinted unchanged, and replaces it when the 
         ->and($current->code)->not->toBe($first->code)
         ->and($current->summary['result']['Average'])->toBe('85%');
 
-    $this->get(route('verify.show', $first->code))->assertOk()->assertSee('since updated');
+    // The school's admin, signed in, is told it was updated, and the new code.
+    $this->get(route('verify.show', $first->code))
+        ->assertOk()
+        ->assertSee('Genuine report card')
+        ->assertSee('an updated version of this card was issued')
+        ->assertSee($current->code);
+
+    // Anyone else just sees a genuine card.
+    auth()->logout();
+    $this->get(route('verify.show', $first->code))
+        ->assertOk()
+        ->assertSee('Genuine report card')
+        ->assertDontSee('an updated version of this card was issued');
 });
 
 it('says when a code was never issued', function () {

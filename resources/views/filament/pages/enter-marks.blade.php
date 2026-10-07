@@ -69,7 +69,7 @@
         <div class="em-empty">
             <p><strong>{{ $subject->name }}</strong> is an elective, and no learners in {{ $class->name }} have been chosen for it yet.</p>
             <p style="margin: .4rem 0 1rem">Tick the learners who take it, and only they will be on this mark sheet.</p>
-            {{ $this->chooseLearnersAction }}
+            @if ($this->chooseLearnersAction->isVisible()) {{ $this->chooseLearnersAction }} @endif
         </div>
     @elseif ($students->isEmpty())
         <div class="em-empty">No active students in this class{{ $this->sectionId ? ' / stream' : '' }}.</div>
@@ -180,7 +180,7 @@
             <div class="em-bar">
                 <div class="em-bar-status">
                     @if ($this->allExams)
-                        <span class="em-muted">To submit, approve, download or print a sheet, switch to <strong>This exam</strong>.</span>
+                        <span class="em-muted">To download, print or return one exam's sheet, switch to <strong>This exam</strong>.</span>
                     @else
                     @php $state = $markSheet?->status ?? 'open'; @endphp
                     <span @class(['em-pill', 'is-'.$state, 'is-returned' => $state === 'open' && $markSheet?->returned_note])>
@@ -197,15 +197,19 @@
                     @endif
                 </div>
                 <div class="em-bar-actions">
-                    {{ $this->chooseLearnersAction }}
+                    @if ($this->chooseLearnersAction->isVisible()) {{ $this->chooseLearnersAction }} @endif
+                    @if ($this->allExams)
+                        @if ($this->submitAllAction->isVisible()) {{ $this->submitAllAction }} @endif
+                        @if ($this->approveAllAction->isVisible()) {{ $this->approveAllAction }} @endif
+                    @endif
                     @unless ($this->allExams)
                         <x-filament::button type="button" size="sm" color="gray" icon="heroicon-o-arrow-down-tray" wire:click="downloadSheet">Download sheet</x-filament::button>
-                        {{ $this->uploadSheetAction }}
+                        @if ($this->uploadSheetAction->isVisible()) {{ $this->uploadSheetAction }} @endif
                         <x-filament::button tag="a" size="sm" color="gray" icon="heroicon-o-printer" :href="$this->printUrl()" target="_blank">Print</x-filament::button>
                         <x-filament::button tag="a" size="sm" color="gray" icon="heroicon-o-document" :href="$this->printUrl(blank: true)" target="_blank">Blank sheet</x-filament::button>
-                        {{ $this->returnSheetAction }}
-                        {{ $this->submitSheetAction }}
-                        {{ $this->approveSheetAction }}
+                        @if ($this->returnSheetAction->isVisible()) {{ $this->returnSheetAction }} @endif
+                        @if ($this->submitSheetAction->isVisible()) {{ $this->submitSheetAction }} @endif
+                        @if ($this->approveSheetAction->isVisible()) {{ $this->approveSheetAction }} @endif
                     @endunless
                 </div>
             </div>
@@ -217,6 +221,7 @@
                     $editable = $exams->mapWithKeys(fn ($e) => [$e->id => $this->gridEditable($e)]);
                     $maths = $this->gridMaths();
                     $split = $maths['split'];
+                    $sheets = $this->gridSheets();
                 @endphp
                 <div class="em-scroll">
                     <table class="em-table em-grid">
@@ -227,7 +232,8 @@
                                 @foreach ($exams as $exam)
                                     <th class="em-c" title="{{ $exam->name }}">
                                         {{ $headings[$exam->id] }}<br><span class="em-out">/{{ $exam->max_score + 0 }}</span>
-                                        @unless ($editable[$exam->id])<br><span class="em-closed">closed</span>@endunless
+                                        @php $columnSheet = $sheets[$exam->id] ?? null; @endphp
+                                        <br><span @class(['em-pill', 'em-pill-sm', 'is-'.($columnSheet?->status ?? 'open')])>{{ $exam->isLocked() ? 'Locked' : ($columnSheet?->statusLabel() ?? 'Being entered') }}</span>
                                     </th>
                                 @endforeach
                                 @if ($split)
@@ -331,7 +337,7 @@
             </div>
             @endif
 
-            @unless ($locked && ! $this->allExams)
+            @unless ($this->allExams ? ! ($editable ?? collect())->contains(true) : $locked)
                 <div class="em-foot">
                     <span class="em-muted">Press <kbd>Enter</kbd> to move to the next {{ $this->allExams ? 'mark' : 'student' }}. Blank = no mark{{ $this->allExams ? ', AB = absent' : '' }}. Marks save by themselves as you type.</span>
                     <span class="em-save">
@@ -382,7 +388,7 @@
         .em-calc { background: #f8fbff; color: #16233a; }
         .em-table th.em-calc { color: #1a5fa8; }
         .em-out { font-weight: 500; text-transform: none; }
-        .em-closed { font-size: .62rem; color: #b91c1c; text-transform: none; }
+        .em-pill-sm { display: inline-block; margin-top: .25rem; font-size: .58rem; padding: .05rem .4rem; text-transform: none; letter-spacing: 0; white-space: nowrap; }
         .em-grade { display: inline-block; min-width: 2.2rem; font-weight: 700; color: #1a5fa8; }
         .em-comment { width: 100%; min-width: 12rem; padding: .3rem .5rem; border: 1px solid #e2e8f0; border-radius: 6px; font-size: .82rem; }
         .em-foot { display: flex; justify-content: space-between; align-items: center; gap: 1rem; padding: .85rem 1.25rem; border-top: 1px solid #eef2f7; background: #fafbfd; position: sticky; bottom: 0; }

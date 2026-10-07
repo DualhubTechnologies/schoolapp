@@ -617,6 +617,90 @@ class EnterMarks extends Page
         return true;
     }
 
+    /**
+     * The mark sheet of each exam on the all-exams view, for this class
+     * and subject.
+     *
+     * @return Collection<int, MarkSheet> exam id => sheet
+     */
+    public function gridSheets(): Collection
+    {
+        if (! $this->classId || ! $this->subjectId) {
+            return collect();
+        }
+
+        return $this->termAssessments()->mapWithKeys(fn (Assessment $exam) => [$exam->id => MarkSheet::for($exam, (int) $this->classId, (int) $this->subjectId)]);
+    }
+
+    /**
+     * Hand every open sheet of the term (this class and subject) to the
+     * Director of Studies at once. Saves first.
+     */
+    public function submitAllAction(): Action
+    {
+        return Action::make('submitAll')
+            ->label('Submit all for approval')
+            ->icon('heroicon-o-paper-airplane')
+            ->visible(fn (): bool => $this->allExams && ! AcademicAccess::manages() && $this->openGridSheets()->isNotEmpty())
+            ->requiresConfirmation()
+            ->modalHeading('Submit these mark sheets?')
+            ->modalDescription(fn (): string => 'Submits '.$this->openGridSheets()->count().' '.str('exam')->plural($this->openGridSheets()->count()).' ('.$this->openGridSheets()->map(fn (MarkSheet $sheet) => $sheet->assessment?->name)->implode(', ').'). You will not be able to change these marks after submitting, unless the Director of Studies returns a sheet.')
+            ->modalSubmitActionLabel('Submit')
+            ->action(function (): void {
+                if (! $this->persistGrid(quiet: true)) {
+                    Notification::make()->title('Fix the marks first')->body('Some marks are not valid.')->danger()->send();
+
+                    return;
+                }
+
+                $sheets = $this->openGridSheets();
+                $sheets->each(fn (MarkSheet $sheet) => $sheet->submit(auth()->user()));
+
+                Notification::make()->title($sheets->count().' '.str('mark sheet')->plural($sheets->count()).' submitted')->body('The Director of Studies can now approve them.')->success()->send();
+            });
+    }
+
+    /**
+     * Approve every sheet of the term (this class and subject) that is not
+     * yet approved or locked. Saves first.
+     */
+    public function approveAllAction(): Action
+    {
+        return Action::make('approveAll')
+            ->label('Approve all')
+            ->icon('heroicon-o-check-badge')
+            ->color('success')
+            ->visible(fn (): bool => $this->allExams && AcademicAccess::manages() && $this->approvableGridSheets()->isNotEmpty())
+            ->requiresConfirmation()
+            ->modalHeading('Approve these mark sheets?')
+            ->modalDescription(fn (): string => 'Approves '.$this->approvableGridSheets()->map(fn (MarkSheet $sheet) => $sheet->assessment?->name)->implode(', ').'. The marks become final: nobody can change them unless you reopen a sheet (under This exam).')
+            ->modalSubmitActionLabel('Approve')
+            ->action(function (): void {
+                if (! $this->persistGrid(quiet: true)) {
+                    Notification::make()->title('Fix the marks first')->body('Some marks are not valid.')->danger()->send();
+
+                    return;
+                }
+
+                $sheets = $this->approvableGridSheets();
+                $sheets->each(fn (MarkSheet $sheet) => $sheet->approve(auth()->user()));
+
+                Notification::make()->title($sheets->count().' '.str('mark sheet')->plural($sheets->count()).' approved')->success()->send();
+            });
+    }
+
+    /** @return Collection<int, MarkSheet> */
+    protected function openGridSheets(): Collection
+    {
+        return $this->gridSheets()->filter(fn (MarkSheet $sheet) => $sheet->isOpen() && ! $sheet->assessment?->isLocked());
+    }
+
+    /** @return Collection<int, MarkSheet> */
+    protected function approvableGridSheets(): Collection
+    {
+        return $this->gridSheets()->filter(fn (MarkSheet $sheet) => ! $sheet->isApproved() && ! $sheet->assessment?->isLocked());
+    }
+
     protected function isAbsentText(string $raw): bool
     {
         return in_array(mb_strtolower($raw), ['ab', 'abs', 'absent'], true);

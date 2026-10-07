@@ -4,6 +4,7 @@ use App\Filament\Pages\EnterMarks;
 use App\Models\AcademicYear;
 use App\Models\Assessment;
 use App\Models\Mark;
+use App\Models\MarkSheet;
 use App\Models\School;
 use App\Models\SchoolClass;
 use App\Models\Student;
@@ -98,4 +99,17 @@ it('lists nobody on an elective until learners are ticked, then only them', func
 
     expect($page->instance()->sheetStudents()['students']->pluck('id')->all())->toBe([$other->id])
         ->and($other->electives()->pluck('subjects.id')->all())->toBe([$french->id]);
+});
+
+it('lets the admin approve every exam of the term from the all-exams sheet', function () {
+    $ca = Assessment::create(['school_id' => $this->assessment->school_id, 'term_id' => $this->assessment->term_id, 'name' => 'Test 1', 'type' => 'ca', 'max_score' => 20]);
+
+    markSheet()
+        ->set('allExams', true)
+        ->set("grid.{$ca->id}.{$this->student->id}", '15')
+        ->callAction('approveAll')
+        ->assertNotified('2 mark sheets approved');
+
+    expect(MarkSheet::where('school_class_id', $this->class->id)->where('status', 'approved')->count())->toBe(2)
+        ->and((float) Mark::where('assessment_id', $ca->id)->value('score'))->toBe(15.0);
 });

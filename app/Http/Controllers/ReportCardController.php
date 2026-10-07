@@ -142,6 +142,13 @@ class ReportCardController extends Controller
             : [];
 
         // NCDC topic levels (O-Level), when teachers have recorded them.
+        // Primary: each exam graded on its own, as Ugandan primary report
+        // cards are: the mark and grade per subject, then the exam's
+        // total, aggregate and division.
+        $examResults = $class->curriculum() === 'primary' && ! $examId
+            ? $this->examResults($calculator, $class, $term, $section, $results['assessments'])
+            : [];
+
         $topicScores = $class->curriculum() === 'o_level' && $template->shows('topics') && ! $examId
             ? app(TopicAssessment::class)->forReport($term, $rows->pluck('student.id')->all())
             : [];
@@ -163,6 +170,7 @@ class ReportCardController extends Controller
             'topicScores' => $topicScores,
             'projects' => $projects,
             'termAverages' => $termAverages,
+            'examResults' => $examResults,
         ]);
     }
 
@@ -244,6 +252,34 @@ class ReportCardController extends Controller
 
             foreach ($rows as $row) {
                 $out[$row['student']->id][$t->name] = $row['average'];
+            }
+        }
+
+        return $out;
+    }
+
+    /**
+     * Each exam's results on their own, for primary report cards: one
+     * entry per exam that has marks, with the rows keyed by student id.
+     *
+     * @param  Collection<int, Assessment>  $assessments
+     * @return list<array{exam: Assessment, rows: Collection<int, array<string, mixed>>}>
+     */
+    protected function examResults(ResultsCalculator $calculator, SchoolClass $class, Term $term, ?int $section, Collection $assessments): array
+    {
+        $out = [];
+
+        foreach ($assessments as $assessment) {
+            if (in_array($assessment->type, ['project', 'topics'], true)) {
+                continue;
+            }
+
+            $rows = $calculator->forClass($class, $term, $section, $assessment->getKey())['rows']
+                ->filter(fn (array $row): bool => $row['average'] !== null)
+                ->keyBy(fn (array $row): int => $row['student']->id);
+
+            if ($rows->isNotEmpty()) {
+                $out[] = ['exam' => $assessment, 'rows' => $rows];
             }
         }
 

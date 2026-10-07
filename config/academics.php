@@ -105,11 +105,12 @@ return [
         ],
 
         'primary' => [
-            // Lower primary thematic curriculum (P1–P3)
-            ['name' => 'Literacy I', 'short' => 'LIT1', 'offered_in' => [1, 2, 3]],
-            ['name' => 'Literacy II', 'short' => 'LIT2', 'offered_in' => [1, 2, 3]],
-            ['name' => 'Numeracy', 'short' => 'NUM', 'offered_in' => [1, 2, 3]],
-            ['name' => 'Oral English', 'short' => 'OENG', 'offered_in' => [1, 2, 3]],
+            // Lower primary thematic curriculum (P1–P3). Schools grade these
+            // four like the PLE subjects, for an aggregate and division.
+            ['name' => 'Literacy I', 'short' => 'LIT1', 'category' => 'core', 'offered_in' => [1, 2, 3]],
+            ['name' => 'Literacy II', 'short' => 'LIT2', 'category' => 'core', 'offered_in' => [1, 2, 3]],
+            ['name' => 'Numeracy', 'short' => 'NUM', 'category' => 'core', 'offered_in' => [1, 2, 3]],
+            ['name' => 'Oral English', 'short' => 'OENG', 'category' => 'core', 'offered_in' => [1, 2, 3]],
             // Upper primary (P4–P7): the four PLE subjects are "core"
             ['name' => 'English', 'short' => 'ENG', 'category' => 'core', 'offered_in' => [4, 5, 6, 7]],
             ['name' => 'Mathematics', 'short' => 'MTC', 'category' => 'core', 'offered_in' => [4, 5, 6, 7]],
@@ -263,8 +264,8 @@ return [
         ['Division 1', 4, 12],
         ['Division 2', 13, 23],
         ['Division 3', 24, 29],
-        ['Division 4', 30, 34],
-        ['Ungraded', 35, 36],
+        ['Division 4', 30, 33],
+        ['Ungraded', 34, 36],
     ],
 
     /*

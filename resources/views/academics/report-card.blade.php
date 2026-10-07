@@ -76,6 +76,8 @@
     table.marks th { background: #eef3fa; font-size: .65rem; text-transform: uppercase; letter-spacing: .03em; color: var(--rc-primary); padding: .35rem .4rem; border: 1px solid #cbd5e1; }
     table.marks td { padding: .32rem .4rem; border: 1px solid #dfe5ee; }
     table.marks td.c, table.marks th.c { text-align: center; }
+    table.marks.per-exam tfoot th { background: #f8fafc; font-size: .72rem; text-transform: none; letter-spacing: 0; color: var(--rc-primary); }
+    table.marks .core-mark { color: var(--rc-accent); font-weight: 800; margin-left: .15rem; }
     table.marks td.grade { font-weight: 800; color: var(--rc-primary); text-align: center; }
     table.marks tr.not-counted td { color: #6b7280; }
     .summary { display: grid; grid-template-columns: 1.2fr 1fr; gap: .8rem; margin-top: .7rem; }
@@ -141,6 +143,9 @@
         @php
             $student = $row['student'];
             $report = $row['report'];
+            // Primary: the term's standing is the last exam's result (usually End of Term).
+            $finalExam = collect($examResults)->last(fn ($e) => isset($e['rows'][$student->id]));
+            $overall = $finalExam ? $finalExam['rows'][$student->id] : $row;
             $photo = $student->photoUrl();
             $counted = $row['counted_subject_ids'] ?? null;
             $topics = $topicScores[$student->id] ?? [];
@@ -188,6 +193,71 @@
                 @endif
             </div>
 
+            @if ($examResults)
+                {{-- Primary: every exam on its own, mark and grade per subject, then its total, aggregate and division. --}}
+                @php
+                    $subjectIds = collect($examResults)->flatMap(fn ($e) => array_keys($e['rows'][$student->id]['subjects'] ?? []))->unique()->all();
+                    $subjectList = $class->subjects->filter(fn ($s) => in_array($s->id, $subjectIds, true));
+                @endphp
+                <table class="marks per-exam">
+                    <thead>
+                        <tr>
+                            <th rowspan="2" style="text-align:left">Subject</th>
+                            @foreach ($examResults as $e)
+                                <th class="c" colspan="2" title="{{ $e['exam']->name }}">{{ $e['exam']->name }}</th>
+                            @endforeach
+                            <th rowspan="2" style="text-align:left">Remark</th>
+                            @if ($show('teacher_initials'))<th rowspan="2" class="c">Teacher</th>@endif
+                        </tr>
+                        <tr>
+                            @foreach ($examResults as $e)
+                                <th class="c">Marks<br><span style="font-weight:500">/{{ $e['exam']->max_score + 0 }}</span></th>
+                                <th class="c">Grade</th>
+                            @endforeach
+                        </tr>
+                    </thead>
+                    <tbody>
+                        @foreach ($subjectList as $subject)
+                            @php $remark = null; @endphp
+                            <tr>
+                                <td><strong>{{ $subject->name }}</strong>@if ($subject->category === 'core')<span class="core-mark">*</span>@endif</td>
+                                @foreach ($examResults as $e)
+                                    @php
+                                        $res = $e['rows'][$student->id]['subjects'][$subject->id] ?? null;
+                                        $s = $res['scores'][$e['exam']->id] ?? null;
+                                        $remark = $res ? ($res['comment'] ?: $res['descriptor']) : $remark;
+                                    @endphp
+                                    <td class="c">{{ $s ? ($s['absent'] ? 'AB' : $n($s['raw'])) : '' }}</td>
+                                    <td class="grade">{{ $res['grade'] ?? '' }}</td>
+                                @endforeach
+                                <td>{{ $remark }}</td>
+                                @if ($show('teacher_initials'))<td class="c">{{ $teachers[$subject->pivot->teacher_id ?? 0] ?? '' }}</td>@endif
+                            </tr>
+                        @endforeach
+                    </tbody>
+                    <tfoot>
+                        @foreach (['Total marks' => 'total', 'Aggregate' => 'aggregate', 'Division' => 'division'] as $label => $field)
+                            <tr>
+                                <th style="text-align:left">{{ $label }}</th>
+                                @foreach ($examResults as $e)
+                                    @php
+                                        $examRow = $e['rows'][$student->id] ?? null;
+                                        $value = match (true) {
+                                            $examRow === null => '',
+                                            $field === 'total' => $n($examRow['total']),
+                                            $field === 'aggregate' => $examRow['aggregate'] ?? 'X',
+                                            default => $examRow['division'] === 'X' ? 'Incomplete' : ($examRow['division'] ?? '—'),
+                                        };
+                                    @endphp
+                                    <th class="c" colspan="2">{{ $value }}</th>
+                                @endforeach
+                                <th></th>
+                                @if ($show('teacher_initials'))<th></th>@endif
+                            </tr>
+                        @endforeach
+                    </tfoot>
+                </table>
+            @else
             <table class="marks">
                 <thead>
                     <tr>
@@ -262,12 +332,14 @@
                     @endforeach
                 </tbody>
             </table>
+            @endif
 
             <div class="summary">
                 <div class="box">
                     @if ($curriculum === 'primary')
-                        <div class="kv"><span>Aggregate (4 core subjects)</span><b class="big">{{ $row['aggregate'] ?? 'X' }}</b></div>
-                        <div class="kv"><span>Division</span><b class="big">{{ $row['division'] === 'X' ? 'Incomplete' : ($row['division'] ?? '—') }}</b></div>
+                        @if ($finalExam)<div class="kv"><span>Result from</span><b>{{ $finalExam['exam']->name }}</b></div>@endif
+                        <div class="kv"><span>Aggregate (4 core subjects)</span><b class="big">{{ $overall['aggregate'] ?? 'X' }}</b></div>
+                        <div class="kv"><span>Division</span><b class="big">{{ $overall['division'] === 'X' ? 'Incomplete' : ($overall['division'] ?? '—') }}</b></div>
                     @elseif ($curriculum === 'a_level')
                         <div class="kv"><span>Total points (out of 20)</span><b class="big">{{ $row['points'] ?? '—' }}</b></div>
                         <div class="kv"><span>Principal grades</span><b>{{ $row['principal_grades'] ?: '—' }}</b></div>
@@ -281,16 +353,16 @@
                         <div class="kv"><span>Descriptor</span><b>{{ $row['overall_descriptor'] ?? '—' }}</b></div>
                     @endif
                     @if ($curriculum !== 'o_level')
-                        <div class="kv"><span>Average score</span><b>{{ $n($row['average']) }}%</b></div>
-                        @if ($show('total_marks'))<div class="kv"><span>Total marks</span><b>{{ $n($row['total']) }}</b></div>@endif
+                        <div class="kv"><span>Average score</span><b>{{ $n($overall['average']) }}%</b></div>
+                        @if ($show('total_marks'))<div class="kv"><span>Total marks</span><b>{{ $n($overall['total']) }}</b></div>@endif
                     @endif
                 </div>
                 <div class="box">
                     @if ($show('class_position'))
-                        <div class="kv"><span>Position in class</span><b class="big">{{ $row['position'] ?? '—' }} <span style="font-size:.75rem;font-weight:600">out of {{ $row['out_of'] }}</span></b></div>
+                        <div class="kv"><span>Position in class</span><b class="big">{{ $overall['position'] ?? '—' }} <span style="font-size:.75rem;font-weight:600">out of {{ $overall['out_of'] }}</span></b></div>
                     @endif
-                    @if ($show('stream_position') && $student->section && $row['stream_position'])
-                        <div class="kv"><span>Position in stream</span><b>{{ $row['stream_position'] }} out of {{ $row['stream_out_of'] }}</b></div>
+                    @if ($show('stream_position') && $student->section && $overall['stream_position'])
+                        <div class="kv"><span>Position in stream</span><b>{{ $overall['stream_position'] }} out of {{ $overall['stream_out_of'] }}</b></div>
                     @endif
                     @if ($show('conduct') && $report?->conduct)<div class="kv"><span>Conduct</span><b>{{ $report->conduct }}</b></div>@endif
                     @php $days = $attendance[$student->id] ?? null; @endphp
@@ -418,6 +490,7 @@
                         <span>{{ $band->grade }} {{ $band->min_score + 0 }}–{{ $band->max_score + 0 }}{{ $band->descriptor ? ' ' . $band->descriptor : '' }}</span>
                     @endforeach
                     @if ($curriculum === 'a_level')<span>· Subsidiary pass (D1–C6) = 1 point</span>@endif
+                    @if ($examResults)<span>· * counts in the aggregate · {{ collect(config('academics.primary_divisions'))->map(fn ($d) => "{$d[0]} {$d[1]}–{$d[2]}")->implode(', ') }}</span>@endif
                     @if ($topicScores)<br><strong>Topics:</strong> <span>3 all outcomes, with ease</span><span>2 most, enough to achieve</span><span>1 some, not enough</span><span>0 none yet</span>@endif
                 </div>
             @endif

@@ -352,7 +352,7 @@ class ReportCardController extends Controller
             $document = DocumentVerification::issue(
                 $class->school_id,
                 'report_card',
-                "report_card:{$student->id}:{$term->id}:".($exam?->id ?? 'term'),
+                "report_card:{$student->id}:{$term->id}:".($exam->id ?? 'term'),
                 [
                     'school' => $schoolName,
                     'learner' => (string) $student->name,

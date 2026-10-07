@@ -19,6 +19,7 @@ use Filament\Actions\Action;
 use Filament\Forms\Components\CheckboxList;
 use Filament\Forms\Components\FileUpload;
 use Filament\Forms\Components\Textarea;
+use Filament\Forms\Components\TextInput;
 use Filament\Notifications\Notification;
 use Filament\Pages\Page;
 use Filament\Support\Icons\Heroicon;
@@ -215,7 +216,7 @@ class EnterMarks extends Page
             ->orderBy('level')
             ->orderBy('name')
             ->get()
-            ->filter(fn (SchoolClass $c) => $assessment->appliesTo($c->curriculum()))
+            ->filter(fn (SchoolClass $c) => $assessment->covers($c))
             ->pluck('name', 'id');
     }
 
@@ -253,6 +254,8 @@ class EnterMarks extends Page
     {
         return ($this->schoolClass?->subjects ?? collect())
             ->filter(fn (Subject $s) => AcademicAccess::canEnterMarksFor($s->pivot->teacher_id, $this->classId))
+            // One exam: only the subjects it is set in (a CA for Biology, say).
+            ->filter(fn (Subject $s) => $this->allExams || ($this->assessment?->coversSubject($s->id) ?? true))
             ->mapWithKeys(fn (Subject $s) => [$s->id => $s->name]);
     }
 
@@ -455,7 +458,9 @@ class EnterMarks extends Page
             ->orderBy('sort_order')
             ->orderBy('id')
             ->get()
-            ->filter(fn (Assessment $a) => $a->appliesTo($curriculum))
+            ->filter(fn (Assessment $a) => $a->appliesTo($curriculum)
+                && $a->coversClass($this->classId)
+                && (! $this->subjectId || $a->coversSubject($this->subjectId)))
             ->values();
     }
 
@@ -712,6 +717,66 @@ class EnterMarks extends Page
      * Tick the learners in the class who take an elective subject. Only
      * they are listed on its mark sheet (and on report cards for it).
      */
+    /**
+     * A continuous assessment for just this class and subject, e.g. a
+     * Biology activity given in S.2 only. It joins this term's mark sheet.
+     */
+    public function addCaAction(): Action
+    {
+        return Action::make('addCa')
+            ->label('Add a CA')
+            ->icon('heroicon-o-plus')
+            ->color('gray')
+            ->visible(fn (): bool => $this->assessment !== null && $this->schoolClass !== null && $this->subject !== null && ! $this->assessment->isLocked())
+            ->modalHeading(fn (): string => 'New continuous assessment for '.$this->subject?->name.', '.$this->schoolClass?->name)
+            ->modalDescription('Only this class and subject get it. The other subjects and classes are not affected.')
+            ->modalSubmitActionLabel('Add')
+            ->schema([
+                TextInput::make('name')
+                    ->required()
+                    ->maxLength(100)
+                    ->default(fn (): string => 'CA '.($this->termAssessments()->where('type', 'ca')->count() + 1).' — '.$this->subject?->name),
+                TextInput::make('max_score')
+                    ->label('Marked out of')
+                    ->numeric()
+                    ->minValue(1)
+                    ->required()
+                    ->default(fn (): int => $this->schoolClass?->curriculum() === 'o_level' ? Assessment::O_LEVEL_CA_DEFAULT_MAX : 100)
+                    ->helperText(fn (): string => $this->schoolClass?->curriculum() === 'o_level' ? 'Out of 20 by default, or 100. The report card shows it out of 3.' : 'Usually 100.'),
+            ])
+            ->action(function (array $data): void {
+                $class = $this->schoolClass;
+                $subject = $this->subject;
+                $term = $this->assessment;
+
+                if (! $class || ! $subject || ! $term) {
+                    return;
+                }
+
+                $curriculum = $class->curriculum();
+                // Before the End of Term exam on the sheet and the report card.
+                $endOfTerm = $this->termAssessments()->firstWhere('type', 'eot');
+
+                Assessment::create([
+                    'school_id' => $term->school_id,
+                    'term_id' => $term->term_id,
+                    'name' => $data['name'],
+                    'type' => 'ca',
+                    'curriculum' => $curriculum,
+                    'class_ids' => [$class->getKey()],
+                    'subject_ids' => [$subject->getKey()],
+                    'max_score' => $data['max_score'],
+                    'weight' => (float) config("academics.default_weights.{$curriculum}.ca", 0),
+                    'sort_order' => $endOfTerm ? max(0, (int) $endOfTerm->sort_order - 1) : 0,
+                ]);
+
+                $this->allExams = true;
+                $this->loadSheet();
+
+                Notification::make()->title((string) $data['name'].' added for '.$subject->name.', '.$class->name)->success()->send();
+            });
+    }
+
     public function chooseLearnersAction(): Action
     {
         return Action::make('chooseLearners')

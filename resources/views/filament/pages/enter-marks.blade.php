@@ -198,6 +198,7 @@
                 </div>
                 <div class="em-bar-actions">
                     @if ($this->chooseLearnersAction->isVisible()) {{ $this->chooseLearnersAction }} @endif
+                    @if ($this->addCaAction->isVisible()) {{ $this->addCaAction }} @endif
                     @if ($this->allExams)
                         @if ($this->submitAllAction->isVisible()) {{ $this->submitAllAction }} @endif
                         @if ($this->approveAllAction->isVisible()) {{ $this->approveAllAction }} @endif

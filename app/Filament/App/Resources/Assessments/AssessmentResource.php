@@ -6,6 +6,8 @@ use App\Filament\App\Resources\Assessments\Pages\ManageAssessments;
 use App\Filament\Concerns\GatedByModule;
 use App\Filament\Pages\EnterMarks;
 use App\Models\Assessment;
+use App\Models\SchoolClass;
+use App\Models\Subject;
 use App\Models\Term;
 use App\Support\AcademicAccess;
 use App\Support\SchoolType;
@@ -106,6 +108,29 @@ class AssessmentResource extends Resource
                 ->native(false)
                 ->live()
                 ->afterStateUpdated($applyDefaults),
+            Select::make('class_ids')
+                ->label('Classes')
+                ->multiple()
+                ->options(fn (Get $get): array => SchoolClass::where('school_id', auth()->user()?->school_id)
+                    ->with('classLevel')
+                    ->orderBy('level')
+                    ->orderBy('name')
+                    ->get()
+                    ->filter(fn (SchoolClass $c): bool => ! $get('curriculum') || $c->curriculum() === $get('curriculum'))
+                    ->pluck('name', 'id')
+                    ->all())
+                ->placeholder('All classes')
+                ->helperText('Leave empty for an exam every class sits (BOT, MOT, End of Term). Pick the classes for a CA given in some only.'),
+            Select::make('subject_ids')
+                ->label('Subjects')
+                ->multiple()
+                ->options(fn (Get $get): array => Subject::where('school_id', auth()->user()?->school_id)
+                    ->when($get('curriculum'), fn ($q, string $curriculum) => $q->where('curriculum', $curriculum))
+                    ->orderBy('name')
+                    ->pluck('name', 'id')
+                    ->all())
+                ->placeholder('All subjects')
+                ->helperText('Leave empty for every subject, or pick the subjects this CA is for.'),
             TextInput::make('name')
                 ->required()
                 ->maxLength(100)
@@ -179,7 +204,9 @@ class AssessmentResource extends Resource
                     ->description(fn (Assessment $a) => $a->term?->academicYear?->name),
                 TextColumn::make('curriculum')->label('For')
                     ->formatStateUsing(fn (?string $state) => config('academics.curricula')[$state] ?? 'All classes')
-                    ->placeholder('All classes'),
+                    ->placeholder('All classes')
+                    ->description(fn (Assessment $a): ?string => $a->class_ids || $a->subject_ids ? $a->coverageLabel() : null)
+                    ->wrap(),
                 TextColumn::make('max_score')->label('Out of')->numeric()->alignCenter(),
                 TextColumn::make('weight')->label('Weight')->suffix('%')->numeric()->alignCenter(),
                 TextColumn::make('marks_count')->label('Marks entered')->numeric()->alignCenter(),

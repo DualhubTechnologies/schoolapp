@@ -75,7 +75,10 @@ class ResultsCalculator
             ->orderBy('sort_order')
             ->orderBy('held_on')
             ->orderBy('id')
-            ->get();
+            ->get()
+            // An exam set in some classes only (a CA in S.2, say).
+            ->filter(fn (Assessment $a): bool => $a->coversClass((int) $class->getKey()))
+            ->values();
 
         $students = Student::where('school_class_id', $class->getKey())
             ->where('status', 'active')
@@ -147,6 +150,11 @@ class ResultsCalculator
             $averagedWeight = 0.0;
 
             foreach ($assessments as $assessment) {
+                // An exam set in other subjects only.
+                if (! $assessment->coversSubject((int) $subject->getKey())) {
+                    continue;
+                }
+
                 // One mark, or one per paper for a subject sat as several
                 // papers: the papers' scores are averaged.
                 $paperMarks = [];

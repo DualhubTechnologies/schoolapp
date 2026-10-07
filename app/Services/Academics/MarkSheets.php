@@ -71,7 +71,7 @@ class MarkSheets
             ->orderBy('level')
             ->orderBy('name')
             ->get()
-            ->filter(fn (SchoolClass $c) => $assessment->appliesTo($c->curriculum()));
+            ->filter(fn (SchoolClass $c) => $assessment->covers($c));
 
         $students = Student::whereIn('school_class_id', $classes->modelKeys())
             ->where('status', 'active')
@@ -98,6 +98,10 @@ class MarkSheets
 
         foreach ($classes as $class) {
             foreach ($class->subjects as $subject) {
+                if (! $assessment->coversSubject((int) $subject->getKey())) {
+                    continue;
+                }
+
                 $rows[] = $this->progressRow($assessment, $class, $subject, $students->get($class->getKey(), collect()), $entered, $sheets->get("{$class->getKey()}:{$subject->getKey()}"), $teachers[$subject->pivot->teacher_id] ?? null);
             }
         }

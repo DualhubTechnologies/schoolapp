@@ -113,3 +113,60 @@ it('lets the admin approve every exam of the term from the all-exams sheet', fun
     expect(MarkSheet::where('school_class_id', $this->class->id)->where('status', 'approved')->count())->toBe(2)
         ->and((float) Mark::where('assessment_id', $ca->id)->value('score'))->toBe(15.0);
 });
+
+it('adds a CA for just this class and subject from the mark sheet', function () {
+    $maths = Subject::create(['school_id' => $this->assessment->school_id, 'name' => 'Mathematics', 'curriculum' => 'primary']);
+    $this->class->subjects()->attach($maths->id, ['is_compulsory' => true]);
+    $p5 = SchoolClass::create(['school_id' => $this->assessment->school_id, 'name' => 'P.5']);
+
+    Livewire::test(EnterMarks::class)
+        ->set('assessmentId', $this->assessment->id)
+        ->set('classId', $this->class->id)
+        ->set('subjectId', $this->subject->id)
+        ->callAction('addCa', data: ['name' => 'CA 1 — English', 'max_score' => 100])
+        ->assertHasNoActionErrors()
+        ->assertSet('allExams', true);
+
+    $ca = Assessment::where('type', 'ca')->sole();
+
+    expect($ca->class_ids)->toBe([$this->class->id])
+        ->and($ca->subject_ids)->toBe([$this->subject->id])
+        ->and($ca->covers($this->class->fresh(), $this->subject->id))->toBeTrue()
+        ->and($ca->covers($this->class->fresh(), $maths->id))->toBeFalse()
+        ->and($ca->coversClass($p5->id))->toBeFalse();
+
+    // English's sheet has the CA beside End of Term; Mathematics' does not.
+    $english = Livewire::test(EnterMarks::class)
+        ->set('assessmentId', $this->assessment->id)
+        ->set('classId', $this->class->id)
+        ->set('subjectId', $this->subject->id);
+    expect($english->instance()->termAssessments()->pluck('id')->all())->toContain($ca->id);
+
+    $mathsSheet = Livewire::test(EnterMarks::class)
+        ->set('assessmentId', $this->assessment->id)
+        ->set('classId', $this->class->id)
+        ->set('subjectId', $maths->id);
+    expect($mathsSheet->instance()->termAssessments()->pluck('id')->all())->not->toContain($ca->id);
+
+    // Choosing the CA itself offers only its class and subject.
+    $caSheet = Livewire::test(EnterMarks::class)
+        ->set('allExams', false)
+        ->set('assessmentId', $ca->id);
+    expect($caSheet->instance()->classOptions()->keys()->all())->toBe([$this->class->id]);
+    $caSheet->set('classId', $this->class->id);
+    expect($caSheet->instance()->subjectOptions()->keys()->all())->toBe([$this->subject->id]);
+});
+
+it('does not count a CA set for one subject as missing in the others', function () {
+    $maths = Subject::create(['school_id' => $this->assessment->school_id, 'name' => 'Mathematics', 'curriculum' => 'primary']);
+    $this->class->subjects()->attach($maths->id, ['is_compulsory' => true]);
+    $ca = Assessment::create(['school_id' => $this->assessment->school_id, 'term_id' => $this->assessment->term_id, 'name' => 'English CA', 'type' => 'ca', 'max_score' => 100, 'class_ids' => [$this->class->id], 'subject_ids' => [$this->subject->id]]);
+
+    Mark::create(['assessment_id' => $this->assessment->id, 'student_id' => $this->student->id, 'subject_id' => $this->subject->id, 'score' => 70]);
+    Mark::create(['assessment_id' => $ca->id, 'student_id' => $this->student->id, 'subject_id' => $this->subject->id, 'score' => 60]);
+    Mark::create(['assessment_id' => $this->assessment->id, 'student_id' => $this->student->id, 'subject_id' => $maths->id, 'score' => 50]);
+
+    $missing = app(\App\Services\Academics\MarksCompleteness::class)->missingFor($this->assessment->term);
+
+    expect(collect($missing)->flatMap(fn ($c) => $c['missing'])->all())->not->toContain('Mathematics — English CA');
+});

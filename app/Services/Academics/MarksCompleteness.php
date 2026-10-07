@@ -64,7 +64,7 @@ class MarksCompleteness
 
             foreach ($rows->pluck('subject_id')->unique() as $subjectId) {
                 foreach ($assessments as $assessment) {
-                    if ($assessment->curriculum && $assessment->curriculum !== $curriculum) {
+                    if (! $assessment->appliesTo($curriculum) || ! $assessment->coversClass((int) $class->getKey()) || ! $assessment->coversSubject((int) $subjectId)) {
                         continue;
                     }
 

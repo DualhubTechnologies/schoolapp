@@ -49,6 +49,8 @@ class Assessment extends Model
         'name',
         'type',
         'curriculum',
+        'class_ids',
+        'subject_ids',
         'max_score',
         'weight',
         'held_on',
@@ -62,6 +64,8 @@ class Assessment extends Model
             'max_score' => 'decimal:2',
             'weight' => 'decimal:2',
             'held_on' => 'date',
+            'class_ids' => 'array',
+            'subject_ids' => 'array',
         ];
     }
 
@@ -84,6 +88,35 @@ class Assessment extends Model
     public function appliesTo(?string $curriculum): bool
     {
         return $this->curriculum === null || $this->curriculum === $curriculum;
+    }
+
+    /** Whether the exam is set in this class: every class unless some are chosen. */
+    public function coversClass(?int $classId): bool
+    {
+        return $this->class_ids === null || $this->class_ids === [] || in_array($classId, array_map('intval', $this->class_ids), true);
+    }
+
+    /** Whether the exam is set in this subject: every subject unless some are chosen. */
+    public function coversSubject(?int $subjectId): bool
+    {
+        return $this->subject_ids === null || $this->subject_ids === [] || in_array($subjectId, array_map('intval', $this->subject_ids), true);
+    }
+
+    /** Whether the exam is set in this class (and subject, when given). */
+    public function covers(SchoolClass $class, ?int $subjectId = null): bool
+    {
+        return $this->appliesTo($class->curriculum())
+            && $this->coversClass((int) $class->getKey())
+            && ($subjectId === null || $this->coversSubject($subjectId));
+    }
+
+    /** Who sits the exam, for lists: "All classes and subjects", or the chosen ones. */
+    public function coverageLabel(): string
+    {
+        $classes = $this->class_ids ? SchoolClass::whereIn('id', $this->class_ids)->orderBy('level')->orderBy('name')->pluck('name')->implode(', ') : 'All classes';
+        $subjects = $this->subject_ids ? Subject::whereIn('id', $this->subject_ids)->orderBy('name')->pluck('name')->implode(', ') : 'all subjects';
+
+        return "{$classes} · {$subjects}";
     }
 
     /**

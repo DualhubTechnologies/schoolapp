@@ -46,7 +46,7 @@ class TeacherLoad
                     ->with(['combination.subjects', 'electives'])
                     ->get();
 
-                $assessment = $assessments->first(fn (Assessment $a) => $a->appliesTo($class->curriculum()));
+                $assessment = $assessments->first(fn (Assessment $a) => $a->covers($class) && empty($a->subject_ids));
 
                 return $class->subjects->map(function (Subject $subject) use ($class, $students, $assessment) {
                     $takes = MarkSheets::takers($students, $subject)['students'];

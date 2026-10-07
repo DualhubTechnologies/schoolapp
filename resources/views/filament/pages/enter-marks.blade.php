@@ -72,6 +72,38 @@
               class="em-card"
               x-data="{
                   bands: @js($this->bandsForJs()),
+                  maths: @js($this->allExams ? $this->gridMaths() : ['exams' => [], 'split' => null]),
+                  isAb(v) { return ['ab', 'abs', 'absent'].includes(String(v ?? '').trim().toLowerCase()); },
+                  cellBad(v, max) {
+                      if (v === null || v === '' || this.isAb(v)) return false;
+                      return isNaN(v) || parseFloat(v) < 0 || parseFloat(v) > max;
+                  },
+                  // The learner's term result, worked out as report cards do.
+                  termResult(m) {
+                      let weighted = 0, schoolBased = 0, weights = 0, plain = [], averaged = [], averagedWeight = 0;
+                      for (const e of this.maths.exams) {
+                          const v = m[e.id];
+                          if (v === null || v === '' || this.isAb(v) || this.cellBad(v, e.max)) continue;
+                          const pct = Math.min(100, parseFloat(v) / e.max * 100);
+                          plain.push(pct);
+                          if (e.averaged) { averaged.push(pct); averagedWeight = Math.max(averagedWeight, e.weight); continue; }
+                          weighted += pct * e.weight;
+                          if (e.schoolBased) schoolBased += pct * e.weight;
+                          weights += e.weight;
+                      }
+                      if (averaged.length) {
+                          const avg = averaged.reduce((a, b) => a + b, 0) / averaged.length;
+                          weighted += avg * averagedWeight; schoolBased += avg * averagedWeight; weights += averagedWeight;
+                      }
+                      if (!plain.length) return { final: null, formative: null, summative: null };
+                      if (weights > 0) return { final: weighted / weights, formative: schoolBased / weights, summative: (weighted - schoolBased) / weights };
+                      return { final: plain.reduce((a, b) => a + b, 0) / plain.length, formative: null, summative: null };
+                  },
+                  fmt(v) { return v === null || v === undefined ? '' : String(Math.round(v * 10) / 10); },
+                  gradeFor(pct) {
+                      const band = this.bands.find(b => pct >= b.min);
+                      return band ? band.grade : '';
+                  },
                   max: {{ $max }},
                   dirty: false,
                   timer: null,
@@ -180,6 +212,8 @@
                     $exams = $this->termAssessments();
                     $headings = $this->gridHeadings();
                     $editable = $exams->mapWithKeys(fn ($e) => [$e->id => $this->gridEditable($e)]);
+                    $maths = $this->gridMaths();
+                    $split = $maths['split'];
                 @endphp
                 <div class="em-scroll">
                     <table class="em-table em-grid">
@@ -193,12 +227,24 @@
                                         @unless ($editable[$exam->id])<br><span class="em-closed">closed</span>@endunless
                                     </th>
                                 @endforeach
+                                @if ($split)
+                                    <th class="em-c em-calc">CA<br><span class="em-out">/{{ $split['formative'] }}</span></th>
+                                    <th class="em-c em-calc">Exam<br><span class="em-out">/{{ $split['summative'] }}</span></th>
+                                    <th class="em-c em-calc">Total<br><span class="em-out">/100</span></th>
+                                @else
+                                    <th class="em-c em-calc">Term %</th>
+                                @endif
+                                <th class="em-c em-calc">Grade</th>
                             </tr>
                         </thead>
                         <tbody>
                             @foreach ($students as $i => $student)
                                 @php $id = $student->id; @endphp
-                                <tr wire:key="grid-{{ $id }}">
+                                <tr wire:key="grid-{{ $id }}"
+                                    x-data="{
+                                        m: @js(collect($exams)->mapWithKeys(fn ($e) => [$e->id => $this->grid[$e->id][$id] ?? ''])->all()),
+                                        get result() { return termResult(this.m); },
+                                    }">
                                     <td class="em-n">{{ $i + 1 }}</td>
                                     <td>
                                         <div class="em-name">{{ $student->name ?: 'No name' }}</div>
@@ -210,9 +256,8 @@
                                                    data-exam="{{ $exam->id }}"
                                                    class="em-score em-cell @error('grid.'.$exam->id.'.'.$id) is-error @enderror"
                                                    wire:model="grid.{{ $exam->id }}.{{ $id }}"
-                                                   x-data="{ v: @js($this->grid[$exam->id][$id] ?? ''), max: {{ (float) $exam->max_score }} }"
-                                                   x-model="v"
-                                                   :class="{ 'is-bad': v !== null && v !== '' && !['ab','abs','absent'].includes(String(v).toLowerCase()) && (isNaN(v) || parseFloat(v) < 0 || parseFloat(v) > max) }"
+                                                   x-model="m[{{ $exam->id }}]"
+                                                   :class="{ 'is-bad': cellBad(m[{{ $exam->id }}], {{ (float) $exam->max_score }}) }"
                                                    title="{{ $exam->name }}: 0 to {{ $exam->max_score + 0 }}, or AB"
                                                    @input="changed()"
                                                    @keydown.enter.prevent="next($el)"
@@ -220,6 +265,14 @@
                                                    @disabled(! $editable[$exam->id])>
                                         </td>
                                     @endforeach
+                                    @if ($split)
+                                        <td class="em-c em-calc" x-text="fmt(result.formative)"></td>
+                                        <td class="em-c em-calc" x-text="fmt(result.summative)"></td>
+                                        <td class="em-c em-calc"><strong x-text="fmt(result.final)"></strong></td>
+                                    @else
+                                        <td class="em-c em-calc"><strong x-text="result.final === null ? '' : fmt(result.final) + '%'"></strong></td>
+                                    @endif
+                                    <td class="em-c em-calc"><span class="em-grade" x-text="result.final === null ? '' : gradeFor(result.final)"></span></td>
                                 </tr>
                             @endforeach
                         </tbody>
@@ -323,6 +376,8 @@
         .em-status { font-size: .8rem; color: #b45309; white-space: nowrap; }
         .em-status.is-saved { color: #15803d; font-weight: 600; }
         .em-grid .em-cell { width: 4.2rem; }
+        .em-calc { background: #f8fbff; color: #16233a; }
+        .em-table th.em-calc { color: #1a5fa8; }
         .em-out { font-weight: 500; text-transform: none; }
         .em-closed { font-size: .62rem; color: #b91c1c; text-transform: none; }
         .em-grade { display: inline-block; min-width: 2.2rem; font-weight: 700; color: #1a5fa8; }

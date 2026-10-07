@@ -12,6 +12,7 @@ use App\Models\Student;
 use App\Models\Subject;
 use App\Models\Term;
 use App\Services\Academics\MarkSheets;
+use App\Services\Academics\ResultsCalculator;
 use App\Support\AcademicAccess;
 use BackedEnum;
 use Filament\Actions\Action;
@@ -479,6 +480,35 @@ class EnterMarks extends Page
         }
 
         return $headings;
+    }
+
+    /**
+     * What the browser needs to work out each learner's term result as
+     * marks are typed, the same way report cards do (ResultsCalculator):
+     * each exam's "out of" and weight, whether it is averaged with others
+     * of its kind (O-Level CAs) and whether it is school-based (CA).
+     *
+     * @return array{exams: list<array{id: int, max: float, weight: float, averaged: bool, schoolBased: bool}>, split: array{formative: int, summative: int}|null}
+     */
+    public function gridMaths(): array
+    {
+        $curriculum = $this->schoolClass?->curriculum();
+        $exams = $this->termAssessments();
+        $schoolBased = $exams->filter(fn (Assessment $a) => in_array($a->type, ResultsCalculator::SCHOOL_BASED_TYPES, true));
+        $total = Assessment::totalWeight($exams, $curriculum);
+        $formative = Assessment::totalWeight($schoolBased, $curriculum);
+        $share = $total > 0 ? (int) round($formative / $total * 100) : 0;
+
+        return [
+            'exams' => $exams->map(fn (Assessment $a): array => [
+                'id' => $a->id,
+                'max' => (float) $a->max_score,
+                'weight' => (float) $a->weight,
+                'averaged' => $a->isAveragedIn($curriculum),
+                'schoolBased' => in_array($a->type, ResultsCalculator::SCHOOL_BASED_TYPES, true),
+            ])->values()->all(),
+            'split' => $formative > 0 && $formative < $total ? ['formative' => $share, 'summative' => 100 - $share] : null,
+        ];
     }
 
     /** Can this exam's column still be changed (not locked, approved, or submitted for a teacher)? */

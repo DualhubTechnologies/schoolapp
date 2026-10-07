@@ -180,3 +180,18 @@ it('offers O-Level only the standard exam types: CA, end of term and project wor
 
     expect(AssessmentResource::typeOptions('o_level', $midTerm))->toHaveKey('mot');
 });
+
+it('works out the term result live on the all-exams mark sheet the same way as report cards', function () {
+    $maths = Livewire::test(EnterMarks::class)
+        ->set('assessmentId', Assessment::where('term_id', $this->term2->id)->where('type', 'eot')->value('id'))
+        ->set('classId', $this->class->id)
+        ->set('subjectId', $this->agric->id)
+        ->assertSee('Total')
+        ->instance()
+        ->gridMaths();
+
+    $aoi = collect($maths['exams'])->firstWhere('averaged', true);
+
+    expect($maths['split'])->toBe(['formative' => 20, 'summative' => 80])
+        ->and($aoi['schoolBased'])->toBeTrue();
+});

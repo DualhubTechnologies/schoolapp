@@ -260,10 +260,11 @@ class ReportCardController extends Controller
 
     /**
      * Each exam's results on their own, for primary report cards: one
-     * entry per exam that has marks, with the rows keyed by student id.
+     * entry per exam that has marks: the exam, and its rows keyed by
+     * student id.
      *
      * @param  Collection<int, Assessment>  $assessments
-     * @return list<array<string, mixed>>  each: exam (Assessment), rows (keyed by student id)
+     * @return list<array<string, mixed>>
      */
     protected function examResults(ResultsCalculator $calculator, SchoolClass $class, Term $term, ?int $section, Collection $assessments): array
     {

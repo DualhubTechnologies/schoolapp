@@ -81,7 +81,7 @@
     .kv b { color: #16233a; }
     .comment { margin-top: .55rem; }
     .comment .line { min-height: 2.2rem; border-bottom: 1px dotted #94a3b8; padding: .1rem 0 .2rem; font-style: italic; }
-    .foot { display: grid; grid-template-columns: repeat(3, 1fr); gap: 1.2rem; margin-top: 1.1rem; align-items: end; }
+    .foot { display: grid; grid-template-columns: repeat(2, 1fr); gap: 3rem; margin-top: 1.1rem; align-items: end; }
     .sig { border-top: 1px solid #111827; padding-top: .2rem; text-align: center; font-size: .7rem; color: #374151; }
     .sig img { max-height: 2.4rem; display: block; margin: 0 auto .15rem; }
     .key { margin-top: .6rem; font-size: .66rem; color: #4b5563; }
@@ -260,16 +260,17 @@
                         <div class="kv"><span>Principal grades</span><b>{{ $row['principal_grades'] ?: '—' }}</b></div>
                         <div class="kv"><span>Result</span><b>{{ $row['result_code'] ?: '—' }}</b></div>
                     @elseif ($curriculum === 'o_level')
-                        <div class="kv"><span>Result</span><b class="big">{{ $row['uce_label'] ?? '—' }}</b></div>
-                        @if ($row['uce_result'] ?? null)
-                            <div class="uce-note">{{ \App\Services\Academics\ResultsCalculator::UCE_MEANINGS[$row['uce_result']] }}@if ($row['uce_reasons']): {{ implode('; ', $row['uce_reasons']) }}@endif.</div>
-                        @endif
+                        {{-- O-Level: the average and total marks only, no UCE result. --}}
+                        <div class="kv"><span>Average score</span><b class="big">{{ $n($row['average']) }}%</b></div>
+                        <div class="kv"><span>Total marks</span><b class="big">{{ $n($row['total']) }}</b></div>
                     @else
                         <div class="kv"><span>Overall achievement</span><b class="big">{{ $row['overall_grade'] ?? '—' }}</b></div>
                         <div class="kv"><span>Descriptor</span><b>{{ $row['overall_descriptor'] ?? '—' }}</b></div>
                     @endif
-                    <div class="kv"><span>Average score</span><b>{{ $n($row['average']) }}%</b></div>
-                    @if ($show('total_marks'))<div class="kv"><span>Total marks</span><b>{{ $n($row['total']) }}</b></div>@endif
+                    @if ($curriculum !== 'o_level')
+                        <div class="kv"><span>Average score</span><b>{{ $n($row['average']) }}%</b></div>
+                        @if ($show('total_marks'))<div class="kv"><span>Total marks</span><b>{{ $n($row['total']) }}</b></div>@endif
+                    @endif
                 </div>
                 <div class="box">
                     @if ($show('class_position'))
@@ -377,7 +378,6 @@
                 <div class="foot">
                     <div class="sig">Class teacher</div>
                     <div class="sig">@if ($signature)<img src="{{ $signature }}" alt="">@endif Head teacher</div>
-                    <div class="sig">Parent / Guardian</div>
                 </div>
             @endif
 
@@ -390,7 +390,6 @@
                     @endforeach
                     @if ($curriculum === 'a_level')<span>· Subsidiary pass (D1–C6) = 1 point</span>@endif
                     @if ($topicScores)<br><strong>Topics:</strong> <span>3 all outcomes, with ease</span><span>2 most, enough to achieve</span><span>1 some, not enough</span><span>0 none yet</span>@endif
-                    @if ($curriculum === 'o_level')<br><strong>Result:</strong> <span>1 qualifies for the UCE certificate</span><span>2 requirements missing</span><span>3 E in every subject</span>@endif
                 </div>
             @endif
 

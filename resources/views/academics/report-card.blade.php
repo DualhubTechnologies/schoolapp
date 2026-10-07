@@ -49,8 +49,7 @@
        space to write the comments, never an empty band. */
     .rc-bottom { margin-top: auto; padding-top: .6rem; flex: 1 0 auto; display: flex; flex-direction: column; }
     .rc-bottom .remarks { flex: 1 0 auto; display: flex; flex-direction: column; }
-    .rc-bottom .remark { flex: 1 0 auto; display: flex; flex-direction: column; }
-    .rc-bottom .remark-write { flex: 1 0 auto; }
+    .rc-bottom .remark { flex: 1 0 auto; }
     /* Spare room on a short report, shared out by the script below. */
     .rc-fit table.marks:not(.projects) tbody td { padding-top: calc(.32rem + var(--rc-row-extra, 0px)); padding-bottom: calc(.32rem + var(--rc-row-extra, 0px)); }
     .sheet.font-serif { font-family: Georgia, "Times New Roman", Times, serif; }
@@ -86,18 +85,19 @@
     /* Comments and signatures: one box, a row per teacher. */
     .remarks { border: 1px solid #cbd5e1; border-radius: 6px; overflow: hidden; }
     .remark + .remark { border-top: 1px solid #cbd5e1; }
-    .remark { padding: .45rem .8rem .5rem; }
+    .remark { display: flex; align-items: stretch; }
+    .remark-main { flex: 1; min-width: 0; display: flex; flex-direction: column; padding: .45rem .8rem .5rem; }
     .remark-head { font-size: .62rem; font-weight: 700; letter-spacing: .06em; text-transform: uppercase; color: var(--rc-primary); }
-    .remark-write { min-height: calc(2.6rem + var(--rc-line-extra, 0px)); display: flex; flex-direction: column; justify-content: flex-end; gap: .9rem; padding-top: .2rem; }
-    .remark-write p { margin: 0 0 auto; font-style: italic; color: #111827; line-height: 1.5; }
+    .remark-write { flex: 1 0 auto; min-height: calc(2.6rem + var(--rc-line-extra, 0px)); padding-top: .2rem; }
+    .remark-write p { margin: 0; font-style: italic; color: #111827; line-height: 1.5; }
     /* A blank comment: ruled lines across the whole space, to write on. */
     .remark-write.ruled { background-image: repeating-linear-gradient(to bottom, transparent 0, transparent calc(1.45rem - 1px), #cbd5e1 calc(1.45rem - 1px), #cbd5e1 1.45rem); background-position: 0 .2rem; }
-    .remark-sign { display: flex; align-items: flex-end; gap: 1rem; margin-top: .5rem; font-size: .68rem; color: #4b5563; }
-    .remark-sign .who { font-weight: 700; color: #374151; min-width: 6.5rem; }
-    .remark-sign .slot { flex: 1; display: flex; align-items: flex-end; gap: .4rem; }
-    .remark-sign .slot::after { content: ''; flex: 1; border-bottom: 1px solid #374151; }
-    .remark-sign .slot.date { flex: 0 0 9rem; }
-    .remark-sign img { max-height: 1.9rem; margin-bottom: -.2rem; }
+    .remark-sign { flex: 0 0 30%; display: flex; flex-direction: column; border-left: 1px solid #cbd5e1; padding: .45rem .8rem .5rem; font-size: .66rem; color: #4b5563; }
+    .remark-sign .who { font-size: .62rem; font-weight: 700; letter-spacing: .06em; text-transform: uppercase; color: var(--rc-primary); }
+    .remark-sign .space { flex: 1 0 1.8rem; display: flex; align-items: flex-end; justify-content: center; }
+    .remark-sign img { max-height: 2.2rem; }
+    .remark-sign .line { border-top: 1px solid #374151; padding-top: .15rem; text-align: center; }
+    .remark-sign .date { margin-top: .9rem; border-top: 1px solid #374151; padding-top: .15rem; text-align: center; }
     .key { margin-top: .5rem; padding: .35rem .6rem; background: #f8fafc; border-radius: 4px; font-size: .66rem; color: #4b5563; }
     .key span { display: inline-block; margin-right: .6rem; }
     .fees { margin-top: .6rem; background: #f8fafc; }
@@ -385,18 +385,22 @@
                     @foreach ($remarks as [$heading, $withComment, $text, $signer, $signatureImage])
                         <div class="remark">
                             @if ($withComment)
-                                <div class="remark-head">{{ $heading }}</div>
-                                <div @class(['remark-write', 'ruled' => blank($text)])>
-                                    @if (filled($text))
-                                        <p>{{ $text }}</p>
-                                    @endif
+                                <div class="remark-main">
+                                    <div class="remark-head">{{ $heading }}</div>
+                                    <div @class(['remark-write', 'ruled' => blank($text)])>
+                                        @if (filled($text))
+                                            <p>{{ $text }}</p>
+                                        @endif
+                                    </div>
                                 </div>
                             @endif
                             @if ($show('signatures'))
+                                {{-- At the far end of the comment: who signs, their signature and the date. --}}
                                 <div class="remark-sign">
                                     <span class="who">{{ $signer }}</span>
-                                    <span class="slot">Signature @if ($signatureImage)<img src="{{ $signatureImage }}" alt="">@endif</span>
-                                    <span class="slot date">Date</span>
+                                    <span class="space">@if ($signatureImage)<img src="{{ $signatureImage }}" alt="">@endif</span>
+                                    <span class="line">Signature</span>
+                                    <span class="date">Date</span>
                                 </div>
                             @endif
                         </div>

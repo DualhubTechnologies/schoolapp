@@ -8,6 +8,7 @@ use App\Models\ReportCardTemplate;
 use App\Models\School;
 use App\Models\SchoolClass;
 use App\Models\Student;
+use App\Models\StudentCharge;
 use App\Models\Subject;
 use App\Models\Term;
 use App\Models\TermReport;
@@ -66,7 +67,7 @@ it('prints the default parts until the school saves a template', function () {
     printCard()->assertOk()
         ->assertSee('Progress Report')
         ->assertDontSee('Position in class')
-        ->assertSee('Fees balance')
+        ->assertDontSee('Fees balance')
         ->assertSee('Works hard.')
         ->assertSee('design-classic', false);
 });
@@ -188,4 +189,29 @@ it('searches and filters the class, and prints just the learners shown', functio
         ->assertOk()
         ->assertSee('Brian Okello')
         ->assertDontSee('Aisha Nakato');
+});
+
+it('shows the fees balance only when the learner owes, saying for which term', function () {
+    StudentCharge::create(['school_id' => $this->school->id, 'student_id' => $this->student->id, 'term_id' => $this->term->id, 'description' => 'Tuition', 'amount' => 520000, 'charged_on' => today()]);
+
+    printCard()->assertOk()
+        ->assertSee('Fees balance owed for '.$this->term->label())
+        ->assertSee('UGX 520,000');
+});
+
+it('names a single learner\'s report card after them, for saving as PDF', function () {
+    test()->get(route('filament.app.academics.report-cards', ['term' => $this->term->id, 'class' => $this->class->id, 'student' => $this->student->id]))
+        ->assertOk()
+        ->assertSee('<title>'.e($this->student->name.' — Report Card — '.$this->term->label()).'</title>', false);
+});
+
+it('saves a class teacher\'s comment as soon as it is typed, so it is on the report card', function () {
+    Livewire::test(ReportCards::class)
+        ->set('termId', $this->term->id)
+        ->set('classId', $this->class->id)
+        ->set("comments.{$this->student->id}.class_teacher_comment", 'A focused learner.');
+
+    expect(TermReport::where('student_id', $this->student->id)->where('term_id', $this->term->id)->value('class_teacher_comment'))->toBe('A focused learner.');
+
+    printCard()->assertSee('A focused learner.');
 });

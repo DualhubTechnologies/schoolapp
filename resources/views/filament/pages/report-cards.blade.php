@@ -150,7 +150,7 @@
             <div class="rc-headnote">
                 <label class="rc-label" for="rc-head-comment">Head teacher's comment <span class="rc-muted">— one comment, printed on every report card in {{ $r['class']->name }}{{ $this->sectionId ? ' ' . ($this->sectionOptions()[$this->sectionId] ?? '') : '' }}</span></label>
                 @if ($isHead)
-                    <textarea id="rc-head-comment" rows="2" class="rc-input" wire:model="headComment" placeholder="e.g. A good term. Let us all work harder next term."></textarea>
+                    <textarea id="rc-head-comment" rows="2" class="rc-input" wire:model.live.blur="headComment" placeholder="e.g. A good term. Let us all work harder next term."></textarea>
                 @else
                     <div class="rc-headtext">{{ $this->headComment ?: 'The head teacher has not written it yet.' }}</div>
                 @endif
@@ -180,9 +180,9 @@
                                 </td>
                                 <td class="rc-c rc-strong">{{ $row['average'] ?? '—' }}</td>
                                 <td class="rc-nowrap">{{ $overall($row) }}</td>
-                                <td><textarea rows="2" class="rc-input" wire:model="comments.{{ $id }}.class_teacher_comment" placeholder="Class teacher's comment"></textarea></td>
+                                <td><textarea rows="2" class="rc-input" wire:model.live.blur="comments.{{ $id }}.class_teacher_comment" placeholder="Class teacher's comment"></textarea></td>
                                 <td>
-                                    <select class="rc-input" wire:model="comments.{{ $id }}.conduct">
+                                    <select class="rc-input" wire:model.live="comments.{{ $id }}.conduct">
                                         <option value="">—</option>
                                         @foreach (\App\Filament\Pages\ReportCards::CONDUCT as $c)
                                             <option value="{{ $c }}">{{ $c }}</option>

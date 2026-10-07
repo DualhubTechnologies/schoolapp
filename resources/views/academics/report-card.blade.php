@@ -29,7 +29,10 @@
     }
 @endphp
 
-@section('title', "Report cards — {$class->name} — {$term->label()}")
+{{-- The page title is the file name a browser suggests when saving as PDF: the learner's name for one card. --}}
+@section('title', $rows->count() === 1
+    ? $rows->first()['student']->name.' — Report Card — '.$term->label()
+    : "Report cards — {$class->name} — {$term->label()}")
 
 @section('styles')
     /* One report card = one A4 page, with a thin 6mm margin. In print the
@@ -47,9 +50,7 @@
     .rc-fit { flex: 1; display: flex; flex-direction: column; min-height: 0; }
     /* The bottom part takes the rest of the page: spare room becomes more
        space to write the comments, never an empty band. */
-    .rc-bottom { margin-top: auto; padding-top: .6rem; flex: 1 0 auto; display: flex; flex-direction: column; }
-    .rc-bottom .remarks { flex: 1 0 auto; display: flex; flex-direction: column; }
-    .rc-bottom .remark { flex: 1 0 auto; }
+    .rc-bottom { margin-top: auto; padding-top: .6rem; }
     /* Spare room on a short report, shared out by the script below. */
     .rc-fit table.marks:not(.projects) tbody td { padding-top: calc(.32rem + var(--rc-row-extra, 0px)); padding-bottom: calc(.32rem + var(--rc-row-extra, 0px)); }
     .sheet.font-serif { font-family: Georgia, "Times New Roman", Times, serif; }
@@ -88,16 +89,16 @@
     .remark { display: flex; align-items: stretch; }
     .remark-main { flex: 1; min-width: 0; display: flex; flex-direction: column; padding: .45rem .8rem .5rem; }
     .remark-head { font-size: .62rem; font-weight: 700; letter-spacing: .06em; text-transform: uppercase; color: var(--rc-primary); }
-    .remark-write { flex: 1 0 auto; min-height: calc(2.6rem + var(--rc-line-extra, 0px)); padding-top: .2rem; }
+    .remark-write { flex: 1 0 auto; min-height: calc(3.1rem + var(--rc-line-extra, 0px)); padding-top: .2rem; }
     .remark-write p { margin: 0; font-style: italic; color: #111827; line-height: 1.5; }
     /* A blank comment: ruled lines across the whole space, to write on. */
     .remark-write.ruled { background-image: repeating-linear-gradient(to bottom, transparent 0, transparent calc(1.45rem - 1px), #cbd5e1 calc(1.45rem - 1px), #cbd5e1 1.45rem); background-position: 0 .2rem; }
     .remark-sign { flex: 0 0 30%; display: flex; flex-direction: column; border-left: 1px solid #cbd5e1; padding: .45rem .8rem .5rem; font-size: .66rem; color: #4b5563; }
     .remark-sign .who { font-size: .62rem; font-weight: 700; letter-spacing: .06em; text-transform: uppercase; color: var(--rc-primary); }
-    .remark-sign .space { flex: 1 0 1.8rem; display: flex; align-items: flex-end; justify-content: center; }
+    .remark-sign .space { flex: 1 0 1.3rem; display: flex; align-items: flex-end; justify-content: center; }
     .remark-sign img { max-height: 2.2rem; }
     .remark-sign .line { border-top: 1px solid #374151; padding-top: .15rem; text-align: center; }
-    .remark-sign .date { margin-top: .9rem; border-top: 1px solid #374151; padding-top: .15rem; text-align: center; }
+    .remark-sign .date { margin-top: .6rem; border-top: 1px solid #374151; padding-top: .15rem; text-align: center; }
     .key { margin-top: .5rem; padding: .35rem .6rem; background: #f8fafc; border-radius: 4px; font-size: .66rem; color: #4b5563; }
     .key span { display: inline-block; margin-right: .6rem; }
     .fees { margin-top: .6rem; background: #f8fafc; }
@@ -355,19 +356,20 @@
                 </div>
             @endif
 
-            @if ($showFees)
-                @php
-                    $balance = $student->balance();
-                    $next = $nextFees->filter(fn ($f) => $f->appliesToResidency($student->residency_type_id))->sum('amount');
-                @endphp
+            @php
+                $balance = $showFees ? $student->balance() : 0;
+                $next = $showFees ? $nextFees->filter(fn ($f) => $f->appliesToResidency($student->residency_type_id))->sum('amount') : 0;
+            @endphp
+            {{-- Only when the learner owes fees, saying for which term; nothing otherwise. --}}
+            @if ($showFees && $balance > 0)
                 <div class="box fees">
                     <div class="kv">
-                        <span>Fees balance{{ $balance < 0 ? ' (in credit)' : '' }}</span>
-                        <b>UGX {{ number_format(abs($balance)) }}</b>
+                        <span>Fees balance owed for {{ $term->label() }}</span>
+                        <b>UGX {{ number_format($balance) }}</b>
                     </div>
                     @if ($next > 0)
                         <div class="kv"><span>Next term's fees</span><b>UGX {{ number_format($next) }}</b></div>
-                        <div class="kv"><span>Total payable by the start of next term</span><b>UGX {{ number_format(max($balance, 0) + $next) }}</b></div>
+                        <div class="kv"><span>Total payable by the start of next term</span><b>UGX {{ number_format($balance + $next) }}</b></div>
                     @endif
                 </div>
             @endif
@@ -485,9 +487,10 @@
                 const lines = fit.querySelectorAll('.remark-write').length || 1;
                 const gaps = Math.max(fit.children.length - 1, 1);
                 const share = (part) => {
-                    fit.style.setProperty('--rc-row-extra', Math.min(spare * 0.35 * part / rows / 2, 9) + 'px');
-                    fit.style.setProperty('--rc-line-extra', Math.min(spare * 0.4 * part / lines, 70) + 'px');
-                    fit.style.rowGap = Math.min(spare * 0.2 * part / gaps, 14) + 'px';
+                    // Mostly taller subject rows; the comment boxes stay small.
+                    fit.style.setProperty('--rc-row-extra', Math.min(spare * 0.6 * part / rows / 2, 14) + 'px');
+                    fit.style.setProperty('--rc-line-extra', Math.min(spare * 0.1 * part / lines, 10) + 'px');
+                    fit.style.rowGap = Math.min(spare * 0.3 * part / gaps, 18) + 'px';
                     return needed() <= room;
                 };
                 if (! share(1)) {

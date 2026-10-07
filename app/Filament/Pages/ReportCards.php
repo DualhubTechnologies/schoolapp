@@ -509,7 +509,7 @@ class ReportCards extends Page
 
     /**
      * Suggest a class-teacher comment for everyone who has none, from
-     * their average. Nothing is saved until "Save comments".
+     * their average, and save them.
      */
     public function fillComments(): void
     {
@@ -524,10 +524,46 @@ class ReportCards extends Page
             }
 
             $this->comments[$id]['class_teacher_comment'] = $bands->first(fn ($text, $min) => $row['average'] >= $min);
+            $this->updatedComments($this->comments[$id]['class_teacher_comment'], "{$id}.class_teacher_comment");
             $filled++;
         }
 
-        Notification::make()->title("{$filled} comments suggested")->body('Review them, then click Save comments.')->info()->send();
+        Notification::make()->title("{$filled} comments filled in and saved")->body('Change any of them: each comment saves as soon as you finish typing it.')->success()->send();
+    }
+
+    /**
+     * A class teacher's comment or conduct is saved as soon as it is
+     * typed or chosen, so it is on the report card even if Save comments
+     * is never pressed. $key is "<student id>.<field>".
+     */
+    public function updatedComments(mixed $value, string $key): void
+    {
+        [$id, $field] = array_pad(explode('.', $key, 2), 2, null);
+        $id = (int) $id;
+
+        if (! in_array($field, ['class_teacher_comment', 'conduct'], true)
+            || ! collect($this->results['rows'] ?? [])->contains(fn ($row) => $row['student']->id === $id)) {
+            return;
+        }
+
+        TermReport::updateOrCreate(
+            ['student_id' => $id, 'term_id' => $this->termId],
+            [$field => $field === 'class_teacher_comment' ? (trim((string) $value) ?: null) : ($value ?: null)],
+        );
+    }
+
+    /** The head teacher's comment is saved for the whole class as soon as it is typed. */
+    public function updatedHeadComment(): void
+    {
+        if (! AcademicAccess::manages()) {
+            return;
+        }
+
+        $head = trim((string) $this->headComment) ?: null;
+
+        foreach (collect($this->results['rows'] ?? [])->pluck('student.id') as $id) {
+            TermReport::updateOrCreate(['student_id' => $id, 'term_id' => $this->termId], ['head_teacher_comment' => $head]);
+        }
     }
 
     public function saveComments(): void

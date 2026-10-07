@@ -134,7 +134,7 @@
                       return Math.round((parseFloat(v) / this.max) * 1000) / 10 + '%';
                   },
                   next(el) {
-                      const inputs = [...this.$root.querySelectorAll('.em-score:not([disabled])')].filter((i) => i.dataset.exam === el.dataset.exam);
+                      const inputs = [...el.closest('form').querySelectorAll('.em-score:not([disabled])')];
                       const i = inputs.indexOf(el);
                       if (inputs[i + 1]) { inputs[i + 1].focus(); inputs[i + 1].select(); }
                   },

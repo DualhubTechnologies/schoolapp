@@ -488,7 +488,7 @@ class EnterMarks extends Page
      * each exam's "out of" and weight, whether it is averaged with others
      * of its kind (O-Level CAs) and whether it is school-based (CA).
      *
-     * @return array{exams: list<array{id: int, max: float, weight: float, averaged: bool, schoolBased: bool}>, split: array{formative: int, summative: int}|null}
+     * @return array{exams: array<int, array{id: int, max: float, weight: float, averaged: bool, schoolBased: bool}>, split: array{formative: int, summative: int}|null}
      */
     public function gridMaths(): array
     {

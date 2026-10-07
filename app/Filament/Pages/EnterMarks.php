@@ -605,7 +605,7 @@ class EnterMarks extends Page
             ->icon('heroicon-o-user-group')
             ->color('gray')
             ->visible(fn (): bool => $this->subject !== null && ! $this->subject->pivot->is_compulsory)
-            ->modalHeading(fn (): string => 'Who takes '.($this->subject?->name ?? 'this subject').'?')
+            ->modalHeading(fn (): string => 'Who takes '.$this->subject->name.'?')
             ->modalDescription('Tick the learners who take this elective. Only they appear on its mark sheet. Learners whose A-Level combination includes it are always listed.')
             ->fillForm(fn (): array => ['students' => $this->classLearners()
                 ->filter(fn (Student $s) => $s->electives->contains('id', $this->subjectId))

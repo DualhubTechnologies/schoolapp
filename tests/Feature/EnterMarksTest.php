@@ -11,6 +11,7 @@ use App\Models\Student;
 use App\Models\Subject;
 use App\Models\Term;
 use App\Models\User;
+use App\Services\Academics\MarksCompleteness;
 use App\Services\Subscriptions\SubscriptionManager;
 use Database\Seeders\RoleSeeder;
 use Filament\Facades\Filament;
@@ -166,7 +167,7 @@ it('does not count a CA set for one subject as missing in the others', function 
     Mark::create(['assessment_id' => $ca->id, 'student_id' => $this->student->id, 'subject_id' => $this->subject->id, 'score' => 60]);
     Mark::create(['assessment_id' => $this->assessment->id, 'student_id' => $this->student->id, 'subject_id' => $maths->id, 'score' => 50]);
 
-    $missing = app(\App\Services\Academics\MarksCompleteness::class)->missingFor($this->assessment->term);
+    $missing = app(MarksCompleteness::class)->missingFor($this->assessment->term);
 
     expect(collect($missing)->flatMap(fn ($c) => $c['missing'])->all())->not->toContain('Mathematics — English CA');
 });

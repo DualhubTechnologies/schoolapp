@@ -574,7 +574,7 @@ class ReportCards extends Page
     {
         $ids = [];
 
-        foreach ((array) ($this->results['rows'] ?? []) as $row) {
+        foreach ($this->results['rows'] ?? [] as $row) {
             $ids[] = (int) $row['student']->id;
         }
 

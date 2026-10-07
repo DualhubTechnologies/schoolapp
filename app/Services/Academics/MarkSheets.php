@@ -21,10 +21,9 @@ class MarkSheets
 {
     /**
      * The students of a class who take a subject: everyone if it is
-     * compulsory there; otherwise those who chose it, or whose A-Level
-     * combination includes it. If nobody's choices are recorded, everyone
-     * is listed ("filtered" is then false) -- the teacher leaves the score
-     * blank for those who do not take it.
+     * compulsory there; otherwise only those chosen for it ("Who takes this
+     * subject" on Enter Marks), or whose A-Level combination includes it.
+     * An elective nobody has been chosen for has nobody on its sheet.
      *
      * @param  Collection<int, Student>  $students  loaded with combination.subjects and electives
      * @param  Subject  $subject  loaded through the class, so with its class_subject pivot
@@ -40,9 +39,7 @@ class MarkSheets
             || $s->combination?->subjects->contains('id', $subject->id)
             || $s->combination?->subsidiary_subject_id === $subject->id);
 
-        return $takes->isEmpty()
-            ? ['students' => $students->values(), 'filtered' => false]
-            : ['students' => $takes->values(), 'filtered' => true];
+        return ['students' => $takes->values(), 'filtered' => true];
     }
 
     /**

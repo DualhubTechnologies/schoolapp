@@ -65,6 +65,12 @@
         <div class="em-empty">No subjects you can mark in {{ $class->name }}. Subjects and their teachers are set under <strong>Academics → Classes</strong>.</div>
     @elseif (! $subject)
         <div class="em-empty">Choose a class and subject to open the mark sheet.</div>
+    @elseif ($students->isEmpty() && ! $subject->pivot->is_compulsory)
+        <div class="em-empty">
+            <p><strong>{{ $subject->name }}</strong> is an elective, and no learners in {{ $class->name }} have been chosen for it yet.</p>
+            <p style="margin: .4rem 0 1rem">Tick the learners who take it, and only they will be on this mark sheet.</p>
+            {{ $this->chooseLearnersAction }}
+        </div>
     @elseif ($students->isEmpty())
         <div class="em-empty">No active students in this class{{ $this->sectionId ? ' / stream' : '' }}.</div>
     @else
@@ -150,9 +156,6 @@
                         @endif
                         @if ($locked && ! $this->allExams) · <span class="em-locked">{{ $this->readOnlyReason() ?? 'Closed' }} — read only</span> @endif
                     </div>
-                    @if (! $subject->pivot->is_compulsory && ! $sheet['filtered'])
-                        <div class="em-note">Elective with no learners chosen yet: everyone in the class is listed. Use <strong>Who takes this subject</strong> to tick the learners who take it, and the others leave this sheet.</div>
-                    @endif
                 </div>
                 <div class="em-head-tools">
                     <div class="em-papers" role="group" aria-label="View">

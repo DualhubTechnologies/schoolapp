@@ -82,7 +82,7 @@ it('enters every exam of the term on one sheet, with AB for absent', function ()
         ->and(Mark::where('assessment_id', $this->assessment->id)->value('is_absent'))->toBeTruthy();
 });
 
-it('lists only the learners ticked for an elective subject', function () {
+it('lists nobody on an elective until learners are ticked, then only them', function () {
     $french = Subject::create(['school_id' => $this->assessment->school_id, 'name' => 'French', 'curriculum' => 'primary']);
     $this->class->subjects()->attach($french->id, ['is_compulsory' => false]);
     $other = Student::create(['school_id' => $this->assessment->school_id, 'school_class_id' => $this->class->id, 'name' => 'Brian Okello', 'admission_no' => 'ADM-002', 'status' => 'active']);
@@ -92,6 +92,7 @@ it('lists only the learners ticked for an elective subject', function () {
         ->set('assessmentId', $this->assessment->id)
         ->set('classId', $this->class->id)
         ->set('subjectId', $french->id)
+        ->assertSee('no learners in P.4 have been chosen for it yet')
         ->callAction('chooseLearners', data: ['students' => [$other->id]])
         ->assertHasNoActionErrors();
 

@@ -104,6 +104,12 @@
     .remark-sign .field i { flex: 1; font-style: normal; overflow: hidden; color: #6b7280; letter-spacing: .05em; }
     .key { margin-top: .5rem; padding: .35rem .6rem; background: #f8fafc; border-radius: 4px; font-size: .66rem; color: #4b5563; }
     .key span { display: inline-block; margin-right: .6rem; }
+    .rc-key-row { display: flex; gap: .5rem; align-items: stretch; margin-top: .5rem; }
+    .rc-key-row .key { flex: 1; margin-top: 0; }
+    .verify { margin-left: auto; display: flex; align-items: center; gap: .45rem; padding: .25rem .45rem; border: 1px solid #e5e7eb; border-radius: 4px; font-size: .58rem; color: #6b7280; line-height: 1.35; }
+    .verify img { width: 15mm; height: 15mm; display: block; }
+    .verify b { display: block; font-size: .6rem; letter-spacing: .05em; text-transform: uppercase; color: var(--rc-primary); }
+    .verify .code { display: block; font-family: ui-monospace, Menlo, Consolas, monospace; font-size: .72rem; font-weight: 700; color: #111827; letter-spacing: .03em; }
     .fees { margin-top: .6rem; background: #f8fafc; }
     .rc-footer { margin-top: .7rem; padding-top: .35rem; border-top: 1px solid var(--rc-accent); text-align: center; font-size: .68rem; color: #4b5563; white-space: pre-line; }
     .header-note { font-weight: 600; }
@@ -483,15 +489,31 @@
             @endif
 
             @php $keyScale = $show('grading_key') ? $scales->get($curriculum === 'a_level' ? 'principal' : 'subject') : null; @endphp
-            @if ($keyScale)
-                <div class="key">
-                    <strong>Key:</strong>
-                    @foreach ($keyScale->bands as $band)
-                        <span>{{ $band->grade }} {{ $band->min_score + 0 }}–{{ $band->max_score + 0 }}{{ $band->descriptor ? ' ' . $band->descriptor : '' }}</span>
-                    @endforeach
-                    @if ($curriculum === 'a_level')<span>· Subsidiary pass (D1–C6) = 1 point</span>@endif
-                    @if ($examResults)<br><span>* counts in the aggregate · {{ collect(config('academics.primary_divisions'))->map(fn ($d) => "{$d[0]} {$d[1]}–{$d[2]}")->implode(', ') }}</span>@endif
-                    @if ($topicScores)<br><strong>Topics:</strong> <span>3 all outcomes, with ease</span><span>2 most, enough to achieve</span><span>1 some, not enough</span><span>0 none yet</span>@endif
+            @php $verification = $verifications[$student->id] ?? null; @endphp
+            @if ($keyScale || $verification)
+                <div class="rc-key-row">
+                @if ($keyScale)
+                    <div class="key">
+                        <strong>Key:</strong>
+                        @foreach ($keyScale->bands as $band)
+                            <span>{{ $band->grade }} {{ $band->min_score + 0 }}–{{ $band->max_score + 0 }}{{ $band->descriptor ? ' ' . $band->descriptor : '' }}</span>
+                        @endforeach
+                        @if ($curriculum === 'a_level')<span>· Subsidiary pass (D1–C6) = 1 point</span>@endif
+                        @if ($examResults)<br><span>* counts in the aggregate · {{ collect(config('academics.primary_divisions'))->map(fn ($d) => "{$d[0]} {$d[1]}–{$d[2]}")->implode(', ') }}</span>@endif
+                        @if ($topicScores)<br><strong>Topics:</strong> <span>3 all outcomes, with ease</span><span>2 most, enough to achieve</span><span>1 some, not enough</span><span>0 none yet</span>@endif
+                    </div>
+                @endif
+                @if ($verification)
+                    {{-- Anyone can scan this to check the card is genuine (DocumentVerification). --}}
+                    <div class="verify">
+                        <img src="{{ $verification['qr'] }}" alt="QR code to verify this report card">
+                        <div>
+                            <b>Scan to verify</b>
+                            <span class="code">{{ $verification['code'] }}</span>
+                            <small>{{ preg_replace('#^https?://#', '', rtrim((string) config('app.url'), '/')) }}/verify</small>
+                        </div>
+                    </div>
+                @endif
                 </div>
             @endif
 

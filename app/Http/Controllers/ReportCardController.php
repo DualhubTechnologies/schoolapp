@@ -3,6 +3,7 @@
 namespace App\Http\Controllers;
 
 use App\Models\Assessment;
+use App\Models\DocumentVerification;
 use App\Models\FeeStructure;
 use App\Models\GradingScale;
 use App\Models\Mark;
@@ -17,6 +18,8 @@ use App\Services\Academics\ResultsCalculator;
 use App\Services\Academics\TopicAssessment;
 use App\Services\Attendance\AttendanceSummary;
 use App\Support\AcademicAccess;
+use App\Support\Edition;
+use App\Support\QrImage;
 use Illuminate\Http\Request;
 use Illuminate\Support\Collection;
 use Illuminate\View\View;
@@ -149,6 +152,12 @@ class ReportCardController extends Controller
             ? $this->examResults($calculator, $class, $term, $section, $results['assessments'])
             : [];
 
+        // A QR code on each card that anyone can scan to check it is
+        // genuine. Online only: the Windows app's cards are not on the web.
+        $verifications = $template->shows('verification') && ! Edition::isDesktop()
+            ? $this->verifications($rows, $class, $term, $results, $examResults)
+            : [];
+
         $topicScores = $class->curriculum() === 'o_level' && $template->shows('topics') && ! $examId
             ? app(TopicAssessment::class)->forReport($term, $rows->pluck('student.id')->all())
             : [];
@@ -171,6 +180,7 @@ class ReportCardController extends Controller
             'projects' => $projects,
             'termAverages' => $termAverages,
             'examResults' => $examResults,
+            'verifications' => $verifications,
         ]);
     }
 
@@ -282,6 +292,79 @@ class ReportCardController extends Controller
             if ($rows->isNotEmpty()) {
                 $out[] = ['exam' => $assessment, 'rows' => $rows];
             }
+        }
+
+        return $out;
+    }
+
+    /**
+     * Each learner's verification code and QR image. The check page shows
+     * the card's headline result as printed; reprinting a card whose
+     * result changed gives it a new code and marks the old one replaced.
+     *
+     * @param  Collection<int, mixed>  $rows
+     * @param  array<string, mixed>  $results
+     * @param  list<array<string, mixed>>  $examResults
+     * @return array<int, array{code: string, url: string, qr: string}>
+     */
+    protected function verifications(Collection $rows, SchoolClass $class, Term $term, array $results, array $examResults): array
+    {
+        $exam = $results['exam'] instanceof Assessment ? $results['exam'] : null;
+        $n = fn ($value): string => $value === null ? '—' : rtrim(rtrim(number_format((float) $value, 1), '0'), '.');
+        $schoolName = (string) $class->school()->value('name');
+        $out = [];
+
+        foreach ($rows as $row) {
+            $student = $row['student'];
+
+            // Primary: the last exam's result, as the card's summary box shows it.
+            $overall = $row;
+            $resultFrom = null;
+            foreach ($examResults as $examResult) {
+                if (isset($examResult['rows'][$student->id])) {
+                    $overall = $examResult['rows'][$student->id];
+                    $resultFrom = $examResult['exam']->name;
+                }
+            }
+
+            $result = match ($results['curriculum']) {
+                'primary' => array_filter([
+                    'Result from' => $resultFrom,
+                    'Aggregate' => (string) ($overall['aggregate'] ?? 'X'),
+                    'Division' => ($overall['division'] ?? null) === 'X' ? 'Incomplete' : (string) ($overall['division'] ?? '—'),
+                    'Average' => $n($overall['average']).'%',
+                ]),
+                'a_level' => [
+                    'Total points' => ($row['points'] ?? '—').' out of 20',
+                    'Principal grades' => (string) (($row['principal_grades'] ?? '') ?: '—'),
+                    'Average' => $n($row['average']).'%',
+                ],
+                'nursery' => [
+                    'Overall' => (string) ($row['overall_grade'] ?? '—'),
+                    'Average' => $n($row['average']).'%',
+                ],
+                default => [
+                    'Average' => $n($row['average']).'%',
+                    'Total marks' => $n($row['total']),
+                ],
+            };
+
+            $document = DocumentVerification::issue(
+                $class->school_id,
+                'report_card',
+                "report_card:{$student->id}:{$term->id}:".($exam?->id ?? 'term'),
+                [
+                    'school' => $schoolName,
+                    'learner' => (string) $student->name,
+                    'admission_no' => (string) $student->admission_no,
+                    'class' => $class->name.($student->section ? ' · '.$student->section->name : ''),
+                    'term' => $term->label(),
+                    'exam' => $exam?->name,
+                    'result' => $result,
+                ],
+            );
+
+            $out[(int) $student->id] = ['code' => $document->code, 'url' => $document->url(), 'qr' => QrImage::svg($document->url())];
         }
 
         return $out;

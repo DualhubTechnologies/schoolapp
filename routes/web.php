@@ -6,6 +6,7 @@ use App\Http\Controllers\NssfScheduleController;
 use App\Http\Controllers\ParentPageController;
 use App\Http\Controllers\PayslipController;
 use App\Http\Controllers\SchoolPayWebhookController;
+use App\Http\Controllers\VerifyDocumentController;
 use App\Http\Middleware\ServerEditionOnly;
 use App\Support\PublicSite;
 use Illuminate\Support\Facades\Route;
@@ -81,6 +82,14 @@ Route::middleware(['throttle:30,1', ServerEditionOnly::class])->prefix('p/{token
     Route::get('/', [ParentPageController::class, 'show'])->name('parent.page');
     Route::get('/receipt/{payment}', [ParentPageController::class, 'receipt'])->whereNumber('payment')->name('parent.receipt');
     Route::get('/report/{term}', [ParentPageController::class, 'reportCard'])->whereNumber('term')->name('parent.report');
+});
+
+// The page a printed report card's QR code opens, to check it is genuine
+// (VerifyDocumentController). Public; rate limited so codes cannot be
+// guessed in bulk.
+Route::middleware(['throttle:30,1', ServerEditionOnly::class])->group(function () {
+    Route::get('/verify', [VerifyDocumentController::class, 'form'])->name('verify.form');
+    Route::get('/verify/{code}', [VerifyDocumentController::class, 'show'])->where('code', '[A-Za-z0-9-]{4,30}')->name('verify.show');
 });
 
 // Some hosts (e.g. InfinityFree) disable PHP's symlink(), so `storage:link`

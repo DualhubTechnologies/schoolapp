@@ -78,6 +78,7 @@ class ReportCardTemplate extends Model
         'head_teacher_comment' => ['Head teacher\'s comment', true],
         'signatures' => ['Signature lines', true],
         'grading_key' => ['Grading key', true],
+        'verification' => ['QR code to check the card is genuine', true],
     ];
 
     public const DEFAULTS = [

@@ -490,7 +490,7 @@
                         <span>{{ $band->grade }} {{ $band->min_score + 0 }}–{{ $band->max_score + 0 }}{{ $band->descriptor ? ' ' . $band->descriptor : '' }}</span>
                     @endforeach
                     @if ($curriculum === 'a_level')<span>· Subsidiary pass (D1–C6) = 1 point</span>@endif
-                    @if ($examResults)<span>· * counts in the aggregate · {{ collect(config('academics.primary_divisions'))->map(fn ($d) => "{$d[0]} {$d[1]}–{$d[2]}")->implode(', ') }}</span>@endif
+                    @if ($examResults)<br><span>* counts in the aggregate · {{ collect(config('academics.primary_divisions'))->map(fn ($d) => "{$d[0]} {$d[1]}–{$d[2]}")->implode(', ') }}</span>@endif
                     @if ($topicScores)<br><strong>Topics:</strong> <span>3 all outcomes, with ease</span><span>2 most, enough to achieve</span><span>1 some, not enough</span><span>0 none yet</span>@endif
                 </div>
             @endif

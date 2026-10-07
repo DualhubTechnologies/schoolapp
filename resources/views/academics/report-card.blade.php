@@ -45,10 +45,14 @@
     @media screen { .rc-pages { overflow: hidden; padding-bottom: 1px; } }
     @media print { .sheet { width: 100%; max-width: none; height: 100vh; break-inside: avoid; transform: none !important; margin: 0 !important; } .sheet:last-child { break-after: auto; } }
     .rc-fit { flex: 1; display: flex; flex-direction: column; min-height: 0; }
-    .rc-bottom { margin-top: auto; padding-top: .6rem; }
+    /* The bottom part takes the rest of the page: spare room becomes more
+       space to write the comments, never an empty band. */
+    .rc-bottom { margin-top: auto; padding-top: .6rem; flex: 1 0 auto; display: flex; flex-direction: column; }
+    .rc-bottom .remarks { flex: 1 0 auto; display: flex; flex-direction: column; }
+    .rc-bottom .remark { flex: 1 0 auto; display: flex; flex-direction: column; }
+    .rc-bottom .remark-write { flex: 1 0 auto; }
     /* Spare room on a short report, shared out by the script below. */
     .rc-fit table.marks:not(.projects) tbody td { padding-top: calc(.32rem + var(--rc-row-extra, 0px)); padding-bottom: calc(.32rem + var(--rc-row-extra, 0px)); }
-    .rc-fit .comment .line { min-height: calc(2.2rem + var(--rc-line-extra, 0px)); }
     .sheet.font-serif { font-family: Georgia, "Times New Roman", Times, serif; }
     .sheet.border-line { outline: 2px solid var(--rc-primary); outline-offset: -8px; }
     .sheet.border-double { outline: 5px double var(--rc-primary); outline-offset: -9px; }
@@ -79,12 +83,22 @@
     .big { font-size: 1.15rem; font-weight: 800; color: var(--rc-primary); }
     .kv { display: flex; justify-content: space-between; gap: .5rem; padding: .12rem 0; }
     .kv b { color: #16233a; }
-    .comment { margin-top: .55rem; }
-    .comment .line { min-height: 2.2rem; border-bottom: 1px dotted #94a3b8; padding: .1rem 0 .2rem; font-style: italic; }
-    .foot { display: grid; grid-template-columns: repeat(2, 1fr); gap: 3rem; margin-top: 1.1rem; align-items: end; }
-    .sig { border-top: 1px solid #111827; padding-top: .2rem; text-align: center; font-size: .7rem; color: #374151; }
-    .sig img { max-height: 2.4rem; display: block; margin: 0 auto .15rem; }
-    .key { margin-top: .6rem; font-size: .66rem; color: #4b5563; }
+    /* Comments and signatures: one box, a row per teacher. */
+    .remarks { border: 1px solid #cbd5e1; border-radius: 6px; overflow: hidden; }
+    .remark + .remark { border-top: 1px solid #cbd5e1; }
+    .remark { padding: .45rem .8rem .5rem; }
+    .remark-head { font-size: .62rem; font-weight: 700; letter-spacing: .06em; text-transform: uppercase; color: var(--rc-primary); }
+    .remark-write { min-height: calc(2.6rem + var(--rc-line-extra, 0px)); display: flex; flex-direction: column; justify-content: flex-end; gap: .9rem; padding-top: .2rem; }
+    .remark-write p { margin: 0 0 auto; font-style: italic; color: #111827; line-height: 1.5; }
+    /* A blank comment: ruled lines across the whole space, to write on. */
+    .remark-write.ruled { background-image: repeating-linear-gradient(to bottom, transparent 0, transparent calc(1.45rem - 1px), #cbd5e1 calc(1.45rem - 1px), #cbd5e1 1.45rem); background-position: 0 .2rem; }
+    .remark-sign { display: flex; align-items: flex-end; gap: 1rem; margin-top: .5rem; font-size: .68rem; color: #4b5563; }
+    .remark-sign .who { font-weight: 700; color: #374151; min-width: 6.5rem; }
+    .remark-sign .slot { flex: 1; display: flex; align-items: flex-end; gap: .4rem; }
+    .remark-sign .slot::after { content: ''; flex: 1; border-bottom: 1px solid #374151; }
+    .remark-sign .slot.date { flex: 0 0 9rem; }
+    .remark-sign img { max-height: 1.9rem; margin-bottom: -.2rem; }
+    .key { margin-top: .5rem; padding: .35rem .6rem; background: #f8fafc; border-radius: 4px; font-size: .66rem; color: #4b5563; }
     .key span { display: inline-block; margin-right: .6rem; }
     .fees { margin-top: .6rem; background: #f8fafc; }
     .rc-footer { margin-top: .7rem; padding-top: .35rem; border-top: 1px solid var(--rc-accent); text-align: center; font-size: .68rem; color: #4b5563; white-space: pre-line; }
@@ -118,8 +132,6 @@
     .design-compact table.marks td, .design-compact table.marks th { padding: .2rem .35rem; }
     .design-compact .summary { margin-top: .45rem; gap: .5rem; }
     .design-compact .box { padding: .4rem .6rem; }
-    .design-compact .comment .line { min-height: 1.6rem; }
-    .design-compact .foot { margin-top: .8rem; }
 @endsection
 
 @section('content')
@@ -361,23 +373,34 @@
             @endif
 
             <div class="rc-bottom">
-            @if ($show('class_teacher_comment'))
-                <div class="comment">
-                    <div class="label">Class teacher's comment</div>
-                    <div class="line">{{ $report?->class_teacher_comment }}</div>
-                </div>
-            @endif
-            @if ($show('head_teacher_comment'))
-                <div class="comment">
-                    <div class="label">Head teacher's comment</div>
-                    <div class="line">{{ $report?->head_teacher_comment }}</div>
-                </div>
-            @endif
-
-            @if ($show('signatures'))
-                <div class="foot">
-                    <div class="sig">Class teacher</div>
-                    <div class="sig">@if ($signature)<img src="{{ $signature }}" alt="">@endif Head teacher</div>
+            @php
+                // Each teacher's row: their comment, room to write, and their signature.
+                $remarks = array_filter([
+                    ($show('class_teacher_comment') || $show('signatures')) ? ['Class teacher\'s comment', $show('class_teacher_comment'), $report?->class_teacher_comment, 'Class teacher', null] : null,
+                    ($show('head_teacher_comment') || $show('signatures')) ? ['Head teacher\'s comment', $show('head_teacher_comment'), $report?->head_teacher_comment, 'Head teacher', $signature] : null,
+                ]);
+            @endphp
+            @if ($remarks)
+                <div class="remarks">
+                    @foreach ($remarks as [$heading, $withComment, $text, $signer, $signatureImage])
+                        <div class="remark">
+                            @if ($withComment)
+                                <div class="remark-head">{{ $heading }}</div>
+                                <div @class(['remark-write', 'ruled' => blank($text)])>
+                                    @if (filled($text))
+                                        <p>{{ $text }}</p>
+                                    @endif
+                                </div>
+                            @endif
+                            @if ($show('signatures'))
+                                <div class="remark-sign">
+                                    <span class="who">{{ $signer }}</span>
+                                    <span class="slot">Signature @if ($signatureImage)<img src="{{ $signatureImage }}" alt="">@endif</span>
+                                    <span class="slot date">Date</span>
+                                </div>
+                            @endif
+                        </div>
+                    @endforeach
                 </div>
             @endif
 
@@ -455,11 +478,11 @@
                 // together if that is more than the page holds.
                 const spare = room - height;
                 const rows = fit.querySelectorAll('table.marks:not(.projects) tbody tr').length || 1;
-                const lines = fit.querySelectorAll('.comment .line').length || 1;
+                const lines = fit.querySelectorAll('.remark-write').length || 1;
                 const gaps = Math.max(fit.children.length - 1, 1);
                 const share = (part) => {
                     fit.style.setProperty('--rc-row-extra', Math.min(spare * 0.35 * part / rows / 2, 9) + 'px');
-                    fit.style.setProperty('--rc-line-extra', Math.min(spare * 0.25 * part / lines, 40) + 'px');
+                    fit.style.setProperty('--rc-line-extra', Math.min(spare * 0.4 * part / lines, 70) + 'px');
                     fit.style.rowGap = Math.min(spare * 0.2 * part / gaps, 14) + 'px';
                     return needed() <= room;
                 };

@@ -43,17 +43,23 @@ class StudentDocumentService
     }
 
     /**
-     * Generate the student profile PDF and return the Dompdf instance.
+     * Generate the student profile PDF and return the Dompdf instance: the
+     * learner's full record on one A4 page, with the fees position and
+     * space for signatures and the school stamp.
      */
     public function profile(Student $student)
     {
-        $student->loadMissing(['school', 'guardian', 'schoolClass', 'section']);
+        $student->loadMissing(['school', 'guardian', 'schoolClass', 'section', 'residencyType', 'house', 'combination', 'electives']);
 
         $pdf = Pdf::loadView('pdf.student-profile', [
             'student' => $student,
             'school' => $student->school,
+            'term' => Term::current($student->school_id),
+            'balance' => $student->balance(),
+            'totalPaid' => $student->totalPaid(),
             'logoPath' => $this->embeddableImage($student->school->logo ?? null),
             'photoPath' => PrivateFiles::dataUri($student->photo),
+            'signaturePath' => PrivateFiles::dataUri($student->school->hm_signature ?? null),
         ]);
 
         $pdf->setPaper('a4');

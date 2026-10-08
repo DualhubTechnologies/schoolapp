@@ -943,12 +943,6 @@ parameters:
 			path: app/Filament/Pages/EnterMarks.php
 
 		-
-			message: '#^Method App\\Filament\\Pages\\EnterMarks\:\:assessmentOptions\(\) should return Illuminate\\Support\\Collection\<int, string\> but returns Illuminate\\Support\\Collection\<int, non\-falsy\-string\>\.$#'
-			identifier: return.type
-			count: 1
-			path: app/Filament/Pages/EnterMarks.php
-
-		-
 			message: '#^Method App\\Filament\\Pages\\EnterMarks\:\:bandsForJs\(\) should return list\<array\{grade\: string, min\: float\}\> but returns array\<int, array\{grade\: mixed, min\: float\}\>\.$#'
 			identifier: return.type
 			count: 1

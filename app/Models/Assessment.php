@@ -6,6 +6,7 @@ use App\Support\SchoolType;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
 use Illuminate\Database\Eloquent\Relations\HasMany;
+use Illuminate\Support\Carbon;
 
 /**
  * One exam or piece of continuous assessment in a term, e.g. "Mid-Term
@@ -230,7 +231,7 @@ class Assessment extends Model
 
             $seen[$text] = ($seen[$text] ?? 0) + 1;
 
-            return $text.' — '.($assessment->held_on ? 'held '.$assessment->held_on->format('j M') : 'no. '.$seen[$text]);
+            return $text.' — '.($assessment->held_on ? 'held '.Carbon::parse($assessment->held_on)->format('j M') : 'no. '.$seen[$text]);
         }, $labels);
     }
 

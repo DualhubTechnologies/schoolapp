@@ -35,7 +35,7 @@ class FeeDocumentController extends Controller
             'school' => $payment->school,
             'balanceAfter' => $payment->student?->balance() ?? 0,
             // A QR code anyone can scan to check the receipt is genuine (online only).
-            'verification' => Edition::isDesktop() ? null : DocumentVerification::forReceipt($payment),
+            'verification' => ! Edition::isDesktop() && $payment instanceof StudentPayment ? DocumentVerification::forReceipt($payment) : null,
             'transportShare' => $transport && $transport['charged'] > 0 && $payment instanceof StudentPayment && ! $payment->isVoided()
                 ? ($transport['payments'][$payment->getKey()] ?? 0.0)
                 : null,

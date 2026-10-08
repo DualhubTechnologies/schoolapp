@@ -100,12 +100,12 @@ class DocumentVerification extends Model
             'school' => (string) $payment->school?->name,
             'learner' => (string) $student?->name,
             'admission_no' => (string) $student?->admission_no,
-            'class' => trim(($student?->schoolClass?->name ?? '').($student?->section ? ' · '.$student->section->name : '')),
+            'class' => trim(($student->schoolClass->name ?? '').($student?->section ? ' · '.$student->section->name : '')),
             'term' => $payment->term?->label(),
             'result' => [
                 'Receipt no.' => (string) $payment->receipt_no,
                 'Amount' => 'UGX '.number_format((float) $payment->amount, 0),
-                'Paid on' => (string) $payment->paid_on?->format('j M Y'),
+                'Paid on' => $payment->paid_on ? Carbon::parse((string) $payment->paid_on)->format('j M Y') : '',
                 'Method' => $payment->methodLabel(),
             ],
         ]);
@@ -117,9 +117,13 @@ class DocumentVerification extends Model
      */
     public function payment(): ?StudentPayment
     {
-        return $this->type === 'receipt' && preg_match('/^receipt:(\d+)$/', $this->subject_key, $m)
-            ? StudentPayment::withVoided()->where('school_id', $this->school_id)->find((int) $m[1])
-            : null;
+        if ($this->type !== 'receipt' || ! preg_match('/^receipt:(\d+)$/', $this->subject_key, $m)) {
+            return null;
+        }
+
+        $payment = StudentPayment::withVoided()->where('school_id', $this->school_id)->find((int) $m[1]);
+
+        return $payment instanceof StudentPayment ? $payment : null;
     }
 
     /** "RC-7KQ4-M2XP": a prefix for the kind of document and 8 random characters. */

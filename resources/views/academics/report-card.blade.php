@@ -78,6 +78,7 @@
     table.marks td.c, table.marks th.c { text-align: center; }
     table.marks.per-exam tfoot th { background: #f8fafc; font-size: .72rem; text-transform: none; letter-spacing: 0; color: var(--rc-primary); }
     table.marks .core-mark { color: var(--rc-accent); font-weight: 800; margin-left: .15rem; }
+    table.marks td.grade .paper-grades { display: block; font-size: .6rem; font-weight: 600; color: #6b7280; white-space: nowrap; }
     table.marks td.grade { font-weight: 800; color: var(--rc-primary); text-align: center; }
     table.marks tr.not-counted td { color: #6b7280; }
     .summary { display: grid; grid-template-columns: 1.2fr 1fr; gap: .8rem; margin-top: .7rem; }
@@ -332,7 +333,13 @@
                                 </td>
                             @endif
                             <td class="c"><strong>{{ $n($res['final']) }}</strong></td>
-                            <td class="grade">{{ $res['grade'] ?? '—' }}</td>
+                            <td class="grade">
+                                {{ $res['grade'] ?? '—' }}
+                                {{-- A-Level principal subjects: the paper grades the letter comes from. --}}
+                                @if (! empty($res['paper_grades']))
+                                    <span class="paper-grades">{{ collect($res['paper_grades'])->map(fn ($g, $p) => count($res['paper_grades']) > 1 ? "P{$p} {$g}" : $g)->implode(' · ') }}</span>
+                                @endif
+                            </td>
                             <td>{{ $res['comment'] ?: $res['descriptor'] }}</td>
                             @if ($show('teacher_initials'))<td class="c">{{ $teachers[$res['subject']->pivot->teacher_id ?? 0] ?? '' }}</td>@endif
                         </tr>
@@ -488,7 +495,7 @@
                 </div>
             @endif
 
-            @php $keyScale = $show('grading_key') ? $scales->get($curriculum === 'a_level' ? 'principal' : 'subject') : null; @endphp
+            @php $keyScale = $show('grading_key') ? $scales->get($curriculum === 'a_level' ? 'paper' : 'subject') : null; @endphp
             @php $verification = $verifications[$student->id] ?? null; @endphp
             @if ($keyScale || $verification)
                 <div class="rc-key-row">
@@ -498,7 +505,7 @@
                         @foreach ($keyScale->bands as $band)
                             <span>{{ $band->grade }} {{ $band->min_score + 0 }}–{{ $band->max_score + 0 }}{{ $band->descriptor ? ' ' . $band->descriptor : '' }}</span>
                         @endforeach
-                        @if ($curriculum === 'a_level')<span>· Subsidiary pass (D1–C6) = 1 point</span>@endif
+                        @if ($curriculum === 'a_level')<br><span>Principal grade from the paper grades (UNEB): A–E principal pass (6–2 points), O subsidiary pass (1), F fail · Subsidiary subjects: C6 or better = 1 point</span>@endif
                         @if ($examResults)<br><span>* counts in the aggregate · {{ collect(config('academics.primary_divisions'))->map(fn ($d) => "{$d[0]} {$d[1]}–{$d[2]}")->implode(', ') }}</span>@endif
                         @if ($topicScores)<br><strong>Topics:</strong> <span>3 all outcomes, with ease</span><span>2 most, enough to achieve</span><span>1 some, not enough</span><span>0 none yet</span>@endif
                     </div>

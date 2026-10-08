@@ -148,6 +148,8 @@ class ResultsCalculator
             $comment = null;
             $averaged = [];
             $averagedWeight = 0.0;
+            // Per paper, for A-Level subjects sat as several papers: paper => [weighted sum, weights, plain scores].
+            $paperTotals = [];
 
             foreach ($assessments as $assessment) {
                 // An exam set in other subjects only.
@@ -197,6 +199,19 @@ class ResultsCalculator
 
                 $scores[$assessment->getKey()] = ['raw' => $raw, 'pct' => $pct, 'absent' => $absent, 'papers' => count($papers) > 1 ? $papers : null];
 
+                if ($curriculum === 'a_level' && (float) $assessment->max_score > 0) {
+                    foreach ($papers as $paper => $paperScore) {
+                        if ($paperScore === null) {
+                            continue;
+                        }
+                        $paperPct = min(100, (float) $paperScore / (float) $assessment->max_score * 100);
+                        $paperTotals[$paper] ??= [0.0, 0.0, []];
+                        $paperTotals[$paper][0] += $paperPct * (float) $assessment->weight;
+                        $paperTotals[$paper][1] += (float) $assessment->weight;
+                        $paperTotals[$paper][2][] = $paperPct;
+                    }
+                }
+
                 if ($pct !== null && $assessment->isAveragedIn($curriculum)) {
                     $averaged[] = $pct;
                     $averagedWeight = max($averagedWeight, (float) $assessment->weight);
@@ -226,6 +241,38 @@ class ResultsCalculator
 
             $final = $weights > 0 ? $weighted / $weights : ($plain ? array_sum($plain) / count($plain) : null);
             $band = $final === null ? null : $this->scale($schoolId, $curriculum, $this->purposeFor($curriculum, $subject))?->bandFor($final);
+            $grade = $band?->grade;
+            $value = $band ? (float) $band->value : null;
+            $descriptor = $band?->descriptor;
+            $paperGrades = null;
+
+            // A-Level, as UNEB grades UACE: each paper D1–F9, then the
+            // principal grade from the paper grades; a subsidiary passes
+            // with C6 or better.
+            $paperScale = $curriculum === 'a_level' && $final !== null ? $this->scale($schoolId, $curriculum, 'paper') : null;
+
+            if ($paperScale) {
+                $paperBands = [];
+                foreach ($paperTotals ?: [1 => [0.0, 0.0, [$final]]] as $paper => [$weightedSum, $paperWeight, $plainScores]) {
+                    $paperFinal = $paperWeight > 0 ? $weightedSum / $paperWeight : array_sum($plainScores) / max(1, count($plainScores));
+                    $paperBands[$paper] = $paperScale->bandFor($paperFinal);
+                }
+                ksort($paperBands);
+                $paperValues = array_values(array_map(fn ($b): int => (int) ($b?->value ?? 9), $paperBands));
+                $paperGrades = array_map(fn ($b): string => (string) ($b?->grade ?? 'F9'), $paperBands);
+
+                if ($subject->category === 'subsidiary') {
+                    $paperBand = $paperScale->bandFor($final);
+                    $grade = $paperBand?->grade;
+                    $value = $paperBand && (int) $paperBand->value <= UacePrincipalGrade::SUBSIDIARY_PASS ? 1.0 : 0.0;
+                    $descriptor = $value > 0 ? 'Subsidiary pass' : 'Fail';
+                    $paperGrades = null;
+                } else {
+                    $grade = UacePrincipalGrade::fromPapers($paperValues);
+                    $value = $grade !== null ? (float) UacePrincipalGrade::POINTS[$grade] : null;
+                    $descriptor = $grade !== null ? UacePrincipalGrade::DESCRIPTORS[$grade] : null;
+                }
+            }
 
             $results[$subject->getKey()] = [
                 'subject' => $subject,
@@ -235,9 +282,11 @@ class ResultsCalculator
                 // and exam (summative) parts, e.g. 16.9 + 46.4 = 63.3.
                 'formative' => $weights > 0 ? round($schoolBasedWeighted / $weights, 1) : null,
                 'summative' => $weights > 0 ? round(($weighted - $schoolBasedWeighted) / $weights, 1) : null,
-                'grade' => $band?->grade,
-                'value' => $band ? (float) $band->value : null,
-                'descriptor' => $band?->descriptor,
+                'grade' => $grade,
+                'value' => $value,
+                'descriptor' => $descriptor,
+                // A-Level principal subjects: each paper's grade, e.g. [1 => 'D2', 2 => 'C4'].
+                'paper_grades' => $paperGrades,
                 'comment' => $comment,
             ];
         }

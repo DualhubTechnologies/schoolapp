@@ -136,7 +136,7 @@ class ReportCardController extends Controller
 
         // Project work gets its own section: one line per project mark.
         $projects = $template->shows('projects') && ! $examId
-            ? $this->projects($results['assessments'], $rows->pluck('student.id')->all(), $class, $scales->get($class->curriculum() === 'a_level' ? 'principal' : 'subject'), $teachers->all())
+            ? $this->projects($results['assessments'], $rows->pluck('student.id')->all(), $class, $scales->get($class->curriculum() === 'a_level' ? 'paper' : 'subject'), $teachers->all())
             : [];
 
         // Each term's average so far this year, for the trend table.

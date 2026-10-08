@@ -22,6 +22,7 @@ class GradingScale extends Model
         'subject' => 'Subject grades',
         'principal' => 'A-Level principal subjects',
         'subsidiary' => 'A-Level subsidiary subjects',
+        'paper' => 'A-Level paper grades (UNEB)',
     ];
 
     public function bands(): HasMany

@@ -232,26 +232,21 @@ return [
                 ['E', 0, 29.99, 1, 'Elementary'],
             ],
         ],
+        // UNEB's UACE paper grades. Every A-Level paper is graded D1–F9;
+        // a principal subject's grade (A–E, O, F) then follows from its
+        // paper grades (App\Services\Academics\UacePrincipalGrade), and a
+        // subsidiary passes with C6 or better.
         'a_level' => [
-            'principal' => [
-                ['A', 80, 100, 6, 'Excellent'],
-                ['B', 70, 79.99, 5, 'Very good'],
-                ['C', 60, 69.99, 4, 'Good'],
-                ['D', 50, 59.99, 3, 'Fair'],
-                ['E', 45, 49.99, 2, 'Pass'],
-                ['O', 35, 44.99, 1, 'Subsidiary pass'],
-                ['F', 0, 34.99, 0, 'Fail'],
-            ],
-            'subsidiary' => [
-                ['D1', 80, 100, 1, 'Pass'],
-                ['D2', 70, 79.99, 1, 'Pass'],
-                ['C3', 65, 69.99, 1, 'Pass'],
-                ['C4', 60, 64.99, 1, 'Pass'],
-                ['C5', 55, 59.99, 1, 'Pass'],
-                ['C6', 50, 54.99, 1, 'Pass'],
-                ['P7', 45, 49.99, 0, 'Fail'],
-                ['P8', 40, 44.99, 0, 'Fail'],
-                ['F9', 0, 39.99, 0, 'Fail'],
+            'paper' => [
+                ['D1', 85, 100, 1, 'Distinction'],
+                ['D2', 80, 84.99, 2, 'Distinction'],
+                ['C3', 75, 79.99, 3, 'Credit'],
+                ['C4', 70, 74.99, 4, 'Credit'],
+                ['C5', 65, 69.99, 5, 'Credit'],
+                ['C6', 60, 64.99, 6, 'Credit'],
+                ['P7', 50, 59.99, 7, 'Pass'],
+                ['P8', 40, 49.99, 8, 'Pass'],
+                ['F9', 0, 39.99, 9, 'Failure'],
             ],
         ],
     ],

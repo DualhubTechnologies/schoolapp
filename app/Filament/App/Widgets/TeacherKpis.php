@@ -29,7 +29,7 @@ class TeacherKpis extends KpiCards
         $entered = $rows->sum('entered');
         $rate = static::percent($entered, $expected);
         $streams = Section::whereIn('id', array_keys(AcademicAccess::classTeacherStreams()))
-            ->with('schoolClass')->get()
+            ->with('schoolClass')->get()->toBase()
             ->map(fn (Section $s) => trim(($s->schoolClass?->name ?? '').' '.$s->name))
             ->merge(SchoolClass::whereIn('id', AcademicAccess::classTeacherWholeClasses())->pluck('name'));
 

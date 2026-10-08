@@ -5,14 +5,20 @@ namespace App\Filament\Widgets;
 use App\Filament\App\Resources\AcademicYears\AcademicYearResource;
 use App\Filament\App\Resources\FeeStructures\FeeStructureResource;
 use App\Filament\App\Resources\SchoolClasses\SchoolClassResource;
+use App\Filament\App\Resources\Staff\StaffResource;
+use App\Filament\App\Resources\Students\StudentResource;
 use App\Filament\App\Resources\Terms\TermResource;
+use App\Filament\App\Resources\Users\UserResource;
 use App\Filament\Pages\SchoolProfile;
 use App\Filament\Widgets\Concerns\SchoolScoped;
 use App\Models\AcademicYear;
 use App\Models\FeeStructure;
 use App\Models\School;
 use App\Models\SchoolClass;
+use App\Models\Staff;
+use App\Models\Student;
 use App\Models\Term;
+use App\Models\User;
 use Filament\Widgets\Widget;
 
 /**
@@ -71,6 +77,18 @@ class SetupChecklist extends Widget
                     'text' => 'What each class pays this term, so balances and receipts work.',
                     'url' => FeeStructureResource::getUrl(),
                     'done' => FeeStructure::where('school_id', $id)->exists(),
+                ],
+                [
+                    'title' => 'Add your learners',
+                    'text' => 'Admit each learner with a parent\'s phone number, or import a whole class from Excel.',
+                    'url' => StudentResource::getUrl(),
+                    'done' => Student::where('school_id', $id)->exists(),
+                ],
+                [
+                    'title' => 'Add staff and give them logins',
+                    'text' => 'Add teachers and other staff, then give each a login for their job — a teacher sees marks, a bursar sees fees.',
+                    'url' => Staff::where('school_id', $id)->exists() ? UserResource::getUrl('create') : StaffResource::getUrl('create'),
+                    'done' => User::where('school_id', $id)->count() > 1,
                 ],
             ];
         });

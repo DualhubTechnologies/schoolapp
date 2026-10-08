@@ -39,7 +39,7 @@ trait SyncsUserAccess
             // One staff record per login.
             Staff::where('user_id', $user->getKey())->where('id', '!=', $staffId)->update(['user_id' => null]);
 
-            $staff = $staffId ? Staff::where('school_id', $user->school_id)->find($staffId) : null;
+            $staff = $staffId ? Staff::where('school_id', $user->school_id)->whereKey($staffId)->first() : null;
 
             if (! $staff) {
                 return;

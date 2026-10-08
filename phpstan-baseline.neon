@@ -661,12 +661,6 @@ parameters:
 			path: app/Filament/App/Resources/Terms/Schemas/TermForm.php
 
 		-
-			message: '#^Call to an undefined method App\\Models\\Staff\|Illuminate\\Database\\Eloquent\\Collection\<int, App\\Models\\Staff\>\:\:getKey\(\)\.$#'
-			identifier: method.notFound
-			count: 4
-			path: app/Filament/App/Resources/Users/Pages/CreateUser.php
-
-		-
 			message: '#^Call to an undefined method App\\Models\\Staff\|Illuminate\\Database\\Eloquent\\Collection\<int, App\\Models\\Staff\>\:\:update\(\)\.$#'
 			identifier: method.notFound
 			count: 1
@@ -731,12 +725,6 @@ parameters:
 			identifier: argument.templateType
 			count: 2
 			path: app/Filament/App/Resources/Users/Pages/CreateUser.php
-
-		-
-			message: '#^Call to an undefined method App\\Models\\Staff\|Illuminate\\Database\\Eloquent\\Collection\<int, App\\Models\\Staff\>\:\:getKey\(\)\.$#'
-			identifier: method.notFound
-			count: 4
-			path: app/Filament/App/Resources/Users/Pages/EditUser.php
 
 		-
 			message: '#^Call to an undefined method App\\Models\\Staff\|Illuminate\\Database\\Eloquent\\Collection\<int, App\\Models\\Staff\>\:\:update\(\)\.$#'

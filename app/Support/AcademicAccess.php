@@ -73,7 +73,7 @@ class AcademicAccess
         $staffId = static::staffId();
 
         return $staffId
-            ? once(fn () => SchoolClass::where('class_teacher_id', $staffId)->pluck('id')->map(fn ($id) => (int) $id)->all())
+            ? once(fn () => array_values(SchoolClass::where('class_teacher_id', $staffId)->pluck('id')->map(fn ($id) => (int) $id)->all()))
             : [];
     }
 

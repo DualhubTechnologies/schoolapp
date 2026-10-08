@@ -16,6 +16,9 @@ use App\Filament\Pages\ClassResults;
 use App\Filament\Pages\EnterMarks;
 use App\Filament\Pages\ReceivePayment;
 use App\Filament\Pages\ReportCards;
+use App\Filament\Pages\SendMessages;
+use App\Filament\Pages\StudentIdCards;
+use App\Filament\Pages\TakeAttendance;
 use App\Filament\Widgets\Concerns\SchoolScoped;
 use App\Support\DashboardProfile;
 use Filament\Widgets\Widget;
@@ -98,10 +101,16 @@ class WelcomeBanner extends Widget
             ],
             DashboardProfile::TEACHER => [
                 [EnterMarks::class, 'Enter marks', 'heroicon-o-pencil-square', true],
+                [TakeAttendance::class, 'Take register', 'heroicon-o-clipboard-document-check'],
                 [ClassResults::class, 'Class results', 'heroicon-o-chart-bar'],
                 [ReportCards::class, 'Report cards', 'heroicon-o-document-text'],
             ],
-            default => [],
+            default => [
+                [StudentResource::class, 'Admit a learner', 'heroicon-o-user-plus', true, 'create'],
+                [TakeAttendance::class, 'Take register', 'heroicon-o-clipboard-document-check'],
+                [SendMessages::class, 'Send a message', 'heroicon-o-chat-bubble-left-right'],
+                [StudentIdCards::class, 'ID cards', 'heroicon-o-identification'],
+            ],
         };
 
         // The platform owner's shortcuts live in the admin panel.

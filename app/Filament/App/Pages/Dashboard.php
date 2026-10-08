@@ -10,6 +10,7 @@ use App\Filament\App\Widgets\PlatformKpis;
 use App\Filament\App\Widgets\TeacherKpis;
 use App\Filament\App\Widgets\TeacherMarksProgress;
 use App\Filament\App\Widgets\WelcomeBanner;
+use App\Filament\App\Widgets\WorkGuide;
 use App\Filament\Widgets\AdmissionsTrendChart;
 use App\Filament\Widgets\FeeCollectionChart;
 use App\Filament\Widgets\FinanceSnapshot;
@@ -179,6 +180,7 @@ class Dashboard extends BaseDashboard
             ],
             DashboardProfile::LEADERSHIP => [
                 WelcomeBanner::class,
+                WorkGuide::class,
                 SetupChecklist::class,
                 TermBillingPrompt::class,
                 LeadershipKpis::class,
@@ -193,6 +195,7 @@ class Dashboard extends BaseDashboard
             ],
             DashboardProfile::BURSAR => [
                 WelcomeBanner::class,
+                WorkGuide::class,
                 TermBillingPrompt::class,
                 BursarKpis::class,
                 FeeCollectionChart::class,
@@ -205,15 +208,18 @@ class Dashboard extends BaseDashboard
             ],
             DashboardProfile::HR => [
                 WelcomeBanner::class,
+                WorkGuide::class,
                 HrKpis::class,
             ],
             DashboardProfile::TEACHER => [
                 WelcomeBanner::class,
+                WorkGuide::class,
                 TeacherKpis::class,
                 TeacherMarksProgress::class,
             ],
             default => [
                 WelcomeBanner::class,
+                WorkGuide::class,
             ],
         };
     }

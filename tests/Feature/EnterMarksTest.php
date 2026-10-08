@@ -130,6 +130,9 @@ it('adds a CA for just this class and subject from the mark sheet', function () 
 
     $ca = Assessment::where('type', 'ca')->sole();
 
+    // The new CA comes before End of Term, even when both had order 0.
+    expect(Assessment::where('term_id', $this->assessment->term_id)->orderBy('sort_order')->orderBy('id')->pluck('type')->all())->toBe(['ca', 'eot']);
+
     expect($ca->class_ids)->toBe([$this->class->id])
         ->and($ca->subject_ids)->toBe([$this->subject->id])
         ->and($ca->covers($this->class->fresh(), $this->subject->id))->toBeTrue()

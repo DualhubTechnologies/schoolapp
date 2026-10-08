@@ -754,8 +754,16 @@ class EnterMarks extends Page
                 }
 
                 $curriculum = $class->curriculum();
-                // Before the End of Term exam on the sheet and the report card.
-                $endOfTerm = $this->termAssessments()->firstWhere('type', 'eot');
+                // After the term's other assessments and before the End of
+                // Term exam, on the sheet and the report card: End of Term
+                // moves one place later if it shares their order number.
+                $exams = $this->termAssessments();
+                $endOfTerm = $exams->firstWhere('type', 'eot');
+                $order = (int) $exams->where('type', '!=', 'eot')->max('sort_order');
+
+                if ($endOfTerm && (int) $endOfTerm->sort_order <= $order) {
+                    $endOfTerm->update(['sort_order' => $order + 1]);
+                }
 
                 Assessment::create([
                     'school_id' => $term->school_id,
@@ -767,7 +775,7 @@ class EnterMarks extends Page
                     'subject_ids' => [$subject->getKey()],
                     'max_score' => $data['max_score'],
                     'weight' => (float) config("academics.default_weights.{$curriculum}.ca", 0),
-                    'sort_order' => $endOfTerm ? max(0, (int) $endOfTerm->sort_order - 1) : 0,
+                    'sort_order' => $order,
                 ]);
 
                 $this->allExams = true;

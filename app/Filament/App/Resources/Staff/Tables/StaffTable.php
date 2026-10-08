@@ -2,6 +2,7 @@
 
 namespace App\Filament\App\Resources\Staff\Tables;
 
+use App\Filament\App\Resources\Users\Schemas\UserForm;
 use App\Filament\App\Resources\Users\UserResource;
 use App\Filament\Pages\StaffIdCards;
 use App\Models\Staff;
@@ -123,6 +124,9 @@ class StaffTable
                     // logins: otherwise an accountant could create, say, a
                     // teacher login and open marks they cannot open themselves.
                     ->visible(fn ($record) => $record->user_id === null && UserResource::canCreate())
+                    ->modalHeading(fn ($record) => 'Give '.$record->name.' a login')
+                    ->modalDescription('They sign in with this email and password and see only their own work.')
+                    ->modalSubmitActionLabel('Create login')
                     ->form([
                         EmailCheck::apply(TextInput::make('email'))
                             ->label('Email address')
@@ -143,13 +147,17 @@ class StaffTable
                             ->required()
                             ->dehydrated(false),
                         Select::make('roles')
+                            ->label('Their job on SchoolHub')
                             ->multiple()
                             ->required()
                             ->options(fn () => Role::whereIn('name', ['Teacher', 'Staff', 'Accountant', 'School Admin'])
                                 ->pluck('name', 'name')
-                                ->when(! auth()->user()?->hasRole(['School Admin', 'Super Admin']), fn ($roles) => $roles->except(['School Admin']))),
+                                ->when(! auth()->user()?->hasRole(['School Admin', 'Super Admin']), fn ($roles) => $roles->except(['School Admin']))
+                                ->map(fn (string $name) => UserForm::ROLE_HINTS[$name] ?? $name))
+                            ->default(fn ($record) => $record->category === 'teaching' ? ['Teacher'] : [])
+                            ->helperText('A teacher is taken next to choose the subjects they teach and any class they are class teacher of.'),
                     ])
-                    ->action(function (array $data, $record) {
+                    ->action(function (array $data, $record, $livewire) {
                         $user = User::create([
                             'name' => $record->name,
                             'email' => $data['email'],
@@ -161,10 +169,19 @@ class StaffTable
 
                         $record->update(['user_id' => $user->id]);
 
+                        $isTeacher = in_array('Teacher', $data['roles'], true);
+
                         Notification::make()
-                            ->title('Login created successfully')
+                            ->title('Login created for '.$record->name)
+                            ->body('Give them their email and password to sign in.'.($isTeacher ? ' Now choose the subjects they teach and any class they are class teacher of, then save.' : ''))
                             ->success()
+                            ->persistent()
                             ->send();
+
+                        // Without subjects a teacher cannot enter any marks: go straight there.
+                        if ($isTeacher) {
+                            $livewire->redirect(UserResource::getUrl('edit', ['record' => $user]));
+                        }
                     }),
                 // Opens Staff ID Cards for this one person, where missing
                 // details are caught before anything is printed.

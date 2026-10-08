@@ -2,10 +2,12 @@
 
 namespace App\Http\Controllers;
 
+use App\Models\DocumentVerification;
 use App\Models\Student;
 use App\Models\StudentPayment;
 use App\Services\FeeReminderService;
 use App\Services\Transport\TransportLedger;
+use App\Support\Edition;
 use Illuminate\Http\Request;
 use Illuminate\View\View;
 
@@ -32,6 +34,8 @@ class FeeDocumentController extends Controller
             'student' => $payment->student,
             'school' => $payment->school,
             'balanceAfter' => $payment->student?->balance() ?? 0,
+            // A QR code anyone can scan to check the receipt is genuine (online only).
+            'verification' => Edition::isDesktop() ? null : DocumentVerification::forReceipt($payment),
             'transportShare' => $transport && $transport['charged'] > 0 && $payment instanceof StudentPayment && ! $payment->isVoided()
                 ? ($transport['payments'][$payment->getKey()] ?? 0.0)
                 : null,

@@ -8,6 +8,11 @@
     // Every card the school issued reads as genuine; only the school's
     // admin is told it was later reissued ($adminNote).
     $state = ! $document ? ($code ? 'missing' : 'form') : 'genuine';
+    // A fee receipt the school has since cancelled no longer counts as a payment.
+    $cancelled = $document?->payment()?->voided_at;
+    if ($cancelled) {
+        $state = 'cancelled';
+    }
     $summary = $document?->summary ?? [];
 @endphp
 <!DOCTYPE html>
@@ -54,12 +59,14 @@
 <main>
     @if ($state === 'form')
         <h2>Verify a document</h2>
-        <p class="note" style="margin-top:0">Type the code printed under the QR code on a report card, for example RC-7KQ4-M2XP.</p>
+        <p class="note" style="margin-top:0">Type the code printed under the QR code on a report card or fee receipt, for example RC-7KQ4-M2XP.</p>
     @endif
 
     <div class="card">
         @if ($state === 'genuine')
             <div class="status genuine"><span class="icon">✓</span><div><h1>Genuine {{ strtolower($document->typeLabel()) }}</h1><p>Issued by {{ $summary['school'] ?? $document->school?->name }} through SchoolHub.</p></div></div>
+        @elseif ($state === 'cancelled')
+            <div class="status missing"><span class="icon">✕</span><div><h1>Cancelled receipt</h1><p>{{ $summary['school'] ?? 'The school' }} issued this receipt, then cancelled it on {{ $cancelled->format('j M Y') }}. It does not count as a payment; ask the school about it.</p></div></div>
         @elseif ($state === 'missing')
             <div class="status missing"><span class="icon">✕</span><div><h1>No document with this code</h1><p>The code <span class="code">{{ $code }}</span> was not issued by SchoolHub. Check it was typed correctly; if it was, the document may not be genuine.</p></div></div>
         @endif
@@ -74,9 +81,11 @@
                 <div><dt>Learner</dt><dd>{{ $summary['learner'] ?? '' }}</dd></div>
                 <div><dt>Admission no.</dt><dd>{{ $summary['admission_no'] ?? '' }}</dd></div>
                 <div><dt>Class</dt><dd>{{ $summary['class'] ?? '' }}</dd></div>
-                <div><dt>Term</dt><dd>{{ $summary['term'] ?? '' }}{{ ! empty($summary['exam']) ? ' — '.$summary['exam'] : '' }}</dd></div>
+                @if (! empty($summary['term']))
+                    <div><dt>Term</dt><dd>{{ $summary['term'] }}{{ ! empty($summary['exam']) ? ' — '.$summary['exam'] : '' }}</dd></div>
+                @endif
             </dl>
-            <div class="section">Result</div>
+            <div class="section">{{ $document->type === 'receipt' ? 'Payment' : 'Result' }}</div>
             <dl>
                 @foreach ((array) ($summary['result'] ?? []) as $label => $value)
                     <div><dt>{{ $label }}</dt><dd>{{ $value }}</dd></div>
@@ -86,15 +95,15 @@
             </dl>
         @endif
 
-        @if ($state !== 'genuine')
+        @if (in_array($state, ['form', 'missing'], true))
             <form method="get" action="{{ route('verify.form') }}">
-                <input name="code" placeholder="RC-XXXX-XXXX" value="{{ $state === 'missing' ? $code : '' }}" aria-label="Verification code" autocomplete="off" required>
+                <input name="code" placeholder="e.g. RC-7KQ4-M2XP" value="{{ $state === 'missing' ? $code : '' }}" aria-label="Verification code" autocomplete="off" required>
                 <button type="submit">Check</button>
             </form>
         @endif
     </div>
 
-    <p class="note">Compare these details with the paper copy. If they differ, the paper copy has been altered. Only the headline result is shown here; full marks stay with the school.</p>
+    <p class="note">Compare these details with the paper copy. If they differ, the paper copy has been altered.{{ $document?->type === 'receipt' ? ' Fee balances stay with the school.' : ' Only the headline result is shown here; full marks stay with the school.' }}</p>
 </main>
 </body>
 </html>

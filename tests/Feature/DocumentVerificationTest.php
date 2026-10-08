@@ -8,6 +8,7 @@ use App\Models\ReportCardTemplate;
 use App\Models\School;
 use App\Models\SchoolClass;
 use App\Models\Student;
+use App\Models\StudentPayment;
 use App\Models\Subject;
 use App\Models\Term;
 use App\Models\User;
@@ -112,4 +113,36 @@ it('leaves the QR code off when the school turns it off', function () {
     printCardForVerification()->assertOk()->assertDontSee('Scan to verify');
 
     expect(DocumentVerification::count())->toBe(0);
+});
+
+it('prints a QR code on fee receipts that shows the payment as genuine', function () {
+    $payment = StudentPayment::create(['school_id' => $this->school->id, 'student_id' => $this->student->id, 'amount' => 520000, 'paid_on' => '2026-10-01', 'method' => 'cash']);
+
+    $this->get(route('filament.app.fees.receipt', $payment))->assertOk()->assertSee('Scan to verify');
+
+    $document = DocumentVerification::where('type', 'receipt')->sole();
+    expect($document->code)->toStartWith('RT-');
+
+    auth()->logout();
+
+    $this->get(route('verify.show', $document->code))
+        ->assertOk()
+        ->assertSee('Genuine fee receipt')
+        ->assertSee('Aisha Nakato')
+        ->assertSee($payment->receipt_no)
+        ->assertSee('UGX 520,000');
+});
+
+it('shows a receipt the school cancelled as cancelled', function () {
+    $payment = StudentPayment::create(['school_id' => $this->school->id, 'student_id' => $this->student->id, 'amount' => 100000, 'paid_on' => '2026-10-01', 'method' => 'cash']);
+    $this->get(route('filament.app.fees.receipt', $payment))->assertOk();
+    $code = DocumentVerification::where('type', 'receipt')->sole()->code;
+
+    $payment->void('Entered twice');
+    auth()->logout();
+
+    $this->get(route('verify.show', $code))
+        ->assertOk()
+        ->assertSee('Cancelled receipt')
+        ->assertDontSee('Genuine fee receipt');
 });

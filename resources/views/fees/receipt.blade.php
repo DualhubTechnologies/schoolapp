@@ -31,6 +31,10 @@
     .void-stamp { position: absolute; inset: 0; display: flex; align-items: center; justify-content: center; pointer-events: none; }
     .void-stamp span { transform: rotate(-18deg); font-size: 5rem; font-weight: 900; letter-spacing: .15em; color: rgba(185, 28, 28, .18); border: 8px solid rgba(185, 28, 28, .18); padding: 0 1.5rem; }
     .void-note { margin-top: .8rem; color: #b91c1c; font-weight: 600; }
+    .verify { display: flex; align-items: center; gap: .45rem; font-size: .62rem; color: #6b7280; line-height: 1.35; }
+    .verify img { width: 18mm; height: 18mm; display: block; }
+    .verify b { display: block; font-size: .62rem; letter-spacing: .05em; text-transform: uppercase; color: #1e3a5f; }
+    .verify .code { display: block; font-family: ui-monospace, Menlo, Consolas, monospace; font-size: .78rem; font-weight: 700; color: #111827; }
 @endsection
 
 @section('content')
@@ -104,6 +108,17 @@
                     @endif
                 </span>
             </div>
+            @if (! empty($verification))
+                {{-- Anyone can scan this to check the receipt is genuine (DocumentVerification). --}}
+                <div class="verify">
+                    <img src="{{ \App\Support\QrImage::svg($verification->url()) }}" alt="QR code to verify this receipt">
+                    <div>
+                        <b>Scan to verify</b>
+                        <span class="code">{{ $verification->code }}</span>
+                        <span>{{ preg_replace('#^https?://#', '', rtrim((string) config('app.url'), '/')) }}/verify</span>
+                    </div>
+                </div>
+            @endif
             <div class="sign">
                 Received by: {{ $payment->recorded_by ?: '—' }}<br>Signature &amp; stamp
             </div>

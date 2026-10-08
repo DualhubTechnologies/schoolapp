@@ -2,6 +2,7 @@
 
 namespace App\Http\Controllers;
 
+use App\Models\DocumentVerification;
 use App\Models\Mark;
 use App\Models\SchoolClass;
 use App\Models\Student;
@@ -10,6 +11,7 @@ use App\Models\Term;
 use App\Services\Academics\ResultsCalculator;
 use App\Services\StudentLedger;
 use App\Services\Transport\TransportLedger;
+use App\Support\Edition;
 use Illuminate\Support\Collection;
 use Illuminate\View\View;
 
@@ -56,6 +58,8 @@ class ParentPageController extends Controller
             'student' => $student,
             'school' => $student->school,
             'balanceAfter' => $student->balance(),
+            // A QR code anyone can scan to check the receipt is genuine (online only).
+            'verification' => Edition::isDesktop() ? null : DocumentVerification::forReceipt($payment),
             'transportShare' => $split['charged'] > 0 ? ($split['payments'][$payment->getKey()] ?? 0.0) : null,
         ]);
     }

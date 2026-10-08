@@ -28,6 +28,7 @@ class DocumentVerification extends Model
 {
     public const TYPES = [
         'report_card' => 'Report card',
+        'receipt' => 'Fee receipt',
     ];
 
     /** No 0/O, 1/I/L: easy to read off paper and type. */
@@ -90,6 +91,37 @@ class DocumentVerification extends Model
         ]);
     }
 
+    /** The code for a fee receipt, as printed: who paid what, when and how. */
+    public static function forReceipt(StudentPayment $payment): self
+    {
+        $student = $payment->student;
+
+        return static::issue($payment->school_id, 'receipt', 'receipt:'.$payment->getKey(), [
+            'school' => (string) $payment->school?->name,
+            'learner' => (string) $student?->name,
+            'admission_no' => (string) $student?->admission_no,
+            'class' => trim(($student?->schoolClass?->name ?? '').($student?->section ? ' · '.$student->section->name : '')),
+            'term' => $payment->term?->label(),
+            'result' => [
+                'Receipt no.' => (string) $payment->receipt_no,
+                'Amount' => 'UGX '.number_format((float) $payment->amount, 0),
+                'Paid on' => (string) $payment->paid_on?->format('j M Y'),
+                'Method' => $payment->methodLabel(),
+            ],
+        ]);
+    }
+
+    /**
+     * The receipt's payment as it is now, to tell whether the school has
+     * since cancelled it. Null for other documents.
+     */
+    public function payment(): ?StudentPayment
+    {
+        return $this->type === 'receipt' && preg_match('/^receipt:(\d+)$/', $this->subject_key, $m)
+            ? StudentPayment::withVoided()->where('school_id', $this->school_id)->find((int) $m[1])
+            : null;
+    }
+
     /** "RC-7KQ4-M2XP": a prefix for the kind of document and 8 random characters. */
     protected static function newCode(string $prefix): string
     {
@@ -108,6 +140,7 @@ class DocumentVerification extends Model
     {
         return match ($type) {
             'report_card' => 'RC',
+            'receipt' => 'RT',
             default => 'DOC',
         };
     }

@@ -72,6 +72,12 @@ class SubjectChoices extends Page
     public function mount(): void
     {
         $this->classId = request()->integer('class') ?: null;
+
+        // A class teacher of one class goes straight to it.
+        if (! $this->classId && ! static::managesAll() && count($own = AcademicAccess::classTeacherClassIds()) === 1) {
+            $this->classId = $own[0];
+        }
+
         $this->pickOwnStream();
         $this->load();
     }

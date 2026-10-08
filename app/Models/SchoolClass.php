@@ -45,7 +45,11 @@ class SchoolClass extends Model
         return $this->belongsTo(ClassLevel::class);
     }
 
-    /** Class teacher of the whole class -- used when it has no streams. */
+    /**
+     * Class teacher of the whole class -- used when it has no streams.
+     *
+     * @return BelongsTo<Staff, $this>
+     */
     public function classTeacher(): BelongsTo
     {
         return $this->belongsTo(Staff::class, 'class_teacher_id');

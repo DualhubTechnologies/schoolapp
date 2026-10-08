@@ -80,7 +80,7 @@ class WorkGuide extends Widget
     }
 
     /**
-     * @return list<array{key: string, title: string, icon: string, steps: list<array{title: string, text: string, url: string, done: bool|null}>}>
+     * @return array<int, array{key: string, title: string, icon: string, steps: array<int, mixed>}>
      */
     public function jobs(): array
     {
@@ -257,10 +257,15 @@ class WorkGuide extends Widget
             ->exists();
     }
 
-    /** A page's URL, or a resource's list (or $action, e.g. "create", when it has that page). */
+    /** A page's URL, or a resource's list, or its $action (e.g. "create") page or pop-up. */
     protected function urlFor(string $class, ?string $action): string
     {
-        return $action !== null && $class::hasPage($action) ? $class::getUrl($action) : $class::getUrl();
+        if ($action === null) {
+            return $class::getUrl();
+        }
+
+        // Resources that add records in a pop-up on their list page open it straight away.
+        return $class::hasPage($action) ? $class::getUrl($action) : $class::getUrl(['action' => $action]);
     }
 
     /**

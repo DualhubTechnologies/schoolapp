@@ -125,8 +125,12 @@ class WelcomeBanner extends Widget
         return collect($candidates)
             ->filter(fn ($a) => $this->mayOpen($a[0]))
             ->map(fn ($a) => [
-                // Some resources add records in a modal on their list page, with no "create" page.
-                'url' => isset($a[4]) && $a[0]::hasPage($a[4]) ? $a[0]::getUrl($a[4]) : $a[0]::getUrl(),
+                // Some resources add records in a pop-up on their list page: open it straight away.
+                'url' => match (true) {
+                    ! isset($a[4]) => $a[0]::getUrl(),
+                    $a[0]::hasPage($a[4]) => $a[0]::getUrl($a[4]),
+                    default => $a[0]::getUrl(['action' => $a[4]]),
+                },
                 'label' => $a[1],
                 'icon' => $a[2],
                 'primary' => $a[3] ?? false,

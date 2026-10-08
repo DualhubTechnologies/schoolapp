@@ -331,6 +331,12 @@ class ReportCards extends Page
         $this->showFees = $this->cardTemplate()->shows('fees');
         $this->termId = request()->integer('term') ?: Term::current()?->getKey();
         $this->classId = request()->integer('class') ?: null;
+
+        // A class teacher of one class goes straight to it.
+        if (! $this->classId && ! AcademicAccess::manages() && count($own = AcademicAccess::classTeacherClassIds()) === 1) {
+            $this->classId = $own[0];
+        }
+
         $this->pickOwnStream();
         $this->loadComments();
     }

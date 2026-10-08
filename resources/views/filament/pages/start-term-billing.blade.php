@@ -19,13 +19,18 @@
 
             @if (blank($this->data['fees'] ?? null))
                 <p class="text-sm text-gray-600 dark:text-gray-300">
-                    No termly fees are set up yet.
-                    <x-filament::link :href="\App\Filament\App\Resources\FeeStructures\FeeStructureResource::getUrl('create')">Add the fee structure</x-filament::link>
-                    first, then come back here.
+                    No termly fees are set up yet, so there is nothing to bill.
+                    First add what each class pays, then come back here.
                 </p>
+                <div class="mt-4">
+                    <x-filament::button tag="a" :href="\App\Filament\App\Resources\FeeStructures\FeeStructureResource::getUrl('create')" icon="heroicon-m-plus">
+                        Add the fees
+                    </x-filament::button>
+                </div>
             @endif
         </x-filament::section>
 
+        @if (filled($this->data['fees'] ?? null))
         <form wire:submit="save" class="space-y-6">
             {{ $this->form }}
 
@@ -38,5 +43,6 @@
                 </x-filament::link>
             </div>
         </form>
+        @endif
     @endif
 </x-filament-panels::page>

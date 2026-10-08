@@ -81,6 +81,14 @@ class DocumentVerification extends Model
 
         $current?->update(['replaced_at' => now()]);
 
+        // The result lines as [label, value] pairs: the database's JSON
+        // column re-sorts an object's keys, which would jumble their order.
+        $lines = [];
+        foreach ((array) ($summary['result'] ?? []) as $label => $value) {
+            $lines[] = [(string) $label, (string) $value];
+        }
+        $summary['result'] = $lines;
+
         return static::create([
             'school_id' => $schoolId,
             'code' => static::newCode(self::prefixFor($type)),
@@ -157,7 +165,28 @@ class DocumentVerification extends Model
         return preg_match('/^([A-Z]{2,3})([A-Z0-9]{4})([A-Z0-9]{4})$/', $clean, $m) ? "{$m[1]}-{$m[2]}-{$m[3]}" : $clean;
     }
 
-    public function url(): string
+    /**
+     * The result lines in printed order, as label => value. Codes issued
+     * before the lines were kept as pairs hold them as an object instead.
+     *
+     * @return array<string, string>
+     */
+    public function resultLines(): array
+    {
+        $lines = [];
+
+        foreach ((array) ($this->summary['result'] ?? []) as $label => $value) {
+            if (is_array($value) && count($value) === 2) {
+                $lines[(string) $value[0]] = (string) $value[1];
+            } else {
+                $lines[(string) $label] = (string) $value;
+            }
+        }
+
+        return $lines;
+    }
+
+        public function url(): string
     {
         return route('verify.show', $this->code);
     }

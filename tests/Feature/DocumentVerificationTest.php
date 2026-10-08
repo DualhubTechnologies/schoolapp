@@ -48,7 +48,7 @@ it('prints a QR code and verification code on each report card', function () {
 
     expect($document->code)->toMatch('/^RC-[A-Z0-9]{4}-[A-Z0-9]{4}$/')
         ->and($document->summary['learner'])->toBe('Aisha Nakato')
-        ->and($document->summary['result']['Average'])->toBe('72%');
+        ->and($document->resultLines()['Average'])->toBe('72%');
 
     printCardForVerification()->assertSee($document->code)->assertSee('data:image/svg+xml;base64,', false);
 });
@@ -84,7 +84,7 @@ it('keeps the code when a card is reprinted unchanged, and replaces it when the 
 
     expect($first->replaced_at)->not->toBeNull()
         ->and($current->code)->not->toBe($first->code)
-        ->and($current->summary['result']['Average'])->toBe('85%');
+        ->and($current->resultLines()['Average'])->toBe('85%');
 
     // The school's admin, signed in, is told it was updated, and the new code.
     $this->get(route('verify.show', $first->code))
@@ -130,7 +130,8 @@ it('prints a QR code on fee receipts that shows the payment as genuine', functio
         ->assertSee('Genuine fee receipt')
         ->assertSee('Aisha Nakato')
         ->assertSee($payment->receipt_no)
-        ->assertSee('UGX 520,000');
+        ->assertSee('UGX 520,000')
+        ->assertSeeInOrder(['Receipt no.', 'Amount', 'Paid on', 'Method']);
 });
 
 it('shows a receipt the school cancelled as cancelled', function () {

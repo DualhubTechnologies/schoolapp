@@ -87,7 +87,7 @@
             </dl>
             <div class="section">{{ $document->type === 'receipt' ? 'Payment' : 'Result' }}</div>
             <dl>
-                @foreach ((array) ($summary['result'] ?? []) as $label => $value)
+                @foreach ($document->resultLines() as $label => $value)
                     <div><dt>{{ $label }}</dt><dd>{{ $value }}</dd></div>
                 @endforeach
                 <div><dt>Issued</dt><dd>{{ $document->created_at?->format('j M Y') }}</dd></div>

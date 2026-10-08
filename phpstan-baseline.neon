@@ -3273,18 +3273,6 @@ parameters:
 
 
 		-
-			message: '#^Parameter \#1 \$array of function array_values contains unresolvable type\.$#'
-			identifier: argument.unresolvableType
-			count: 1
-			path: app/Support/Modules.php
-
-		-
-			message: '#^Return type of call to function array_values contains unresolvable type\.$#'
-			identifier: function.unresolvableReturnType
-			count: 1
-			path: app/Support/Modules.php
-
-		-
 			message: '#^Method App\\Support\\SchoolType\:\:keys\(\) should return list\<string\> but returns list\<int\|string\>\.$#'
 			identifier: return.type
 			count: 1

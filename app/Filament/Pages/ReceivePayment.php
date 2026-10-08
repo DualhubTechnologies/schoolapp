@@ -52,12 +52,11 @@ class ReceivePayment extends Page
 
     public function mount(): void
     {
-        $studentId = request()->integer('student') ?: null;
-        $balance = $studentId ? (Student::where('school_id', auth()->user()?->school_id)->whereKey($studentId)->first()?->balance() ?? 0) : 0;
-
         $this->form->fill([
-            'student_id' => $studentId,
-            'amount' => $balance > 0 ? (int) round($balance) : null,
+            'student_id' => request()->integer('student') ?: null,
+            // Left empty on purpose: the bursar types what the parent
+            // actually paid, or taps "Pay full balance".
+            'amount' => null,
             'paid_on' => now()->toDateString(),
             'method' => 'cash',
             'term_id' => Term::current()?->getKey(),
@@ -85,9 +84,9 @@ class ReceivePayment extends Page
                                 $student = $state ? Student::with('guardian')->whereKey($state)->first() : null;
                                 $set('paid_by', $student?->guardian?->name);
                                 $set('payer_phone', $student?->guardian?->phone);
-                                // Most parents clear the balance: start from it.
-                                $balance = $student?->balance() ?? 0;
-                                $set('amount', $balance > 0 ? (int) round($balance) : null);
+                                // Typed by the bursar (or "Pay full balance"): a
+                                // pre-filled balance gets saved by mistake.
+                                $set('amount', null);
                             })
                             ->required(),
                     ]),
@@ -227,7 +226,7 @@ class ReceivePayment extends Page
         // after another, but the next one starts with a clean form).
         $this->form->fill([
             'student_id' => $student->getKey(),
-            'amount' => $balance > 0 ? (int) round($balance) : null,
+            'amount' => null,
             'paid_on' => now()->toDateString(),
             'method' => $data['method'],
             'term_id' => $data['term_id'] ?? null,

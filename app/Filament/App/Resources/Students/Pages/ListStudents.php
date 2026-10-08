@@ -7,6 +7,7 @@ use App\Filament\App\Resources\Students\StudentResource;
 use App\Jobs\ProcessStudentImport;
 use App\Models\Student;
 use App\Models\StudentImport;
+use App\Services\BillingService;
 use App\Services\StudentCsvImporter;
 use App\Services\Subscriptions\SubscriptionManager;
 use Filament\Actions\Action;
@@ -30,6 +31,9 @@ class ListStudents extends ListRecords
     */
 
     public $csvFile = null;
+
+    /** Fees put on the account of the learner just admitted (term already billed). */
+    public float $billedOnAdmission = 0;
 
     public ?int $importId = null;
 
@@ -128,6 +132,10 @@ class ListStudents extends ListRecords
                         'status' => $data['status'] ?? 'active',
                     ], (int) $schoolId);
                 })
+                // Admitted after the term was billed: bill them now.
+                ->after(function (Student $record): void {
+                    $this->billedOnAdmission = app(BillingService::class)->billNewLearner($record);
+                })
                 ->modalSubmitActionLabel('Admit')
                 ->extraModalFooterActions(fn (CreateAction $action): array => [
                     $action->makeModalSubmitAction('admitAndEdit', arguments: ['edit' => true])
@@ -143,7 +151,8 @@ class ListStudents extends ListRecords
                     : null)
                 ->successNotification(fn (Student $record) => Notification::make()
                     ->title('Student admitted')
-                    ->body($record->name.' ('.$record->admission_no.') has been added.')
+                    ->body($record->name.' ('.$record->admission_no.') has been added.'
+                        .($this->billedOnAdmission > 0 ? ' This term\'s fees of UGX '.number_format($this->billedOnAdmission).' are on their account.' : ''))
                     ->success()
                     ->actions([
                         Action::make('printAdmissionLetter')

@@ -99,7 +99,7 @@ it('lists report cards only once the school shares them', function () {
     $this->get(route('parent.report', ['token' => $this->student->parent_token, 'term' => $this->term->id]))->assertOk()->assertSee('Aisha Nakato');
 });
 
-it('starts a payment from the balance and texts the receipt with the new balance', function () {
+it('fills the full balance on request and texts the receipt with the new balance', function () {
     $this->actingAs($this->admin);
 
     $sms = $this->mock(SmsSender::class);
@@ -112,7 +112,9 @@ it('starts a payment from the balance and texts the receipt with the new balance
 
     Livewire::test(ReceivePayment::class)
         ->fillForm(['student_id' => $this->student->id])
-        ->assertFormSet(['amount' => 200000, 'payer_phone' => '0772555666'])
+        ->assertFormSet(['amount' => null, 'payer_phone' => '0772555666'])
+        ->call('fillBalance')
+        ->assertFormSet(['amount' => 200000])
         ->fillForm(['amount' => 150000])
         ->call('save')
         ->assertHasNoFormErrors()

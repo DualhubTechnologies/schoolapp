@@ -93,3 +93,18 @@ it('keeps the Start the term page to people with Fees or Finance', function () {
 
     $this->get(StartTermBilling::getUrl())->assertForbidden();
 });
+
+it('bills a learner admitted after the term was billed straight away', function () {
+    $billing = app(BillingService::class);
+    $newcomer = Student::create(['school_id' => $this->school->id, 'school_class_id' => $this->class->id, 'name' => 'Brenda Ainembabazi', 'admission_no' => 'ADM-T002', 'status' => 'active']);
+
+    // Before the term is billed, billing the term will cover them.
+    expect($billing->billNewLearner($newcomer))->toBe(0.0);
+
+    $billing->billTerm($this->term3);
+    $late = Student::create(['school_id' => $this->school->id, 'school_class_id' => $this->class->id, 'name' => 'Peter Mugisha', 'admission_no' => 'ADM-T003', 'status' => 'active']);
+
+    expect($billing->billNewLearner($late))->toBe(500000.0)
+        ->and($late->balance())->toBe(500000.0)
+        ->and($billing->billNewLearner($late))->toBe(0.0); // never twice
+});

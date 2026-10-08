@@ -161,6 +161,37 @@ class BillingService
     }
 
     /**
+     * A learner admitted after the current term was billed is billed for
+     * it straight away, so their account does not read "fully paid". Does
+     * nothing before the term is billed: billing the term covers them.
+     *
+     * @return float the amount the learner now owes for the term (0 when not billed)
+     */
+    public function billNewLearner(Student $student): float
+    {
+        $term = Term::current($student->school_id);
+
+        if (! $term || ! $student->school_class_id || $student->status !== 'active') {
+            return 0;
+        }
+
+        $termBilled = StudentCharge::where('school_id', $student->school_id)
+            ->where('term_id', $term->getKey())
+            ->whereNotNull('fee_structure_id')
+            ->where('student_id', '!=', $student->getKey())
+            ->exists();
+
+        if (! $termBilled) {
+            return 0;
+        }
+
+        $before = $student->balance();
+        $this->billStudent($student, $term);
+
+        return max(0, $student->balance() - $before);
+    }
+
+    /**
      * Charge one student every fee that applies to them and is not already
      * on their account, resolving discounts across the whole set.
      *

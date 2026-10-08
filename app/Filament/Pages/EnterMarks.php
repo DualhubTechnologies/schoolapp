@@ -455,7 +455,9 @@ class EnterMarks extends Page
         return Assessment::where('school_id', $assessment->school_id)
             ->where('term_id', $assessment->term_id)
             ->where('type', '!=', 'topics')
+            // The report card's order (ResultsCalculator), so CA1, CA2… are the same exams on both.
             ->orderBy('sort_order')
+            ->orderBy('held_on')
             ->orderBy('id')
             ->get()
             ->filter(fn (Assessment $a) => $a->appliesTo($curriculum)
@@ -776,6 +778,8 @@ class EnterMarks extends Page
                     'max_score' => $data['max_score'],
                     'weight' => (float) config("academics.default_weights.{$curriculum}.ca", 0),
                     'sort_order' => $order,
+                    // Dated today, so it follows the term's earlier CAs.
+                    'held_on' => now()->toDateString(),
                 ]);
 
                 $this->allExams = true;

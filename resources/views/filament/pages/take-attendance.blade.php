@@ -50,7 +50,7 @@
                 <div>
                     <div class="at-title">{{ $day->format('l j F Y') }}</div>
                     <div class="at-muted">
-                        {{ $students->count() }} learners ·
+                        {{ $students->count() }} {{ str('learner')->plural($students->count()) }} ·
                         <strong>{{ ($counts['present'] ?? 0) + ($counts['late'] ?? 0) }}</strong> present ·
                         <strong>{{ $counts['absent'] ?? 0 }}</strong> absent
                         @if ($counts['excused'] ?? 0) · <strong>{{ $counts['excused'] }}</strong> excused @endif

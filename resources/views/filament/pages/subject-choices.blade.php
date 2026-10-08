@@ -175,7 +175,7 @@
             @endif
 
             <div class="sc-foot">
-                <span class="sc-muted">{{ $students->count() }} learners. Changes are kept only after you click Save choices.</span>
+                <span class="sc-muted">{{ $students->count() }} {{ str('learner')->plural($students->count()) }}. Changes are kept only after you click Save choices.</span>
                 <x-filament::button icon="heroicon-o-check" wire:click="save">Save choices</x-filament::button>
             </div>
         </div>

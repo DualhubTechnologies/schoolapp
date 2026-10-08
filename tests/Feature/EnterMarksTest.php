@@ -7,6 +7,7 @@ use App\Models\Mark;
 use App\Models\MarkSheet;
 use App\Models\School;
 use App\Models\SchoolClass;
+use App\Models\Staff;
 use App\Models\Student;
 use App\Models\Subject;
 use App\Models\Term;
@@ -173,4 +174,21 @@ it('does not count a CA set for one subject as missing in the others', function 
     $missing = app(MarksCompleteness::class)->missingFor($this->assessment->term);
 
     expect(collect($missing)->flatMap(fn ($c) => $c['missing'])->all())->not->toContain('Mathematics — English CA');
+});
+
+it('lists for a teacher only the exams set in a subject they mark', function () {
+    $schoolId = $this->class->school_id;
+    $science = Subject::create(['school_id' => $schoolId, 'name' => 'Science', 'curriculum' => $this->class->curriculum() ?? 'primary']);
+    $this->class->subjects()->attach($science->id, ['is_compulsory' => true]);
+    $scienceTest = Assessment::create(['school_id' => $schoolId, 'term_id' => $this->assessment->term_id, 'name' => 'Science test', 'type' => 'ca', 'max_score' => 20, 'subject_ids' => [$science->id]]);
+
+    $user = User::factory()->create(['school_id' => $schoolId])->assignRole('Teacher');
+    $staff = Staff::create(['school_id' => $schoolId, 'user_id' => $user->id, 'name' => 'Okello James', 'staff_no' => 'T001', 'position' => 'Teacher', 'employment_date' => '2020-01-06', 'status' => 'active']);
+    $this->class->subjects()->updateExistingPivot($this->subject->id, ['teacher_id' => $staff->id]);
+
+    $this->actingAs($user);
+
+    expect(Livewire::test(EnterMarks::class)->instance()->assessmentOptions()->keys()->all())
+        ->toContain($this->assessment->id)
+        ->not->toContain($scienceTest->id);
 });

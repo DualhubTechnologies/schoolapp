@@ -179,12 +179,30 @@ class EnterMarks extends Page
             ->where('type', '!=', 'topics')
             ->with('term.academicYear')
             ->get()
+            // A teacher sees only the exams set in a class and subject they mark.
+            ->when(! AcademicAccess::manages(), fn (Collection $exams) => $exams->filter(fn (Assessment $a) => $this->marksSomethingIn($a)))
             ->sortBy([
                 fn ($a, $b) => ($b->term_id === $current) <=> ($a->term_id === $current),
                 fn ($a, $b) => ($b->term?->sortKey() ?? '') <=> ($a->term?->sortKey() ?? ''),
                 fn ($a, $b) => $a->sort_order <=> $b->sort_order,
             ])
             ->mapWithKeys(fn (Assessment $a) => [$a->id => $a->displayName().' — '.($a->term?->label() ?? '').($a->isLocked() ? ' (locked)' : '')]);
+    }
+
+    /** Is the exam set in any class subject the (non-managing) user marks? */
+    protected function marksSomethingIn(Assessment $assessment): bool
+    {
+        $mine = once(fn () => SchoolClass::where('school_id', auth()->user()?->school_id)
+            ->with(['classLevel', 'subjects'])
+            ->where(fn ($q) => $q
+                ->whereHas('subjects', fn ($s) => $s->where('class_subject.teacher_id', AcademicAccess::staffId()))
+                ->orWhereIn('id', AcademicAccess::classTeacherClassIds()))
+            ->get());
+
+        return $mine->contains(fn (SchoolClass $class) => $class->subjects->contains(
+            fn (Subject $subject) => $assessment->covers($class, (int) $subject->getKey())
+                && AcademicAccess::canEnterMarksFor($subject->pivot->teacher_id, (int) $class->getKey())
+        ));
     }
 
     #[Computed]

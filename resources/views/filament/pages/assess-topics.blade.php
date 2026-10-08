@@ -51,7 +51,7 @@
             <div class="at-head">
                 <div>
                     <div class="at-title">{{ $subject->name }} · {{ $class?->name }}</div>
-                    <div class="at-muted">{{ $students->count() }} learners · {{ $topics->count() }} topics. Leave a box blank for a topic not assessed yet.</div>
+                    <div class="at-muted">{{ $students->count() }} {{ str('learner')->plural($students->count()) }} · {{ $topics->count() }} {{ str('topic')->plural($topics->count()) }}. Leave a box blank for a topic not assessed yet.</div>
                 </div>
                 <div class="at-key">
                     @foreach ($levels as $level => $meaning)

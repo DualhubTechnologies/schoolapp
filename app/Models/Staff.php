@@ -61,6 +61,27 @@ class Staff extends Model
         'terminated' => 'Left the school',
     ];
 
+    /**
+     * The next staff number for a school, in the style it already uses:
+     * T001, T002 … after T001; ST001 when it has none yet.
+     */
+    public static function nextNumber(?int $schoolId): string
+    {
+        $prefix = 'ST';
+        $width = 3;
+        $highest = 0;
+
+        foreach (static::where('school_id', $schoolId)->pluck('staff_no') as $number) {
+            if (preg_match('/^(.*?)(\d+)$/', (string) $number, $m) && (int) $m[2] >= $highest) {
+                $highest = (int) $m[2];
+                $prefix = $m[1];
+                $width = max(3, strlen($m[2]));
+            }
+        }
+
+        return $prefix.str_pad((string) ($highest + 1), $width, '0', STR_PAD_LEFT);
+    }
+
     protected function casts(): array
     {
         return [

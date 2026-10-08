@@ -19,6 +19,9 @@ use Filament\Tables\Table;
 
 class AllowancesRelationManager extends RelationManager
 {
+    /** Shown at once on the staff record, not only after scrolling down to it. */
+    protected static bool $isLazy = false;
+
     protected static string $relationship = 'allowances';
 
     protected static ?string $title = 'Allowances';

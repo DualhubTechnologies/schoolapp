@@ -22,6 +22,9 @@ use Filament\Tables\Table;
 
 class DeductionsRelationManager extends RelationManager
 {
+    /** Shown at once on the staff record, not only after scrolling down to it. */
+    protected static bool $isLazy = false;
+
     protected static string $relationship = 'deductions';
 
     protected static ?string $title = 'Deductions';

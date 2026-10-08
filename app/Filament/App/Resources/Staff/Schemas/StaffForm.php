@@ -105,6 +105,8 @@ class StaffForm
                             ->helperText('Leave blank to use the first letter of each name.'),
                         TextInput::make('staff_no')
                             ->label('Staff number')
+                            ->default(fn () => Staff::nextNumber(auth()->user()?->school_id))
+                            ->helperText('Given automatically — change only if needed.')
                             ->required()
                             ->unique(ignoreRecord: true, modifyRuleUsing: fn (Unique $rule, Get $get) => $rule->where('school_id', $get('school_id') ?? auth()->user()?->school_id))
                             ->validationMessages(['unique' => 'Another staff member already has this number.']),
@@ -117,12 +119,23 @@ class StaffForm
                         TextInput::make('position')
                             ->placeholder('e.g. Teacher, Bursar, Matron, Driver')
                             ->required(),
+                        // New staff only: their pay from the start. Later
+                        // changes, allowances and deductions are on the record.
+                        TextInput::make('monthly_salary')
+                            ->label('Monthly salary (UGX)')
+                            ->numeric()
+                            ->minValue(0)
+                            ->placeholder('e.g. 800000')
+                            ->helperText('Before tax. Allowances, deductions and bank details can be added after saving.')
+                            ->visibleOn('create')
+                            ->dehydrated(false),
                         TextInput::make('department')
                             ->placeholder('e.g. Sciences, Administration'),
                         DatePicker::make('employment_date')
                             ->label('Date employed')
                             ->native(false)
                             ->displayFormat('j M Y')
+                            ->default(now())
                             ->required(),
                         Select::make('status')
                             ->options(Staff::STATUSES)

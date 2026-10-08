@@ -7,8 +7,8 @@ use App\Filament\Support\Pages\CreateRecordPage;
 use App\Services\Payroll\PayrollService;
 
 /**
- * Starting a month's payroll calculates it straight away, then returns to
- * the payroll list, where the new run waits to be reviewed and approved.
+ * Starting a month's payroll calculates it straight away, then opens it
+ * to be reviewed and approved.
  */
 class CreatePayrollPeriod extends CreateRecordPage
 {
@@ -16,7 +16,7 @@ class CreatePayrollPeriod extends CreateRecordPage
 
     public function getTitle(): string
     {
-        return 'Start a payroll';
+        return "Start this month's payroll";
     }
 
     protected function mutateFormDataBeforeCreate(array $data): array
@@ -32,8 +32,14 @@ class CreatePayrollPeriod extends CreateRecordPage
         app(PayrollService::class)->generate($this->record);
     }
 
+    /** Straight into the new payroll, to check it and approve it. */
+    protected function getRedirectUrl(): string
+    {
+        return PayrollPeriodResource::getUrl('view', ['record' => $this->record]);
+    }
+
     protected function getCreatedNotificationTitle(): ?string
     {
-        return 'Payroll calculated — open it from the list to review and approve';
+        return 'Payroll calculated. Check it below, then approve it.';
     }
 }

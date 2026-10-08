@@ -16,6 +16,9 @@ use Filament\Widgets\TableWidget;
  */
 class TopDebtorsTable extends TableWidget
 {
+    /** Loads with the dashboard, so it never shows as an empty box. */
+    protected static bool $isLazy = false;
+
     use SchoolScoped;
 
     protected static ?int $sort = 5;

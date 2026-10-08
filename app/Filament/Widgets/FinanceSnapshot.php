@@ -14,6 +14,9 @@ use Filament\Widgets\StatsOverviewWidget\Stat;
  */
 class FinanceSnapshot extends StatsOverviewWidget
 {
+    /** Loads with the dashboard, so it never shows as an empty box. */
+    protected static bool $isLazy = false;
+
     protected static ?int $sort = 2;
 
     protected ?string $heading = 'This term: received vs spent';

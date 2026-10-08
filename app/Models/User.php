@@ -115,14 +115,21 @@ class User extends Authenticatable implements FilamentUser, HasAppAuthentication
     }
 
     /**
-     * Get the user's initials
+     * The user's initials for their avatar: the first letters of their
+     * first and last names, ignoring anything in brackets or that is not
+     * a letter ("Grace Akello (Accounts)" is GA, not G().
      */
     public function initials(): string
     {
-        $initials = Str::initials($this->name, true);
+        $name = (string) preg_replace('/\([^)]*\)/u', ' ', (string) $this->name);
+        $words = preg_split('/[^\p{L}]+/u', $name, -1, PREG_SPLIT_NO_EMPTY) ?: [];
 
-        return Str::length($initials) > 1
-            ? Str::substr($initials, 0, 1).Str::substr($initials, -1)
-            : $initials;
+        if ($words === []) {
+            return '?';
+        }
+
+        $first = Str::upper(Str::substr($words[0], 0, 1));
+
+        return count($words) > 1 ? $first.Str::upper(Str::substr($words[count($words) - 1], 0, 1)) : $first;
     }
 }

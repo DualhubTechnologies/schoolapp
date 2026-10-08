@@ -20,6 +20,9 @@ use Filament\Tables\Table;
 
 class ArrearsRelationManager extends RelationManager
 {
+    /** Shown at once on the staff record, not only after scrolling down to it. */
+    protected static bool $isLazy = false;
+
     protected static string $relationship = 'arrears';
 
     protected static ?string $title = 'Arrears';

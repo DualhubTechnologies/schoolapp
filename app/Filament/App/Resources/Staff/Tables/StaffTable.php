@@ -2,6 +2,7 @@
 
 namespace App\Filament\App\Resources\Staff\Tables;
 
+use App\Filament\App\Resources\Users\UserResource;
 use App\Filament\Pages\StaffIdCards;
 use App\Models\Staff;
 use App\Models\User;
@@ -118,7 +119,10 @@ class StaffTable
                     ->label('Create Login')
                     ->icon('heroicon-o-key')
                     ->color('success')
-                    ->visible(fn ($record) => $record->user_id === null)
+                    // Only whoever manages users (the School Admin) gives out
+                    // logins: otherwise an accountant could create, say, a
+                    // teacher login and open marks they cannot open themselves.
+                    ->visible(fn ($record) => $record->user_id === null && UserResource::canCreate())
                     ->form([
                         EmailCheck::apply(TextInput::make('email'))
                             ->label('Email address')

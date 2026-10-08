@@ -15,7 +15,9 @@ use Filament\Actions\CreateAction;
 use Filament\Actions\DeleteAction;
 use Filament\Actions\EditAction;
 use Filament\Facades\Filament;
+use Filament\Forms\Components\DatePicker;
 use Filament\Notifications\Notification;
+use Filament\Schemas\Schema;
 use Filament\Support\Enums\Width;
 use Filament\Tables\Table;
 use Illuminate\Auth\Events\Failed;
@@ -100,7 +102,17 @@ class AppServiceProvider extends ServiceProvider
         // Empty lists show a neutral "nothing here yet" icon, not an "X".
         // On phones each row becomes a card with the column names beside
         // the values, instead of a wide table to scroll sideways.
-        Table::configureUsing(fn ($table) => $table->emptyStateIcon('heroicon-o-inbox')->stackedOnMobile());
+        Table::configureUsing(fn ($table) => $table->emptyStateIcon('heroicon-o-inbox')->stackedOnMobile()
+            // Dates the Ugandan way, day first: "8 Oct 2026", never "Oct 8, 2026".
+            ->defaultDateDisplayFormat('j M Y')
+            ->defaultDateTimeDisplayFormat('j M Y, H:i'));
+        Schema::configureUsing(fn (Schema $schema) => $schema
+            ->defaultDateDisplayFormat('j M Y')
+            ->defaultDateTimeDisplayFormat('j M Y, H:i'));
+
+        // Every date box opens the same calendar and shows "8 Oct 2026",
+        // not the browser's own box with the American mm/dd/yyyy order.
+        DatePicker::configureUsing(fn (DatePicker $picker) => $picker->native(false)->displayFormat('j M Y'));
     }
 
     /**

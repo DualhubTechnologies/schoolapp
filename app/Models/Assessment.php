@@ -2,6 +2,7 @@
 
 namespace App\Models;
 
+use App\Support\SchoolType;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
 use Illuminate\Database\Eloquent\Relations\HasMany;
@@ -185,6 +186,20 @@ class Assessment extends Model
         }
 
         return $problems;
+    }
+
+    /** Short names for each level, for exam lists. */
+    public const CURRICULUM_SHORT = ['nursery' => 'Nursery', 'primary' => 'Primary', 'o_level' => 'O-Level', 'a_level' => 'A-Level'];
+
+    /**
+     * The exam's name, with its level when the school runs more than one,
+     * so O-Level's and A-Level's "End of Term" can be told apart.
+     */
+    public function displayName(): string
+    {
+        return $this->curriculum && count(SchoolType::keys()) > 1
+            ? $this->name.' ('.(self::CURRICULUM_SHORT[$this->curriculum] ?? $this->curriculum).')'
+            : (string) $this->name;
     }
 
     public function typeLabel(): string

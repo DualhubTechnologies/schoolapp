@@ -27,7 +27,8 @@ trait ChoosesExam
                 ->orderBy('sort_order')
                 ->orderBy('held_on')
                 ->orderBy('id')
-                ->pluck('name', 'id')
+                ->get()
+                ->mapWithKeys(fn (Assessment $a): array => [$a->id => $a->displayName()])
             : collect();
     }
 

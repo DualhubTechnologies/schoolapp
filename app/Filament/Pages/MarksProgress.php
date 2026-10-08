@@ -86,7 +86,7 @@ class MarksProgress extends Page
                 fn ($a, $b) => ($b->term?->sortKey() ?? '') <=> ($a->term?->sortKey() ?? ''),
                 fn ($a, $b) => $b->sort_order <=> $a->sort_order,
             ])
-            ->mapWithKeys(fn (Assessment $a): array => [$a->id => (string) $a->name.' — '.($a->term?->label() ?? '')]);
+            ->mapWithKeys(fn (Assessment $a): array => [$a->id => $a->displayName().' — '.($a->term?->label() ?? '')]);
     }
 
     /** @return Collection<int, string> */

@@ -195,3 +195,11 @@ it('works out the term result live on the all-exams mark sheet the same way as r
     expect($maths['split'])->toBe(['formative' => 20, 'summative' => 80])
         ->and($aoi['schoolBased'])->toBeTrue();
 });
+
+it('names each exam with its level when the school runs O-Level and A-Level', function () {
+    $oLevel = Assessment::create(['school_id' => $this->school->id, 'term_id' => $this->term2->id, 'curriculum' => 'o_level', 'name' => 'End of Term', 'type' => 'eot', 'max_score' => 80]);
+    $aLevel = Assessment::create(['school_id' => $this->school->id, 'term_id' => $this->term2->id, 'curriculum' => 'a_level', 'name' => 'End of Term', 'type' => 'eot', 'max_score' => 100]);
+
+    expect($oLevel->displayName())->toBe('End of Term (O-Level)')
+        ->and($aLevel->displayName())->toBe('End of Term (A-Level)');
+});

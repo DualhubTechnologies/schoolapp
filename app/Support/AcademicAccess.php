@@ -2,6 +2,7 @@
 
 namespace App\Support;
 
+use App\Models\SchoolClass;
 use App\Models\Section;
 use App\Models\Staff;
 
@@ -11,8 +12,9 @@ use App\Models\Staff;
  *   School Admin  sets up subjects, grading, exams; enters any marks;
  *                 writes head-teacher comments; prints report cards
  *   Teacher       enters marks only for the class subjects assigned to them
- *   Class teacher (of a stream) also enters any subject's marks for that
- *                 stream, and writes its class-teacher comments
+ *   Class teacher (of a stream, or of a whole class that has no streams)
+ *                 also enters any subject's marks there, and writes its
+ *                 class-teacher comments
  */
 class AcademicAccess
 {
@@ -61,6 +63,47 @@ class AcademicAccess
     }
 
     /**
+     * Whole classes the signed-in user is class teacher of (classes
+     * without streams).
+     *
+     * @return list<int>
+     */
+    public static function classTeacherWholeClasses(): array
+    {
+        $staffId = static::staffId();
+
+        return $staffId
+            ? once(fn () => SchoolClass::where('class_teacher_id', $staffId)->pluck('id')->map(fn ($id) => (int) $id)->all())
+            : [];
+    }
+
+    /**
+     * Every class the user is class teacher in, whole or by stream.
+     *
+     * @return list<int>
+     */
+    public static function classTeacherClassIds(): array
+    {
+        return array_values(array_unique([...array_values(static::classTeacherStreams()), ...static::classTeacherWholeClasses()]));
+    }
+
+    /** Is the user class teacher of the whole class? */
+    public static function isWholeClassTeacherOf(?int $classId): bool
+    {
+        return $classId !== null && in_array($classId, static::classTeacherWholeClasses(), true);
+    }
+
+    /**
+     * May the user act as class teacher for this class and stream? A
+     * whole-class teacher covers every stream (and "no stream").
+     */
+    public static function isClassTeacherOf(?int $classId, ?int $sectionId): bool
+    {
+        return static::isWholeClassTeacherOf($classId)
+            || ($sectionId !== null && in_array($sectionId, static::classTeacherStreamsIn($classId), true));
+    }
+
+    /**
      * The streams of a class the user is class teacher of.
      *
      * @return list<int>
@@ -98,6 +141,10 @@ class AcademicAccess
         }
 
         if ($teacherId !== null && $teacherId === static::staffId()) {
+            return null;
+        }
+
+        if (static::isWholeClassTeacherOf($classId)) {
             return null;
         }
 

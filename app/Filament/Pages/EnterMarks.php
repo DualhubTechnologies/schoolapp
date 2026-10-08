@@ -212,7 +212,7 @@ class EnterMarks extends Page
             ->with('classLevel')
             ->when(! AcademicAccess::manages(), fn ($q) => $q->where(fn ($q) => $q
                 ->whereHas('subjects', fn ($s) => $s->where('class_subject.teacher_id', AcademicAccess::staffId()))
-                ->orWhereIn('id', array_values(AcademicAccess::classTeacherStreams()))))
+                ->orWhereIn('id', AcademicAccess::classTeacherClassIds())))
             ->orderBy('level')
             ->orderBy('name')
             ->get()

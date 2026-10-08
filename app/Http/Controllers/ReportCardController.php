@@ -39,7 +39,7 @@ class ReportCardController extends Controller
 
         // Teachers print only the stream they are class teacher of.
         abort_unless(
-            AcademicAccess::manages() || in_array($request->integer('section'), AcademicAccess::classTeacherStreamsIn($class->getKey()), true),
+            AcademicAccess::manages() || AcademicAccess::isClassTeacherOf($class->getKey(), $request->integer('section') ?: null),
             403,
         );
 

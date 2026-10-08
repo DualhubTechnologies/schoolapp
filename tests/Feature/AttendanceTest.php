@@ -102,6 +102,26 @@ it('limits a class teacher to their own stream', function () {
     expect(AttendanceRecord::where('student_id', $this->carol->id)->exists())->toBeFalse();
 });
 
+it('lets the class teacher of a class without streams take its whole register', function () {
+    $p2 = SchoolClass::create(['school_id' => $this->school->id, 'name' => 'P.2']);
+    $dan = Student::create(['school_id' => $this->school->id, 'school_class_id' => $p2->id, 'name' => 'Dan Mukasa', 'admission_no' => 'ADM-010', 'status' => 'active']);
+
+    $user = User::factory()->create(['school_id' => $this->school->id])->assignRole('Teacher');
+    $staff = Staff::create(['school_id' => $this->school->id, 'user_id' => $user->id, 'name' => 'Auma Grace', 'staff_no' => 'ST-2', 'position' => 'Teacher', 'employment_date' => '2020-01-06', 'status' => 'active']);
+    $p2->update(['class_teacher_id' => $staff->id]);
+
+    $this->actingAs($user);
+
+    Livewire::test(TakeAttendance::class)
+        ->assertSet('classId', $p2->id)
+        ->assertSee('Dan Mukasa')
+        ->assertDontSee('Aisha Nakato')
+        ->call('save')
+        ->assertNotified('Register saved');
+
+    expect(AttendanceRecord::where('student_id', $dan->id)->exists())->toBeTrue();
+});
+
 it('keeps the register from users without the attendance module', function () {
     $bursar = User::factory()->create(['school_id' => $this->school->id])->assignRole('Accountant');
 

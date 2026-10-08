@@ -19,6 +19,7 @@ class SchoolClass extends Model
         'class_level_id',
         'name',
         'level',
+        'class_teacher_id',
     ];
 
     protected function casts(): array
@@ -42,6 +43,12 @@ class SchoolClass extends Model
     public function classLevel(): BelongsTo
     {
         return $this->belongsTo(ClassLevel::class);
+    }
+
+    /** Class teacher of the whole class -- used when it has no streams. */
+    public function classTeacher(): BelongsTo
+    {
+        return $this->belongsTo(Staff::class, 'class_teacher_id');
     }
 
     public function sections(): HasMany

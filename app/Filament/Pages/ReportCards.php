@@ -362,7 +362,9 @@ class ReportCards extends Page
     protected function pickOwnStream(): void
     {
         if (! AcademicAccess::manages()) {
-            $this->sectionId = AcademicAccess::classTeacherStreamsIn($this->classId)[0] ?? null;
+            $this->sectionId = AcademicAccess::isWholeClassTeacherOf($this->classId)
+                ? null
+                : (AcademicAccess::classTeacherStreamsIn($this->classId)[0] ?? null);
         }
     }
 
@@ -455,7 +457,7 @@ class ReportCards extends Page
     public function classOptions(): Collection
     {
         return SchoolClass::where('school_id', auth()->user()?->school_id)
-            ->when(! AcademicAccess::manages(), fn ($q) => $q->whereIn('id', array_values(AcademicAccess::classTeacherStreams())))
+            ->when(! AcademicAccess::manages(), fn ($q) => $q->whereIn('id', AcademicAccess::classTeacherClassIds()))
             ->orderBy('level')
             ->orderBy('name')
             ->pluck('name', 'id');
@@ -466,7 +468,7 @@ class ReportCards extends Page
     {
         return $this->classId
             ? Section::where('school_class_id', $this->classId)
-                ->when(! AcademicAccess::manages(), fn ($q) => $q->whereIn('id', AcademicAccess::classTeacherStreamsIn($this->classId)))
+                ->when(! AcademicAccess::manages() && ! AcademicAccess::isWholeClassTeacherOf($this->classId), fn ($q) => $q->whereIn('id', AcademicAccess::classTeacherStreamsIn($this->classId)))
                 ->orderBy('name')
                 ->pluck('name', 'id')
             : collect();
@@ -479,7 +481,7 @@ class ReportCards extends Page
         $term = $this->termId ? Term::where('school_id', auth()->user()?->school_id)->find($this->termId) : null;
 
         // A teacher sees only the stream they are class teacher of.
-        if (! AcademicAccess::manages() && ! in_array($this->sectionId, AcademicAccess::classTeacherStreamsIn($this->classId), true)) {
+        if (! AcademicAccess::manages() && ! AcademicAccess::isClassTeacherOf($this->classId, $this->sectionId)) {
             return null;
         }
 

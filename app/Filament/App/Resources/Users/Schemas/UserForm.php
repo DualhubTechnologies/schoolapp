@@ -142,7 +142,7 @@ class UserForm
                             ->multiple()
                             ->searchable()
                             ->placeholder('Not a class teacher')
-                            ->helperText('A class teacher can enter marks in every subject for their stream and writes its report-card comments.')
+                            ->helperText('A class teacher can enter marks in every subject for their class or stream, takes its register and writes its report-card comments.')
                             ->disabled(fn (Get $get) => blank($get('staff_id')))
                             ->dehydrated(false)
                             ->columnSpanFull(),
@@ -171,13 +171,25 @@ class UserForm
     }
 
     /**
-     * Every stream in the school: section id => "S1 A".
+     * Every stream in the school (section id => "S1 A"), and every class
+     * without streams ("class-{id}" => "P.3 (whole class)").
      *
-     * @return array<int, string>
+     * @return array<int|string, string>
      */
     public static function streamOptions(): array
     {
-        return DB::table('sections')
+        $schoolId = auth()->user()->school_id;
+
+        $wholeClasses = DB::table('school_classes')
+            ->where('school_id', $schoolId)
+            ->whereNotExists(fn ($q) => $q->from('sections')->whereColumn('sections.school_class_id', 'school_classes.id'))
+            ->orderBy('level')
+            ->orderBy('name')
+            ->pluck('name', 'id')
+            ->mapWithKeys(fn ($name, $id) => ["class-{$id}" => "{$name} (whole class)"])
+            ->all();
+
+        return $wholeClasses + DB::table('sections')
             ->join('school_classes', 'school_classes.id', '=', 'sections.school_class_id')
             ->where('school_classes.school_id', auth()->user()->school_id)
             ->orderBy('school_classes.level')

@@ -121,7 +121,7 @@
         <span>Loading report cards…</span>
     </div>
 
-    @if (! $isHead && ! \App\Support\AcademicAccess::classTeacherStreams())
+    @if (! $isHead && ! \App\Support\AcademicAccess::classTeacherClassIds())
         <div class="rc-empty">Report cards are written by class teachers. You are not class teacher of any stream — ask the administrator.</div>
     @elseif (! $r)
         <div class="rc-empty">Choose a term and class.</div>

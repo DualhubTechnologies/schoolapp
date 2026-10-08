@@ -66,24 +66,36 @@ class TakeAttendance extends Page
     {
         $this->date = now()->toDateString();
 
-        $own = $this->ownStreams();
+        if ($this->ownClasses()) {
+            $whole = AcademicAccess::classTeacherWholeClasses();
+            $streams = AcademicAccess::classTeacherStreams();
 
-        if ($own) {
-            $this->sectionId = (int) array_key_first($own);
-            $this->classId = $own[$this->sectionId];
+            if ($whole) {
+                $this->classId = $whole[0];
+            } else {
+                $this->sectionId = (int) array_key_first($streams);
+                $this->classId = $streams[$this->sectionId];
+            }
+
             $this->loadRegister();
         }
     }
 
     /**
-     * Streams the user is limited to (section id => class id), or [] when
-     * they may take any class's register.
+     * Classes a class teacher is limited to (their streams' classes and
+     * whole classes), or [] when they may take any class's register.
      *
-     * @return array<int, int>
+     * @return list<int>
      */
-    public function ownStreams(): array
+    public function ownClasses(): array
     {
-        return Modules::hasFullAccess() ? [] : AcademicAccess::classTeacherStreams();
+        return Modules::hasFullAccess() ? [] : AcademicAccess::classTeacherClassIds();
+    }
+
+    /** Must the user still choose one of their streams? */
+    public function mustPickStream(): bool
+    {
+        return $this->ownClasses() !== [] && ! $this->sectionId && ! AcademicAccess::isWholeClassTeacherOf($this->classId);
     }
 
     public function updatedDate(): void
@@ -105,10 +117,10 @@ class TakeAttendance extends Page
     /** @return Collection<int, string> */
     public function classOptions(): Collection
     {
-        $own = $this->ownStreams();
+        $own = $this->ownClasses();
 
         return SchoolClass::where('school_id', auth()->user()?->school_id)
-            ->when($own, fn ($q) => $q->whereIn('id', array_values($own)))
+            ->when($own, fn ($q) => $q->whereIn('id', $own))
             ->orderBy('level')
             ->orderBy('name')
             ->pluck('name', 'id');
@@ -117,11 +129,11 @@ class TakeAttendance extends Page
     /** @return Collection<int, string> */
     public function sectionOptions(): Collection
     {
-        $own = $this->ownStreams();
+        $limited = $this->ownClasses() && ! AcademicAccess::isWholeClassTeacherOf($this->classId);
 
         return $this->classId
             ? Section::where('school_class_id', $this->classId)
-                ->when($own, fn ($q) => $q->whereIn('id', array_keys($own)))
+                ->when($limited, fn ($q) => $q->whereIn('id', AcademicAccess::classTeacherStreamsIn($this->classId)))
                 ->orderBy('name')
                 ->pluck('name', 'id')
             : collect();
@@ -146,14 +158,14 @@ class TakeAttendance extends Page
     #[Computed]
     public function students(): Collection
     {
-        $own = $this->ownStreams();
+        $own = $this->ownClasses();
 
         if (! $this->classId || ! $this->classOptions()->has($this->classId)) {
             return collect();
         }
 
         // A class teacher must pick one of their own streams.
-        if ($own && ! isset($own[(int) $this->sectionId])) {
+        if ($own && ! AcademicAccess::isClassTeacherOf($this->classId, $this->sectionId)) {
             return collect();
         }
 

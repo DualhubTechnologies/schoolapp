@@ -45,6 +45,15 @@ class SchoolClassForm
                             ->required()
                             ->helperText('Manage these under Academics → Class Levels.'),
 
+                        Select::make('class_teacher_id')
+                            ->label('Class teacher')
+                            ->relationship('classTeacher', 'name', fn (Builder $query) => $query
+                                ->where('school_id', auth()->user()?->school_id)
+                                ->where('status', 'active'))
+                            ->searchable()
+                            ->preload()
+                            ->helperText('For a class without streams. If the class has streams, set each stream\'s class teacher instead.'),
+
                         Select::make('school_id')
                             ->label('School')
                             ->relationship('school', 'name')

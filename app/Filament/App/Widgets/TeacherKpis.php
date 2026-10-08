@@ -4,6 +4,7 @@ namespace App\Filament\App\Widgets;
 
 use App\Filament\Pages\ClassResults;
 use App\Filament\Pages\EnterMarks;
+use App\Models\SchoolClass;
 use App\Models\Section;
 use App\Services\Dashboard\TeacherLoad;
 use App\Support\AcademicAccess;
@@ -29,7 +30,8 @@ class TeacherKpis extends KpiCards
         $rate = static::percent($entered, $expected);
         $streams = Section::whereIn('id', array_keys(AcademicAccess::classTeacherStreams()))
             ->with('schoolClass')->get()
-            ->map(fn (Section $s) => trim(($s->schoolClass?->name ?? '').' '.$s->name));
+            ->map(fn (Section $s) => trim(($s->schoolClass?->name ?? '').' '.$s->name))
+            ->merge(SchoolClass::whereIn('id', AcademicAccess::classTeacherWholeClasses())->pluck('name'));
 
         return [
             static::card('blue', 'heroicon-o-book-open', 'Subjects I teach', (string) $rows->count(),
@@ -43,7 +45,7 @@ class TeacherKpis extends KpiCards
                 EnterMarks::getUrl(), $rate),
             static::card('teal', 'heroicon-o-home-modern', 'Class teacher of',
                 $streams->isEmpty() ? '—' : (string) $streams->count(),
-                $streams->isEmpty() ? 'No stream assigned' : $streams->take(3)->implode(', ')),
+                $streams->isEmpty() ? 'No class assigned' : $streams->take(3)->implode(', ')),
         ];
     }
 }

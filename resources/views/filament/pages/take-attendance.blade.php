@@ -43,7 +43,7 @@
     @elseif (! $this->classId)
         <div class="at-empty">Choose a class to take its register.</div>
     @elseif ($students->isEmpty())
-        <div class="at-empty">No active learners here{{ $this->ownStreams() && ! $this->sectionId ? ' — choose your stream' : '' }}.</div>
+        <div class="at-empty">No active learners here{{ $this->mustPickStream() ? ' — choose your stream' : '' }}.</div>
     @else
         <form wire:submit="save" class="at-card">
             <div class="at-head">

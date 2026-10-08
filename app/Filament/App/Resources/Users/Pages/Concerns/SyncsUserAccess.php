@@ -65,8 +65,23 @@ trait SyncsUserAccess
                 ->whereNotIn('id', $chosen)
                 ->update(['teacher_id' => null, 'updated_at' => now()]);
 
-            // Class teacher of these streams (one class teacher per stream).
-            $streams = collect($raw['class_teacher_of'] ?? [])->map(fn ($id) => (int) $id);
+            // Class teacher of these streams (one class teacher per stream),
+            // and of whole classes that have no streams ("class-{id}").
+            $chosenTeacherOf = collect($raw['class_teacher_of'] ?? [])->map(fn ($id) => (string) $id);
+            $streams = $chosenTeacherOf->reject(fn ($id) => str_starts_with($id, 'class-'))->map(fn ($id) => (int) $id);
+            $classes = $chosenTeacherOf->filter(fn ($id) => str_starts_with($id, 'class-'))->map(fn ($id) => (int) substr($id, 6));
+            $schoolClasses = DB::table('school_classes')->where('school_id', $user->school_id)->pluck('id');
+
+            DB::table('school_classes')
+                ->whereIn('id', $classes->intersect($schoolClasses))
+                ->update(['class_teacher_id' => $staff->getKey(), 'updated_at' => now()]);
+
+            DB::table('school_classes')
+                ->whereIn('id', $schoolClasses)
+                ->where('class_teacher_id', $staff->getKey())
+                ->whereNotIn('id', $classes)
+                ->update(['class_teacher_id' => null, 'updated_at' => now()]);
+
             $schoolStreams = DB::table('sections')->where('school_id', $user->school_id)->pluck('id');
 
             DB::table('sections')
@@ -92,7 +107,10 @@ trait SyncsUserAccess
                 ? DB::table('class_subject')->where('teacher_id', $staff->getKey())->pluck('id')->map(fn ($id) => (string) $id)->all()
                 : [],
             'class_teacher_of' => $staff
-                ? DB::table('sections')->where('class_teacher_id', $staff->getKey())->pluck('id')->map(fn ($id) => (string) $id)->all()
+                ? [
+                    ...DB::table('school_classes')->where('class_teacher_id', $staff->getKey())->pluck('id')->map(fn ($id) => "class-{$id}")->all(),
+                    ...DB::table('sections')->where('class_teacher_id', $staff->getKey())->pluck('id')->map(fn ($id) => (string) $id)->all(),
+                ]
                 : [],
         ];
     }

@@ -61,7 +61,7 @@ class SubjectChoices extends Page
      */
     public static function canAccess(): bool
     {
-        return static::managesAll() || (AcademicAccess::teaches() && AcademicAccess::classTeacherStreams() !== []);
+        return static::managesAll() || (AcademicAccess::teaches() && AcademicAccess::classTeacherClassIds() !== []);
     }
 
     protected static function managesAll(): bool
@@ -91,7 +91,9 @@ class SubjectChoices extends Page
     protected function pickOwnStream(): void
     {
         if (! static::managesAll()) {
-            $this->sectionId = AcademicAccess::classTeacherStreamsIn($this->classId)[0] ?? null;
+            $this->sectionId = AcademicAccess::isWholeClassTeacherOf($this->classId)
+                ? null
+                : (AcademicAccess::classTeacherStreamsIn($this->classId)[0] ?? null);
         }
     }
 
@@ -101,7 +103,7 @@ class SubjectChoices extends Page
     public function classOptions(): Collection
     {
         return SchoolClass::where('school_id', auth()->user()->school_id)
-            ->when(! static::managesAll(), fn ($q) => $q->whereIn('id', array_values(AcademicAccess::classTeacherStreams())))
+            ->when(! static::managesAll(), fn ($q) => $q->whereIn('id', AcademicAccess::classTeacherClassIds()))
             ->orderBy('level')
             ->orderBy('name')
             ->pluck('name', 'id');
@@ -112,7 +114,7 @@ class SubjectChoices extends Page
     {
         return $this->classId
             ? Section::where('school_class_id', $this->classId)
-                ->when(! static::managesAll(), fn ($q) => $q->whereIn('id', AcademicAccess::classTeacherStreamsIn($this->classId)))
+                ->when(! static::managesAll() && ! AcademicAccess::isWholeClassTeacherOf($this->classId), fn ($q) => $q->whereIn('id', AcademicAccess::classTeacherStreamsIn($this->classId)))
                 ->orderBy('name')
                 ->pluck('name', 'id')
             : collect();
@@ -144,7 +146,7 @@ class SubjectChoices extends Page
     {
         $class = $this->schoolClass;
 
-        if (! $class || (! static::managesAll() && ! in_array($this->sectionId, AcademicAccess::classTeacherStreamsIn($class->getKey()), true))) {
+        if (! $class || (! static::managesAll() && ! AcademicAccess::isClassTeacherOf($class->getKey(), $this->sectionId))) {
             return collect();
         }
 

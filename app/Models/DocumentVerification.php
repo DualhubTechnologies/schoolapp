@@ -186,7 +186,7 @@ class DocumentVerification extends Model
         return $lines;
     }
 
-        public function url(): string
+    public function url(): string
     {
         return route('verify.show', $this->code);
     }

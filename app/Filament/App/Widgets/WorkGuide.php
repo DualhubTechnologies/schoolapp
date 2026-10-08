@@ -265,7 +265,7 @@ class WorkGuide extends Widget
         }
 
         // Resources that add records in a pop-up on their list page open it straight away.
-        return $class::hasPage($action) ? $class::getUrl($action) : $class::getUrl(['action' => $action]);
+        return $class::hasPage($action) ? $class::getUrl($action) : $class::getUrl(parameters: ['action' => $action]);
     }
 
     /**

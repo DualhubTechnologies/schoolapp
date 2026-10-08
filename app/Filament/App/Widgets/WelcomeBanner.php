@@ -129,7 +129,7 @@ class WelcomeBanner extends Widget
                 'url' => match (true) {
                     ! isset($a[4]) => $a[0]::getUrl(),
                     $a[0]::hasPage($a[4]) => $a[0]::getUrl($a[4]),
-                    default => $a[0]::getUrl(['action' => $a[4]]),
+                    default => $a[0]::getUrl(parameters: ['action' => $a[4]]),
                 },
                 'label' => $a[1],
                 'icon' => $a[2],

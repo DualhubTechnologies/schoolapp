@@ -27,6 +27,17 @@ use Spatie\Permission\Models\Role;
  */
 class UserForm
 {
+    /** What each role is for, in plain words, shown in the role list. */
+    public const ROLE_HINTS = [
+        'School Admin' => 'School Admin — everything, including users and settings',
+        'Teacher' => 'Teacher — marks, class register and report cards',
+        'Accountant' => 'Accountant — fees, spending and payroll',
+        'Bursar' => 'Bursar — fees and spending',
+        'Staff' => 'Other staff — you choose what they open (e.g. secretary)',
+        'Parent' => 'Parent — parent portal login',
+        'Student' => 'Student — student portal login',
+    ];
+
     public static function configure(Schema $schema): Schema
     {
         $isAdminRole = fn (Get $get): bool => collect($get('roles') ?? [])
@@ -79,6 +90,7 @@ class UserForm
                                     ->when(! auth()->user()->hasRole('Super Admin'), fn ($q) => $q->where('name', '!=', 'Super Admin'))
                                     ->when(! static::planAllowsParentStudentLogin(), fn ($q) => $q->whereNotIn('name', ['Parent', 'Student'])),
                             )
+                            ->getOptionLabelFromRecordUsing(fn (Role $role): string => static::ROLE_HINTS[$role->name] ?? $role->name)
                             ->multiple()
                             ->preload()
                             ->live()

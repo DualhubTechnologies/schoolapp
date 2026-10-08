@@ -17,7 +17,7 @@
                 </x-slot>
                 <x-slot name="description">
                     {{ $this->isNewUser()
-                        ? 'These are the jobs your login is set up for. Start with step 1 and click a step to open it. You can always come back here from Dashboard on the left.'
+                        ? 'These are the jobs your login is set up for. Start with step 1 and click a step to open it. You can always come back here: Dashboard on a computer, Home on a phone.'
                         : 'The jobs your login is set up for, in the order they are done. Click a step to open it.' }}
                 </x-slot>
                 <x-slot name="afterHeader">

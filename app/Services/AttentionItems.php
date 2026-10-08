@@ -162,10 +162,10 @@ class AttentionItems
             $items[] = $period->status === 'draft'
                 ? static::item("payroll-{$period->id}", 'warning', 'heroicon-o-document-check',
                     "Payroll for {$period->period_label} needs approval", 'It is still a draft.',
-                    PayrollPeriodResource::getUrl('edit', ['record' => $period], panel: 'app'))
+                    PayrollPeriodResource::getUrl('view', ['record' => $period], panel: 'app'))
                 : static::item("payroll-{$period->id}", 'warning', 'heroicon-o-credit-card',
                     "Payroll for {$period->period_label} is not marked paid", 'Approved, awaiting payment.',
-                    PayrollPeriodResource::getUrl('edit', ['record' => $period], panel: 'app'));
+                    PayrollPeriodResource::getUrl('view', ['record' => $period], panel: 'app'));
         }
 
         // Towards month end, remind if this month's payroll has not been started.

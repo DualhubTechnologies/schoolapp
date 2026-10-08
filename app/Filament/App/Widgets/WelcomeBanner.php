@@ -145,6 +145,11 @@ class WelcomeBanner extends Widget
     /** Pages and resources each say who may open them. */
     protected function mayOpen(string $class): bool
     {
+        // Report cards are written by class teachers (and printed by the school).
+        if ($class === ReportCards::class && ! AcademicAccess::manages() && AcademicAccess::classTeacherClassIds() === []) {
+            return false;
+        }
+
         return method_exists($class, 'canAccess') ? $class::canAccess() : $class::canViewAny();
     }
 

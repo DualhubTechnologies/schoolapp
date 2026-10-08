@@ -277,7 +277,9 @@ class WorkGuide extends Widget
     protected function jobOrder(): array
     {
         return match (DashboardProfile::for()) {
-            DashboardProfile::TEACHER => ['class', 'marks', 'admissions', 'id_cards', 'messages', 'fees', 'spending', 'staff', 'year_end', 'team'],
+            DashboardProfile::TEACHER => AcademicAccess::manages()
+                ? ['marks', 'class', 'admissions', 'id_cards', 'messages', 'fees', 'spending', 'staff', 'year_end', 'team']
+                : ['class', 'marks', 'admissions', 'id_cards', 'messages', 'fees', 'spending', 'staff', 'year_end', 'team'],
             DashboardProfile::BURSAR => ['fees', 'spending', 'staff', 'admissions', 'class', 'marks', 'id_cards', 'messages', 'year_end', 'team'],
             DashboardProfile::HR => ['staff', 'fees', 'spending', 'admissions', 'class', 'marks', 'id_cards', 'messages', 'year_end', 'team'],
             default => ['admissions', 'fees', 'class', 'marks', 'staff', 'spending', 'id_cards', 'messages', 'team', 'year_end'],

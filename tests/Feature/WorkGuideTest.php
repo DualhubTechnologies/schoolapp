@@ -1,6 +1,8 @@
 <?php
 
+use App\Filament\App\Resources\Assessments\AssessmentResource;
 use App\Filament\App\Widgets\WorkGuide;
+use App\Filament\Pages\MarksProgress;
 use App\Models\School;
 use App\Models\SchoolClass;
 use App\Models\Staff;
@@ -65,3 +67,17 @@ it('opens the dashboard for every kind of user', function (string $role) {
         ->get(route('filament.app.pages.dashboard'))
         ->assertOk();
 })->with(['School Admin', 'Teacher', 'Accountant', 'Staff']);
+
+it('lets a Director of Studies given only "marks for all subjects" run the exams', function () {
+    $dos = User::factory()->create(['school_id' => $this->school->id, 'modules' => ['students', 'attendance', 'exams_all']])->assignRole('Teacher');
+    $this->actingAs($dos);
+
+    expect(AssessmentResource::canAccess())->toBeTrue()
+        ->and(MarksProgress::canAccess())->toBeTrue();
+
+    Livewire::test(WorkGuide::class)
+        ->assertSee('Set up the term\'s exams')
+        ->assertSee('Check which marks are missing');
+
+    $this->get(route('filament.app.pages.dashboard'))->assertOk();
+});

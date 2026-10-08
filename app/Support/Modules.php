@@ -154,16 +154,29 @@ class Modules
             return $available;
         }
 
-        // Chosen by the administrator...
-        if (is_array($user->modules)) {
-            return array_values(array_intersect($user->modules, $available));
+        // Chosen by the administrator, or the role's defaults.
+        $modules = is_array($user->modules)
+            ? $user->modules
+            : collect($user->getRoleNames())->flatMap(fn ($role) => self::ROLE_DEFAULTS[$role] ?? [])->unique()->all();
+
+        return array_values(array_intersect(static::withImplied($modules), $available));
+    }
+
+    /**
+     * "Marks for all subjects" is "Exams & results" and more: someone given
+     * only the first (a Director of Studies) still opens exams, results
+     * and report cards.
+     *
+     * @param  array<int, string>  $modules
+     * @return list<string>
+     */
+    protected static function withImplied(array $modules): array
+    {
+        if (in_array('exams_all', $modules, true)) {
+            $modules[] = 'exams';
         }
 
-        // ...or the role's defaults.
-        return array_values(array_intersect(
-            collect($user->getRoleNames())->flatMap(fn ($role) => self::ROLE_DEFAULTS[$role] ?? [])->unique()->all(),
-            $available,
-        ));
+        return array_values(array_unique($modules));
     }
 
     /**

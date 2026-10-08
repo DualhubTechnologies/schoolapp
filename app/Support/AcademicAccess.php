@@ -5,6 +5,7 @@ namespace App\Support;
 use App\Models\SchoolClass;
 use App\Models\Section;
 use App\Models\Staff;
+use Illuminate\Support\Facades\DB;
 
 /**
  * Who does what in academics:
@@ -60,6 +61,15 @@ class AcademicAccess
         return $staffId
             ? once(fn () => Section::where('class_teacher_id', $staffId)->pluck('school_class_id', 'id')->all())
             : [];
+    }
+
+    /** Does the user teach any class subject, or class-teach any class or stream? */
+    public static function hasTeachingLoad(): bool
+    {
+        $staffId = static::staffId();
+
+        return $staffId !== null && (static::classTeacherClassIds() !== []
+            || once(fn () => DB::table('class_subject')->where('teacher_id', $staffId)->exists()));
     }
 
     /**

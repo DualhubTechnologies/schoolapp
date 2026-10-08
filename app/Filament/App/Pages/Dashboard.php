@@ -23,6 +23,7 @@ use App\Filament\Widgets\TermBillingPrompt;
 use App\Filament\Widgets\TopDebtorsTable;
 use App\Models\School;
 use App\Services\SchoolStarterSetup;
+use App\Support\AcademicAccess;
 use App\Support\DashboardProfile;
 use App\Support\SchoolType;
 use Filament\Actions\Action;
@@ -211,12 +212,10 @@ class Dashboard extends BaseDashboard
                 WorkGuide::class,
                 HrKpis::class,
             ],
-            DashboardProfile::TEACHER => [
-                WelcomeBanner::class,
-                WorkGuide::class,
-                TeacherKpis::class,
-                TeacherMarksProgress::class,
-            ],
+            // A Director of Studies who teaches nothing has no "my subjects".
+            DashboardProfile::TEACHER => AcademicAccess::manages() && ! AcademicAccess::hasTeachingLoad()
+                ? [WelcomeBanner::class, WorkGuide::class]
+                : [WelcomeBanner::class, WorkGuide::class, TeacherKpis::class, TeacherMarksProgress::class],
             default => [
                 WelcomeBanner::class,
                 WorkGuide::class,

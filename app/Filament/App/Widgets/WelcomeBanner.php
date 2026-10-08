@@ -14,12 +14,14 @@ use App\Filament\App\Resources\Staff\StaffResource;
 use App\Filament\App\Resources\Students\StudentResource;
 use App\Filament\Pages\ClassResults;
 use App\Filament\Pages\EnterMarks;
+use App\Filament\Pages\MarksProgress;
 use App\Filament\Pages\ReceivePayment;
 use App\Filament\Pages\ReportCards;
 use App\Filament\Pages\SendMessages;
 use App\Filament\Pages\StudentIdCards;
 use App\Filament\Pages\TakeAttendance;
 use App\Filament\Widgets\Concerns\SchoolScoped;
+use App\Support\AcademicAccess;
 use App\Support\DashboardProfile;
 use Filament\Widgets\Widget;
 
@@ -101,6 +103,7 @@ class WelcomeBanner extends Widget
             ],
             DashboardProfile::TEACHER => [
                 [EnterMarks::class, 'Enter marks', 'heroicon-o-pencil-square', true],
+                [MarksProgress::class, 'Marks progress', 'heroicon-o-chart-pie'],
                 [TakeAttendance::class, 'Take register', 'heroicon-o-clipboard-document-check'],
                 [ClassResults::class, 'Class results', 'heroicon-o-chart-bar'],
                 [ReportCards::class, 'Report cards', 'heroicon-o-document-text'],
@@ -147,6 +150,11 @@ class WelcomeBanner extends Widget
 
     public function profileLabel(): string
     {
+        // A Director of Studies runs the exams rather than one class's teaching.
+        if (DashboardProfile::for() === DashboardProfile::TEACHER && AcademicAccess::manages()) {
+            return 'Exams & studies';
+        }
+
         return DashboardProfile::LABELS[DashboardProfile::for()];
     }
 }

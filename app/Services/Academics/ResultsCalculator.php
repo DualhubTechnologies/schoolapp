@@ -258,8 +258,8 @@ class ResultsCalculator
                     $paperBands[$paper] = $paperScale->bandFor($paperFinal);
                 }
                 ksort($paperBands);
-                $paperValues = array_values(array_map(fn ($b): int => (int) ($b?->value ?? 9), $paperBands));
-                $paperGrades = array_map(fn ($b): string => (string) ($b?->grade ?? 'F9'), $paperBands);
+                $paperValues = array_values(array_map(fn ($b): int => (int) ($b->value ?? 9), $paperBands));
+                $paperGrades = array_map(fn ($b): string => (string) ($b->grade ?? 'F9'), $paperBands);
 
                 if ($subject->category === 'subsidiary') {
                     $paperBand = $paperScale->bandFor($final);

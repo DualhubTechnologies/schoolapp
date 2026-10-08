@@ -71,8 +71,9 @@ class UacePrincipalGrade
     protected static function morePapers(array $papers): string
     {
         $worst = $papers[count($papers) - 1];
-        $rest = array_slice($papers, 0, -1);
-        $restWorst = max($rest);
+        // The other papers (sorted, best first): their best and worst grades.
+        $restBest = $papers[0];
+        $restWorst = $papers[count($papers) - 2];
 
         // A: worst C3 with distinctions; B: worst C4 with C3 or better; ... D: worst C6 with C5 or better.
         foreach (['A' => 3, 'B' => 4, 'C' => 5, 'D' => 6] as $grade => $limit) {
@@ -81,7 +82,7 @@ class UacePrincipalGrade
             }
         }
 
-        if (($worst === 7 && $restWorst <= 6) || ($worst === 8 && $restWorst <= 6 && min($rest) <= 5)) {
+        if (($worst === 7 && $restWorst <= 6) || ($worst === 8 && $restWorst <= 6 && $restBest <= 5)) {
             return 'E';
         }
 

@@ -248,11 +248,10 @@ class UserForm
      */
     protected static function roleDefaults(array $roleIds): array
     {
-        return collect($roleIds)
+        return array_values(collect($roleIds)
             ->map(fn ($id) => Role::find($id)?->name)
             ->flatMap(fn ($role) => Modules::ROLE_DEFAULTS[$role] ?? [])
             ->unique()
-            ->values()
-            ->all();
+            ->all());
     }
 }

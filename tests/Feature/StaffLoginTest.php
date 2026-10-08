@@ -1,6 +1,7 @@
 <?php
 
 use App\Filament\App\Resources\Staff\Pages\ListStaff;
+use App\Filament\App\Resources\Users\Pages\CreateUser;
 use App\Filament\App\Resources\Users\UserResource;
 use App\Models\School;
 use App\Models\Staff;
@@ -9,6 +10,7 @@ use App\Services\Subscriptions\SubscriptionManager;
 use Database\Seeders\RoleSeeder;
 use Filament\Facades\Filament;
 use Livewire\Livewire;
+use Spatie\Permission\Models\Role;
 
 beforeEach(function () {
     $this->seed(RoleSeeder::class);
@@ -33,4 +35,11 @@ it('gives a teacher a login and goes on to choose their subjects', function () {
         ->assertRedirect(UserResource::getUrl('edit', ['record' => User::where('email', 'okello@example.com')->first()]));
 
     expect($staff->fresh()->user?->hasRole('Teacher'))->toBeTrue();
+});
+
+it('starts chosen modules from the role\'s defaults, so adding one keeps the rest', function () {
+    Livewire::test(CreateUser::class)
+        ->fillForm(['roles' => [Role::findByName('Teacher')->id]])
+        ->fillForm(['custom_access' => true])
+        ->assertFormSet(['modules' => ['exams', 'students', 'attendance']]);
 });

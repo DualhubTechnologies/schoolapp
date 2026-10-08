@@ -15,6 +15,7 @@ use Filament\Forms\Components\Toggle;
 use Filament\Schemas\Components\Section;
 use Filament\Schemas\Components\Text;
 use Filament\Schemas\Components\Utilities\Get;
+use Filament\Schemas\Components\Utilities\Set;
 use Filament\Schemas\Schema;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Hash;
@@ -111,6 +112,13 @@ class UserForm
                             ->helperText(fn (Get $get) => 'Off: the defaults for their role — '
                                 .static::roleDefaultsText($get('roles') ?? []).'.')
                             ->live()
+                            // Start from the role's defaults, so ticking one extra
+                            // module does not quietly take the usual ones away.
+                            ->afterStateUpdated(function (bool $state, Get $get, Set $set): void {
+                                if ($state && blank($get('modules'))) {
+                                    $set('modules', static::roleDefaults($get('roles') ?? []));
+                                }
+                            })
                             ->dehydrated(false)
                             ->hidden($isAdminRole),
                         CheckboxList::make('modules')
@@ -124,7 +132,7 @@ class UserForm
 
                 Section::make('Teaching')
                     ->icon('heroicon-o-academic-cap')
-                    ->description('Link the login to the person\'s staff record, then choose the subjects they teach and any stream they are class teacher of.')
+                    ->description('Link the login to the person\'s staff record, then choose the subjects they teach and any class or stream they are class teacher of.')
                     ->columnSpanFull()
                     ->columns(2)
                     ->schema([
@@ -226,12 +234,25 @@ class UserForm
 
     protected static function roleDefaultsText(array $roleIds): string
     {
-        $modules = collect($roleIds)
-            ->map(fn ($id) => Role::find($id)?->name)
-            ->flatMap(fn ($role) => Modules::ROLE_DEFAULTS[$role] ?? [])
-            ->unique()
+        $modules = collect(static::roleDefaults($roleIds))
             ->map(fn ($key) => Modules::LIST[$key][0]);
 
         return $modules->isEmpty() ? 'no modules' : $modules->implode(', ');
+    }
+
+    /**
+     * The modules the chosen roles open by default.
+     *
+     * @param  array<int|string>  $roleIds
+     * @return list<string>
+     */
+    protected static function roleDefaults(array $roleIds): array
+    {
+        return collect($roleIds)
+            ->map(fn ($id) => Role::find($id)?->name)
+            ->flatMap(fn ($role) => Modules::ROLE_DEFAULTS[$role] ?? [])
+            ->unique()
+            ->values()
+            ->all();
     }
 }

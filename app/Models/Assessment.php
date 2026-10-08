@@ -202,6 +202,38 @@ class Assessment extends Model
             : (string) $this->name;
     }
 
+    /**
+     * Labels for a list of exams, told apart when two share a name (two
+     * "Continuous Assessment" tests): the date it was held, or a number.
+     *
+     * @param  iterable<self>  $assessments
+     * @param  callable(self): string  $label
+     * @return array<int, string> id => label
+     */
+    public static function distinctLabels(iterable $assessments, callable $label): array
+    {
+        $labels = [];
+
+        foreach ($assessments as $assessment) {
+            $labels[(int) $assessment->getKey()] = [$assessment, $label($assessment)];
+        }
+
+        $counts = array_count_values(array_column($labels, 1));
+        $seen = [];
+
+        return array_map(function (array $pair) use ($counts, &$seen): string {
+            [$assessment, $text] = $pair;
+
+            if ($counts[$text] < 2) {
+                return $text;
+            }
+
+            $seen[$text] = ($seen[$text] ?? 0) + 1;
+
+            return $text.' — '.($assessment->held_on ? 'held '.$assessment->held_on->format('j M') : 'no. '.$seen[$text]);
+        }, $labels);
+    }
+
     public function typeLabel(): string
     {
         return config('academics.assessment_types')[$this->type] ?? ucfirst((string) $this->type);

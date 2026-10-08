@@ -186,7 +186,7 @@ class EnterMarks extends Page
                 fn ($a, $b) => ($b->term?->sortKey() ?? '') <=> ($a->term?->sortKey() ?? ''),
                 fn ($a, $b) => $a->sort_order <=> $b->sort_order,
             ])
-            ->mapWithKeys(fn (Assessment $a) => [$a->id => $a->displayName().' — '.($a->term?->label() ?? '').($a->isLocked() ? ' (locked)' : '')]);
+            ->pipe(fn (Collection $exams) => collect(Assessment::distinctLabels($exams, fn (Assessment $a): string => $a->displayName().' — '.($a->term?->label() ?? '').($a->isLocked() ? ' (locked)' : ''))));
     }
 
     /** Is the exam set in any class subject the (non-managing) user marks? */

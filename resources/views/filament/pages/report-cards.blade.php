@@ -133,7 +133,7 @@
                 <div>
                     <strong>{{ $r['class']->name }} — {{ $r['term']->label() }}</strong>
                     <div class="rc-muted">
-                        {{ $r['summary']['with_results'] }} students with results. Write or suggest comments, save, then print.
+                        {{ $r['summary']['with_results'] }} {{ str('student')->plural($r['summary']['with_results']) }} with results. Write or suggest comments, save, then print.
                         @if ($this->hasFilters())
                             <strong>Showing {{ $shown->count() }} of {{ count($r['rows']) }}</strong>{{ $this->search !== '' ? ' matching “'.$this->search.'”' : '' }}.
                         @endif

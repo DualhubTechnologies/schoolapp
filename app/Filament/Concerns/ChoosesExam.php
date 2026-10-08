@@ -36,7 +36,7 @@ trait ChoosesExam
             ->orderBy('id')
             ->get()
             ->filter(fn (Assessment $a): bool => $class === null || $a->covers($class))
-            ->mapWithKeys(fn (Assessment $a): array => [$a->id => $a->displayName()]);
+            ->pipe(fn (Collection $exams) => collect(Assessment::distinctLabels($exams, fn (Assessment $a): string => $a->displayName())));
     }
 
     /**

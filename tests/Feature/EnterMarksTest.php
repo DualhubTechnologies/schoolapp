@@ -192,3 +192,16 @@ it('lists for a teacher only the exams set in a subject they mark', function () 
         ->toContain($this->assessment->id)
         ->not->toContain($scienceTest->id);
 });
+
+it('tells apart two exams with the same name', function () {
+    $termId = $this->assessment->term_id;
+    $schoolId = $this->class->school_id;
+    $first = Assessment::create(['school_id' => $schoolId, 'term_id' => $termId, 'name' => 'Continuous Assessment', 'type' => 'ca', 'max_score' => 3, 'held_on' => '2026-09-14']);
+    $second = Assessment::create(['school_id' => $schoolId, 'term_id' => $termId, 'name' => 'Continuous Assessment', 'type' => 'ca', 'max_score' => 3, 'held_on' => '2026-10-05']);
+
+    $labels = Livewire::test(EnterMarks::class)->instance()->assessmentOptions();
+
+    expect($labels[$first->id])->toContain('held 14 Sep')
+        ->and($labels[$second->id])->toContain('held 5 Oct')
+        ->and($labels[$this->assessment->id])->not->toContain('held');
+});

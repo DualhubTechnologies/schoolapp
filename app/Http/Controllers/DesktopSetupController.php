@@ -15,7 +15,6 @@ use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Str;
-use Spatie\Permission\Models\Role;
 
 /**
  * First run of the Windows app: the school and its administrator, in one
@@ -57,9 +56,9 @@ class DesktopSetupController extends Controller
         ]);
 
         $user = DB::transaction(function () use ($data): User {
-            if (! Role::query()->exists()) {
-                (new RoleSeeder)->run();
-            }
+            // Adds whichever standard roles are missing (a migration may
+            // already have created some, e.g. Bursar).
+            (new RoleSeeder)->run();
 
             // Creating the school also seeds its class levels (SchoolObserver).
             $school = School::create([

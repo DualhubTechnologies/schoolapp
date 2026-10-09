@@ -24,9 +24,11 @@ class UsersTable
                 TextColumn::make('email')
                     ->label('Email address')
                     ->searchable(),
+                // Only the platform owner sees users of more than one school.
                 TextColumn::make('school.name')
                     ->label('School')
-                    ->searchable(),
+                    ->searchable()
+                    ->visible(fn (): bool => auth()->user()?->hasRole('Super Admin') ?? false),
                 TextColumn::make('roles.name')
                     ->label('Roles')
                     ->badge()

@@ -228,7 +228,7 @@ class WorkGuide extends Widget
                 'icon' => 'heroicon-o-users',
                 'steps' => [
                     ['page' => UserResource::class, 'action' => 'create', 'title' => 'Give a staff member a login',
-                        'text' => 'Choose their job (teacher, bursar…) and they see only their own work. Share the password with them.'],
+                        'text' => 'Start with your bursar, so fees can be received from day one, then your teachers. Each sees only their own work. Share the password with them.'],
                 ],
             ],
         ];

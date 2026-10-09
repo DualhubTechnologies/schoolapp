@@ -44,6 +44,12 @@ class Modules
         'Student' => [],
     ];
 
+    /**
+     * The order roles are offered in: the head, then the money roles a
+     * school sets up first, then teachers and other staff.
+     */
+    public const ROLE_ORDER = ['School Admin', 'Bursar', 'Accountant', 'Teacher', 'Staff', 'Parent', 'Student', 'Super Admin'];
+
     /** Modules only primary schools have: the school van is a primary thing. */
     public const PRIMARY_ONLY = ['transport'];
 
@@ -120,6 +126,16 @@ class Modules
         'UserResource' => 'settings',
         'AuditTrailResource' => 'settings',
     ];
+
+    /**
+     * Where a role comes in ROLE_ORDER (unknown roles last).
+     */
+    public static function rolePosition(string $role): int
+    {
+        $position = array_search($role, self::ROLE_ORDER, true);
+
+        return $position === false ? count(self::ROLE_ORDER) : $position;
+    }
 
     public static function hasFullAccess(?User $user = null): bool
     {

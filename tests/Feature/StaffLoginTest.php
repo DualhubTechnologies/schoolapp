@@ -1,12 +1,17 @@
 <?php
 
+use App\Filament\App\Resources\Expenses\ExpenseResource;
+use App\Filament\App\Resources\PayrollPeriods\PayrollPeriodResource;
 use App\Filament\App\Resources\Staff\Pages\ListStaff;
 use App\Filament\App\Resources\Users\Pages\CreateUser;
 use App\Filament\App\Resources\Users\UserResource;
+use App\Filament\Pages\EnterMarks;
+use App\Filament\Pages\ReceivePayment;
 use App\Models\School;
 use App\Models\Staff;
 use App\Models\User;
 use App\Services\Subscriptions\SubscriptionManager;
+use App\Support\Modules;
 use Database\Seeders\RoleSeeder;
 use Filament\Facades\Filament;
 use Livewire\Livewire;
@@ -42,4 +47,23 @@ it('starts chosen modules from the role\'s defaults, so adding one keeps the res
         ->fillForm(['roles' => [Role::findByName('Teacher')->id]])
         ->fillForm(['custom_access' => true])
         ->assertFormSet(['modules' => ['exams', 'students', 'attendance']]);
+});
+
+it('has a bursar role for fees and spending, without payroll or marks', function () {
+    $bursar = User::factory()->create(['school_id' => $this->school->id])->assignRole('Bursar');
+    $this->actingAs($bursar);
+
+    expect(ReceivePayment::canAccess())->toBeTrue()
+        ->and(ExpenseResource::canAccess())->toBeTrue()
+        ->and(PayrollPeriodResource::canAccess())->toBeFalse()
+        ->and(EnterMarks::canAccess())->toBeFalse()
+        ->and(UserResource::canAccess())->toBeFalse();
+
+    $this->get(route('filament.app.pages.dashboard'))->assertOk()->assertSee('Receive payment');
+});
+
+it('offers the head first, then the bursar and accountant', function () {
+    $offered = collect(Role::all())->sortBy(fn (Role $role) => Modules::rolePosition($role->name))->pluck('name')->values()->all();
+
+    expect(array_slice($offered, 0, 3))->toBe(['School Admin', 'Bursar', 'Accountant']);
 });

@@ -86,7 +86,7 @@ class SetupChecklist extends Widget
                 ],
                 [
                     'title' => 'Add staff and give them logins',
-                    'text' => 'Add teachers and other staff, then give each a login for their job — a teacher sees marks, a bursar sees fees.',
+                    'text' => 'Start with your bursar, so fees can be received from day one, then your teachers. Each sees only their own work: a bursar sees fees, a teacher sees marks.',
                     'url' => Staff::where('school_id', $id)->exists() ? UserResource::getUrl('create') : StaffResource::getUrl('create'),
                     'done' => User::where('school_id', $id)->count() > 1,
                 ],

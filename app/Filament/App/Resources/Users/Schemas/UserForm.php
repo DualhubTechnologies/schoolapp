@@ -32,8 +32,8 @@ class UserForm
     public const ROLE_HINTS = [
         'School Admin' => 'School Admin — everything, including users and settings',
         'Teacher' => 'Teacher — marks, class register and report cards',
-        'Accountant' => 'Accountant — fees, spending and payroll',
-        'Bursar' => 'Bursar — fees and spending',
+        'Bursar' => 'Bursar — fees, receipts, balances and spending',
+        'Accountant' => 'Accountant — fees, spending and staff payroll',
         'Staff' => 'Other staff — you choose what they open (e.g. secretary)',
         'Parent' => 'Parent — parent portal login',
         'Student' => 'Student — student portal login',
@@ -89,7 +89,9 @@ class UserForm
                                 'name',
                                 modifyQueryUsing: fn ($query) => $query
                                     ->when(! auth()->user()->hasRole('Super Admin'), fn ($q) => $q->where('name', '!=', 'Super Admin'))
-                                    ->when(! static::planAllowsParentStudentLogin(), fn ($q) => $q->whereNotIn('name', ['Parent', 'Student'])),
+                                    ->when(! static::planAllowsParentStudentLogin(), fn ($q) => $q->whereNotIn('name', ['Parent', 'Student']))
+                                    // The head first, then the bursar and accountant a school sets up first.
+                                    ->orderByRaw('CASE name '.collect(Modules::ROLE_ORDER)->map(fn ($role, $i) => "WHEN '{$role}' THEN {$i}")->implode(' ').' ELSE 99 END'),
                             )
                             ->getOptionLabelFromRecordUsing(fn (Role $role): string => static::ROLE_HINTS[$role->name] ?? $role->name)
                             ->multiple()

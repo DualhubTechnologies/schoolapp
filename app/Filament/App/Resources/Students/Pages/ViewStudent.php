@@ -17,13 +17,13 @@ class ViewStudent extends ViewRecord
 
     public function getSubheading(): string|Htmlable|null
     {
-        return StudentResource::canEdit($this->record) ? null : 'Only the admissions office can change these details.';
+        return StudentResource::canEdit($this->getRecord()) ? null : 'Only the admissions office can change these details.';
     }
 
     protected function getHeaderActions(): array
     {
         return [
-            EditAction::make()->visible(fn (): bool => StudentResource::canEdit($this->record)),
+            EditAction::make()->visible(fn (): bool => StudentResource::canEdit($this->getRecord())),
         ];
     }
 }

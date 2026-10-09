@@ -17,7 +17,8 @@ return new class extends Migration
             ->whereNotNull('modules')
             ->with('roles')
             ->each(function (User $user): void {
-                $modules = is_array($user->modules) ? $user->modules : [];
+                $modules = $user->getAttribute('modules');
+                $modules = is_array($modules) ? $modules : [];
 
                 if (in_array('students', $modules, true)
                     && ! in_array('admissions', $modules, true)

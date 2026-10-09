@@ -27,7 +27,7 @@ return [
             'name' => env('CONTACT_FOUNDER', 'Adrian Mugizi'),
             'role' => 'Founder, FERO TECH SMC LIMITED & SchoolHub.',
             'photo' => 'adrian-mugizi.webp',
-            'linkedin' => null,
+            'linkedin' => 'https://www.linkedin.com/in/adrian-mugizi-1a0854152',
             'facebook' => null,
             'x' => null,
             'email' => env('CONTACT_EMAIL', 'dualhubtechnologies@gmail.com'),

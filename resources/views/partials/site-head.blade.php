@@ -33,7 +33,16 @@
         '@type' => 'Organization',
         'name' => 'SchoolHub',
         'legalName' => config('contact.company'),
-        'founder' => ['@type' => 'Person', 'name' => config('contact.founder')],
+        'founder' => array_filter([
+            '@type' => 'Person',
+            'name' => config('contact.founder'),
+            // The founder's public profiles, so search engines link them to SchoolHub.
+            'sameAs' => array_values(array_filter([
+                config('contact.team.0.linkedin'),
+                config('contact.team.0.facebook'),
+                config('contact.team.0.x'),
+            ])) ?: null,
+        ]),
         'url' => $site.'/',
         'logo' => $logo,
         'email' => config('contact.email'),

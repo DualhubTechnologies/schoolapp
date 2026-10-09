@@ -254,6 +254,8 @@ class UserForm
             ->map(fn ($id) => Role::find($id)?->name)
             ->flatMap(fn ($role) => Modules::ROLE_DEFAULTS[$role] ?? [])
             ->unique()
+            // Only what this school has: no school van in a secondary school.
+            ->intersect(Modules::availableKeys(auth()->user()?->school))
             ->all());
     }
 }

@@ -150,7 +150,7 @@ class StaffTable
                             ->label('Their job on SchoolHub')
                             ->multiple()
                             ->required()
-                            ->options(fn () => Role::whereIn('name', ['School Admin', 'Bursar', 'Accountant', 'Admissions', 'Teacher', 'Staff'])
+                            ->options(fn () => Role::whereIn('name', ['School Admin', 'Bursar', 'Accountant', 'Admissions', 'Director of Studies', 'Teacher', 'Staff'])
                                 ->pluck('name', 'name')
                                 ->sortBy(fn (string $name) => Modules::rolePosition($name))
                                 ->when(! auth()->user()?->hasRole(['School Admin', 'Super Admin']), fn ($roles) => $roles->except(['School Admin']))
@@ -170,7 +170,7 @@ class StaffTable
 
                         $record->update(['user_id' => $user->id]);
 
-                        $isTeacher = in_array('Teacher', $data['roles'], true);
+                        $isTeacher = array_intersect(['Teacher', 'Director of Studies'], $data['roles']) !== [];
 
                         Notification::make()
                             ->title('Login created for '.$record->name)

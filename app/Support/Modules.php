@@ -38,6 +38,7 @@ class Modules
     /** What each role opens until the administrator chooses otherwise. */
     public const ROLE_DEFAULTS = [
         'Teacher' => ['exams', 'students', 'attendance'],
+        'Director of Studies' => ['exams_all', 'exams', 'students', 'attendance'],
         'Accountant' => ['fees', 'transport', 'finance', 'hr'],
         'Bursar' => ['fees', 'transport', 'finance'],
         'Admissions' => ['admissions', 'students', 'id_cards', 'messages'],
@@ -50,7 +51,7 @@ class Modules
      * The order roles are offered in: the head, then the money roles a
      * school sets up first, then teachers and other staff.
      */
-    public const ROLE_ORDER = ['School Admin', 'Bursar', 'Accountant', 'Admissions', 'Teacher', 'Staff', 'Parent', 'Student', 'Super Admin'];
+    public const ROLE_ORDER = ['School Admin', 'Bursar', 'Accountant', 'Admissions', 'Director of Studies', 'Teacher', 'Staff', 'Parent', 'Student', 'Super Admin'];
 
     /** Modules only primary schools have: the school van is a primary thing. */
     public const PRIMARY_ONLY = ['transport'];

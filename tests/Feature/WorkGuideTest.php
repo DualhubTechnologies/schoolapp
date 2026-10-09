@@ -8,6 +8,7 @@ use App\Models\SchoolClass;
 use App\Models\Staff;
 use App\Models\User;
 use App\Services\Subscriptions\SubscriptionManager;
+use App\Support\AcademicAccess;
 use Database\Seeders\RoleSeeder;
 use Filament\Facades\Filament;
 use Livewire\Livewire;
@@ -80,4 +81,14 @@ it('lets a Director of Studies given only "marks for all subjects" run the exams
         ->assertSee('Check which marks are missing');
 
     $this->get(route('filament.app.pages.dashboard'))->assertOk();
+});
+
+it('has a Director of Studies role that runs the exams', function () {
+    $this->actingAs(User::factory()->create(['school_id' => $this->school->id])->assignRole('Director of Studies'));
+
+    expect(AssessmentResource::canCreate())->toBeTrue()
+        ->and(MarksProgress::canAccess())->toBeTrue()
+        ->and(AcademicAccess::manages())->toBeTrue();
+
+    $this->get(route('filament.app.pages.dashboard'))->assertOk()->assertSee('Exams &amp; studies', false);
 });

@@ -31,6 +31,7 @@ class UserForm
     /** What each role is for, in plain words, shown in the role list. */
     public const ROLE_HINTS = [
         'School Admin' => 'School Admin — everything, including users and settings',
+        'Director of Studies' => 'Director of Studies — runs exams: marks for every subject, approvals, report cards',
         'Teacher' => 'Teacher — marks, class register and report cards',
         'Bursar' => 'Bursar — fees, receipts, balances and spending',
         'Accountant' => 'Accountant — fees, spending and staff payroll',

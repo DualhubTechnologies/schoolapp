@@ -26,6 +26,7 @@ it('shows a bursar the fee steps and not the marks', function () {
     $this->actingAs(User::factory()->create(['school_id' => $this->school->id])->assignRole('Accountant'));
 
     Livewire::test(WorkGuide::class)
+        ->call('showTips')
         ->assertSee('Receive a payment')
         ->assertSee('Bill the term')
         ->assertSee('Start this month\'s payroll')
@@ -40,6 +41,7 @@ it('shows a class teacher their register and marks, and not fees', function () {
     $this->actingAs($user);
 
     Livewire::test(WorkGuide::class)
+        ->call('showTips')
         ->assertSee('My class')
         ->assertSee('Take today\'s register')
         ->assertSee('Enter marks for my subjects')
@@ -47,20 +49,22 @@ it('shows a class teacher their register and marks, and not fees', function () {
         ->assertDontSee('Receive a payment');
 });
 
-it('can be hidden and brought back', function () {
+it('stays closed until the user opens it, and can be closed again', function () {
     $user = User::factory()->create(['school_id' => $this->school->id])->assignRole('Accountant');
     $this->actingAs($user);
 
     Livewire::test(WorkGuide::class)
-        ->call('hideTips')
         ->assertSee('Show the step-by-step guide')
-        ->assertDontSee('Receive a payment');
-
-    expect($user->fresh()->tips_hidden_at)->not->toBeNull();
-
-    Livewire::test(WorkGuide::class)
+        ->assertDontSee('Receive a payment')
         ->call('showTips')
         ->assertSee('Receive a payment');
+
+    expect($user->fresh()->tips_shown_at)->not->toBeNull();
+
+    Livewire::test(WorkGuide::class)
+        ->assertSee('Receive a payment')
+        ->call('hideTips')
+        ->assertDontSee('Receive a payment');
 });
 
 it('opens the dashboard for every kind of user', function (string $role) {
@@ -77,6 +81,7 @@ it('lets a Director of Studies given only "marks for all subjects" run the exams
         ->and(MarksProgress::canAccess())->toBeTrue();
 
     Livewire::test(WorkGuide::class)
+        ->call('showTips')
         ->assertSee('Set up the term\'s exams')
         ->assertSee('Check which marks are missing');
 

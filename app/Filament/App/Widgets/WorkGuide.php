@@ -38,8 +38,8 @@ use Filament\Widgets\Widget;
  * steps in the order they are done, in plain words, each one click away.
  * Built from what the user may open, so a bursar sees fees, a class
  * teacher the register and marks, a secretary admissions, and someone
- * with several jobs sees each of them. New users see it open; anyone can
- * hide it and bring it back.
+ * with several jobs sees each of them. Closed until the user opens it;
+ * they can close it again.
  */
 class WorkGuide extends Widget
 {
@@ -60,7 +60,8 @@ class WorkGuide extends Widget
 
     public function hidden(): bool
     {
-        return auth()->user()?->tips_hidden_at !== null;
+        // Closed unless the user opened it.
+        return auth()->user()?->tips_shown_at === null;
     }
 
     /** A user in their first month gets a warmer welcome. */
@@ -71,12 +72,12 @@ class WorkGuide extends Widget
 
     public function hideTips(): void
     {
-        auth()->user()?->forceFill(['tips_hidden_at' => now()])->save();
+        auth()->user()?->forceFill(['tips_shown_at' => null])->save();
     }
 
     public function showTips(): void
     {
-        auth()->user()?->forceFill(['tips_hidden_at' => null])->save();
+        auth()->user()?->forceFill(['tips_shown_at' => now()])->save();
     }
 
     /**

@@ -116,13 +116,15 @@ class WorkGuide extends Widget
         return [
             [
                 'key' => 'admissions',
-                'title' => 'Admissions',
+                'title' => StudentResource::canCreate() ? 'Admissions' : 'Learners',
                 'icon' => 'heroicon-o-user-plus',
                 'steps' => [
                     ['page' => StudentResource::class, 'action' => 'create', 'title' => 'Admit a new learner',
                         'text' => 'Fill in the learner\'s name, class and a parent\'s phone number. The registration number is given automatically.'],
-                    ['page' => StudentResource::class, 'title' => 'Find or update a learner',
-                        'text' => 'Search by name or admission number to correct details or change a class.'],
+                    ['page' => StudentResource::class, 'title' => StudentResource::canCreate() ? 'Find or update a learner' : 'Look up a learner',
+                        'text' => StudentResource::canCreate()
+                            ? 'Search by name or admission number to correct details or change a class.'
+                            : 'Search by name or admission number to see their class and parents\' contacts.'],
                 ],
             ],
             [

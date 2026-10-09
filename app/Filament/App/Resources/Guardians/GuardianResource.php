@@ -5,10 +5,12 @@ namespace App\Filament\App\Resources\Guardians;
 use App\Filament\App\Resources\Guardians\Pages\CreateGuardian;
 use App\Filament\App\Resources\Guardians\Pages\EditGuardian;
 use App\Filament\App\Resources\Guardians\Pages\ListGuardians;
+use App\Filament\App\Resources\Guardians\Pages\ViewGuardian;
 use App\Filament\App\Resources\Guardians\Schemas\GuardianForm;
 use App\Filament\App\Resources\Guardians\Tables\GuardiansTable;
 use App\Filament\Concerns\GatedByModule;
 use App\Models\Guardian;
+use App\Support\Modules;
 use BackedEnum;
 use Filament\Resources\Resource;
 use Filament\Schemas\Schema;
@@ -82,11 +84,33 @@ class GuardianResource extends Resource
         return $query;
     }
 
+    /** Admitting, changing and removing learners is the admissions office's job; teachers only see them. */
+    public static function canCreate(): bool
+    {
+        return Modules::allows('admissions');
+    }
+
+    public static function canEdit(Model $record): bool
+    {
+        return Modules::allows('admissions');
+    }
+
+    public static function canDelete(Model $record): bool
+    {
+        return Modules::allows('admissions');
+    }
+
+    public static function canDeleteAny(): bool
+    {
+        return Modules::allows('admissions');
+    }
+
     public static function getPages(): array
     {
         return [
             'index' => ListGuardians::route('/'),
             'create' => CreateGuardian::route('/create'),
+            'view' => ViewGuardian::route('/{record}'),
             'edit' => EditGuardian::route('/{record}/edit'),
         ];
     }

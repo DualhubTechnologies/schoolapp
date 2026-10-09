@@ -6,6 +6,8 @@
     $guardian = $student->guardian;
     $guardianDigits = $guardian?->phone ? preg_replace('/\D/', '', $guardian->phone) : null;
     $guardianIntl = $guardianDigits ? (str_starts_with($guardianDigits, '0') ? '256'.substr($guardianDigits, 1) : $guardianDigits) : null;
+    // Fee figures and fee pages only for those who handle fees.
+    $seesFees = \App\Support\Modules::allows('fees');
     $balance = $student->balance();
     $percent = $student->profilePercent();
     $missing = array_keys(array_filter($student->profileChecklist(), fn (bool $done): bool => ! $done));
@@ -25,8 +27,8 @@
         'LIN' => $student->lin,
     ]);
     $actions = array_filter([
-        ['Receive payment', 'heroicon-o-banknotes', route('filament.app.pages.receive-payment', ['student' => $student->id]), false],
-        ['Fee statement', 'heroicon-o-document-chart-bar', route('filament.app.pages.student-account', ['student' => $student->id]), false],
+        $seesFees ? ['Receive payment', 'heroicon-o-banknotes', route('filament.app.pages.receive-payment', ['student' => $student->id]), false] : null,
+        $seesFees ? ['Fee statement', 'heroicon-o-document-chart-bar', route('filament.app.pages.student-account', ['student' => $student->id]), false] : null,
         $term && $student->school_class_id ? ['Report card', 'heroicon-o-academic-cap', route('filament.app.academics.report-cards', ['term' => $term->id, 'class' => $student->school_class_id, 'student' => $student->id]), true] : null,
         ['Print profile', 'heroicon-o-printer', route('filament.app.students.profile', $student), true],
     ]);
@@ -79,6 +81,7 @@
                 @endif
             </div>
 
+@if ($seesFees)
             <div @class([
                 'rounded-xl p-4',
                 'bg-danger-50 dark:bg-danger-500/10' => $balance > 0,
@@ -92,6 +95,7 @@
                 ])>{{ $balance == 0 ? 'Cleared' : 'UGX '.number_format(abs($balance)) }}</p>
                 <a href="{{ route('filament.app.pages.student-account', ['student' => $student->id]) }}" class="text-sm font-medium text-primary-600 hover:underline dark:text-primary-400">View statement</a>
             </div>
+            @endif
         </div>
     </div>
 

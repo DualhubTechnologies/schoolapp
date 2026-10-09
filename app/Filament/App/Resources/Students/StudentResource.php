@@ -4,6 +4,7 @@ namespace App\Filament\App\Resources\Students;
 
 use App\Filament\App\Resources\Students\Pages\EditStudent;
 use App\Filament\App\Resources\Students\Pages\ListStudents;
+use App\Filament\App\Resources\Students\Pages\ViewStudent;
 use App\Filament\App\Resources\Students\Schemas\StudentForm;
 use App\Filament\App\Resources\Students\Tables\StudentsTable;
 use App\Filament\Concerns\GatedByModule;
@@ -112,10 +113,32 @@ class StudentResource extends Resource
         return $query;
     }
 
+    /** Admitting, changing and removing learners is the admissions office's job; teachers only see them. */
+    public static function canCreate(): bool
+    {
+        return Modules::allows('admissions');
+    }
+
+    public static function canEdit(Model $record): bool
+    {
+        return Modules::allows('admissions');
+    }
+
+    public static function canDelete(Model $record): bool
+    {
+        return Modules::allows('admissions');
+    }
+
+    public static function canDeleteAny(): bool
+    {
+        return Modules::allows('admissions');
+    }
+
     public static function getPages(): array
     {
         return [
             'index' => ListStudents::route('/'),
+            'view' => ViewStudent::route('/{record}'),
             'edit' => EditStudent::route('/{record}/edit'),
         ];
     }

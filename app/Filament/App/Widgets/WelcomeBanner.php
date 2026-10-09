@@ -126,7 +126,7 @@ class WelcomeBanner extends Widget
         }
 
         return collect($candidates)
-            ->filter(fn ($a) => $this->mayOpen($a[0]))
+            ->filter(fn ($a) => $this->mayOpen($a[0], $a[4] ?? null))
             ->map(fn ($a) => [
                 // Some resources add records in a pop-up on their list page: open it straight away.
                 'url' => match (true) {
@@ -143,8 +143,13 @@ class WelcomeBanner extends Widget
     }
 
     /** Pages and resources each say who may open them. */
-    protected function mayOpen(string $class): bool
+    protected function mayOpen(string $class, ?string $action = null): bool
     {
+        // An "add" shortcut needs the right to add, not just to look.
+        if ($action === 'create' && method_exists($class, 'canCreate') && ! $class::canCreate()) {
+            return false;
+        }
+
         // Report cards are written by class teachers (and printed by the school).
         if ($class === ReportCards::class && ! AcademicAccess::manages() && AcademicAccess::classTeacherClassIds() === []) {
             return false;

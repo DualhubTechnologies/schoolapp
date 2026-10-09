@@ -16,6 +16,7 @@ use Filament\Actions\BulkAction;
 use Filament\Actions\BulkActionGroup;
 use Filament\Actions\DeleteBulkAction;
 use Filament\Actions\EditAction;
+use Filament\Actions\ViewAction;
 use Filament\Notifications\Notification;
 use Filament\Support\Enums\FontWeight;
 use Filament\Tables\Columns\ImageColumn;
@@ -175,6 +176,7 @@ class StudentsTable
                         ->label('Admission letter')
                         ->icon('heroicon-o-document-text')
                         ->color('primary')
+                        ->visible(fn (): bool => Modules::allows('admissions'))
                         ->url(fn ($record) => route('filament.app.students.admission-letter', $record))
                         ->openUrlInNewTab(),
 
@@ -203,11 +205,13 @@ class StudentsTable
                         ->label('Receive payment')
                         ->icon('heroicon-o-banknotes')
                         ->color('success')
+                        ->visible(fn (): bool => Modules::allows('fees'))
                         ->url(fn ($record) => ReceivePayment::getUrl(['student' => $record->getKey()])),
 
                     Action::make('feeAccount')
                         ->label('Fee account')
                         ->icon('heroicon-o-book-open')
+                        ->visible(fn (): bool => Modules::allows('fees'))
                         ->url(fn ($record) => StudentAccount::getUrl(['student' => $record->getKey()])),
 
                     // ── Manual confirm (registrar) — hidden once confirmed ──
@@ -215,7 +219,7 @@ class StudentsTable
                         ->label('Confirm as full student')
                         ->icon('heroicon-o-check-badge')
                         ->color('success')
-                        ->visible(fn ($record) => ! $record->isConfirmed())
+                        ->visible(fn ($record) => ! $record->isConfirmed() && Modules::allows('admissions'))
                         ->requiresConfirmation()
                         ->modalHeading('Confirm student enrolment')
                         ->modalDescription('This marks the student as a full member of the school. Use when the place is confirmed administratively, without waiting for payment.')
@@ -229,6 +233,7 @@ class StudentsTable
                                 ->send();
                         }),
 
+                    ViewAction::make(),
                     EditAction::make(),
 
                 ]),

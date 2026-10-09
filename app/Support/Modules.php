@@ -19,7 +19,8 @@ class Modules
 {
     /** key => [label, what it covers] */
     public const LIST = [
-        'students' => ['Students', 'Student records, guardians'],
+        'students' => ['Students', 'See learner records and parents\' contacts'],
+        'admissions' => ['Admissions', 'Admit, edit, import and remove learners and parents'],
         'promotion' => ['Year-end promotion', 'Promote, repeat or complete students'],
         'messages' => ['Messages (SMS)', 'Send SMS to parents of all learners, a class, those owing fees, or staff'],
         'attendance' => ['Attendance', 'Take the daily class register, attendance reports, text parents of absent learners'],
@@ -61,6 +62,8 @@ class Modules
      */
     public const CLASS_MAP = [
         // Students
+        // Seeing learners needs Students; changing them needs Admissions
+        // (StudentResource::canCreate and friends).
         'StudentResource' => 'students',
         'GuardianResource' => 'students',
         'PromoteStudents' => 'promotion',
@@ -190,6 +193,11 @@ class Modules
     {
         if (in_array('exams_all', $modules, true)) {
             $modules[] = 'exams';
+        }
+
+        // Admitting learners means seeing them.
+        if (in_array('admissions', $modules, true)) {
+            $modules[] = 'students';
         }
 
         return array_values(array_unique($modules));

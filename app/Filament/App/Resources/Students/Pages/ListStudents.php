@@ -76,6 +76,7 @@ class ListStudents extends ListRecords
 
             Action::make('downloadTemplate')
                 ->label('CSV template')
+                ->visible(fn (): bool => StudentResource::canCreate())
                 ->icon('heroicon-o-arrow-down-tray')
                 ->color('gray')
                 ->action(function () {
@@ -89,6 +90,7 @@ class ListStudents extends ListRecords
 
             Action::make('importStudents')
                 ->label('Import students')
+                ->visible(fn (): bool => StudentResource::canCreate())
                 ->icon('heroicon-o-arrow-up-tray')
                 ->color('gray')
                 ->modalHeading('Import Students')
@@ -118,6 +120,7 @@ class ListStudents extends ListRecords
             // full profile for the photo, LIN, house, address and so on.
             CreateAction::make()
                 ->label('New student')
+                ->visible(fn (): bool => StudentResource::canCreate())
                 ->modalHeading('Admit a learner')
                 ->modalDescription('Just the essentials. Everything else can be added on the learner\'s profile at any time.')
                 ->modalWidth('3xl')
@@ -172,6 +175,8 @@ class ListStudents extends ListRecords
 
     public function uploadAndValidate(): void
     {
+        abort_unless(StudentResource::canCreate(), 403);
+
         $this->validate([
             'csvFile' => [
                 'required',
@@ -228,6 +233,8 @@ class ListStudents extends ListRecords
 
     public function startImport(): void
     {
+        abort_unless(StudentResource::canCreate(), 403);
+
         if (! $this->importId) {
             return;
         }

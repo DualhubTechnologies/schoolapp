@@ -23,6 +23,7 @@ use App\Filament\Pages\TakeAttendance;
 use App\Filament\Widgets\Concerns\SchoolScoped;
 use App\Support\AcademicAccess;
 use App\Support\DashboardProfile;
+use App\Support\Modules;
 use Filament\Widgets\Widget;
 
 /**
@@ -160,6 +161,11 @@ class WelcomeBanner extends Widget
 
     public function profileLabel(): string
     {
+        // The admissions office's own badge, rather than a plain "Welcome".
+        if (DashboardProfile::for() === DashboardProfile::BASIC && Modules::allows('admissions')) {
+            return 'Admissions & records';
+        }
+
         // A Director of Studies runs the exams rather than one class's teaching.
         if (DashboardProfile::for() === DashboardProfile::TEACHER && AcademicAccess::manages()) {
             return 'Exams & studies';

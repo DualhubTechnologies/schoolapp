@@ -150,7 +150,7 @@ class StaffTable
                             ->label('Their job on SchoolHub')
                             ->multiple()
                             ->required()
-                            ->options(fn () => Role::whereIn('name', ['School Admin', 'Bursar', 'Accountant', 'Teacher', 'Staff'])
+                            ->options(fn () => Role::whereIn('name', ['School Admin', 'Bursar', 'Accountant', 'Admissions', 'Teacher', 'Staff'])
                                 ->pluck('name', 'name')
                                 ->sortBy(fn (string $name) => Modules::rolePosition($name))
                                 ->when(! auth()->user()?->hasRole(['School Admin', 'Super Admin']), fn ($roles) => $roles->except(['School Admin']))

@@ -3,6 +3,8 @@
 use App\Filament\App\Resources\Guardians\GuardianResource;
 use App\Filament\App\Resources\Students\Pages\ListStudents;
 use App\Filament\App\Resources\Students\StudentResource;
+use App\Filament\Pages\EnterMarks;
+use App\Filament\Pages\ReceivePayment;
 use App\Models\School;
 use App\Models\SchoolClass;
 use App\Models\Student;
@@ -50,4 +52,17 @@ it('lets the admissions office admit and change learners', function () {
         ->and(StudentResource::canEdit($this->student))->toBeTrue();
 
     $this->get(StudentResource::getUrl('edit', ['record' => $this->student]))->assertOk();
+});
+
+it('has an Admissions role for the admissions office, without fees or marks', function () {
+    $this->actingAs(User::factory()->create(['school_id' => $this->school->id])->assignRole('Admissions'));
+
+    expect(StudentResource::canCreate())->toBeTrue()
+        ->and(GuardianResource::canCreate())->toBeTrue()
+        ->and(ReceivePayment::canAccess())->toBeFalse()
+        ->and(EnterMarks::canAccess())->toBeFalse();
+
+    $this->get(route('filament.app.pages.dashboard'))->assertOk()
+        ->assertSee('Admissions &amp; records', false)
+        ->assertSee('Admit a learner');
 });

@@ -34,7 +34,8 @@ class UserForm
         'Teacher' => 'Teacher — marks, class register and report cards',
         'Bursar' => 'Bursar — fees, receipts, balances and spending',
         'Accountant' => 'Accountant — fees, spending and staff payroll',
-        'Staff' => 'Other staff — you choose what they open (e.g. secretary)',
+        'Admissions' => 'Admissions — admit learners, parents\' details, ID cards, texting parents',
+        'Staff' => 'Other staff — you choose what they open (e.g. matron, librarian)',
         'Parent' => 'Parent — parent portal login',
         'Student' => 'Student — student portal login',
     ];

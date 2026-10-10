@@ -42,6 +42,7 @@ use App\Http\Middleware\EnsureSchoolSubscribed;
 use App\Http\Middleware\RecordLastSeen;
 use App\Http\Middleware\RequireDesktopSetup;
 use App\Http\Middleware\ServerEditionOnly;
+use App\Support\DashboardProfile;
 use App\Support\Edition;
 use App\Support\PublicSite;
 use App\Support\UndoDelete;
@@ -223,8 +224,11 @@ class AppPanelProvider extends PanelProvider
             ])
             // A locked school (awaiting approval, suspended, expired) can
             // only open its Subscription page, so it gets no sidebar of
-            // links that would all lead back there.
-            ->navigation(fn (): bool => ! EnsureSchoolSubscribed::locks(auth()->user()))
+            // links that would all lead back there. A parent has only
+            // their home screen; their children's pages are linked from it
+            // (and from the bar along the bottom on phones).
+            ->navigation(fn (): bool => ! EnsureSchoolSubscribed::locks(auth()->user())
+                && DashboardProfile::for() !== DashboardProfile::PARENT)
             // The platform owner's own pages live in the admin panel
             // (/admin); link them here so the Super Admin's sidebar isn't
             // just Dashboard and Users.

@@ -10,6 +10,8 @@ use App\Filament\App\Resources\Students\StudentResource;
 use App\Filament\Pages\EnterMarks;
 use App\Filament\Pages\ReceivePayment;
 use App\Http\Middleware\EnsureSchoolSubscribed;
+use App\Models\Student;
+use App\Services\ParentPortal;
 
 /**
  * The bar along the bottom of the screen on phones: Home, the three or
@@ -42,6 +44,10 @@ class MobileNav
 
         $items = [self::item('Home', 'heroicon-o-home', Dashboard::getUrl())];
 
+        if (! self::showsMenu()) {
+            return [...$items, ...self::childItems()];
+        }
+
         foreach (self::CANDIDATES as [$module, $label, $icon, $class]) {
             if (count($items) === 4) {
                 break;
@@ -53,6 +59,35 @@ class MobileNav
         }
 
         return $items;
+    }
+
+    /**
+     * Parents have no sidebar (AppPanelProvider), so no Menu button.
+     */
+    public static function showsMenu(): bool
+    {
+        return DashboardProfile::for() !== DashboardProfile::PARENT;
+    }
+
+    /**
+     * A parent's bar: each child's fees and report cards page, by first
+     * name ("Fees & reports" when there is only one child).
+     *
+     * @return list<array{label: string, icon: string, url: string, active: bool}>
+     */
+    protected static function childItems(): array
+    {
+        $user = auth()->user();
+        $children = $user ? app(ParentPortal::class)->children($user)->take(3) : collect();
+
+        return $children
+            ->map(fn (Student $child): array => self::item(
+                $children->count() === 1 ? 'Fees & reports' : (string) strtok((string) $child->name, ' '),
+                'heroicon-o-document-text',
+                $child->parentPageUrl(),
+            ))
+            ->values()
+            ->all();
     }
 
     /**

@@ -95,3 +95,22 @@ it('will not make a login without a usable phone number', function () {
 
     app(ParentLogins::class)->createFor($this->guardian, text: false);
 })->throws(InvalidArgumentException::class);
+
+it('gives a parent no sidebar, and a bottom bar to their child\'s page instead of a menu', function () {
+    app(ParentLogins::class)->createFor($this->guardian, text: false);
+    $this->actingAs($this->guardian->fresh()->user);
+
+    $page = $this->get(route('filament.app.pages.dashboard'))->assertOk();
+    $link = $this->brenda->fresh()->parentPageUrl();
+
+    $page->assertSee('Fees &amp; reports', false)
+        ->assertSee($link, false)
+        ->assertDontSee('Toggle sidebar');
+
+    $this->get($link)->assertOk()->assertSee('Back to my SchoolHub');
+});
+
+it('tells parents on the sign-in page how to get a new PIN', function () {
+    $this->get(route('filament.app.auth.login'))->assertOk()
+        ->assertSee('Forgot your PIN? Ask the school office to send you a new one.');
+});

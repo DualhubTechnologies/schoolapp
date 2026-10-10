@@ -54,10 +54,15 @@
         .schoolpay strong { display: block; font-size: 1.5rem; letter-spacing: .08em; color: var(--ink); user-select: all; }
         .schoolpay small { color: var(--muted); }
         footer { text-align: center; font-size: .75rem; color: var(--muted); margin-top: 1.5rem; }
+        .back { display: inline-block; margin-bottom: .75rem; font-size: .9rem; font-weight: 600; color: #1d4ed8; text-decoration: none; }
     </style>
 </head>
 <body>
 <div class="wrap">
+    @auth
+        {{-- A parent signed in to SchoolHub came here from their home screen. --}}
+        <a class="back" href="{{ route('filament.app.pages.dashboard') }}">&larr; Back to my SchoolHub</a>
+    @endauth
     <header class="school">
         @if ($logo)<img src="{{ $logo }}" alt="">@endif
         <div>

@@ -9,10 +9,12 @@
                 <span>{{ $item['label'] }}</span>
             </a>
         @endforeach
-        <button type="button" class="sh-mnav-item" x-data x-on:click="$store.sidebar.open()">
-            <x-filament::icon icon="heroicon-o-bars-3" class="sh-mnav-icon" />
-            <span>Menu</span>
-        </button>
+        @if (\App\Support\MobileNav::showsMenu())
+            <button type="button" class="sh-mnav-item" x-data x-on:click="$store.sidebar.open()">
+                <x-filament::icon icon="heroicon-o-bars-3" class="sh-mnav-icon" />
+                <span>Menu</span>
+            </button>
+        @endif
     </nav>
 
     <div class="sh-install" x-data="shInstallTip" x-show="show" x-cloak x-transition>

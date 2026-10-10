@@ -80,14 +80,13 @@ class MobileNav
         $user = auth()->user();
         $children = $user ? app(ParentPortal::class)->children($user)->take(3) : collect();
 
-        return $children
+        return array_values($children
             ->map(fn (Student $child): array => self::item(
                 $children->count() === 1 ? 'Fees & reports' : (string) strtok((string) $child->name, ' '),
                 'heroicon-o-document-text',
                 $child->parentPageUrl(),
             ))
-            ->values()
-            ->all();
+            ->all());
     }
 
     /**

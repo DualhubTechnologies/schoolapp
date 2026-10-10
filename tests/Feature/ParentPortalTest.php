@@ -3,11 +3,13 @@
 use App\Filament\App\Resources\Guardians\Pages\ListGuardians;
 use App\Filament\App\Resources\Students\StudentResource;
 use App\Filament\Pages\Auth\Login;
+use App\Models\AcademicYear;
 use App\Models\Guardian;
 use App\Models\School;
 use App\Models\SchoolClass;
 use App\Models\Student;
 use App\Models\StudentCharge;
+use App\Models\Term;
 use App\Models\User;
 use App\Services\ParentLogins;
 use App\Services\SmsSender;
@@ -24,12 +26,14 @@ beforeEach(function () {
 
     $this->school = School::create(['name' => 'Hope Secondary', 'slug' => 'hope', 'email' => 'hope@example.com', 'school_type' => 'secondary']);
     SubscriptionManager::startTrial($this->school);
+    $year = AcademicYear::create(['school_id' => $this->school->id, 'name' => '2026', 'is_current' => true]);
+    $term = Term::create(['school_id' => $this->school->id, 'academic_year_id' => $year->id, 'name' => 'Term 3', 'sequence' => 3, 'is_current' => true]);
     $class = SchoolClass::create(['school_id' => $this->school->id, 'name' => 'S.1']);
 
     $this->guardian = Guardian::create(['school_id' => $this->school->id, 'name' => 'Akello Rose', 'phone' => '0772 555 101', 'relationship' => 'mother']);
     $this->brenda = Student::create(['school_id' => $this->school->id, 'school_class_id' => $class->id, 'guardian_id' => $this->guardian->id, 'name' => 'Brenda Ainembabazi', 'admission_no' => '003', 'status' => 'active']);
     $this->other = Student::create(['school_id' => $this->school->id, 'school_class_id' => $class->id, 'name' => 'Someone Else', 'admission_no' => '004', 'status' => 'active']);
-    StudentCharge::create(['school_id' => $this->school->id, 'student_id' => $this->brenda->id, 'description' => 'Tuition', 'amount' => 520000, 'charged_on' => today()]);
+    StudentCharge::create(['school_id' => $this->school->id, 'student_id' => $this->brenda->id, 'term_id' => $term->id, 'description' => 'Tuition', 'amount' => 520000, 'charged_on' => today()]);
 });
 
 it('lets the admissions office give a parent a login, texting the PIN', function () {

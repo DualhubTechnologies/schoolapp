@@ -3,6 +3,7 @@
 namespace App\Services;
 
 use App\Models\Guardian;
+use App\Models\School;
 use App\Models\User;
 use App\Services\Subscriptions\SubscriptionManager;
 use Illuminate\Support\Facades\DB;
@@ -31,7 +32,7 @@ class ParentLogins
 
         $plan = SubscriptionManager::current($schoolId ?? auth()->user()?->school_id)?->plan;
 
-        return $plan?->parent_student_login ?? true;
+        return $plan->parent_student_login ?? true;
     }
 
     /**
@@ -50,8 +51,10 @@ class ParentLogins
             throw new InvalidArgumentException("{$guardian->name} has no valid mobile number. Add one (e.g. 0772 123456) first.");
         }
 
-        if ($guardian->user) {
-            return ['user' => $guardian->user, 'pin' => null, 'texted' => false, 'error' => null];
+        $linked = $guardian->user_id ? User::find($guardian->user_id) : null;
+
+        if ($linked) {
+            return ['user' => $linked, 'pin' => null, 'texted' => false, 'error' => null];
         }
 
         $existing = User::where('school_id', $guardian->school_id)
@@ -101,7 +104,7 @@ class ParentLogins
      */
     public function resetPin(Guardian $guardian, bool $text = true): array
     {
-        $user = $guardian->user ?? throw new InvalidArgumentException("{$guardian->name} has no login yet.");
+        $user = ($guardian->user_id ? User::find($guardian->user_id) : null) ?? throw new InvalidArgumentException("{$guardian->name} has no login yet.");
         $pin = (string) random_int(100000, 999999);
         $user->forceFill(['password' => Hash::make($pin)])->save();
 
@@ -118,7 +121,9 @@ class ParentLogins
     /** The sign-in details, short enough for one SMS. */
     public function message(Guardian $guardian, string $pin): string
     {
-        return "{$guardian->school?->name}: your SchoolHub parent login. Go to ".str_replace(['https://', 'http://'], '', url('/login'))
+        $school = School::whereKey($guardian->school_id)->value('name');
+
+        return "{$school}: your SchoolHub parent login. Go to ".str_replace(['https://', 'http://'], '', url('/login'))
             ." and sign in with phone {$guardian->phone} and PIN {$pin} to see fees, receipts and report cards.";
     }
 

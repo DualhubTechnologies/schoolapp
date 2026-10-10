@@ -5,7 +5,6 @@ namespace App\Services;
 use App\Models\Guardian;
 use App\Models\Mark;
 use App\Models\Student;
-use App\Models\StudentPayment;
 use App\Models\Term;
 use App\Models\User;
 use App\Services\Attendance\AttendanceSummary;
@@ -43,7 +42,7 @@ class ParentPortal
     /**
      * Everything shown for one child.
      *
-     * @return array{student: Student, term: ?Term, balance: float, summary: array{opening: float, charged: float, paid: float, closing: float}|null, payments: Collection<int, StudentPayment>, reports: Collection<int, Term>, attendance: array{days: int, present: int, late: int, absent: int, excused: int, rate: float|null}|null, link: string}
+     * @return array<string, mixed> student, term, balance, summary, payments, reports, attendance, link
      */
     public function overview(Student $student): array
     {

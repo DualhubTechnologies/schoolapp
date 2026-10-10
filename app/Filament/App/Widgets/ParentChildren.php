@@ -27,7 +27,7 @@ class ParentChildren extends Widget
     }
 
     /**
-     * @return list<array<string, mixed>>
+     * @return array<int, array<string, mixed>>
      */
     public function children(): array
     {

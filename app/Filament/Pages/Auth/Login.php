@@ -72,7 +72,7 @@ class Login extends BaseLogin
                 ->get()
                 ->first(fn (User $user): bool => Hash::check((string) $data['password'], $user->password));
 
-            $login = $match?->email ?? $login;
+            $login = $match instanceof User ? $match->email : $login;
         }
 
         return [

@@ -13,6 +13,7 @@ use App\Models\User;
  *   bursar       Fees or finance work — collections and balances
  *   hr           HR and payroll only — staff and salaries
  *   teacher      Exams — own classes, subjects and marks still to enter
+ *   parent       A parent's login — their own children's fees and reports
  *   basic        Nothing above — a welcome and where to go
  *
  * A user who does several jobs gets the first that applies, in the order
@@ -30,6 +31,8 @@ class DashboardProfile
 
     public const TEACHER = 'teacher';
 
+    public const PARENT = 'parent';
+
     public const BASIC = 'basic';
 
     public const LABELS = [
@@ -38,6 +41,7 @@ class DashboardProfile
         self::BURSAR => 'Fees & accounts',
         self::HR => 'Staff & payroll',
         self::TEACHER => 'My teaching',
+        self::PARENT => 'Parent',
         self::BASIC => 'Welcome',
     ];
 
@@ -55,6 +59,7 @@ class DashboardProfile
             Modules::allows('fees') || Modules::allows('finance') => self::BURSAR,
             Modules::allows('hr') => self::HR,
             AcademicAccess::teaches() => self::TEACHER,
+            $user->hasRole('Parent') => self::PARENT,
             default => self::BASIC,
         });
     }

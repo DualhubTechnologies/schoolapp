@@ -4,7 +4,7 @@ namespace App\Filament\App\Resources\Users\Schemas;
 
 use App\Models\Staff;
 use App\Models\User;
-use App\Services\Subscriptions\SubscriptionManager;
+use App\Services\ParentLogins;
 use App\Support\EmailCheck;
 use App\Support\Modules;
 use App\Support\PasswordStrength;
@@ -37,8 +37,8 @@ class UserForm
         'Accountant' => 'Accountant — fees, spending and staff payroll',
         'Admissions' => 'Admissions — admit learners, parents\' details, ID cards, texting parents',
         'Staff' => 'Other staff — you choose what they open (e.g. matron, librarian)',
-        'Parent' => 'Parent — parent portal login',
-        'Student' => 'Student — student portal login',
+        'Parent' => 'Parent — their own children\'s fees, receipts and report cards (easiest: Parents → Give login)',
+        'Student' => 'Student — student portal (coming soon)',
     ];
 
     public static function configure(Schema $schema): Schema
@@ -227,13 +227,7 @@ class UserForm
     /** Super Admin (platform owner) is never restricted; otherwise it depends on the signed-in user's school plan. */
     protected static function planAllowsParentStudentLogin(): bool
     {
-        if (auth()->user()?->hasRole('Super Admin')) {
-            return true;
-        }
-
-        $plan = SubscriptionManager::current(auth()->user()->school_id)?->plan;
-
-        return $plan?->parent_student_login ?? true;
+        return ParentLogins::planAllows();
     }
 
     protected static function roleDefaultsText(array $roleIds): string

@@ -5,6 +5,7 @@ namespace App\Filament\App\Pages;
 use App\Filament\App\Widgets\BursarKpis;
 use App\Filament\App\Widgets\HrKpis;
 use App\Filament\App\Widgets\LeadershipKpis;
+use App\Filament\App\Widgets\ParentChildren;
 use App\Filament\App\Widgets\PlatformActivityKpis;
 use App\Filament\App\Widgets\PlatformKpis;
 use App\Filament\App\Widgets\TeacherKpis;
@@ -216,6 +217,10 @@ class Dashboard extends BaseDashboard
             DashboardProfile::TEACHER => AcademicAccess::manages() && ! AcademicAccess::hasTeachingLoad()
                 ? [WelcomeBanner::class, WorkGuide::class]
                 : [WelcomeBanner::class, WorkGuide::class, TeacherKpis::class, TeacherMarksProgress::class],
+            DashboardProfile::PARENT => [
+                WelcomeBanner::class,
+                ParentChildren::class,
+            ],
             default => [
                 WelcomeBanner::class,
                 WorkGuide::class,

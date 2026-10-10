@@ -21,7 +21,8 @@
     // Subscribed plan chip: schools only (the platform owner has no plan of its own).
     // On trial it just says "Trial" -- once there is a real paid plan (active,
     // or overdue on one) the chip names that plan instead.
-    $subStatus = $user?->school_id ? \App\Services\Subscriptions\SubscriptionManager::status($user->school_id) : null;
+    // Parents have nothing to do with the school's plan.
+    $subStatus = $user?->school_id && ! $user->hasRole('Parent') ? \App\Services\Subscriptions\SubscriptionManager::status($user->school_id) : null;
     $plan      = $subStatus['plan'] ?? null;
     $planState = $subStatus['state'] ?? null;
     // Before approval there is no trial yet, whatever plan is on file.

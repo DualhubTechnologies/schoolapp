@@ -3,12 +3,12 @@
 namespace App\Http\Controllers;
 
 use App\Models\DocumentVerification;
-use App\Models\Mark;
 use App\Models\SchoolClass;
 use App\Models\Student;
 use App\Models\StudentPayment;
 use App\Models\Term;
 use App\Services\Academics\ResultsCalculator;
+use App\Services\ParentPortal;
 use App\Services\StudentLedger;
 use App\Services\Transport\TransportLedger;
 use App\Support\Edition;
@@ -79,27 +79,11 @@ class ParentPageController extends Controller
     }
 
     /**
-     * Released terms of this academic year in which the learner has marks.
-     * Earlier years are left out: the learner has since changed class, and
-     * the school keeps those report cards.
-     *
      * @return Collection<int, Term>
      */
     protected function releasedReportTerms(Student $student, ?Term $current): Collection
     {
-        if (! $current) {
-            return collect();
-        }
-
-        return Term::where('school_id', $student->school_id)
-            ->where('academic_year_id', $current->academic_year_id)
-            ->whereNotNull('report_cards_released_at')
-            ->whereIn('id', Mark::where('student_id', $student->getKey())
-                ->join('assessments', 'assessments.id', '=', 'marks.assessment_id')
-                ->select('assessments.term_id'))
-            ->with('academicYear')
-            ->orderByDesc('sequence')
-            ->get();
+        return app(ParentPortal::class)->releasedReportTerms($student, $current);
     }
 
     protected function student(string $token): Student

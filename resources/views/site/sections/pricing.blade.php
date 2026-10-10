@@ -49,7 +49,7 @@
                             <li>{!! $check !!} {{ \App\Models\Plan::limitLabel($plan->max_users) }} staff logins</li>
                             <li>{!! $check !!} All modules included</li>
                             @if ($plan->parent_student_login)
-                                <li>{!! $check !!} Free parent &amp; student logins</li>
+                                <li>{!! $check !!} Free parent logins: fees, receipts &amp; report cards</li>
                             @endif
                         </ul>
                     </div>

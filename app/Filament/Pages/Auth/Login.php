@@ -3,6 +3,7 @@
 namespace App\Filament\Pages\Auth;
 
 use App\Models\User;
+use App\Services\SmsSender;
 use App\Support\EmailVerificationCode;
 use Filament\Auth\Http\Responses\Contracts\LoginResponse;
 use Filament\Auth\Pages\Login as BaseLogin;
@@ -12,6 +13,7 @@ use Filament\Schemas\Components\Component;
 use Filament\Support\Icons\Heroicon;
 use Illuminate\Contracts\Auth\Authenticatable;
 use Illuminate\Contracts\Auth\Guard;
+use Illuminate\Support\Facades\Hash;
 use Illuminate\Validation\ValidationException;
 use SensitiveParameter;
 
@@ -36,14 +38,47 @@ class Login extends BaseLogin
         return 'Sign in';
     }
 
+    /**
+     * Email address or phone number: parents usually sign in with their
+     * phone and the PIN the school gave them (App\Services\ParentLogins).
+     */
     protected function getEmailFormComponent(): Component
     {
-        /** @var TextInput $field */
-        $field = parent::getEmailFormComponent();
+        return TextInput::make('email')
+            ->label('Email or phone number')
+            ->placeholder('you@school.ac.ug or 0772 123456')
+            ->prefixIcon(Heroicon::OutlinedUser)
+            ->required()
+            ->autocomplete('username')
+            ->autofocus();
+    }
 
-        return $field
-            ->placeholder('you@school.ac.ug')
-            ->prefixIcon(Heroicon::OutlinedEnvelope);
+    /**
+     * A phone number is turned into the email of the account it belongs
+     * to, so the usual password check (and rate limit) applies. Several
+     * accounts may share a phone (a parent at two schools): the one whose
+     * password matches is used.
+     *
+     * @param  array<string, mixed>  $data
+     * @return array<string, mixed>
+     */
+    protected function getCredentialsFromFormData(#[SensitiveParameter] array $data): array
+    {
+        $login = trim((string) $data['email']);
+        $phone = str_contains($login, '@') ? null : SmsSender::normalisePhone($login);
+
+        if ($phone !== null) {
+            $match = User::where('phone', $phone)
+                ->get()
+                ->first(fn (User $user): bool => Hash::check((string) $data['password'], $user->password));
+
+            $login = $match?->email ?? $login;
+        }
+
+        return [
+            'email' => $login,
+            'password' => $data['password'],
+        ];
     }
 
     protected function getPasswordFormComponent(): Component

@@ -33,6 +33,7 @@ use Spatie\Permission\Traits\HasRoles;
  * @property int|null $school_id
  * @property string|null $remember_token
  * @property Carbon|null $last_seen_at when this login last used SchoolHub (App\Http\Middleware\RecordLastSeen)
+ * @property string|null $phone the number they may sign in with, as +256… (parents: App\Services\ParentLogins)
  * @property Carbon|null $tips_shown_at when they opened the step-by-step guide on their dashboard; closed when null (App\Filament\App\Widgets\WorkGuide)
  * @property Carbon|null $created_at
  * @property Carbon|null $updated_at

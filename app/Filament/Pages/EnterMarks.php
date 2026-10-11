@@ -744,15 +744,19 @@ class EnterMarks extends Page
     public function addCaAction(): Action
     {
         return Action::make('addCa')
-            ->label('Add a CA')
+            ->label('Add another test')
+            ->tooltip(fn (): string => 'For an extra test, project or activity '.$this->schoolClass?->name.' did in '.$this->subject?->name.' that is not on this sheet yet')
             ->icon('heroicon-o-plus')
             ->color('gray')
             ->visible(fn (): bool => $this->assessment !== null && $this->schoolClass !== null && $this->subject !== null && ! $this->assessment->isLocked())
-            ->modalHeading(fn (): string => 'New continuous assessment for '.$this->subject?->name.', '.$this->schoolClass?->name)
-            ->modalDescription('Only this class and subject get it. The other subjects and classes are not affected.')
-            ->modalSubmitActionLabel('Add')
+            ->modalHeading(fn (): string => 'Add another test for '.$this->subject?->name.', '.$this->schoolClass?->name)
+            ->modalDescription(fn (): string => 'Use this when '.$this->schoolClass?->name.' did an extra test, project or activity in '.$this->subject?->name
+                .'. It becomes a new column on this sheet and counts towards the CA mark like the others. Other classes and subjects are not changed.')
+            ->modalSubmitActionLabel('Add the column')
             ->schema([
                 TextInput::make('name')
+                    ->label('Name')
+                    ->helperText('As it will appear on the sheet, e.g. "Biology practical".')
                     ->required()
                     ->maxLength(100)
                     ->default(fn (): string => 'CA '.($this->termAssessments()->where('type', 'ca')->count() + 1).' — '.$this->subject?->name),
@@ -761,8 +765,9 @@ class EnterMarks extends Page
                     ->numeric()
                     ->minValue(1)
                     ->required()
-                    ->default(fn (): int => $this->schoolClass?->curriculum() === 'o_level' ? Assessment::O_LEVEL_CA_DEFAULT_MAX : 100)
-                    ->helperText(fn (): string => $this->schoolClass?->curriculum() === 'o_level' ? 'Out of 20 by default, or 100. The report card shows it out of 3.' : 'Usually 100.'),
+                    ->default(fn (): int => $this->usualCaMax())
+                    ->helperText(fn (): string => 'The same as the other tests on this sheet ('.$this->usualCaMax().') unless this one was marked differently.'
+                        .($this->schoolClass?->curriculum() === 'o_level' ? ' The report card shows every CA out of 3.' : '')),
             ])
             ->action(function (array $data): void {
                 $class = $this->schoolClass;
@@ -805,6 +810,21 @@ class EnterMarks extends Page
 
                 Notification::make()->title((string) $data['name'].' added for '.$subject->name.', '.$class->name)->success()->send();
             });
+    }
+
+    /**
+     * What this term's tests are usually marked out of, so a new one
+     * matches the columns already on the sheet.
+     */
+    protected function usualCaMax(): int
+    {
+        $usual = $this->termAssessments()->where('type', 'ca')
+            ->countBy(fn (Assessment $exam): int => (int) $exam->max_score)
+            ->sortDesc()
+            ->keys()
+            ->first();
+
+        return (int) ($usual ?: ($this->schoolClass?->curriculum() === 'o_level' ? Assessment::O_LEVEL_CA_DEFAULT_MAX : 100));
     }
 
     public function chooseLearnersAction(): Action

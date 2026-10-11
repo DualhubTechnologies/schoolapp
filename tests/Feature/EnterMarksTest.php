@@ -205,3 +205,16 @@ it('tells apart two exams with the same name', function () {
         ->and($labels[$second->id])->toContain('held 5 Oct')
         ->and($labels[$this->assessment->id])->not->toContain('held');
 });
+
+it('marks a new test out of what the term\'s other tests are marked out of', function () {
+    foreach ([1, 2] as $n) {
+        Assessment::create(['school_id' => $this->assessment->school_id, 'term_id' => $this->assessment->term_id, 'name' => "Test {$n}", 'type' => 'ca', 'max_score' => 3]);
+    }
+
+    Livewire::test(EnterMarks::class)
+        ->set('assessmentId', $this->assessment->id)
+        ->set('classId', $this->class->id)
+        ->set('subjectId', $this->subject->id)
+        ->mountAction('addCa')
+        ->assertActionDataSet(['max_score' => 3]);
+});

@@ -180,7 +180,7 @@
             <div class="em-bar">
                 <div class="em-bar-status">
                     @if ($this->allExams)
-                        <span class="em-muted">To download, print or return one exam's sheet, switch to <strong>This exam</strong>.</span>
+                        <span class="em-muted">Every test and exam this term is shown. To print, download or hand in one of them, choose <strong>This exam</strong> above.</span>
                     @else
                     @php $state = $markSheet?->status ?? 'open'; @endphp
                     <span @class(['em-pill', 'is-'.$state, 'is-returned' => $state === 'open' && $markSheet?->returned_note])>

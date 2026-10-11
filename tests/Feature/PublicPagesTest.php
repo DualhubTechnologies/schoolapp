@@ -1,7 +1,9 @@
 <?php
 
 use App\Models\DemoRequest;
+use App\Notifications\DemoRequested;
 use App\Support\PublicSite;
+use Illuminate\Support\Facades\Notification;
 
 beforeEach(function () {
     $this->withoutVite();
@@ -79,6 +81,35 @@ it('returns a demo request from the Contact page to the Contact page', function 
         ->post(route('filament.app.demo-request'), ['name' => '', 'school_name' => '', 'phone' => '', 'preferred_contact' => 'whatsapp'])
         ->assertRedirect(url('/').'#demo');
 });
+
+it('files a sales pitch sent through the demo form as spam, without emailing the team', function () {
+    Notification::fake();
+
+    $this->from('/contact')->post(route('filament.app.demo-request'), [
+        'name' => 'Chloe', 'school_name' => 'Chloe', 'phone' => '718054198', 'preferred_contact' => 'whatsapp',
+        'message' => 'Hello http://schoolhubug.com, I wanted to reach out to see if you need more website traffic.',
+    ]);
+    $this->from('/contact')->post(route('filament.app.demo-request'), [
+        'name' => 'Sarah Nakato', 'school_name' => 'Hope Primary', 'phone' => '0772123456', 'preferred_contact' => 'whatsapp',
+        'message' => 'We have 450 learners and want to see the fees module.',
+    ]);
+
+    expect(DemoRequest::where('name', 'Chloe')->value('status'))->toBe('spam')
+        ->and(DemoRequest::where('name', 'Sarah Nakato')->value('status'))->toBe('new');
+
+    Notification::assertSentOnDemandTimes(DemoRequested::class, 1);
+});
+
+it('opens WhatsApp on the full international number, however the phone was typed', function (string $typed, string $expected) {
+    $demo = new DemoRequest(['name' => 'Sarah', 'school_name' => 'Hope Primary', 'phone' => $typed]);
+
+    expect($demo->whatsappUrl())->toStartWith('https://wa.me/'.$expected.'?text=');
+})->with([
+    ['0772 123 456', '256772123456'],
+    ['772123456', '256772123456'],
+    ['+256 772 123456', '256772123456'],
+    ['+254 712 345678', '254712345678'],
+]);
 
 it('keeps unknown addresses as not found', function () {
     $this->get('/careers')->assertNotFound();

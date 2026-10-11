@@ -9,5 +9,5 @@ class ManageDemoRequests extends ManageRecords
 {
     protected static string $resource = DemoRequestResource::class;
 
-    protected ?string $subheading = 'Demo bookings and enquiries from the landing page. Each one is also emailed to the contact address.';
+    protected ?string $subheading = 'Demo bookings and enquiries from the website. Each one is also emailed to the contact address; sales pitches (messages with a link) are filed under Spam instead.';
 }

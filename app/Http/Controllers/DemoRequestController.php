@@ -46,7 +46,17 @@ class DemoRequestController extends Controller
 
         $data = $validator->validated();
 
-        $demo = DemoRequest::create($data + ['ip_address' => $request->ip()]);
+        $spam = DemoRequest::looksLikeSpam($data['message'] ?? null);
+
+        $demo = DemoRequest::create($data + [
+            'ip_address' => $request->ip(),
+            'status' => $spam ? 'spam' : 'new',
+        ]);
+
+        // A sales pitch is kept (under Spam) but not emailed to the team.
+        if ($spam) {
+            return redirect()->to($this->formPage().'#demo')->with('demo_sent', $demo->name);
+        }
 
         try {
             Notification::route('mail', config('contact.email'))->notify(new DemoRequested($demo));

@@ -2,6 +2,7 @@
 
 namespace App\Models;
 
+use App\Services\SmsSender;
 use Illuminate\Database\Eloquent\Model;
 
 /**
@@ -46,16 +47,26 @@ class DemoRequest extends Model
         'contacted' => 'Contacted',
         'booked' => 'Demo booked',
         'closed' => 'Closed',
+        'spam' => 'Spam',
     ];
 
-    /** wa.me link to reply to this person on WhatsApp (Ugandan numbers). */
+    /**
+     * Sales pitches sent through the form ("Hello schoolhubug.com, I
+     * wanted to reach out...") carry a link; a school asking for a demo
+     * almost never does. They are kept, but filed as spam.
+     */
+    public static function looksLikeSpam(?string $message): bool
+    {
+        return (bool) preg_match('~(https?://|www\.)~i', (string) $message);
+    }
+
+    /** wa.me link to reply to this person on WhatsApp. */
     public function whatsappUrl(): string
     {
-        $digits = preg_replace('/\D/', '', $this->phone);
-
-        if (str_starts_with($digits, '0')) {
-            $digits = '256'.substr($digits, 1);
-        }
+        // 0772…, 772… and +256 772… all become 256772…; anything else
+        // (a foreign number) is used as typed.
+        $digits = ltrim((string) SmsSender::normalisePhone($this->phone), '+')
+            ?: preg_replace('/\D/', '', $this->phone);
 
         return 'https://wa.me/'.$digits.'?text='.rawurlencode("Hello {$this->name}, thank you for your interest in SchoolHub for {$this->school_name}.");
     }

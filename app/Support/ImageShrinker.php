@@ -10,7 +10,8 @@ use Throwable;
 
 /**
  * Makes uploaded pictures (logo, signature, student photo) a sensible size
- * on the server, after upload.
+ * on the server, after upload (and, for a logo, take off its white
+ * background: LogoBackground).
  *
  * Resizing used to happen in the browser, before upload. On iPhones that
  * silently hangs for large pictures — the upload spins forever with no
@@ -28,13 +29,18 @@ class ImageShrinker
      * would, then shrink it to fit within the given box ($square: cut the
      * middle square out first, as for a logo or passport photo).
      */
-    public static function saveWithin(int $maxWidth, int $maxHeight, bool $square = false): \Closure
+    public static function saveWithin(int $maxWidth, int $maxHeight, bool $square = false, bool $clearBackground = false): \Closure
     {
-        return static function (BaseFileUpload $component, TemporaryUploadedFile $file) use ($maxWidth, $maxHeight, $square): ?string {
+        return static function (BaseFileUpload $component, TemporaryUploadedFile $file) use ($maxWidth, $maxHeight, $square, $clearBackground): ?string {
             $path = $component->saveUploadedFile($file);
 
             if ($path !== null) {
                 static::shrink($component->getDisk(), $path, $maxWidth, $maxHeight, $square);
+
+                // A logo's white box comes off (LogoBackground).
+                if ($clearBackground) {
+                    $path = LogoBackground::clear($component->getDisk(), $path);
+                }
             }
 
             return $path;

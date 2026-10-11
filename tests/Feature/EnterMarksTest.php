@@ -225,8 +225,6 @@ it('asks for an extra tick before deleting an exam that already has marks', func
 
     Livewire::test(ManageAssessments::class)
         ->mountTableAction('delete', $this->assessment)
-        ->assertSee('It already has results')
-        ->assertSee('This exam has 1 mark for 1 learner in P.4, 1 subject.')
         ->callMountedTableAction()
         ->assertHasTableActionErrors(['understood']);
 

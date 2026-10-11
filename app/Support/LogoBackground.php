@@ -20,9 +20,10 @@ use Throwable;
  */
 class LogoBackground
 {
-    /** A pixel this light and this grey counts as background. */
+    /** A pixel this light on every channel counts as background. */
     protected const LIGHT = 225;
 
+    /** How far from grey a light pixel beside the background may be and still fade. */
     protected const GREYNESS = 30;
 
     /** Pixels lighter than this beside the background fade into it (smooth edges). */
@@ -165,7 +166,7 @@ class LogoBackground
 
                 if ($light > self::FADE_FROM && max($r, $g, $b) - $light <= self::GREYNESS * 2) {
                     $alpha = (int) round(($light - self::FADE_FROM) / (255 - self::FADE_FROM) * 110);
-                    imagesetpixel($image, $nx, $ny, (int) imagecolorallocatealpha($image, $r, $g, $b, max(((int) ($rgba >> 24) & 0x7F), $alpha)));
+                    imagesetpixel($image, $nx, $ny, (int) imagecolorallocatealpha($image, $r, $g, $b, min(127, max(($rgba >> 24) & 0x7F, $alpha))));
                 }
             }
         }
@@ -226,7 +227,7 @@ class LogoBackground
                     default => (int) round(($light - $solidAt) / ($clearFrom - $solidAt) * 127),
                 };
 
-                imagesetpixel($image, $x, $y, (int) imagecolorallocatealpha($image, $r, $g, $b, max($alpha, ($rgba >> 24) & 0x7F)));
+                imagesetpixel($image, $x, $y, (int) imagecolorallocatealpha($image, $r, $g, $b, min(127, max($alpha, ($rgba >> 24) & 0x7F))));
             }
         }
 
@@ -250,6 +251,7 @@ class LogoBackground
 
         [$r, $g, $b] = [($rgba >> 16) & 0xFF, ($rgba >> 8) & 0xFF, $rgba & 0xFF];
 
-        return min($r, $g, $b) >= self::LIGHT && max($r, $g, $b) - min($r, $g, $b) <= self::GREYNESS;
+        // At least this light on every channel is near-white (and so grey).
+        return min($r, $g, $b) >= self::LIGHT;
     }
 }

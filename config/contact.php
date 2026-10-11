@@ -17,6 +17,8 @@ return [
     // Who builds and supports SchoolHub, and who founded it: on the About
     // page's team section, the footer and the terms.
     'company' => env('CONTACT_COMPANY', 'FERO TECH SMC LIMITED'),
+    // The short name shown to the public: "Powered by FERO TECH".
+    'brand' => env('CONTACT_BRAND', 'FERO TECH'),
     'founder' => env('CONTACT_FOUNDER', 'Adrian Mugizi'),
 
     // The Team page, in order. 'photo' is a file in public/images/team, e.g. a background-free WebP

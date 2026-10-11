@@ -42,7 +42,7 @@
         </div>
         <div class="footer-bottom">
             <span>© {{ date('Y') }} SchoolHub. All rights reserved.</span>
-            <span>Developed by {{ $contact['company'] }} · Made in Uganda</span>
+            <span>Powered by <strong>{{ config('contact.brand') }}</strong></span>
         </div>
     </div>
 </footer>

@@ -155,3 +155,7 @@ it('lets the platform owner email a demo request from the Demo requests page', f
     expect($demo->fresh()->status)->toBe('contacted')
         ->and($demo->fresh()->notes)->toContain('Emailed');
 });
+
+it('says the website is powered by FERO TECH', function () {
+    $this->get('/')->assertOk()->assertSee('Powered by <strong>FERO TECH</strong>', false);
+});

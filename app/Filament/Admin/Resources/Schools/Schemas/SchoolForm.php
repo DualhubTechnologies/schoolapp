@@ -5,6 +5,7 @@ namespace App\Filament\Admin\Resources\Schools\Schemas;
 use App\Filament\Pages\SchoolProfile;
 use App\Models\School;
 use App\Services\ParentMessages;
+use App\Support\AdmissionNumbers;
 use App\Support\Edition;
 use App\Support\EmailCheck;
 use App\Support\ImageShrinker;
@@ -232,6 +233,57 @@ class SchoolForm
                             ->native(false)
                             ->default('UGX')
                             ->required(),
+                    ]),
+
+                Section::make('Registration numbers')
+                    ->icon('heroicon-o-identification')
+                    ->description('How new learners\' registration numbers look. Numbers already given are not changed.')
+                    ->columnSpanFull()
+                    ->columns($columns)
+                    ->schema([
+                        Select::make('admission_no_style')
+                            ->label('Style')
+                            ->options(AdmissionNumbers::STYLES)
+                            ->default('initials_year')
+                            ->selectablePlaceholder(false)
+                            ->live()
+                            ->columnSpan(['default' => 1, 'md' => 2]),
+
+                        TextInput::make('admission_no_initials')
+                            ->label('School initials')
+                            ->maxLength(10)
+                            ->placeholder(fn (?School $record): string => $record ? AdmissionNumbers::initials($record->replicate(['admission_no_initials'])) : 'e.g. GHS')
+                            ->helperText('Leave blank to use the first letters of the school\'s name.')
+                            ->live(onBlur: true)
+                            ->visible(fn (Get $get): bool => $get('admission_no_style') === 'initials_year'),
+
+                        TextInput::make('admission_no_start')
+                            ->label('This year\'s numbers start at')
+                            ->numeric()
+                            ->minValue(1)
+                            ->placeholder('1')
+                            ->helperText('For a school moving to SchoolHub mid-year, e.g. 348 if 347 learners were already admitted. The numbering starts again at 0001 each year.')
+                            ->live(onBlur: true)
+                            ->hidden(fn (Get $get): bool => $get('admission_no_style') === 'plain'),
+
+                        TextEntry::make('admission_no_preview')
+                            ->label('Next new learner gets')
+                            ->state(function (Get $get, ?School $record): string {
+                                $school = ($record ?? new School)->replicate();
+                                $school->forceFill([
+                                    'admission_no_style' => $get('admission_no_style'),
+                                    'admission_no_initials' => $get('admission_no_initials'),
+                                    'admission_no_start' => $get('admission_no_start') ?: null,
+                                ]);
+
+                                if ($record) {
+                                    $school->setAttribute($school->getKeyName(), $record->getKey());
+                                }
+
+                                return AdmissionNumbers::next($school);
+                            })
+                            ->weight('bold')
+                            ->columnSpan(['default' => 1, 'md' => 2]),
                     ]),
 
                 // On its own page (Settings -> SchoolPay) for schools; here

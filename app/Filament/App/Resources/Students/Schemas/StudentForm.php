@@ -3,9 +3,11 @@
 namespace App\Filament\App\Resources\Students\Schemas;
 
 use App\Models\Guardian;
+use App\Models\School;
 use App\Models\SchoolClass;
 use App\Models\Section as StreamSection;
 use App\Models\Student;
+use App\Support\AdmissionNumbers;
 use App\Support\EmailCheck;
 use App\Support\ImageShrinker;
 use App\Support\PrivateFiles;
@@ -618,20 +620,9 @@ class StudentForm
 
     protected static function nextAdmissionNumber(): string
     {
-        $schoolId = auth()->user()?->school_id;
+        $school = School::find(auth()->user()?->school_id);
 
-        if (! $schoolId) {
-            return '';
-        }
-
-        $last = Student::query()
-            ->where('school_id', $schoolId)
-            ->orderByDesc('id')
-            ->value('admission_no');
-
-        $next = ((int) preg_replace('/\D/', '', (string) $last)) + 1;
-
-        return str_pad((string) $next, 3, '0', STR_PAD_LEFT);
+        return $school ? AdmissionNumbers::next($school) : '';
     }
 
     /**

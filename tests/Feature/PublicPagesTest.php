@@ -156,6 +156,6 @@ it('lets the platform owner email a demo request from the Demo requests page', f
         ->and($demo->fresh()->notes)->toContain('Emailed');
 });
 
-it('says the website is powered by FERO TECH', function () {
-    $this->get('/')->assertOk()->assertSee('Powered by <strong>FERO TECH</strong>', false);
+it('says SchoolHub is a product of FERO TECH', function () {
+    $this->get('/')->assertOk()->assertSee('A product of <strong>FERO TECH</strong>', false);
 });

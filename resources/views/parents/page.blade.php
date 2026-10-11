@@ -163,7 +163,7 @@
     <footer>
         This page is private to {{ $student->name }}'s family — please do not share the link.<br>
         Questions about fees? Contact the school{{ $school->phone ? ' on ' . $school->phone : '' }}.<br>
-        SchoolHub &middot; Powered by {{ config('contact.brand') }}
+        SchoolHub &middot; A product of {{ config('contact.brand') }}
     </footer>
 </div>
 </body>

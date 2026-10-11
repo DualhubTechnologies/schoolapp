@@ -9,5 +9,5 @@
 
 <div class="sh-footer">
     &copy; {{ date('Y') }} <strong>SchoolHub</strong> &bull; School Management System
-    &bull; All Rights Reserved &bull; Powered by <strong>{{ config('contact.brand') }}</strong>
+    &bull; All Rights Reserved &bull; A product of <strong>{{ config('contact.brand') }}</strong>
 </div>

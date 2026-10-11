@@ -1,9 +1,14 @@
 <?php
 
+use App\Filament\Admin\Resources\DemoRequests\Pages\ManageDemoRequests;
 use App\Models\DemoRequest;
+use App\Models\User;
 use App\Notifications\DemoRequested;
 use App\Support\PublicSite;
+use Database\Seeders\RoleSeeder;
+use Filament\Facades\Filament;
 use Illuminate\Support\Facades\Notification;
+use Livewire\Livewire;
 
 beforeEach(function () {
     $this->withoutVite();
@@ -132,3 +137,21 @@ it('hides the Windows download everywhere while it is switched off', function (s
         ->assertDontSee('Download for Windows')
         ->assertDontSee('Get SchoolHub for Windows');
 })->with(['/', '/features', '/pricing', '/contact']);
+
+it('lets the platform owner email a demo request from the Demo requests page', function () {
+    $this->seed(RoleSeeder::class);
+    Filament::setCurrentPanel('admin');
+    $this->actingAs(User::factory()->create()->assignRole('Super Admin'));
+
+    $demo = DemoRequest::create([
+        'name' => 'Sarah Nakato', 'school_name' => 'Hope Primary', 'phone' => '0772123456',
+        'email' => 'sarah@hope.ac.ug', 'preferred_contact' => 'email', 'status' => 'new',
+    ]);
+
+    Livewire::test(ManageDemoRequests::class)
+        ->callTableAction('email', $demo, data: ['subject' => 'SchoolHub demo', 'body' => 'Hello Sarah'])
+        ->assertNotified();
+
+    expect($demo->fresh()->status)->toBe('contacted')
+        ->and($demo->fresh()->notes)->toContain('Emailed');
+});

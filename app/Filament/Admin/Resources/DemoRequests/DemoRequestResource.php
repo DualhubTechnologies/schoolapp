@@ -12,7 +12,9 @@ use Filament\Actions\EditAction;
 use Filament\Actions\ViewAction;
 use Filament\Forms\Components\Select;
 use Filament\Forms\Components\Textarea;
+use Filament\Forms\Components\TextInput;
 use Filament\Infolists\Components\TextEntry;
+use Filament\Notifications\Notification;
 use Filament\Resources\Resource;
 use Filament\Schemas\Components\Grid;
 use Filament\Schemas\Schema;
@@ -23,6 +25,7 @@ use Filament\Tables\Filters\TernaryFilter;
 use Filament\Tables\Table;
 use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Support\Carbon;
+use Illuminate\Support\Facades\Mail;
 
 /**
  * Demo bookings from the landing page, for the platform owner to follow up.
@@ -110,6 +113,50 @@ class DemoRequestResource extends Resource
             ->action(fn (DemoRequest $record) => $record->update(['status' => $status]));
     }
 
+    /**
+     * Reply by email from this page, through the server's mail account
+     * (Gmail). The reply goes out from the SchoolHub address, replies come
+     * back to it, and the request is marked contacted with a note.
+     */
+    protected static function emailAction(): Action
+    {
+        return Action::make('email')
+            ->label('Email')
+            ->icon(Heroicon::OutlinedEnvelope)
+            ->color('info')
+            ->visible(fn (DemoRequest $record): bool => filled($record->email) && $record->status !== 'spam')
+            ->modalHeading(fn (DemoRequest $record): string => "Email {$record->name}")
+            ->modalDescription(fn (DemoRequest $record): string => "To {$record->email}, from ".config('mail.from.address').'.')
+            ->modalSubmitActionLabel('Send email')
+            ->fillForm(fn (DemoRequest $record): array => [
+                'subject' => "SchoolHub demo for {$record->school_name}",
+                'body' => "Hello {$record->name},\n\nThank you for your interest in SchoolHub for {$record->school_name}. "
+                    ."I would be glad to show you how it works.\n\nWhen would suit you for a short demo? You can also reach us on "
+                    .config('contact.phone').".\n\nKind regards,\n".config('contact.team.0.name', 'The SchoolHub team'),
+            ])
+            ->schema([
+                TextInput::make('subject')->required()->maxLength(150),
+                Textarea::make('body')->label('Message')->rows(9)->required(),
+            ])
+            ->action(function (DemoRequest $record, array $data): void {
+                try {
+                    Mail::raw($data['body'], fn ($mail) => $mail->to($record->email, $record->name)->subject($data['subject']));
+                } catch (\Throwable $e) {
+                    report($e);
+                    Notification::make()->title('The email was not sent')->body($e->getMessage())->danger()->send();
+
+                    return;
+                }
+
+                $record->update([
+                    'status' => $record->status === 'new' ? 'contacted' : $record->status,
+                    'notes' => trim(($record->notes ? $record->notes."\n" : '').'Emailed '.now()->format('j M Y, H:i').': '.$data['subject']),
+                ]);
+
+                Notification::make()->title("Email sent to {$record->email}")->success()->send();
+            });
+    }
+
     public static function table(Table $table): Table
     {
         return $table
@@ -177,6 +224,7 @@ class DemoRequestResource extends Resource
                     ->color('success')
                     ->url(fn (DemoRequest $record) => $record->whatsappUrl(), shouldOpenInNewTab: true)
                     ->hidden(fn (DemoRequest $record): bool => $record->status === 'spam'),
+                static::emailAction(),
                 ActionGroup::make([
                     static::statusAction('contacted', 'Mark contacted', Heroicon::OutlinedPhone, 'info'),
                     static::statusAction('booked', 'Mark demo booked', Heroicon::OutlinedCalendarDays, 'success'),

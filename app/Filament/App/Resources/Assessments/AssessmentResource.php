@@ -7,6 +7,7 @@ use App\Filament\Concerns\GatedByModule;
 use App\Filament\Pages\EnterMarks;
 use App\Models\Assessment;
 use App\Models\SchoolClass;
+use App\Models\Student;
 use App\Models\Subject;
 use App\Models\Term;
 use App\Support\AcademicAccess;
@@ -16,6 +17,7 @@ use Filament\Actions\Action;
 use Filament\Actions\ActionGroup;
 use Filament\Actions\DeleteAction;
 use Filament\Actions\EditAction;
+use Filament\Forms\Components\Checkbox;
 use Filament\Forms\Components\DatePicker;
 use Filament\Forms\Components\Select;
 use Filament\Forms\Components\TextInput;
@@ -236,13 +238,50 @@ class AssessmentResource extends Resource
                             : 'Marks can no longer be changed until you reopen the exam.')
                         ->action(fn (Assessment $a) => $a->update(['status' => $a->isLocked() ? 'open' : 'locked'])),
                     EditAction::make(),
-                    DeleteAction::make()
-                        ->modalDescription('Deletes the exam and every mark entered for it.'),
+                    static::deleteAction(),
                 ])->visible(fn () => AcademicAccess::manages()),
             ])
             ->emptyStateHeading('No exams for this term')
             ->emptyStateDescription('Add the term\'s exams (e.g. Beginning, Mid and End of Term), then enter marks.')
             ->emptyStateIcon('heroicon-o-clipboard-document-list');
+    }
+
+    /**
+     * Delete an exam. When marks have been entered, say how many and for
+     * whom, and ask the user to tick that they understand they go too
+     * (and off the report cards), so a mark sheet is not lost by a slip.
+     */
+    protected static function deleteAction(): DeleteAction
+    {
+        $hasMarks = fn (Assessment $a): bool => $a->marks()->exists();
+
+        return DeleteAction::make()
+            ->modalHeading(fn (Assessment $a): string => $hasMarks($a) ? "Delete {$a->name}? It already has results" : "Delete {$a->name}?")
+            ->modalDescription(fn (Assessment $a): string => $hasMarks($a)
+                ? static::resultsSummary($a).' Deleting the exam deletes these marks too, and they disappear from report cards and results. This cannot be undone.'
+                : 'No marks have been entered for this exam yet.')
+            ->modalIcon(fn (Assessment $a): string => $hasMarks($a) ? 'heroicon-o-exclamation-triangle' : 'heroicon-o-trash')
+            ->schema(fn (Assessment $a): array => $hasMarks($a) ? [
+                Checkbox::make('understood')
+                    ->label('I understand the marks for this exam will be deleted')
+                    ->accepted()
+                    ->validationMessages(['accepted' => 'Tick this to delete the exam and its marks.']),
+            ] : [])
+            ->modalSubmitActionLabel(fn (Assessment $a): string => $hasMarks($a) ? 'Delete exam and marks' : 'Delete');
+    }
+
+    /** "312 marks for 104 learners in S.1 and S.2, 9 subjects." */
+    protected static function resultsSummary(Assessment $exam): string
+    {
+        $marks = $exam->marks()->count();
+        $learners = $exam->marks()->distinct()->count('student_id');
+        $subjects = $exam->marks()->distinct()->count('subject_id');
+        $classes = SchoolClass::whereIn('id', Student::whereIn('id', $exam->marks()->select('student_id'))->select('school_class_id'))
+            ->orderBy('name')->pluck('name');
+
+        return "This exam has {$marks} ".str('mark')->plural($marks)." for {$learners} ".str('learner')->plural($learners)
+            .($classes->isNotEmpty() ? ' in '.$classes->join(', ', ' and ') : '')
+            .", {$subjects} ".str('subject')->plural($subjects).'.';
     }
 
     public static function canViewAny(): bool

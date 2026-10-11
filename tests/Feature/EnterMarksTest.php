@@ -1,5 +1,6 @@
 <?php
 
+use App\Filament\App\Resources\Assessments\Pages\ManageAssessments;
 use App\Filament\Pages\EnterMarks;
 use App\Models\AcademicYear;
 use App\Models\Assessment;
@@ -217,4 +218,30 @@ it('marks a new test out of what the term\'s other tests are marked out of', fun
         ->set('subjectId', $this->subject->id)
         ->mountAction('addCa')
         ->assertActionDataSet(['max_score' => 3]);
+});
+
+it('asks for an extra tick before deleting an exam that already has marks', function () {
+    Mark::create(['assessment_id' => $this->assessment->id, 'student_id' => $this->student->id, 'subject_id' => $this->subject->id, 'score' => 70]);
+
+    Livewire::test(ManageAssessments::class)
+        ->mountTableAction('delete', $this->assessment)
+        ->assertSee('It already has results')
+        ->assertSee('This exam has 1 mark for 1 learner in P.4, 1 subject.')
+        ->callMountedTableAction()
+        ->assertHasTableActionErrors(['understood']);
+
+    expect(Assessment::find($this->assessment->id))->not->toBeNull();
+
+    Livewire::test(ManageAssessments::class)
+        ->callTableAction('delete', $this->assessment, data: ['understood' => true]);
+
+    expect(Assessment::find($this->assessment->id))->toBeNull()
+        ->and(Mark::count())->toBe(0);
+});
+
+it('deletes an exam with no marks after a plain confirmation', function () {
+    Livewire::test(ManageAssessments::class)
+        ->callTableAction('delete', $this->assessment);
+
+    expect(Assessment::find($this->assessment->id))->toBeNull();
 });

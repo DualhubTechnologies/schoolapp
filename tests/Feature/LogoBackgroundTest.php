@@ -43,3 +43,25 @@ it('leaves a logo on a coloured background alone', function () {
     expect(LogoBackground::clear(Storage::disk('public'), 'school-logos/navy.jpg'))->toBe('school-logos/navy.jpg')
         ->and(Storage::disk('public')->exists('school-logos/navy.jpg'))->toBeTrue();
 });
+
+it('takes the paper off a signature, inside the loops of the letters too', function () {
+    Storage::fake('uploads');
+
+    $image = imagecreatetruecolor(300, 120);
+    imagefill($image, 0, 0, (int) imagecolorallocate($image, 214, 214, 208));    // grey paper in a photo
+    imagesetthickness($image, 4);
+    imageellipse($image, 80, 60, 60, 70, (int) imagecolorallocate($image, 25, 35, 110));
+    imageline($image, 20, 100, 280, 90, (int) imagecolorallocate($image, 25, 35, 110));
+
+    ob_start();
+    imagejpeg($image, null, 95);
+    Storage::disk('uploads')->put('school-signatures/head.jpg', (string) ob_get_clean());
+
+    $path = LogoBackground::clear(Storage::disk('uploads'), 'school-signatures/head.jpg', paper: true);
+    $png = Storage::disk('uploads')->get($path);
+
+    expect($path)->toBe('school-signatures/head.png')
+        ->and(alphaAt($png, 5, 5))->toBe(127)        // paper: see-through
+        ->and(alphaAt($png, 80, 60))->toBe(127)      // inside the loop: see-through
+        ->and(alphaAt($png, 150, 95))->toBe(0);      // the ink stays
+});

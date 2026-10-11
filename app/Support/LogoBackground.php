@@ -6,7 +6,8 @@ use Illuminate\Contracts\Filesystem\Filesystem;
 use Throwable;
 
 /**
- * Takes the white (or near-white) background off an uploaded logo, so it
+ * Takes the white (or near-white) background off an uploaded logo or
+ * signature, so it
  * sits cleanly on report cards, receipts, ID cards and the app's coloured
  * bars instead of showing as a white box.
  *
@@ -35,7 +36,7 @@ class LogoBackground
      * cleaned picture was saved under (a .png beside the original), or the
      * original path when nothing was changed.
      */
-    public static function clear(Filesystem $disk, string $path): string
+    public static function clear(Filesystem $disk, string $path, bool $paper = false): string
     {
         try {
             $contents = $disk->get($path);
@@ -52,7 +53,7 @@ class LogoBackground
                 return $path;
             }
 
-            $cleaned = static::clearImage($image);
+            $cleaned = $paper ? static::clearPaper($image) : static::clearImage($image);
 
             if ($cleaned === null) {
                 return $path;
@@ -170,6 +171,73 @@ class LogoBackground
         }
 
         return $image;
+    }
+
+    /**
+     * A signature (ink on paper, often photographed): every pixel close to
+     * the paper's colour becomes see-through, wherever it is (inside the
+     * loops of letters too), and the ink keeps its colour with smooth
+     * edges. Null when the edge is not light paper.
+     */
+    public static function clearPaper(\GdImage $source): ?\GdImage
+    {
+        $width = imagesx($source);
+        $height = imagesy($source);
+
+        // The paper's brightness: the middle of the edge pixels (a phone
+        // photo's paper is often grey, not white).
+        $edge = [];
+        $step = max(1, intdiv($width + $height, 400));
+
+        for ($x = 0; $x < $width; $x += $step) {
+            $edge[] = static::lightness($source, $x, 0);
+            $edge[] = static::lightness($source, $x, $height - 1);
+        }
+
+        for ($y = 0; $y < $height; $y += $step) {
+            $edge[] = static::lightness($source, 0, $y);
+            $edge[] = static::lightness($source, $width - 1, $y);
+        }
+
+        sort($edge);
+        $paperLight = $edge[intdiv(count($edge), 2)];
+
+        if ($paperLight < 150) {
+            return null;
+        }
+
+        // Up to 20 darker than the paper is paper; 90 darker or more is ink.
+        $clearFrom = $paperLight - 20;
+        $solidAt = $paperLight - 90;
+
+        $image = imagecreatetruecolor($width, $height);
+        imagealphablending($image, false);
+        imagesavealpha($image, true);
+
+        for ($y = 0; $y < $height; $y++) {
+            for ($x = 0; $x < $width; $x++) {
+                $rgba = imagecolorat($source, $x, $y);
+                [$r, $g, $b] = [($rgba >> 16) & 0xFF, ($rgba >> 8) & 0xFF, $rgba & 0xFF];
+                $light = static::lightness($source, $x, $y);
+
+                $alpha = match (true) {
+                    $light >= $clearFrom => 127,
+                    $light <= $solidAt => 0,
+                    default => (int) round(($light - $solidAt) / ($clearFrom - $solidAt) * 127),
+                };
+
+                imagesetpixel($image, $x, $y, (int) imagecolorallocatealpha($image, $r, $g, $b, max($alpha, ($rgba >> 24) & 0x7F)));
+            }
+        }
+
+        return $image;
+    }
+
+    protected static function lightness(\GdImage $image, int $x, int $y): int
+    {
+        $rgba = imagecolorat($image, $x, $y);
+
+        return (int) round(0.299 * (($rgba >> 16) & 0xFF) + 0.587 * (($rgba >> 8) & 0xFF) + 0.114 * ($rgba & 0xFF));
     }
 
     protected static function isBackground(\GdImage $image, int $x, int $y): bool

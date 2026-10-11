@@ -29,17 +29,17 @@ class ImageShrinker
      * would, then shrink it to fit within the given box ($square: cut the
      * middle square out first, as for a logo or passport photo).
      */
-    public static function saveWithin(int $maxWidth, int $maxHeight, bool $square = false, bool $clearBackground = false): \Closure
+    public static function saveWithin(int $maxWidth, int $maxHeight, bool $square = false, bool $clearBackground = false, bool $clearPaper = false): \Closure
     {
-        return static function (BaseFileUpload $component, TemporaryUploadedFile $file) use ($maxWidth, $maxHeight, $square, $clearBackground): ?string {
+        return static function (BaseFileUpload $component, TemporaryUploadedFile $file) use ($maxWidth, $maxHeight, $square, $clearBackground, $clearPaper): ?string {
             $path = $component->saveUploadedFile($file);
 
             if ($path !== null) {
                 static::shrink($component->getDisk(), $path, $maxWidth, $maxHeight, $square);
 
-                // A logo's white box comes off (LogoBackground).
-                if ($clearBackground) {
-                    $path = LogoBackground::clear($component->getDisk(), $path);
+                // A logo's white box, or a signature's paper, comes off (LogoBackground).
+                if ($clearBackground || $clearPaper) {
+                    $path = LogoBackground::clear($component->getDisk(), $path, paper: $clearPaper);
                 }
             }
 

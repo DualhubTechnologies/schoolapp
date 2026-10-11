@@ -18,29 +18,31 @@ class ManageAssessments extends ManageRecords
 
     public function getSubheading(): string|Htmlable|null
     {
-        $text = 'Each exam\'s weight is its share of the term result. O-Level (new curriculum): continuous assessment 20% + end of term 80%.';
-        $problems = $this->weightProblems();
+        $text = 'Only the exams you set count. Each one\'s weight is its share of the term result, scaled to 100%: '
+            .'a school that gives only an End of Term exam gets End of Term = 100%.';
+        $breakdown = $this->termBreakdown();
 
-        if (! $problems) {
+        if (! $breakdown) {
             return $text;
         }
 
-        $list = collect($problems)->map(fn (float $total, string $label) => e(Str::before($label, ' (')).' '.($total + 0).'%')->implode(', ');
+        $lines = collect($breakdown)->map(fn (array $parts, string $label): string => '<strong>'.e(Str::before($label, ' (')).':</strong> '
+            .($parts === [] ? 'all exams count equally' : collect($parts)->map(fn (float $share, string $name): string => e($name).' '.($share + 0).'%')->implode(' · ')));
 
-        return new HtmlString(e($text).'<br><span style="color:#b45309;font-weight:600">⚠ This term\'s weights do not add up to 100%: '.$list.'. Results are still worked out, in proportion, but check the weights.</span>');
+        return new HtmlString(e($text).'<br>This term: '.$lines->implode(' &nbsp;|&nbsp; '));
     }
 
     /**
-     * Weight totals that are not 100% for the term shown in the table.
+     * How each level's result is made up this term (the term shown in the table).
      *
-     * @return array<string, float>
+     * @return array<string, array<string, float>>
      */
-    public function weightProblems(): array
+    public function termBreakdown(): array
     {
         $schoolId = auth()->user()?->school_id;
         $termId = (int) ($this->tableFilters['term_id']['value'] ?? Term::current()?->getKey());
 
-        return $schoolId && $termId ? Assessment::weightProblems($schoolId, $termId, SchoolType::curricula()) : [];
+        return $schoolId && $termId ? Assessment::termBreakdown($schoolId, $termId, SchoolType::curricula()) : [];
     }
 
     protected function getHeaderActions(): array

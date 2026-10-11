@@ -189,6 +189,49 @@ class Assessment extends Model
         return $problems;
     }
 
+    /**
+     * How each level's term result is made up from the exams actually set
+     * this term, e.g. "A-Level" => ["End of Term" => 100.0] when a school
+     * gives only an End of Term exam, or ["Mid Term" => 37.5, "End of
+     * Term" => 62.5] for 30% + 50%. Results are worked out the same way
+     * (in proportion to the weights), so this is what parents will see.
+     * Exams with no weight all counting equally is shown as an empty list.
+     *
+     * @param  array<string, string>  $curricula  key => label
+     * @return array<string, array<string, float>> label => exam name => share %
+     */
+    public static function termBreakdown(int $schoolId, int $termId, array $curricula): array
+    {
+        $exams = static::where('school_id', $schoolId)->where('term_id', $termId)
+            ->where('type', '!=', 'project')
+            ->orderBy('sort_order')->orderBy('held_on')->orderBy('id')
+            ->get(['name', 'curriculum', 'type', 'weight']);
+        $breakdown = [];
+
+        foreach ($curricula as $key => $label) {
+            $applies = $exams->filter(fn (self $a): bool => $a->appliesTo($key));
+
+            if ($applies->isEmpty()) {
+                continue;
+            }
+
+            $total = self::totalWeight($applies, $key);
+            $parts = [];
+
+            foreach ($applies as $exam) {
+                $name = $exam->isAveragedIn($key) ? 'Continuous assessment' : (string) $exam->name;
+                $weight = (float) $exam->weight;
+                $parts[$name] = $exam->isAveragedIn($key) ? max($parts[$name] ?? 0.0, $weight) : ($parts[$name] ?? 0.0) + $weight;
+            }
+
+            $breakdown[$label] = $total > 0
+                ? array_filter(array_map(fn (float $w): float => round($w / $total * 100, 1), $parts))
+                : [];
+        }
+
+        return $breakdown;
+    }
+
     /** Short names for each level, for exam lists. */
     public const CURRICULUM_SHORT = ['nursery' => 'Nursery', 'primary' => 'Primary', 'o_level' => 'O-Level', 'a_level' => 'A-Level'];
 

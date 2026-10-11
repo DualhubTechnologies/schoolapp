@@ -240,3 +240,14 @@ it('warns when a term\'s exam weights do not add up to 100%', function () {
 
     expect(Assessment::weightProblems($this->school->id, $this->term->id, ['primary' => 'Primary']))->toBe(['Primary' => 90.0]);
 });
+
+it('scales whatever exams a school sets to 100% of the term result', function () {
+    expect(Assessment::termBreakdown($this->school->id, $this->term->id, ['primary' => 'Primary']))
+        ->toBe(['Primary' => ['Mid-Term' => 40.0, 'End of Term' => 60.0]]);
+
+    // A school that gives only an End of Term exam (weight still 60).
+    $this->mot->delete();
+
+    expect(Assessment::termBreakdown($this->school->id, $this->term->id, ['primary' => 'Primary']))
+        ->toBe(['Primary' => ['End of Term' => 100.0]]);
+});

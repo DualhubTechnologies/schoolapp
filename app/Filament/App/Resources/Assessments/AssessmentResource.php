@@ -158,15 +158,19 @@ class AssessmentResource extends Resource
                 ->maxValue(100)
                 ->default(0)
                 ->required()
-                // Read-only: set from the exam type's standard weight
-                // (config/academics.php default_weights), e.g. CA 20%, End of Term 80%.
-                ->disabled()
+                // Filled in from the exam type's usual weight (config
+                // academics.default_weights). O-Level's 20% + 80% is set
+                // nationally, so it stays fixed; other levels may change it
+                // (e.g. Mid Term 40% + End of Term 60%).
+                ->disabled(fn (Get $get): bool => $get('curriculum') === 'o_level')
                 ->dehydrated()
                 // Project work is reported on its own and carries no weight.
                 ->hidden(fn (Get $get): bool => $get('type') === 'project')
-                ->helperText(fn (Get $get): string => $get('type') === 'ca' && $get('curriculum') === 'o_level'
-                    ? 'All of the term\'s Activities of Integration are averaged, and together count this much.'
-                    : 'Set by the exam type, e.g. CA 20% + End of Term 80%.'),
+                ->helperText(fn (Get $get): string => match (true) {
+                    $get('type') === 'ca' && $get('curriculum') === 'o_level' => 'All of the term\'s Activities of Integration are averaged, and together count this much.',
+                    $get('curriculum') === 'o_level' => 'Set nationally: continuous assessment 20% + End of Term 80%.',
+                    default => 'Change it to suit your school. Only the exams you set count, scaled to 100%: if you give only an End of Term exam, it counts 100%.',
+                }),
             DatePicker::make('held_on')->label('Date')->native(false)->displayFormat('j M Y'),
             TextInput::make('sort_order')->label('Order on report card')->numeric()->default(0),
         ]);

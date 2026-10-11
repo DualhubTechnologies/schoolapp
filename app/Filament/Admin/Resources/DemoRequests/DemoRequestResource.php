@@ -22,6 +22,7 @@ use Filament\Tables\Filters\SelectFilter;
 use Filament\Tables\Filters\TernaryFilter;
 use Filament\Tables\Table;
 use Illuminate\Database\Eloquent\Builder;
+use Illuminate\Support\Carbon;
 
 /**
  * Demo bookings from the landing page, for the platform owner to follow up.
@@ -125,7 +126,7 @@ class DemoRequestResource extends Resource
                 TextColumn::make('preferred_contact')
                     ->label('Prefers')
                     ->formatStateUsing(fn (string $state) => DemoRequest::CONTACT_METHODS[$state] ?? $state)
-                    ->description(fn (DemoRequest $record): string => $record->preferred_date?->format('D j M') ?? 'Any time'),
+                    ->description(fn (DemoRequest $record): string => $record->preferred_date ? Carbon::parse($record->preferred_date)->format('D j M') : 'Any time'),
                 TextColumn::make('learners')
                     ->formatStateUsing(fn (?string $state) => DemoRequest::LEARNERS[$state] ?? $state)
                     ->placeholder('—'),

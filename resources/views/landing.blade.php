@@ -14,7 +14,7 @@
     <meta charset="utf-8">
     <meta name="viewport" content="width=device-width, initial-scale=1">
     <title>SchoolHub — School management software for Ugandan schools</title>
-    <meta name="description" content="Track every shilling and print every report card: fees, expenses and income against expenditure, plus new-curriculum O-Level and A-Level report cards worked out for you. For Ugandan primary and secondary schools. Free for {{ $trialDays }} days.">
+    <meta name="description" content="Track every shilling and get report cards in seconds: fees, expenses and income against expenditure, plus new-curriculum O-Level and A-Level report cards generated automatically. For Ugandan primary and secondary schools. Free for {{ $trialDays }} days.">
     <meta name="theme-color" content="#ffffff">
     <meta property="og:title" content="SchoolHub — School management software for Ugandan schools">
     <meta property="og:description" content="Income against expenditure, fees, payroll and new-curriculum O-Level and A-Level report cards in one system. Free {{ $trialDays }}-day trial.">
@@ -39,7 +39,7 @@
         <div class="container hero-grid">
             <div class="hero-copy">
                 <span class="badge"><b>New curriculum</b> O-Level and A-Level report cards, worked out for you</span>
-                <h1>Track every shilling. <span>Print every report card.</span></h1>
+                <h1>Track every shilling. <span>Report cards in seconds.</span></h1>
                 <p class="hero-lead">See what came in, what was spent and who still owes, for any term, at any time. Teachers enter marks and SchoolHub generates new-curriculum O-Level and A-Level report cards for the whole class automatically, in seconds. For Ugandan primary and secondary schools.</p>
 
                 <div class="hero-actions">

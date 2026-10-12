@@ -9,14 +9,13 @@ beforeEach(function () {
     $this->withoutVite();
 });
 
-it('shows visitors a way to sign in, in the header and under the main buttons', function () {
+it('shows visitors a way to sign in, in the header and in the phone menu', function () {
     $loginUrl = Filament::getPanel('app')->getLoginUrl();
 
     $this->get('/')
         ->assertOk()
         ->assertSee('class="link-signin"', escape: false)
-        ->assertSee('Already registered?')
-        ->assertSee('href="'.$loginUrl.'"', escape: false);
+        ->assertSee('href="'.$loginUrl.'" class="btn btn-secondary btn-block"', escape: false);
 });
 
 it('offers signed-in users their dashboard instead', function () {
@@ -26,7 +25,7 @@ it('offers signed-in users their dashboard instead', function () {
     $this->get('/')
         ->assertOk()
         ->assertSee('Go to dashboard')
-        ->assertDontSee('Already registered?');
+        ->assertDontSee('class="link-signin"', escape: false);
 });
 
 it('advertises plan prices with the landing-page markup, without changing the plans', function () {

@@ -172,14 +172,10 @@
         .table td b { color: var(--slate-900); font-weight: 600; }
         .table tr:last-child td { border-bottom: 0; }
         .num { text-align: right !important; font-variant-numeric: tabular-nums; }
-        /* Sample report cards: fit a phone without scrolling sideways. */
-        @media (max-width: 640px) {
-            .table.rc { font-size: .75rem; }
-            .table.rc th, .table.rc td { padding: .5rem .4rem; }
-            .table.rc th:first-child, .table.rc td:first-child { padding-left: .875rem; }
-            .table.rc th:last-child, .table.rc td:last-child { padding-right: .875rem; }
-            .table.rc .rc-desc { display: none; }
-        }
+        /* Real report cards printed by SchoolHub (Demo High School). */
+        .rc-shot { display: block; border-radius: .75rem; overflow: hidden; background: #fff; border: 1px solid var(--slate-200); box-shadow: var(--shadow-sm); transition: transform .2s, box-shadow .2s; }
+        .rc-shot:hover { transform: translateY(-2px); box-shadow: 0 18px 40px -18px rgba(15, 23, 42, .35); }
+        .rc-shot img { display: block; width: 100%; height: auto; }
 
         /* Steps */
         .steps { display: grid; grid-template-columns: repeat(3, 1fr); gap: 1.5rem; counter-reset: step; }

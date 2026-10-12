@@ -175,5 +175,7 @@ it('leads the home page with the school\'s money and its report cards', function
         ->assertSee('Income vs expenditure')
         ->assertSee('School fees and salaries fill in by themselves')
         ->assertSee('New-curriculum report cards, ready to print')
-        ->assertSee('UACE grades and points, worked out for you');
+        ->assertSee('UACE grades and points, worked out for you')
+        ->assertSee('images/site/report-card-o-level.jpg')
+        ->assertSee('images/site/report-card-a-level.jpg');
 });

@@ -40,31 +40,17 @@
                     <div class="show-copy">
                         <div class="eyebrow">O-Level · new curriculum</div>
                         <h3>New-curriculum report cards, ready to print</h3>
-                        <p>Teachers give each learner a level from 0 to 3 in every syllabus topic and enter the End of Term marks. SchoolHub adds the 20% school-based mark to the 80% exam, grades every subject and prints report cards for the whole class.</p>
+                        <p>Teachers enter the Activities of Integration and the End of Term marks. SchoolHub adds the 20% school-based mark to the 80% exam, grades every subject and prints report cards for the whole class, like this one.</p>
                         <ul class="ticks">
-                            <li>{!! $check !!} Topic levels (0–3) make up the 20% school-based mark</li>
+                            <li>{!! $check !!} Activities of Integration make up the 20% school-based mark</li>
                             <li>{!! $check !!} Grades A–E: Exceptional, Outstanding, Satisfactory, Basic, Elementary</li>
-                            <li>{!! $check !!} Learner's LIN, positions, comments and the head teacher's signature</li>
+                            <li>{!! $check !!} Positions, attendance, comments, promotion and the head teacher's signature</li>
                         </ul>
                     </div>
-                    <div class="show-media" aria-hidden="true">
-                        <div class="doc" style="padding:0; overflow:hidden">
-                            <div class="doc-head" style="padding:1rem 1.25rem .75rem">
-                                <div><strong>Report card — Namuli Grace</strong><span>S.2 East · Term II 2026</span></div>
-                                <span class="tag tag-green">Released</span>
-                            </div>
-                            <table class="table rc">
-                                <thead><tr><th>Subject</th><th class="num">CA /20</th><th class="num">Exam /80</th><th class="num">Total</th><th>Grade</th></tr></thead>
-                                <tbody>
-                                    <tr><td><b>Mathematics</b></td><td class="num">17</td><td class="num">69</td><td class="num"><b>86</b></td><td><b>A</b><span class="rc-desc"> Exceptional</span></td></tr>
-                                    <tr><td><b>History &amp; Pol. Ed.</b></td><td class="num">15</td><td class="num">62</td><td class="num"><b>77</b></td><td><b>B</b><span class="rc-desc"> Outstanding</span></td></tr>
-                                    <tr><td><b>English</b></td><td class="num">16</td><td class="num">58</td><td class="num"><b>74</b></td><td><b>B</b><span class="rc-desc"> Outstanding</span></td></tr>
-                                    <tr><td><b>Biology</b></td><td class="num">13</td><td class="num">45</td><td class="num"><b>58</b></td><td><b>C</b><span class="rc-desc"> Satisfactory</span></td></tr>
-                                    <tr><td><b>Physics</b></td><td class="num">9</td><td class="num">30</td><td class="num"><b>39</b></td><td><b>D</b><span class="rc-desc"> Basic</span></td></tr>
-                                </tbody>
-                            </table>
-                            <div class="doc-total" style="margin:0; padding:.875rem 1.25rem"><span>Average 66.8%</span><span>Position 7 of 48</span></div>
-                        </div>
+                    <div class="show-media">
+                        <a class="rc-shot" href="{{ asset('images/site/report-card-o-level.jpg') }}" target="_blank" rel="noopener" title="Open the full report card">
+                            <img src="{{ asset('images/site/report-card-o-level.jpg') }}" alt="An O-Level report card printed by SchoolHub: subjects, CA and End of Term marks, grades A–E with achievement, position, attendance, comments and the head teacher&rsquo;s signature" width="1500" height="2156" loading="lazy">
+                        </a>
                     </div>
                 </div>
 
@@ -75,28 +61,14 @@
                         <p>Enter the marks for each paper. SchoolHub grades every paper, works out each principal subject's grade by UNEB's rules, adds the subsidiaries and gives every learner their points out of 20.</p>
                         <ul class="ticks">
                             <li>{!! $check !!} Subject combinations, with General Paper and a subsidiary</li>
-                            <li>{!! $check !!} Principal grades A–F from the paper grades</li>
+                            <li>{!! $check !!} Principal grades A–F worked out from each paper, by UNEB's rules</li>
                             <li>{!! $check !!} Points out of 20 and the result for every learner</li>
                         </ul>
                     </div>
-                    <div class="show-media" aria-hidden="true">
-                        <div class="doc" style="padding:0; overflow:hidden">
-                            <div class="doc-head" style="padding:1rem 1.25rem .75rem">
-                                <div><strong>Report card — Okello Brian</strong><span>S.6 · PCM / Sub-ICT · Term II 2026</span></div>
-                                <span class="tag tag-green">Released</span>
-                            </div>
-                            <table class="table rc">
-                                <thead><tr><th>Subject</th><th>Papers</th><th>Grade</th><th class="num">Points</th></tr></thead>
-                                <tbody>
-                                    <tr><td><b>Physics</b></td><td>P1 D2 · P2 C3</td><td><b>B</b></td><td class="num">5</td></tr>
-                                    <tr><td><b>Chemistry</b></td><td>P1 D1 · P2 D2</td><td><b>A</b></td><td class="num">6</td></tr>
-                                    <tr><td><b>Mathematics</b></td><td>P1 C4 · P2 C3</td><td><b>C</b></td><td class="num">4</td></tr>
-                                    <tr><td><b>General Paper</b></td><td>C5</td><td>Pass</td><td class="num">1</td></tr>
-                                    <tr><td><b>Sub-ICT</b></td><td>C4</td><td>Pass</td><td class="num">1</td></tr>
-                                </tbody>
-                            </table>
-                            <div class="doc-total" style="margin:0; padding:.875rem 1.25rem"><span>Result BAC/11</span><span>17 points out of 20</span></div>
-                        </div>
+                    <div class="show-media">
+                        <a class="rc-shot" href="{{ asset('images/site/report-card-a-level.jpg') }}" target="_blank" rel="noopener" title="Open the full report card">
+                            <img src="{{ asset('images/site/report-card-a-level.jpg') }}" alt="An A-Level report card printed by SchoolHub: paper marks, principal grades, points out of 20, result, comments and the head teacher&rsquo;s signature" width="1500" height="2156" loading="lazy">
+                        </a>
                     </div>
                 </div>
 

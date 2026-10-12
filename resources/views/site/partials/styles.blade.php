@@ -176,6 +176,7 @@
         .rc-shot { display: block; border-radius: .75rem; overflow: hidden; background: #fff; border: 1px solid var(--slate-200); box-shadow: var(--shadow-sm); transition: transform .2s, box-shadow .2s; }
         .rc-shot:hover { transform: translateY(-2px); box-shadow: 0 18px 40px -18px rgba(15, 23, 42, .35); }
         .rc-shot img { display: block; width: 100%; height: auto; }
+        .rc-caption { margin: .625rem 0 0; text-align: center; font-size: .8125rem; color: var(--slate-500); }
 
         /* Steps */
         .steps { display: grid; grid-template-columns: repeat(3, 1fr); gap: 1.5rem; counter-reset: step; }

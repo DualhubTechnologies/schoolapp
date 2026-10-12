@@ -45,12 +45,14 @@
                             <li>{!! $check !!} Activities of Integration make up the 20% school-based mark</li>
                             <li>{!! $check !!} Grades A–E: Exceptional, Outstanding, Satisfactory, Basic, Elementary</li>
                             <li>{!! $check !!} Positions, attendance, comments, promotion and the head teacher's signature</li>
+                            <li>{!! $check !!} A QR code on every card, so anyone can check it is genuine</li>
                         </ul>
                     </div>
                     <div class="show-media">
                         <a class="rc-shot" href="{{ asset('images/site/report-card-o-level.jpg') }}" target="_blank" rel="noopener" title="Open the full report card">
                             <img src="{{ asset('images/site/report-card-o-level.jpg') }}" alt="An O-Level report card printed by SchoolHub: subjects, CA and End of Term marks, grades A–E with achievement, position, attendance, comments and the head teacher&rsquo;s signature" width="1500" height="2156" loading="lazy">
                         </a>
+                        <p class="rc-caption">Classic design · navy and gold · QR code to verify</p>
                     </div>
                 </div>
 
@@ -63,12 +65,14 @@
                             <li>{!! $check !!} Subject combinations, with General Paper and a subsidiary</li>
                             <li>{!! $check !!} Principal grades A–F worked out from each paper, by UNEB's rules</li>
                             <li>{!! $check !!} Points out of 20 and the result for every learner</li>
+                            <li>{!! $check !!} Customised for your school: your crest, colours, layout and the parts you print</li>
                         </ul>
                     </div>
                     <div class="show-media">
                         <a class="rc-shot" href="{{ asset('images/site/report-card-a-level.jpg') }}" target="_blank" rel="noopener" title="Open the full report card">
                             <img src="{{ asset('images/site/report-card-a-level.jpg') }}" alt="An A-Level report card printed by SchoolHub: paper marks, principal grades, points out of 20, result, comments and the head teacher&rsquo;s signature" width="1500" height="2156" loading="lazy">
                         </a>
+                        <p class="rc-caption">Modern design · green, gold border and faint crest · the same school, a different look</p>
                     </div>
                 </div>
 

@@ -174,8 +174,8 @@ it('leads the home page with the school\'s money and its report cards', function
         ->assertSee('Track every shilling.')
         ->assertSee('Income vs expenditure')
         ->assertSee('School fees and salaries fill in by themselves')
-        ->assertSee('New-curriculum report cards, ready to print')
-        ->assertSee('UACE grades and points, worked out for you')
+        ->assertSee('New-curriculum report cards, generated automatically in seconds')
+        ->assertSee('A-Level report cards with UACE grades and points, generated automatically')
         ->assertSee('images/site/report-card-o-level.jpg')
         ->assertSee('images/site/report-card-a-level.jpg');
 });

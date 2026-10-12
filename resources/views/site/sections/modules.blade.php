@@ -39,8 +39,8 @@
                 <div class="show" data-reveal>
                     <div class="show-copy">
                         <div class="eyebrow">O-Level · new curriculum</div>
-                        <h3>New-curriculum report cards, ready to print</h3>
-                        <p>Teachers enter the Activities of Integration and the End of Term marks. SchoolHub adds the 20% school-based mark to the 80% exam, grades every subject and prints report cards for the whole class, like this one.</p>
+                        <h3>New-curriculum report cards, generated automatically in seconds</h3>
+                        <p>Teachers enter the marks; nobody adds, averages or grades by hand. SchoolHub works out the 20% school-based mark and the 80% exam, grades every subject and generates report cards for the whole class in seconds, like this one.</p>
                         <ul class="ticks">
                             <li>{!! $check !!} Activities of Integration make up the 20% school-based mark</li>
                             <li>{!! $check !!} Grades A–E: Exceptional, Outstanding, Satisfactory, Basic, Elementary</li>
@@ -59,8 +59,8 @@
                 <div class="show" data-reveal>
                     <div class="show-copy">
                         <div class="eyebrow">A-Level</div>
-                        <h3>UACE grades and points, worked out for you</h3>
-                        <p>Enter the marks for each paper. SchoolHub grades every paper, works out each principal subject's grade by UNEB's rules, adds the subsidiaries and gives every learner their points out of 20.</p>
+                        <h3>A-Level report cards with UACE grades and points, generated automatically</h3>
+                        <p>Teachers enter the marks for each paper. In seconds, SchoolHub grades every paper, works out each principal subject's grade by UNEB's rules, adds the subsidiaries and generates every learner's report card with their points out of 20.</p>
                         <ul class="ticks">
                             <li>{!! $check !!} Subject combinations, with General Paper and a subsidiary</li>
                             <li>{!! $check !!} Principal grades A–F worked out from each paper, by UNEB's rules</li>

@@ -13,7 +13,7 @@
                     ["What happens when the {$trialDays}-day trial ends?", "Choose a plan and pay by mobile money or bank transfer. If a payment is late, the school keeps working for {$graceDays} more days. After that, access pauses until payment is recorded — your data is never deleted."],
                     ['Can we import our existing student lists?', 'Yes. Download the template, fill it in from your existing Excel register, and import all your learners in one go.'],
                     ['Does it work for both primary and secondary?', 'Yes. Primary schools get nursery and primary classes with PLE-style grading; secondary schools get O-Level (including the competency-based curriculum) and A-Level with subject combinations.'],
-                    ['Do parents and students count towards our staff logins?', 'No — where included, parent and student logins never count towards your staff-login limit. Parent & student portal access comes with the Premium and Enterprise plans; it is not included on Starter or Standard.'],
+                    ['Can parents see their child\'s fees and report cards?', 'Yes, on the Premium and Enterprise plans. Parents sign in on their phone with their phone number and a PIN the school sends them, and see fee balances, receipts and the report cards the school has released. Parent logins never count towards your staff-login limit.'],
                 ];
             @endphp
             <div class="faq">

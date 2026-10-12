@@ -38,6 +38,21 @@
                     <h3>Access control &amp; audit trail</h3>
                     <p>Each user sees only their modules, and every change is logged — so you always know who did what, and when.</p>
                 </div>
+                <div class="card" data-reveal>
+                    <div class="icon"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6"><path stroke-linecap="round" stroke-linejoin="round" d="M6.75 3v2.25M17.25 3v2.25M3 18.75V7.5a2.25 2.25 0 0 1 2.25-2.25h13.5A2.25 2.25 0 0 1 21 7.5v11.25m-18 0A2.25 2.25 0 0 0 5.25 21h13.5A2.25 2.25 0 0 0 21 18.75m-18 0v-7.5A2.25 2.25 0 0 1 5.25 9h13.5A2.25 2.25 0 0 1 21 11.25v7.5m-9-3.75 1.5 1.5 3-3"/></svg></div>
+                    <h3>Attendance</h3>
+                    <p>A daily register for each class: mark learners present, absent, late or excused, and class teachers see only their own classes.</p>
+                </div>
+                <div class="card" data-reveal>
+                    <div class="icon"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6"><path stroke-linecap="round" stroke-linejoin="round" d="M15 9h3.75M15 12h3.75M15 15h3.75M4.5 19.5h15a2.25 2.25 0 0 0 2.25-2.25V6.75A2.25 2.25 0 0 0 19.5 4.5h-15a2.25 2.25 0 0 0-2.25 2.25v10.5A2.25 2.25 0 0 0 4.5 19.5Zm6-10.125a1.875 1.875 0 1 1-3.75 0 1.875 1.875 0 0 1 3.75 0Zm1.294 6.336a6.721 6.721 0 0 1-3.17.789 6.721 6.721 0 0 1-3.168-.789 3.376 3.376 0 0 1 6.338 0Z"/></svg></div>
+                    <h3>Transport &amp; ID cards</h3>
+                    <p>School van routes with a fare per term added to each learner's bill, and printed ID cards for learners and staff.</p>
+                </div>
+                <div class="card" data-reveal>
+                    <div class="icon"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6"><path stroke-linecap="round" stroke-linejoin="round" d="M10.5 1.5H8.25A2.25 2.25 0 0 0 6 3.75v16.5a2.25 2.25 0 0 0 2.25 2.25h7.5A2.25 2.25 0 0 0 18 20.25V3.75a2.25 2.25 0 0 0-2.25-2.25H13.5m-3 0V3h3V1.5m-3 0h3m-3 18.75h3"/></svg></div>
+                    <h3>Parent portal</h3>
+                    <p>Parents sign in on their phone to see fee balances, receipts and report cards. Included with Premium and Enterprise.</p>
+                </div>
             </div>
         </div>
     </section>

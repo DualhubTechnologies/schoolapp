@@ -159,3 +159,12 @@ it('lets the platform owner email a demo request from the Demo requests page', f
 it('says SchoolHub is a product of FERO TECH', function () {
     $this->get('/')->assertOk()->assertSee('A product of <strong>FERO TECH</strong>', false);
 });
+
+it('lists the modules schools get, and promises no student portal yet', function () {
+    $this->get('/')->assertOk()
+        ->assertSee('Attendance')
+        ->assertSee('Transport &amp; ID cards', false)
+        ->assertSee('Parent portal')
+        ->assertSee('Can parents see their child')
+        ->assertDontSee('student portal');
+});

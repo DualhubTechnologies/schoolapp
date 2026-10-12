@@ -169,9 +169,11 @@ it('lists the modules schools get, and promises no student portal yet', function
         ->assertDontSee('student portal');
 });
 
-it('leads the home page with the school\'s money: income against expenditure', function () {
+it('leads the home page with the school\'s money and its report cards', function () {
     $this->get('/')->assertOk()
-        ->assertSee('comes from and where it goes')
+        ->assertSee('Track every shilling.')
         ->assertSee('Income vs expenditure')
-        ->assertSee('School fees and salaries fill in by themselves');
+        ->assertSee('School fees and salaries fill in by themselves')
+        ->assertSee('New-curriculum report cards, ready to print')
+        ->assertSee('UACE grades and points, worked out for you');
 });

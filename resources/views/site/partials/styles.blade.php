@@ -172,6 +172,14 @@
         .table td b { color: var(--slate-900); font-weight: 600; }
         .table tr:last-child td { border-bottom: 0; }
         .num { text-align: right !important; font-variant-numeric: tabular-nums; }
+        /* Sample report cards: fit a phone without scrolling sideways. */
+        @media (max-width: 640px) {
+            .table.rc { font-size: .75rem; }
+            .table.rc th, .table.rc td { padding: .5rem .4rem; }
+            .table.rc th:first-child, .table.rc td:first-child { padding-left: .875rem; }
+            .table.rc th:last-child, .table.rc td:last-child { padding-right: .875rem; }
+            .table.rc .rc-desc { display: none; }
+        }
 
         /* Steps */
         .steps { display: grid; grid-template-columns: repeat(3, 1fr); gap: 1.5rem; counter-reset: step; }

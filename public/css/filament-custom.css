@@ -3970,7 +3970,7 @@ html .fi-body {
 }
 
 @media (max-width: 768px) {
-    body.fi-body { padding-bottom: calc(4.1rem + env(safe-area-inset-bottom)); }
+    body.fi-body:has(.sh-mnav) { padding-bottom: calc(4.1rem + env(safe-area-inset-bottom)); }
 
     /* Room under the last menu item so the bottom bar never covers it. */
     .fi-sidebar-nav { padding-bottom: calc(6rem + env(safe-area-inset-bottom)) !important; }
@@ -4008,9 +4008,16 @@ html .fi-body {
     .sh-mnav-item.is-active .sh-mnav-icon { transform: translateY(-1px); }
     .sh-mnav-item:active { background: #eef3fa; }
 
-    /* Keep the floating Cancel / Save bar above the bottom bar. */
+    /* The floating Cancel / Save bar sits at the bottom of the screen,
+       or just above the bottom bar on pages that have one (the platform
+       admin has none, and the bar floated mid-screen there). */
     .fi-sc-actions.fi-sticky .fi-ac {
+        bottom: 0 !important;
+        padding-bottom: calc(.75rem + env(safe-area-inset-bottom)) !important;
+    }
+    body:has(.sh-mnav) .fi-sc-actions.fi-sticky .fi-ac {
         bottom: calc(4.1rem + env(safe-area-inset-bottom)) !important;
+        padding-bottom: .75rem !important;
     }
 
     .sh-install {

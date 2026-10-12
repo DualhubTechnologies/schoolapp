@@ -21,6 +21,10 @@ return Application::configure(basePath: dirname(__DIR__))
         // Called by the Windows app and by SchoolPay, not browser forms
         // (rate limited and signed instead).
         $middleware->validateCsrfTokens(except: ['licence/activate', 'webhooks/schoolpay/*']);
+
+        // Search engines read these during a deploy too: a 503 robots.txt
+        // makes Google pause crawling and skip the site's icon.
+        $middleware->preventRequestsDuringMaintenance(except: ['robots.txt', 'sitemap.xml']);
     })
     ->withExceptions(function (Exceptions $exceptions): void {
         $exceptions->shouldRenderJsonWhen(

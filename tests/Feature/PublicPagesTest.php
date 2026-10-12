@@ -69,6 +69,16 @@ it('lists every public page in the sitemap', function () {
     }
 });
 
+it('keeps robots.txt and the sitemap open while the site is being updated', function () {
+    $this->app->maintenanceMode()->activate(['retry' => 30]);
+
+    $this->get('/robots.txt')->assertOk()->assertSee('Sitemap: https://www.schoolhubug.com/sitemap.xml');
+    $this->get('/sitemap.xml')->assertOk();
+    $this->get('/pricing')->assertServiceUnavailable();
+
+    $this->app->maintenanceMode()->deactivate();
+});
+
 it('shows the plans on the Pricing page', function () {
     $this->get('/pricing')->assertOk()->assertSee('Simple pricing, paid per term')->assertSee('Standard');
 });

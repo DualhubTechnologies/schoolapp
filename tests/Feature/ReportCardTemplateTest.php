@@ -60,9 +60,10 @@ it('prints the default parts until the school saves a template', function () {
     $template = ReportCardTemplate::forSchool($this->school->id);
 
     expect($template->exists)->toBeFalse()
-        ->and($template->shownSections())->toHaveCount(count(ReportCardTemplate::SECTIONS) - 2)
+        ->and($template->shownSections())->toHaveCount(count(ReportCardTemplate::SECTIONS) - 3)
         ->and($template->shows('class_position'))->toBeFalse()
-        ->and($template->shows('stream_position'))->toBeFalse();
+        ->and($template->shows('stream_position'))->toBeFalse()
+        ->and($template->shows('topics'))->toBeFalse();
 
     printCard()->assertOk()
         ->assertSee('Progress Report')

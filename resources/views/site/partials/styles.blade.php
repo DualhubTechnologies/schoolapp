@@ -714,7 +714,7 @@
         .preview-float .dot.green { background: linear-gradient(135deg, #34D399, #10B981); }
         .preview-float .dot.amber { background: linear-gradient(135deg, #FBBF24, #F59E0B); }
         @keyframes rise { from { opacity: 0; transform: translateY(24px); } to { opacity: 1; transform: none; } }
-        @media (min-width: 1101px) and (max-width: 1439px) { .hero-grid .l-full { display: none; } .hero-grid .l-short { display: inline; } }
+        @media (min-width: 1101px) { .hero-grid .l-full { display: none; } .hero-grid .l-short { display: inline; } }
 
         /* At a glance */
         .glance { padding: 1rem 0 0; }

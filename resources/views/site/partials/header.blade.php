@@ -22,6 +22,17 @@
                         </div>
                     </div>
                     <a href="{{ route('filament.app.landing') }}#how">How it works</a>
+                @elseif ($slug === 'about')
+                    {{-- About us, with the team beneath it. --}}
+                    <div class="nav-drop">
+                        <a href="{{ route('filament.app.site.page', $slug) }}" @if (($page ?? null) === $slug) aria-current="page" @endif>{{ $label }}</a><svg viewBox="0 0 20 20" fill="currentColor" aria-hidden="true"><path fill-rule="evenodd" d="M5.23 7.21a.75.75 0 0 1 1.06.02L10 11.17l3.71-3.94a.75.75 0 1 1 1.08 1.04l-4.25 4.5a.75.75 0 0 1-1.08 0l-4.25-4.5a.75.75 0 0 1 .02-1.06Z" clip-rule="evenodd"/></svg>
+                        <div class="nav-menu nav-menu-sm">
+                            <a href="{{ route('filament.app.site.page', 'about') }}"><b>About SchoolHub</b><span>Who we are and how we look after your data</span></a>
+                            <a href="{{ route('filament.app.site.page', 'team') }}" @if (($page ?? null) === 'team') aria-current="page" @endif>{{ \App\Support\PublicSite::PAGES['team'][0] }}</a>
+                        </div>
+                    </div>
+                @elseif ($slug === 'team')
+                    {{-- Under About us. --}}
                 @else
                     <a href="{{ route('filament.app.site.page', $slug) }}" @if (($page ?? null) === $slug) aria-current="page" @endif>{{ $label }}</a>
                 @endif

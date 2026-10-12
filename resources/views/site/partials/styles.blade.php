@@ -602,3 +602,31 @@
             .hero-ticks { grid-template-columns: 1fr; justify-content: start; width: max-content; margin-left: auto; margin-right: auto; }
         }
 
+        /* Proportions after the mockup: a wider page, a larger headline, lighter ticks, roomier dashboard. */
+        .container { max-width: 85rem; }
+        .nav { gap: 2rem; }
+        .nav-menu-sm { width: 16rem; }
+        .nav-menu-sm a:not(:first-child) { font-size: .875rem; font-weight: 600; color: var(--slate-900); }
+        .hero { padding-top: 2.25rem; }
+        .hero-lead { font-size: 1.1875rem; line-height: 1.6; }
+        .hero-ticks { font-size: .875rem; gap: .625rem 1.75rem; margin-top: 1.5rem; }
+        .hero-ticks svg { width: 1.125rem; height: 1.125rem; }
+        .kpi small { white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+        .kpi em { white-space: nowrap; }
+        .panel-title { white-space: nowrap; }
+        .glance-card { padding: 1.375rem 1.5rem; gap: 1.125rem; }
+        .gi { width: 3.5rem; height: 3.5rem; border-radius: 1rem; }
+        .gi svg { width: 1.875rem; height: 1.875rem; }
+        .glance-card b { font-size: 1.125rem; }
+        .glance-card span { font-size: .9375rem; }
+        @media (min-width: 1101px) {
+            .hero-grid { grid-template-columns: minmax(0, 1fr) minmax(0, 1.08fr); gap: 3.5rem; }
+            .hero-grid h1 { font-size: clamp(3rem, 5vw, 4.75rem); }
+            .hero-grid .hero-lead { font-size: 1.1875rem; max-width: 38rem; }
+            .hero-grid .app { grid-template-columns: 9rem minmax(0, 1fr); }
+            .hero-grid .kpis { grid-template-columns: repeat(4, minmax(0, 1fr)); }
+            .hero-grid .kpi { min-width: 0; padding: .75rem .625rem; }
+            .hero-grid .kpi b { font-size: .9375rem; white-space: nowrap; }
+            .hero-grid .pf-1 { top: -2rem; right: -1.5rem; }
+        }
+

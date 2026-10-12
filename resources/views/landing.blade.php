@@ -72,7 +72,7 @@
             <div class="hero-copy">
                 <span class="badge"><b>New curriculum</b> O-Level and A-Level report cards, worked out for you</span>
                 <h1><span class="h1-line">Run your school</span> <span>smarter.</span></h1>
-                <p class="hero-lead">Everything your school needs in one place. Track fees, income and spending, manage learners, record marks, and generate curriculum-aligned report cards in seconds. Built for Ugandan primary and secondary schools.</p>
+                <p class="hero-lead">Everything your school needs in one place. Track fees, manage students, record marks, and generate curriculum-aligned report cards in seconds. Built for Ugandan primary and secondary schools.</p>
 
                 <div class="hero-actions">
                     @if ($signedIn)
@@ -136,10 +136,10 @@
                                     <span class="chip">+ Record payment</span>
                                 </div>
                                 <div class="kpis">
-                                    <div class="kpi"><small><i class="k-green">{!! $ico('cash') !!}</i> Income this term</small><b>UGX 87.3M</b><em>↑ 12% from last term</em></div>
-                                    <div class="kpi"><small><i class="k-blue">{!! $ico('cart') !!}</i> Total spent</small><b>UGX 61.9M</b><em class="plain">93% of budget</em></div>
-                                    <div class="kpi"><small><i class="k-red">{!! $ico('alert') !!}</i> Outstanding fees</small><b>UGX 34.6M</b><em class="warn">212 students</em></div>
-                                    <div class="kpi"><small><i class="k-teal">{!! $ico('users') !!}</i> Active students</small><b>642</b><em>↑ 18 this term</em></div>
+                                    <div class="kpi"><small><i class="k-green">{!! $ico('cash') !!}</i> Income</small><b>UGX 87.3M</b><em>↑ 12% from last term</em></div>
+                                    <div class="kpi"><small><i class="k-blue">{!! $ico('cart') !!}</i> Spent</small><b>UGX 61.9M</b><em class="plain">93% of budget</em></div>
+                                    <div class="kpi"><small><i class="k-red">{!! $ico('alert') !!}</i> Fees owed</small><b>UGX 34.6M</b><em class="warn">212 students</em></div>
+                                    <div class="kpi"><small><i class="k-teal">{!! $ico('users') !!}</i> Students</small><b>642</b><em>↑ 18 this term</em></div>
                                 </div>
                                 <div class="app-row">
                                     <div class="panel">

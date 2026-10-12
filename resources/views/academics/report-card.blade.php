@@ -12,6 +12,10 @@
     $style = $template->style();
     $show = fn (string $part): bool => $template->shows($part);
     $columns = $show('assessment_columns') ? $assessments : collect();
+    // Topic levels left off the card: no Topic assessment column either.
+    if (! $show('topics')) {
+        $columns = $columns->reject(fn ($a) => $a->type === 'topics');
+    }
     // Project marks are printed in their own section instead.
     if ($show('projects') && $projects) {
         $columns = $columns->reject(fn ($a) => $a->type === 'project');
@@ -78,7 +82,6 @@
     table.marks td.c, table.marks th.c { text-align: center; }
     table.marks.per-exam tfoot th { background: #f8fafc; font-size: .72rem; text-transform: none; letter-spacing: 0; color: var(--rc-primary); }
     table.marks .core-mark { color: var(--rc-accent); font-weight: 800; margin-left: .15rem; }
-    table.marks td.grade .paper-grades { display: block; font-size: .6rem; font-weight: 600; color: #6b7280; white-space: nowrap; }
     table.marks td.grade { font-weight: 800; color: var(--rc-primary); text-align: center; }
     table.marks tr.not-counted td { color: #6b7280; }
     .summary { display: grid; grid-template-columns: 1.2fr 1fr; gap: .8rem; margin-top: .7rem; }
@@ -99,8 +102,10 @@
     .remark-sign { flex: 0 0 30%; display: flex; flex-direction: column; border-left: 1px solid #cbd5e1; padding: .45rem .8rem .5rem; font-size: .66rem; color: #4b5563; }
     .remark-sign .who { font-size: .62rem; font-weight: 700; letter-spacing: .06em; text-transform: uppercase; color: var(--rc-primary); }
     .remark-sign .space { flex: 1 0 .4rem; display: flex; align-items: flex-end; }
-    .remark-sign img { max-height: 2.2rem; }
-    .remark-sign .field { display: flex; align-items: baseline; gap: .3rem; margin-top: .55rem; white-space: nowrap; overflow: hidden; }
+    /* The signature sits on the dotted line, as if signed there. */
+    .remark-sign .line { position: relative; flex: 1; min-width: 0; display: flex; }
+    .remark-sign .line img { position: absolute; left: .3rem; bottom: -.3rem; height: 2.9rem; max-width: 90%; object-fit: contain; object-position: left bottom; }
+    .remark-sign .field { display: flex; align-items: baseline; gap: .3rem; margin-top: 1.6rem; white-space: nowrap; }
     .remark-sign .field b { font-weight: 600; color: #374151; }
     .remark-sign .field i { flex: 1; font-style: normal; overflow: hidden; color: #6b7280; letter-spacing: .05em; }
     .key { margin-top: .5rem; padding: .35rem .6rem; background: #f8fafc; border-radius: 4px; font-size: .66rem; color: #4b5563; }
@@ -334,10 +339,11 @@
                             @endif
                             <td class="c"><strong>{{ $n($res['final']) }}</strong></td>
                             <td class="grade">
-                                {{ $res['grade'] ?? '—' }}
-                                {{-- A-Level principal subjects: the paper grades the letter comes from. --}}
-                                @if (! empty($res['paper_grades']))
-                                    <span class="paper-grades">{{ collect($res['paper_grades'])->map(fn ($g, $p) => count($res['paper_grades']) > 1 ? "P{$p} {$g}" : $g)->implode(' · ') }}</span>
+                                {{-- A-Level: the letter only; a subsidiary is O (pass) or F (fail). --}}
+                                @if ($curriculum === 'a_level' && $res['subject']->category === 'subsidiary' && $res['grade'] !== null)
+                                    {{ ($res['value'] ?? 0) > 0 ? 'O' : 'F' }}
+                                @else
+                                    {{ $res['grade'] ?? '—' }}
                                 @endif
                             </td>
                             <td>{{ $res['comment'] ?: $res['descriptor'] }}</td>
@@ -486,8 +492,8 @@
                                 {{-- At the far end of the comment: who signs, and their signature. --}}
                                 <div class="remark-sign">
                                     <span class="who">{{ $signer }}</span>
-                                    <span class="space">@if ($signatureImage)<img src="{{ $signatureImage }}" alt="">@endif</span>
-                                    <span class="field"><b>Signature:</b><i>{{ str_repeat('.', 60) }}</i></span>
+                                    <span class="space"></span>
+                                    <span class="field"><b>Signature:</b><span class="line"><i>{{ str_repeat('.', 60) }}</i>@if ($signatureImage)<img src="{{ $signatureImage }}" alt="">@endif</span></span>
                                 </div>
                             @endif
                         </div>
@@ -495,17 +501,26 @@
                 </div>
             @endif
 
-            @php $keyScale = $show('grading_key') ? $scales->get($curriculum === 'a_level' ? 'paper' : 'subject') : null; @endphp
+            @php $keyScale = $show('grading_key') && $curriculum !== 'a_level' ? $scales->get('subject') : null; @endphp
+            @php $aLevelKey = $show('grading_key') && $curriculum === 'a_level'; @endphp
             @php $verification = $verifications[$student->id] ?? null; @endphp
-            @if ($keyScale || $verification)
+            @if ($keyScale || $aLevelKey || $verification)
                 <div class="rc-key-row">
+                @if ($aLevelKey)
+                    <div class="key">
+                        <strong>Key:</strong>
+                        @foreach (\App\Services\Academics\UacePrincipalGrade::POINTS as $letter => $points)
+                            <span>{{ $letter }} {{ $points }} {{ $points === 1 ? 'point' : 'points' }}</span>
+                        @endforeach
+                        <br><span>A–E principal pass · O subsidiary pass · F fail · General Paper and the subsidiary subject: O = 1 point</span>
+                    </div>
+                @endif
                 @if ($keyScale)
                     <div class="key">
                         <strong>Key:</strong>
                         @foreach ($keyScale->bands as $band)
                             <span>{{ $band->grade }} {{ $band->min_score + 0 }}–{{ $band->max_score + 0 }}{{ $band->descriptor ? ' ' . $band->descriptor : '' }}</span>
                         @endforeach
-                        @if ($curriculum === 'a_level')<br><span>Principal grade from the paper grades (UNEB): A–E principal pass (6–2 points), O subsidiary pass (1), F fail · Subsidiary subjects: C6 or better = 1 point</span>@endif
                         @if ($examResults)<br><span>* counts in the aggregate · {{ collect(config('academics.primary_divisions'))->map(fn ($d) => "{$d[0]} {$d[1]}–{$d[2]}")->implode(', ') }}</span>@endif
                         @if ($topicScores)<br><strong>Topics:</strong> <span>3 all outcomes, with ease</span><span>2 most, enough to achieve</span><span>1 some, not enough</span><span>0 none yet</span>@endif
                     </div>

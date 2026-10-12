@@ -6,6 +6,7 @@ use App\Models\AcademicYear;
 use App\Models\Assessment;
 use App\Models\ClassLevel;
 use App\Models\Mark;
+use App\Models\ReportCardTemplate;
 use App\Models\School;
 use App\Models\SchoolClass;
 use App\Models\Student;
@@ -85,6 +86,7 @@ it('records topic levels and turns their average into the Topic assessment mark'
 });
 
 it('prints topic levels and what needs support on the report card', function () {
+    ReportCardTemplate::create(ReportCardTemplate::DEFAULTS + ['school_id' => $this->school->id, 'show' => ['topics' => true]]);
     ManageSyllabusTopics::addTopics($this->chemistry->id, 2, "T5 Acids and alkalis\nT6 Salts");
     [$t5, $t6] = SyllabusTopic::orderBy('sort_order')->pluck('id')->all();
     $exam = Assessment::create(['school_id' => $this->school->id, 'term_id' => $this->term->id, 'name' => 'End of year', 'type' => 'eot', 'max_score' => 100, 'weight' => 80]);

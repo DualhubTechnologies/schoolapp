@@ -168,3 +168,10 @@ it('lists the modules schools get, and promises no student portal yet', function
         ->assertSee('Can parents see their child')
         ->assertDontSee('student portal');
 });
+
+it('leads the home page with the school\'s money: income against expenditure', function () {
+    $this->get('/')->assertOk()
+        ->assertSee('comes from and where it goes')
+        ->assertSee('Income vs expenditure')
+        ->assertSee('School fees and salaries fill in by themselves');
+});

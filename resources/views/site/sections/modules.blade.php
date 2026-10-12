@@ -9,6 +9,35 @@
             <div class="showcase">
                 <div class="show" data-reveal>
                     <div class="show-copy">
+                        <div class="eyebrow">Finance</div>
+                        <h3>See income against spending, any time</h3>
+                        <p>The bursar records expenses and other income as they happen. SchoolHub puts them beside the fees received and the payroll, so the director sees where the money came from, where it went and what is left, for a term, a year or any dates.</p>
+                        <ul class="ticks">
+                            <li>{!! $check !!} School fees and salaries fill in by themselves</li>
+                            <li>{!! $check !!} Expenses and other income by category, against a term budget</li>
+                            <li>{!! $check !!} Bank accounts and bank reconciliation</li>
+                        </ul>
+                    </div>
+                    <div class="show-media" aria-hidden="true">
+                        <div class="doc">
+                            <div class="doc-head">
+                                <div><strong>Income vs expenditure</strong><span>Term II · 2026</span></div>
+                                <span class="tag tag-green">Within budget</span>
+                            </div>
+                            <div class="doc-rows">
+                                <div><span>School fees</span><b>UGX 84,200,000</b></div>
+                                <div><span>Other income (uniforms, canteen)</span><b>UGX 3,100,000</b></div>
+                                <div><span>Salaries &amp; wages</span><b>− UGX 38,400,000</b></div>
+                                <div><span>Food &amp; kitchen</span><b>− UGX 14,600,000</b></div>
+                                <div><span>Fuel, utilities &amp; stationery</span><b>− UGX 8,900,000</b></div>
+                            </div>
+                            <div class="doc-total"><span>Balance</span><span>UGX 25,400,000</span></div>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="show" data-reveal>
+                    <div class="show-copy">
                         <div class="eyebrow">Fees</div>
                         <h3>Know every balance, every day</h3>
                         <p>Bill a whole class in one go, receive payments at the bursar's desk and print a receipt instantly. Balances update the moment money comes in.</p>

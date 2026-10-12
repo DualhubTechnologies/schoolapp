@@ -162,18 +162,24 @@ it('says SchoolHub is a product of FERO TECH', function () {
 
 it('lists the modules schools get, and promises no student portal yet', function () {
     $this->get('/')->assertOk()
-        ->assertSee('Attendance')
-        ->assertSee('Transport &amp; ID cards', false)
-        ->assertSee('Parent portal')
+        ->assertSee('School fees management')
+        ->assertSee('Parent communication')
+        ->assertSee('See all 9 modules')
         ->assertSee('Can parents see their child')
         ->assertDontSee('student portal');
+
+    $this->get('/features')->assertOk()
+        ->assertSee('Attendance')
+        ->assertSee('Transport &amp; ID cards', false)
+        ->assertSee('Access control &amp; audit trail', false)
+        ->assertDontSee('See all 9 modules');
 });
 
 it('leads the home page with the school\'s money and its report cards', function () {
     $this->get('/')->assertOk()
         ->assertSee('Run your school')
         ->assertSee('generate curriculum-aligned report cards in seconds')
-        ->assertSee('Built for every Ugandan school')
+        ->assertSee('Made for schools across Uganda')
         ->assertDontSee('Print every report card')
         ->assertSee('Income vs expenditure')
         ->assertSee('School fees and salaries fill in by themselves')

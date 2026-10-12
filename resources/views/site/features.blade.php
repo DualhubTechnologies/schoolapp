@@ -9,7 +9,7 @@
 @endsection
 
 @section('content')
-    @include('site.sections.features')
+    @include('site.sections.features', ['allModules' => true])
     @include('site.sections.automation')
     @include('site.sections.modules')
     @include('site.sections.how')

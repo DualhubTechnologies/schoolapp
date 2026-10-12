@@ -98,7 +98,7 @@
             <div class="preview" aria-hidden="true">
                 <div class="preview-float pf-1">
                     <span class="dot green">{!! $check !!}</span>
-                    <span><b>Report cards generated</b>S.2 East · whole class in seconds</span>
+                    <span><b>Report cards ready</b>S.2 East · 48 learners, in seconds</span>
                     <i class="pf-x">&times;</i>
                 </div>
                 <div class="preview-float pf-3">
@@ -136,10 +136,10 @@
                                     <span class="chip">+ Record payment</span>
                                 </div>
                                 <div class="kpis">
-                                    <div class="kpi"><small><i class="k-green">{!! $ico('cash') !!}</i> Income</small><b>UGX 87.3M</b><em>↑ 12% from last term</em></div>
-                                    <div class="kpi"><small><i class="k-blue">{!! $ico('cart') !!}</i> Spent</small><b>UGX 61.9M</b><em class="plain">93% of budget</em></div>
-                                    <div class="kpi"><small><i class="k-red">{!! $ico('alert') !!}</i> Fees owed</small><b>UGX 34.6M</b><em class="warn">212 students</em></div>
-                                    <div class="kpi"><small><i class="k-teal">{!! $ico('users') !!}</i> Students</small><b>642</b><em>↑ 18 this term</em></div>
+                                    <div class="kpi"><small><i class="k-green">{!! $ico('cash') !!}</i> <span class="l-full">Income this term</span><span class="l-short">Income</span></small><b>UGX 87.3M</b><em>↑ 12% from last term</em></div>
+                                    <div class="kpi"><small><i class="k-blue">{!! $ico('cart') !!}</i> <span class="l-full">Total spent</span><span class="l-short">Spent</span></small><b>UGX 61.9M</b><em class="plain">93% of budget</em></div>
+                                    <div class="kpi"><small><i class="k-red">{!! $ico('alert') !!}</i> <span class="l-full">Outstanding fees</span><span class="l-short">Fees owed</span></small><b>UGX 34.6M</b><em class="warn">212 students</em></div>
+                                    <div class="kpi"><small><i class="k-teal">{!! $ico('users') !!}</i> <span class="l-full">Active students</span><span class="l-short">Students</span></small><b>642</b><em>↑ 18 this term</em></div>
                                 </div>
                                 <div class="app-row">
                                     <div class="panel">
@@ -173,18 +173,18 @@
     {{-- ── At a glance ── --}}
     <section class="glance" aria-label="SchoolHub at a glance">
         <div class="container glance-grid">
-            <div class="glance-card"><span class="gi gi-green">{!! $ico('puzzle') !!}</span><div><b>9 integrated modules</b><span>Everything in one platform</span></div></div>
-            <div class="glance-card"><span class="gi gi-blue">{!! $ico('calendar') !!}</span><div><b>{{ $trialDays }}-day free trial</b><span>Explore every feature</span></div></div>
-            <div class="glance-card"><span class="gi gi-purple">{!! $ico('cap') !!}</span><div><b>Nursery to S.6</b><span>Built for Ugandan schools</span></div></div>
-            <div class="glance-card"><span class="gi gi-amber">{!! $ico('wallet') !!}</span><div><b>Flexible UGX pricing</b><span>Simple per-term plans</span></div></div>
+            <div class="glance-card" data-reveal><span class="gi gi-green">{!! $ico('puzzle') !!}</span><div><b>9 integrated modules</b><span>Everything in one platform</span></div></div>
+            <div class="glance-card" data-reveal><span class="gi gi-blue">{!! $ico('calendar') !!}</span><div><b>{{ $trialDays }}-day free trial</b><span>Explore every feature</span></div></div>
+            <div class="glance-card" data-reveal><span class="gi gi-purple">{!! $ico('cap') !!}</span><div><b>Nursery to S.6</b><span>Built for Ugandan schools</span></div></div>
+            <div class="glance-card" data-reveal><span class="gi gi-amber">{!! $ico('card') !!}</span><div><b>Flexible UGX pricing</b><span>Simple per-term plans</span></div></div>
         </div>
     </section>
 
     {{-- ── Built for every kind of Ugandan school (not school logos: none is claimed as a customer) ── --}}
     <section class="kinds" aria-label="Built for every Ugandan school">
         <div class="container">
-            <h2>Built for every Ugandan school</h2>
-            <p>One system for the way your school is run, whatever its level and size.</p>
+            <h2>Made for schools across Uganda</h2>
+            <p>Helping schools simplify administration and focus on better education, whatever their level and size.</p>
             <div class="kinds-row">
                 <div class="kind">{!! $ico('book') !!}<span><b>Nursery &amp; Primary</b>PLE aggregates &amp; divisions</span></div>
                 <div class="kind">{!! $ico('cap') !!}<span><b>O-Level</b>New lower-secondary curriculum</span></div>
@@ -198,11 +198,11 @@
 
     @include('site.sections.features')
 
+    @include('site.sections.how')
+
     @include('site.sections.automation')
 
     @include('site.sections.modules')
-
-    @include('site.sections.how')
 
     @include('site.sections.windows')
 

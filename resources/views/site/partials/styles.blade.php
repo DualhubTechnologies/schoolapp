@@ -843,4 +843,10 @@
             .app { grid-template-columns: minmax(0, 1fr); }
             .app-top .app-user div { display: none; }
         }
+        /* Inner pages: the page's own heading is at the top, so the first section doesn't repeat it. */
+        .page-hero { background: radial-gradient(40% 80% at 80% 0%, rgba(79, 70, 229, .08), transparent 70%), radial-gradient(40% 80% at 15% 10%, rgba(37, 99, 235, .08), transparent 70%), #fff; border-bottom-color: var(--line); }
+        .page-hero + .section { padding-top: 3.5rem; }
+        .page-hero + #pricing .section-head .eyebrow, .page-hero + #pricing .section-head h2,
+        .page-hero + #features .section-head .eyebrow { display: none; }
+        .page-hero + #pricing .section-head p { margin-top: 0; }
 

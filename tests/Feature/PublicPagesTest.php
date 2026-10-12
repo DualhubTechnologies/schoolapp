@@ -171,8 +171,9 @@ it('lists the modules schools get, and promises no student portal yet', function
 
 it('leads the home page with the school\'s money and its report cards', function () {
     $this->get('/')->assertOk()
-        ->assertSee('Track every shilling.')
-        ->assertSee('Report cards in seconds.')
+        ->assertSee('Run your school')
+        ->assertSee('generate curriculum-aligned report cards in seconds')
+        ->assertSee('Built for every Ugandan school')
         ->assertDontSee('Print every report card')
         ->assertSee('Income vs expenditure')
         ->assertSee('School fees and salaries fill in by themselves')

@@ -7,7 +7,7 @@
             </div>
 
             <div class="showcase">
-                <div class="show" data-reveal>
+                <div class="show" id="finance" data-reveal>
                     <div class="show-copy">
                         <div class="eyebrow">Finance</div>
                         <h3>See income against spending, any time</h3>
@@ -36,7 +36,7 @@
                     </div>
                 </div>
 
-                <div class="show" data-reveal>
+                <div class="show" id="o-level" data-reveal>
                     <div class="show-copy">
                         <div class="eyebrow">O-Level · new curriculum</div>
                         <h3>New-curriculum report cards, generated automatically in seconds</h3>
@@ -56,7 +56,7 @@
                     </div>
                 </div>
 
-                <div class="show" data-reveal>
+                <div class="show" id="a-level" data-reveal>
                     <div class="show-copy">
                         <div class="eyebrow">A-Level</div>
                         <h3>A-Level report cards with UACE grades and points, generated automatically</h3>
@@ -76,7 +76,7 @@
                     </div>
                 </div>
 
-                <div class="show" data-reveal>
+                <div class="show" id="fees" data-reveal>
                     <div class="show-copy">
                         <div class="eyebrow">Fees</div>
                         <h3>Know every balance, every day</h3>
@@ -104,7 +104,7 @@
                     </div>
                 </div>
 
-                <div class="show" data-reveal>
+                <div class="show" id="payroll" data-reveal>
                     <div class="show-copy">
                         <div class="eyebrow">Payroll</div>
                         <h3>Pay staff correctly, on time</h3>

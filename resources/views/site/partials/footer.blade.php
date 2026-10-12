@@ -12,7 +12,7 @@
                     <li><a href="{{ route('filament.app.site.page', 'features') }}">Features</a></li>
                     <li><a href="{{ route('filament.app.site.page', 'pricing') }}">Pricing</a></li>
                     <li><a href="{{ route('filament.app.site.page', 'about') }}">About SchoolHub</a></li>
-                    <li><a href="{{ route('filament.app.site.page', 'help') }}">Help</a></li>
+                    <li><a href="{{ route('filament.app.site.page', 'help') }}">Support</a></li>
                 </ul>
             </div>
             <div>

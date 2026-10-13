@@ -25,6 +25,10 @@ class SubjectsRelationManager extends RelationManager
 {
     protected static string $relationship = 'subjects';
 
+    // Subject::classes(). "Add subject" uses it to leave out the subjects
+    // the class already has; Filament would guess Subject::schoolClasses().
+    protected static ?string $inverseRelationship = 'classes';
+
     protected static ?string $title = 'Subjects & teachers';
 
     public static function canViewForRecord(Model $ownerRecord, string $pageClass): bool

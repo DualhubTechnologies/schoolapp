@@ -23,8 +23,9 @@ use Filament\Widgets\Widget;
 
 /**
  * "Finish setting up": a school registers with only its name, category
- * and town, so this walks its administrator through the rest. It
- * disappears once every step is done.
+ * and town, so this walks its administrator through the rest. It floats
+ * in a corner of the dashboard, can be closed until the next sign-in (the
+ * bell keeps the next step), and disappears once every step is done.
  */
 class SetupChecklist extends Widget
 {
@@ -36,6 +37,8 @@ class SetupChecklist extends Widget
 
     protected string $view = 'filament.widgets.setup-checklist';
 
+    public const DISMISSED = 'setup_checklist_dismissed';
+
     public static function canView(): bool
     {
         $user = auth()->user();
@@ -43,7 +46,18 @@ class SetupChecklist extends Widget
         return filament()->getCurrentPanel()?->getId() === 'app'
             && $user?->school_id
             && $user->hasRole('School Admin')
+            && ! session(self::DISMISSED)
             && collect((new static)->steps())->contains('done', false);
+    }
+
+    /**
+     * Closes the card until the administrator signs in again.
+     */
+    public function dismiss(): void
+    {
+        session([self::DISMISSED => true]);
+
+        $this->skipRender();
     }
 
     /** @return list<array{title: string, text: string, url: string, done: bool}> */

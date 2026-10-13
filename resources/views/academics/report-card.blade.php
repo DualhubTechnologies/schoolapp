@@ -34,15 +34,16 @@
 @endphp
 
 {{-- The page title is the file name a browser suggests when saving as PDF, e.g.
-     "Adrian Mugizi - S.2 East - Term 3 2026 Report Card": plain hyphens survive
-     WhatsApp, email and phones, and the class tells siblings' cards apart. --}}
+     "Adrian_Mugizi_S2_East_Term3_2026_Report_Card": no spaces or dots, so it
+     survives links, uploads and phones, and the class tells siblings' cards apart. --}}
 @php
-    $fileTerm = trim($term->name.' '.$term->academicYear?->name);
+    $fileName = fn (string ...$parts) => preg_replace('/[^A-Za-z0-9]+/', '_', trim(preg_replace('/[^A-Za-z0-9 ]+/', '', implode(' ', $parts))));
+    $fileTerm = preg_replace('/^Term\s+/i', 'Term', $term->name).' '.$term->academicYear?->name;
     $fileStudent = $rows->count() === 1 ? $rows->first()['student'] : null;
 @endphp
 @section('title', $fileStudent
-    ? $fileStudent->name.' - '.trim($class->name.' '.$fileStudent->section?->name).' - '.$fileTerm.' Report Card'
-    : "{$class->name} - {$fileTerm} Report Cards")
+    ? $fileName($fileStudent->name, $class->name, (string) $fileStudent->section?->name, $fileTerm, 'Report Card')
+    : $fileName($class->name, $fileTerm, 'Report Cards'))
 
 @section('styles')
     /* One report card = one A4 page, with a thin 6mm margin. In print the

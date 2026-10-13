@@ -36,3 +36,8 @@ it('leaves other hosts and form posts alone', function () {
     $this->get('http://127.0.0.1/features')->assertOk();
     expect($this->post('https://schoolhubug.com/demo-request')->getStatusCode())->not->toBe(301);
 });
+
+it('tells Google the old SaccoSys pages are gone', function () {
+    $this->get('https://www.schoolhubug.com/features/member-area.html')->assertStatus(410);
+    $this->get('https://www.schoolhubug.com/features')->assertOk();
+});

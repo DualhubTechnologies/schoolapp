@@ -12,6 +12,9 @@ folded into the change they belong to. Add an entry with every release.
   of showing the same pages twice. Sign-in, registration, both panels,
   documents and parent links carry `X-Robots-Tag: noindex`, so they stay
   out of search results (SearchEngineHints middleware).
+- The old SaccoSys copy's `.html` pages that Google still listed (e.g.
+  "Member Area — SaccoSys" at /features/member-area.html) now answer
+  410 Gone, so Google drops them.
 - **Fixed: editing an A-Level combination or a grading scale failed**
   ("qualifyColumn() on null"). Their subject and grade lists named the
   query `$q`, and Filament only hands it over as `$query`.

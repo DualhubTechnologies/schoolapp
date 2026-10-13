@@ -14,6 +14,7 @@ use Symfony\Component\HttpFoundation\Response;
  *     the one APP_URL does not name is sent to the other (301), so Google
  *     lists each page once
  *   - /index.php/... shows the same page as /...; sent there too
+ *   - the old SaccoSys copy's .html pages answer 410 Gone
  *   - everything that is not a public page (sign-in, registration, the
  *     panels, documents) carries X-Robots-Tag: noindex, so it never shows
  *     up in search results. It is a header, not a robots.txt Disallow,
@@ -35,6 +36,13 @@ class SearchEngineHints
         if (Edition::isServer() && $request->isMethodSafe() && ($redirect = $this->canonicalUrl($request))) {
             return redirect()->to($redirect, 301);
         }
+
+        // The domain first ran a copy of SaccoSys, whose .html pages
+        // (e.g. /features/member-area.html) Google still lists. SchoolHub
+        // has no .html addresses (public/offline.html is a file the web
+        // server answers itself), so they are gone for good: 410 makes
+        // Google drop them sooner than 404.
+        abort_if(Edition::isServer() && str_ends_with(strtolower($request->path()), '.html'), 410);
 
         $response = $next($request);
 

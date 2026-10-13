@@ -4,6 +4,15 @@ What changed in SchoolHub, newest first, in terms of what schools and the
 platform owner notice. Housekeeping commits (formatting, type fixes) are
 folded into the change they belong to. Add an entry with every release.
 
+## 13 October 2026
+
+- **Google lists each public page once, and only the public pages.**
+  schoolhubug.com now sends visitors (301) to the address APP_URL names
+  (www.schoolhubug.com), and `/index.php/...` to the plain page, instead
+  of showing the same pages twice. Sign-in, registration, both panels,
+  documents and parent links carry `X-Robots-Tag: noindex`, so they stay
+  out of search results (SearchEngineHints middleware).
+
 ## 1 October 2026
 
 - **Short licence codes for the Windows app** (`FGDH-FWFH-2342-WETR`):

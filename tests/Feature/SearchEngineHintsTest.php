@@ -41,3 +41,14 @@ it('tells Google the old SaccoSys pages are gone', function () {
     $this->get('https://www.schoolhubug.com/features/member-area.html')->assertStatus(410);
     $this->get('https://www.schoolhubug.com/features')->assertOk();
 });
+
+it('tells search engines FERO TECH made SchoolHub', function () {
+    $html = $this->get('https://www.schoolhubug.com/')->assertOk()->getContent();
+
+    preg_match_all('#<script type="application/ld\+json">(.*?)</script>#s', $html, $blocks);
+    $software = collect($blocks[1])->map(fn (string $json) => json_decode($json, true))->firstWhere('@type', 'SoftwareApplication');
+
+    expect($software['name'])->toBe('SchoolHub')
+        ->and($software['creator']['name'])->toBe('FERO TECH SMC LIMITED')
+        ->and($software['publisher']['name'])->toBe('FERO TECH SMC LIMITED');
+});

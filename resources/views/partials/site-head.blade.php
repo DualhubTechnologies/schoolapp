@@ -67,7 +67,34 @@
             ],
         ],
     ], JSON_UNESCAPED_SLASHES | JSON_UNESCAPED_UNICODE | JSON_PRETTY_PRINT | JSON_HEX_TAG);
+
+    // Who made SchoolHub, said outright: search engines (and their AI
+    // answers) otherwise guessed from pages of the SaccoSys copy that
+    // first ran on this domain.
+    $company = array_filter([
+        '@type' => 'Organization',
+        'name' => config('contact.company'),
+        'alternateName' => config('contact.brand'),
+        'founder' => ['@type' => 'Person', 'name' => config('contact.founder')],
+        'address' => ['@type' => 'PostalAddress', 'addressLocality' => config('contact.locality'), 'addressCountry' => 'UG'],
+    ]);
+    $software = json_encode([
+        '@context' => 'https://schema.org',
+        '@type' => 'SoftwareApplication',
+        'name' => 'SchoolHub',
+        'url' => $site.'/',
+        'image' => $logo,
+        'applicationCategory' => 'BusinessApplication',
+        'applicationSubCategory' => 'School management',
+        'operatingSystem' => config('contact.windows_download_enabled') ? 'Web, Windows' : 'Web',
+        'countriesSupported' => 'UG',
+        'creator' => $company,
+        'publisher' => $company,
+    ], JSON_UNESCAPED_SLASHES | JSON_UNESCAPED_UNICODE | JSON_PRETTY_PRINT | JSON_HEX_TAG);
 @endphp
 <script type="application/ld+json">
 {!! $organization !!}
+</script>
+<script type="application/ld+json">
+{!! $software !!}
 </script>

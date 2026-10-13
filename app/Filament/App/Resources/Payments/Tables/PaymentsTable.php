@@ -32,7 +32,7 @@ class PaymentsTable
                     ->label('Receipt')
                     ->weight(FontWeight::SemiBold)
                     ->searchable()
-                    ->sortable(query: fn (Builder $q, string $direction) => $q->orderBy('receipt_seq', $direction))
+                    ->sortable(query: fn (Builder $query, string $direction) => $query->orderBy('receipt_seq', $direction))
                     ->color(fn (StudentPayment $record) => $record->isVoided() ? 'gray' : null)
                     ->description(fn (StudentPayment $record) => $record->isVoided() ? 'VOID — '.$record->void_reason : null),
 

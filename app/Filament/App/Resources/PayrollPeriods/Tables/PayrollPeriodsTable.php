@@ -27,7 +27,7 @@ class PayrollPeriodsTable
                     ->label('Month')
                     ->formatStateUsing(fn (PayrollPeriod $record) => $record->period_label)
                     ->weight(FontWeight::SemiBold)
-                    ->sortable(query: fn (Builder $q, string $direction) => $q->orderBy('year', $direction)->orderBy('month', $direction)),
+                    ->sortable(query: fn (Builder $query, string $direction) => $query->orderBy('year', $direction)->orderBy('month', $direction)),
                 TextColumn::make('school.name')
                     ->label('School')
                     ->visible(fn () => auth()->user()?->hasRole('Super Admin')),

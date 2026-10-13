@@ -15,6 +15,10 @@ folded into the change they belong to. Add an entry with every release.
 - **Fixed: editing an A-Level combination or a grading scale failed**
   ("qualifyColumn() on null"). Their subject and grade lists named the
   query `$q`, and Filament only hands it over as `$query`.
+- **Fixed: sorting Payments by Receipt and Payroll by Month did nothing**
+  (the same `$q` naming).
+- A test now opens every add and edit form in both panels, so a form that
+  cannot open fails the build instead of reaching a school.
 - **Fixed: "Add subject" on a class failed to open.** Filament looked for
   `Subject::schoolClasses()`; the relationship is `classes()`.
 

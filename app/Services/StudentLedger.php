@@ -75,18 +75,24 @@ class StudentLedger
                 'terms.name as term_name',
             ])
             ->get()
-            ->map(fn ($row) => [
-                'date' => $row->charged_on,
-                'type' => 'charge',
-                'description' => $row->description,
-                'reference' => null,
-                'term_id' => $row->term_id,
-                'term_name' => $row->term_name,
-                'debit' => (float) $row->amount - (float) $row->discount_amount,
-                'credit' => 0.0,
-                'discount' => (float) $row->discount_amount,
-                'discount_reason' => $row->discount_reason,
-            ]);
+            ->map(function ($row): array {
+                // A charge below zero (an opening credit brought from the
+                // school's previous system) reads as a credit, like money paid.
+                $net = (float) $row->amount - (float) $row->discount_amount;
+
+                return [
+                    'date' => $row->charged_on,
+                    'type' => 'charge',
+                    'description' => $row->description,
+                    'reference' => null,
+                    'term_id' => $row->term_id,
+                    'term_name' => $row->term_name,
+                    'debit' => max($net, 0.0),
+                    'credit' => max(-$net, 0.0),
+                    'discount' => (float) $row->discount_amount,
+                    'discount_reason' => $row->discount_reason,
+                ];
+            });
     }
 
     /**

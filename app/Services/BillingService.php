@@ -60,6 +60,13 @@ use Illuminate\Support\Facades\DB;
  * This is why fees are resolved TOGETHER rather than one at a time: the
  * charging path has to know how much of a pool is left as it works down
  * the lines.
+ *
+ * OPENING BALANCES
+ *
+ * A school that switches mid-term may bring balances that already include
+ * the term's fees (OpeningBalanceCsvImporter, includes_term_fees). Billing
+ * leaves those learners' term alone, and such a balance counts as the term
+ * having been billed.
  */
 class BillingService
 {
@@ -69,7 +76,8 @@ class BillingService
     /**
      * A term that has started but not been billed: it is the current term,
      * the school has active learners in classes, and none of them has been
-     * charged a fee for it yet. Prompts the bursar (dashboard and bell).
+     * charged a fee for it yet, or brought an opening balance that already
+     * includes it. Prompts the bursar (dashboard and bell).
      */
     public function termNeedsBilling(Term $term): bool
     {
@@ -82,7 +90,7 @@ class BillingService
             && $hasLearners
             && ! StudentCharge::where('school_id', $term->school_id)
                 ->where('term_id', $term->getKey())
-                ->whereNotNull('fee_structure_id')
+                ->termBilling()
                 ->exists();
     }
 
@@ -177,7 +185,7 @@ class BillingService
 
         $termBilled = StudentCharge::where('school_id', $student->school_id)
             ->where('term_id', $term->getKey())
-            ->whereNotNull('fee_structure_id')
+            ->termBilling()
             ->where('student_id', '!=', $student->getKey())
             ->exists();
 
@@ -199,6 +207,10 @@ class BillingService
      */
     public function billStudent(Student $student, Term $term): int
     {
+        if ($this->openingBalanceIncludesTerm($student, $term)) {
+            return 0;
+        }
+
         $fees = $this->applicableFees($student, $term)
             ->reject(fn (FeeStructure $fee) => $this->alreadyChargedInTerm($student, $fee, $term))
             ->values();
@@ -504,6 +516,20 @@ class BillingService
     {
         return StudentCharge::where('student_id', $student->getKey())
             ->where('fee_structure_id', $fee->getKey())
+            ->exists();
+    }
+
+    /**
+     * The learner's opening balance was carried into this term with the
+     * term's fees already in it (the old system charged them), so charging
+     * the fees or the van again would bill them twice.
+     */
+    protected function openingBalanceIncludesTerm(Student $student, Term $term): bool
+    {
+        return StudentCharge::where('student_id', $student->getKey())
+            ->where('term_id', $term->getKey())
+            ->where('is_opening_balance', true)
+            ->where('includes_term_fees', true)
             ->exists();
     }
 

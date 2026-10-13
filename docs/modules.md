@@ -56,6 +56,34 @@ payment and the balance is right at once.
 Receipts are numbered per school; a voided receipt stays visible, stamped
 VOID, and no longer counts.
 
+## Opening balances
+
+**Code:** `App\Services\OpeningBalanceCsvImporter`, `BillingService`
+
+A school switching from another system brings each learner's balance over
+from a CSV (Student Accounts → Opening balances sheet, then Import opening
+balances). The sheet lists every learner; the bursar fills in `balance`.
+
+| In the file | Effect |
+|---|---|
+| 450000, 450,000/=, UGX 450,000 | Owes that much |
+| -50000 or (50,000) | In credit by that much |
+| 0 | Removes an earlier opening balance |
+| Blank | Nothing brought over |
+
+- Each learner has **one** opening balance: a charge in the term the
+  bursar picks, dated the term's start. Uploading again replaces it, so a
+  corrected file never adds a second one.
+- A credit is stored below zero and reads as a credit on statements; it
+  also clears transport, like money paid ahead.
+- **Switching mid-term:** when the old system already charged the term's
+  fees, the bursar ticks "already charged". Those learners' term is then
+  left alone by billing (fees and van), and 0 is kept as "owes nothing" so
+  the term is not billed again. Learners with no figure in the file are
+  billed as usual; the check step counts them.
+- Learners are matched by admission number within the school; they must
+  be in SchoolHub first, whatever their status.
+
 ## Transport
 
 **Code:** `App\Services\Transport\TransportLedger`, `BillingService`

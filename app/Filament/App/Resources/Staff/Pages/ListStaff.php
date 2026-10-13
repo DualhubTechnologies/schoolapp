@@ -10,6 +10,7 @@ use Filament\Notifications\Notification;
 use Filament\Resources\Pages\ListRecords;
 use Illuminate\Contracts\View\View;
 use Illuminate\Support\Facades\Storage;
+use Livewire\Attributes\Locked;
 use Livewire\Features\SupportFileUploads\TemporaryUploadedFile;
 use Livewire\WithFileUploads;
 
@@ -22,7 +23,12 @@ class ListStaff extends ListRecords
     /** The CSV being uploaded. */
     public ?TemporaryUploadedFile $csvFile = null;
 
-    /** Where the checked file waits for "Import" (local disk). */
+    /**
+     * Where the checked file waits for "Import" (local disk). Locked: the
+     * import reads and then deletes this path, so it must never come from
+     * the browser.
+     */
+    #[Locked]
     public ?string $storedFile = null;
 
     /** upload -> preview -> complete */

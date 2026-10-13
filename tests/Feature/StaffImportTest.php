@@ -13,6 +13,7 @@ use Filament\Facades\Filament;
 use Illuminate\Http\UploadedFile;
 use Illuminate\Support\Facades\Storage;
 use Illuminate\Support\ViewErrorBag;
+use Livewire\Features\SupportLockedProperties\CannotUpdateLockedPropertyException;
 use Livewire\Livewire;
 
 beforeEach(function () {
@@ -131,6 +132,15 @@ it('imports from the Staff page: upload, check, import', function () {
         ->assertSet('importResult.imported', 1);
 
     expect(Staff::where('school_id', $this->school->id)->where('staff_no', 'ST-9')->exists())->toBeTrue();
+});
+
+it('does not let the browser choose which stored file is imported', function () {
+    Storage::disk('local')->put('uploads/staff/another-school-photo.jpg', 'not a spreadsheet');
+
+    expect(fn () => Livewire::test(ListStaff::class)->set('storedFile', 'uploads/staff/another-school-photo.jpg'))
+        ->toThrow(CannotUpdateLockedPropertyException::class);
+
+    expect(Storage::disk('local')->exists('uploads/staff/another-school-photo.jpg'))->toBeTrue();
 });
 
 it('offers the staff CSV template for download', function () {

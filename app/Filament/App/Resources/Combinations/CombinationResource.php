@@ -73,7 +73,7 @@ class CombinationResource extends Resource
                 ->placeholder('e.g. Physics, Chemistry, Mathematics'),
             Select::make('subjects')
                 ->label('Principal subjects')
-                ->relationship('subjects', 'name', fn (Builder $q) => $q
+                ->relationship('subjects', 'name', fn (Builder $query) => $query
                     ->where('subjects.school_id', auth()->user()?->school_id)
                     ->where('subjects.curriculum', 'a_level')
                     ->where('subjects.category', 'principal'))

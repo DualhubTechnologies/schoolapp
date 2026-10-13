@@ -49,7 +49,7 @@ class GradingScaleResource extends Resource
         return $schema->components([
             TextInput::make('name')->required()->maxLength(150),
             Repeater::make('bands')
-                ->relationship('bands', fn (Builder $q) => $q->reorder()->orderByDesc('min_score'))
+                ->relationship('bands', fn (Builder $query) => $query->reorder()->orderByDesc('min_score'))
                 ->label('Grades (highest first)')
                 ->schema([
                     TextInput::make('grade')->required()->maxLength(30),

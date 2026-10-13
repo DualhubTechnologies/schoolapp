@@ -12,6 +12,11 @@ folded into the change they belong to. Add an entry with every release.
   of showing the same pages twice. Sign-in, registration, both panels,
   documents and parent links carry `X-Robots-Tag: noindex`, so they stay
   out of search results (SearchEngineHints middleware).
+- **Fixed: editing an A-Level combination or a grading scale failed**
+  ("qualifyColumn() on null"). Their subject and grade lists named the
+  query `$q`, and Filament only hands it over as `$query`.
+- **Fixed: "Add subject" on a class failed to open.** Filament looked for
+  `Subject::schoolClasses()`; the relationship is `classes()`.
 
 ## 1 October 2026
 

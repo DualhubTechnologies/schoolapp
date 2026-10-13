@@ -203,7 +203,7 @@ it('shows the fees balance only when the learner owes, saying for which term', f
 it('names a single learner\'s report card after them, for saving as PDF', function () {
     test()->get(route('filament.app.academics.report-cards', ['term' => $this->term->id, 'class' => $this->class->id, 'student' => $this->student->id]))
         ->assertOk()
-        ->assertSee('<title>'.e($this->student->name.' — Report Card — '.$this->term->label()).'</title>', false);
+        ->assertSee('<title>'.e($this->student->name.' - '.$this->class->name.' - '.$this->term->name.' '.$this->term->academicYear->name.' Report Card').'</title>', false);
 });
 
 it('saves a class teacher\'s comment as soon as it is typed, so it is on the report card', function () {

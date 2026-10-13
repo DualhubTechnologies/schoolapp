@@ -6,6 +6,23 @@ folded into the change they belong to. Add an entry with every release.
 
 ## 13 October 2026
 
+- **Opening balances: bring each learner's balance over from the old
+  system.** Student Accounts has an Opening balances sheet (every learner,
+  ready for a balance column) and Import opening balances (upload, check,
+  save). Debts and credits (-50000) come in as one "Opening balance (from
+  previous system)" line per learner; uploading again replaces it, 0
+  removes it. A school switching mid-term ticks "already charged this
+  term's fees" and billing then leaves those learners' term alone. The
+  check step names every row to fix and shows the totals owed and in
+  credit to compare with the old system.
+- A charge below zero now reads as a credit on statements (it showed no
+  amount), and an opening credit pays for the van like money paid ahead.
+- **Fixed: the staff import could be pointed at another stored file.** The
+  page kept the checked file's path where the browser could change it, and
+  the import deletes that file when done, so a crafted request could delete
+  any private file, photos and signatures included. The path is now locked
+  to the file the school uploaded (the opening balances import works the
+  same way).
 - **Google lists each public page once, and only the public pages.**
   schoolhubug.com now sends visitors (301) to the address APP_URL names
   (www.schoolhubug.com), and `/index.php/...` to the plain page, instead

@@ -146,3 +146,17 @@ it('tells parents the learner\'s SchoolPay code where they are told how to pay',
 it('leaves SchoolPay out for learners without a code', function () {
     expect(app(FeeReminderService::class)->message($this->student, 200000))->not->toContain('SchoolPay');
 });
+
+it('takes an amount typed with commas, as the money box shows it', function () {
+    $this->actingAs($this->admin);
+    $this->mock(SmsSender::class)->shouldReceive('send')->andReturn(['ok' => true, 'ref' => 'x', 'error' => null]);
+
+    Livewire::test(ReceivePayment::class)
+        ->fillForm(['student_id' => $this->student->id])
+        ->fillForm(['amount' => '150,000'])
+        ->call('save')
+        ->assertHasNoFormErrors();
+
+    expect((float) StudentPayment::where('student_id', $this->student->id)->value('amount'))->toBe(150000.0)
+        ->and($this->student->balance())->toBe(50000.0);
+});

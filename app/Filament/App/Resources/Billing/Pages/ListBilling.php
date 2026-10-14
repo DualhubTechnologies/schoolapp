@@ -4,6 +4,7 @@ namespace App\Filament\App\Resources\Billing\Pages;
 
 use App\Filament\App\Resources\Billing\BillingResource;
 use App\Filament\Pages\StartTermBilling;
+use App\Filament\Support\MoneyInput;
 use App\Models\FeeStructure;
 use App\Models\SchoolClass;
 use App\Models\Student;
@@ -155,7 +156,7 @@ class ListBilling extends ListRecords
                     ->visible(fn (Get $get) => $get('source') === 'custom')
                     ->required(fn (Get $get) => $get('source') === 'custom'),
 
-                TextInput::make('amount')
+                MoneyInput::make('amount')
                     ->label('Amount per student')
                     ->numeric()
                     ->prefix('UGX')
@@ -275,7 +276,7 @@ class ListBilling extends ListRecords
                     ->required()
                     ->maxLength(150),
 
-                TextInput::make('amount')
+                MoneyInput::make('amount')
                     ->label('Amount')
                     ->numeric()
                     ->prefix('UGX')

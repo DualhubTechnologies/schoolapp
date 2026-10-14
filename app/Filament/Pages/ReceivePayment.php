@@ -2,6 +2,7 @@
 
 namespace App\Filament\Pages;
 
+use App\Filament\Support\MoneyInput;
 use App\Models\Student;
 use App\Models\StudentPayment;
 use App\Models\Term;
@@ -96,7 +97,7 @@ class ReceivePayment extends Page
                     ->visible(fn (Get $get) => filled($get('student_id')))
                     ->schema([
                         Grid::make(['default' => 1, 'md' => 2])->schema([
-                            TextInput::make('amount')
+                            MoneyInput::make('amount')
                                 ->label('Amount received')
                                 ->prefix('UGX')
                                 ->numeric()

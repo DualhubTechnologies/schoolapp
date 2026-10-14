@@ -4,6 +4,7 @@ namespace App\Filament\App\Resources\TransportRoutes;
 
 use App\Filament\App\Resources\TransportRoutes\Pages\ManageTransportRoutes;
 use App\Filament\Concerns\GatedByModule;
+use App\Filament\Support\MoneyInput;
 use App\Models\TransportRoute;
 use BackedEnum;
 use Filament\Actions\Action;
@@ -63,13 +64,13 @@ class TransportRouteResource extends Resource
                 ->maxLength(100)
                 ->unique(ignoreRecord: true, modifyRuleUsing: fn (Unique $rule) => $rule->where('school_id', auth()->user()?->school_id))
                 ->validationMessages(['unique' => 'You already have a route with this name.']),
-            TextInput::make('fare')
+            MoneyInput::make('fare')
                 ->label('Fare per term (UGX)')
                 ->numeric()
                 ->minValue(0)
                 ->required()
-                ->placeholder('e.g. 15000'),
-            TextInput::make('one_way_fare')
+                ->placeholder('e.g. 15,000'),
+            MoneyInput::make('one_way_fare')
                 ->hintIcon('heroicon-m-question-mark-circle', tooltip: 'For learners who ride the van only in the morning or only in the evening. Leave blank to charge them the full fare.')
                 ->label('One-way fare per term (UGX)')
                 ->numeric()

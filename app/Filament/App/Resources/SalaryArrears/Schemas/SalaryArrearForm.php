@@ -2,6 +2,7 @@
 
 namespace App\Filament\App\Resources\SalaryArrears\Schemas;
 
+use App\Filament\Support\MoneyInput;
 use Filament\Forms\Components\Select;
 use Filament\Forms\Components\Textarea;
 use Filament\Forms\Components\TextInput;
@@ -31,7 +32,7 @@ class SalaryArrearForm
                     ->searchable()
                     ->preload()
                     ->required(),
-                TextInput::make('amount')
+                MoneyInput::make('amount')
                     ->label('Arrears amount')
                     ->required()
                     ->numeric()

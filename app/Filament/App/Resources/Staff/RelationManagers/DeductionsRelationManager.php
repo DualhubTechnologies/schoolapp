@@ -2,6 +2,7 @@
 
 namespace App\Filament\App\Resources\Staff\RelationManagers;
 
+use App\Filament\Support\MoneyInput;
 use App\Models\DeductionType;
 use Filament\Actions\BulkActionGroup;
 use Filament\Actions\CreateAction;
@@ -75,7 +76,7 @@ class DeductionsRelationManager extends RelationManager
                             'is_active' => true,
                         ],
                     )->getKey()),
-                TextInput::make('amount')
+                MoneyInput::make('amount')
                     ->label('Monthly deduction amount')
                     ->numeric()
                     ->prefix('UGX')
@@ -97,13 +98,13 @@ class DeductionsRelationManager extends RelationManager
                     ->label('Loan tracking')
                     ->content('Enter the total loan balance and any amount already recovered.')
                     ->visible(fn (Get $get) => self::isLoanType($get)),
-                TextInput::make('total_amount')
+                MoneyInput::make('total_amount')
                     ->label('Total loan amount')
                     ->numeric()
                     ->prefix('UGX')
                     ->helperText('System auto-tracks recovery and stops deducting when fully repaid.')
                     ->visible(fn (Get $get) => self::isLoanType($get)),
-                TextInput::make('amount_recovered')
+                MoneyInput::make('amount_recovered')
                     ->label('Already recovered')
                     ->numeric()
                     ->prefix('UGX')

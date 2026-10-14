@@ -2,6 +2,7 @@
 
 namespace App\Filament\App\Resources\Staff\RelationManagers;
 
+use App\Filament\Support\MoneyInput;
 use Filament\Actions\Action;
 use Filament\Actions\BulkActionGroup;
 use Filament\Actions\CreateAction;
@@ -33,7 +34,7 @@ class ArrearsRelationManager extends RelationManager
     {
         return $schema
             ->components([
-                TextInput::make('amount')
+                MoneyInput::make('amount')
                     ->label('Arrears amount')
                     ->required()
                     ->numeric()

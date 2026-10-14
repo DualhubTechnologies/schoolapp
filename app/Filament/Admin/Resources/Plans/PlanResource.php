@@ -3,6 +3,7 @@
 namespace App\Filament\Admin\Resources\Plans;
 
 use App\Filament\Admin\Resources\Plans\Pages\ManagePlans;
+use App\Filament\Support\MoneyInput;
 use App\Models\Plan;
 use BackedEnum;
 use Filament\Actions\DeleteAction;
@@ -60,12 +61,12 @@ class PlanResource extends Resource
                     ->minValue(1)
                     ->placeholder('Unlimited')
                     ->helperText('Parents and students do not count.'),
-                TextInput::make('price_per_term')
+                MoneyInput::make('price_per_term')
                     ->label('Price per term (UGX)')
                     ->numeric()
                     ->minValue(0)
                     ->required(),
-                TextInput::make('price_per_year')
+                MoneyInput::make('price_per_year')
                     ->label('Price per year (UGX)')
                     ->numeric()
                     ->minValue(0)

@@ -231,7 +231,7 @@ class StaffCsvImporter
         }
 
         if ($data['basic_salary'] !== '' && $this->amount($data['basic_salary']) === null) {
-            $fail('basic_salary', 'Basic salary must be an amount in shillings, e.g. 850000.');
+            $fail('basic_salary', 'Basic salary must be an amount in shillings, e.g. 850,000.');
         }
 
         if ($data['phone'] !== '' && ! preg_match('/^[\d\s\+\-\(\)]{7,20}$/', $data['phone'])) {

@@ -4,6 +4,7 @@ namespace App\Filament\Pages;
 
 use App\Filament\App\Resources\Billing\BillingResource;
 use App\Filament\App\Resources\FeeStructures\FeeStructureResource;
+use App\Filament\Support\MoneyInput;
 use App\Models\FeeStructure;
 use App\Models\ResidencyType;
 use App\Models\Term;
@@ -117,7 +118,7 @@ class StartTermBilling extends Page
                             ->dehydrated(false)
                             ->helperText(fn (Get $get): ?string => $get('since')),
                         Hidden::make('since')->dehydrated(false),
-                        TextInput::make('amount')
+                        MoneyInput::make('amount')
                             ->label('Amount')
                             ->prefix('UGX')
                             ->numeric()

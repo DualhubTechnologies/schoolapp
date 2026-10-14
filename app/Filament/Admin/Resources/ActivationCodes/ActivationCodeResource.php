@@ -3,6 +3,7 @@
 namespace App\Filament\Admin\Resources\ActivationCodes;
 
 use App\Filament\Admin\Resources\ActivationCodes\Pages\ManageActivationCodes;
+use App\Filament\Support\MoneyInput;
 use App\Models\Plan;
 use App\Models\SubscriptionActivationCode;
 use App\Models\SubscriptionPayment;
@@ -157,7 +158,7 @@ class ActivationCodeResource extends Resource
                         ->selectablePlaceholder(false)
                         ->live()
                         ->afterStateUpdated($price),
-                    TextInput::make('amount')
+                    MoneyInput::make('amount')
                         ->label('Price of the period (UGX)')
                         ->numeric()
                         ->minValue(0)

@@ -2,6 +2,7 @@
 
 namespace App\Filament\App\Resources\Staff\RelationManagers;
 
+use App\Filament\Support\MoneyInput;
 use App\Models\AllowanceType;
 use Filament\Actions\BulkActionGroup;
 use Filament\Actions\CreateAction;
@@ -62,7 +63,7 @@ class AllowancesRelationManager extends RelationManager
                         ['is_taxable' => (bool) ($data['is_taxable'] ?? true), 'is_active' => true],
                     )->getKey())
                     ->columnSpanFull(),
-                TextInput::make('amount')
+                MoneyInput::make('amount')
                     ->label('Monthly amount')
                     ->required()
                     ->numeric()

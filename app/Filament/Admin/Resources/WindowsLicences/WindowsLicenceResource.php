@@ -3,6 +3,7 @@
 namespace App\Filament\Admin\Resources\WindowsLicences;
 
 use App\Filament\Admin\Resources\WindowsLicences\Pages\ManageWindowsLicences;
+use App\Filament\Support\MoneyInput;
 use App\Models\IssuedLicence;
 use App\Models\Plan;
 use App\Support\Licensing\LicenceIssuer;
@@ -190,7 +191,7 @@ class WindowsLicenceResource extends Resource
                 ]),
                 Section::make('Payment')->schema([
                     Grid::make(2)->schema([
-                        TextInput::make('amount')->label('Amount paid (UGX)')->numeric()->minValue(0),
+                        MoneyInput::make('amount')->label('Amount paid (UGX)')->numeric()->minValue(0),
                         TextInput::make('payment_reference')->label('Payment reference')->maxLength(100)->placeholder('Mobile money or bank reference'),
                     ]),
                     Textarea::make('notes')->rows(2)->maxLength(1000),

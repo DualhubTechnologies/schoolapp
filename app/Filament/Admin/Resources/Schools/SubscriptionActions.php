@@ -3,6 +3,7 @@
 namespace App\Filament\Admin\Resources\Schools;
 
 use App\Filament\Pages\Auth\VerifyEmail;
+use App\Filament\Support\MoneyInput;
 use App\Models\Plan;
 use App\Models\School;
 use App\Models\Subscription;
@@ -154,12 +155,12 @@ class SubscriptionActions
                         ->displayFormat('d M Y')
                         ->visible(fn (Get $get) => $get('cycle') === 'custom')
                         ->required(fn (Get $get) => $get('cycle') === 'custom'),
-                    TextInput::make('amount')
+                    MoneyInput::make('amount')
                         ->label('Price of the period (UGX)')
                         ->numeric()
                         ->minValue(0)
                         ->required(),
-                    TextInput::make('paid')
+                    MoneyInput::make('paid')
                         ->label('Amount received (UGX)')
                         ->helperText('0 to add the period without a payment (e.g. on credit).')
                         ->numeric()
@@ -264,12 +265,12 @@ class SubscriptionActions
                         ->displayFormat('d M Y')
                         ->visible(fn (Get $get) => $get('cycle') === 'custom')
                         ->required(fn (Get $get) => $get('cycle') === 'custom'),
-                    TextInput::make('amount')
+                    MoneyInput::make('amount')
                         ->label('Price of the period (UGX)')
                         ->numeric()
                         ->minValue(0)
                         ->required(),
-                    TextInput::make('paid')
+                    MoneyInput::make('paid')
                         ->label('Amount they paid (UGX)')
                         ->helperText('0 if you just want to issue the period without recording a payment.')
                         ->numeric()

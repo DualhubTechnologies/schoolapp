@@ -4,6 +4,7 @@ namespace App\Filament\App\Resources\FeeReminders\Pages;
 
 use App\Filament\App\Resources\FeeBalances\FeeBalanceResource;
 use App\Filament\App\Resources\FeeReminders\FeeReminderResource;
+use App\Filament\Support\MoneyInput;
 use App\Models\SchoolClass;
 use App\Models\Student;
 use App\Services\FeeReminderService;
@@ -11,7 +12,6 @@ use Filament\Actions\Action;
 use Filament\Forms\Components\DatePicker;
 use Filament\Forms\Components\Select;
 use Filament\Forms\Components\Textarea;
-use Filament\Forms\Components\TextInput;
 use Filament\Forms\Components\Toggle;
 use Filament\Forms\Components\ToggleButtons;
 use Filament\Notifications\Notification;
@@ -49,7 +49,7 @@ class ListFeeReminders extends ListRecords
                         ->options(fn () => SchoolClass::where('school_id', auth()->user()?->school_id)->orderBy('name')->pluck('name', 'id'))
                         ->live(),
 
-                    TextInput::make('min_balance')
+                    MoneyInput::make('min_balance')
                         ->label('Owing at least')
                         ->prefix('UGX')
                         ->numeric()

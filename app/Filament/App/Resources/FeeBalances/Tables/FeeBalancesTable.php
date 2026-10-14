@@ -6,6 +6,7 @@ use App\Filament\App\Resources\FeeBalances\FeeBalanceResource;
 use App\Filament\Pages\ReceivePayment;
 use App\Filament\Pages\StudentAccount;
 use App\Filament\Support\FeeReminderActions;
+use App\Filament\Support\MoneyInput;
 use App\Models\Student;
 use App\Support\OwnSchool;
 use Filament\Actions\Action;
@@ -157,11 +158,11 @@ class FeeBalancesTable
                 Filter::make('paid_at_least')
                     ->label('Paid at least')
                     ->schema([
-                        TextInput::make('amount')
+                        MoneyInput::make('amount')
                             ->label('Minimum paid')
                             ->numeric()
                             ->prefix('UGX')
-                            ->placeholder('e.g. 200000'),
+                            ->placeholder('e.g. 200,000'),
                     ])
                     ->query(fn (Builder $query, array $data): Builder => $query
                         ->when(

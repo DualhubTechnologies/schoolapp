@@ -2,6 +2,7 @@
 
 namespace App\Filament\App\Resources\StudentDiscounts\Schemas;
 
+use App\Filament\Support\MoneyInput;
 use App\Models\AcademicYear;
 use App\Models\Student;
 use App\Models\StudentDiscount;
@@ -14,6 +15,7 @@ use Filament\Schemas\Components\Section;
 use Filament\Schemas\Components\Utilities\Get;
 use Filament\Schemas\Components\Utilities\Set;
 use Filament\Schemas\Schema;
+use Filament\Support\RawJs;
 use Illuminate\Database\Eloquent\Builder;
 
 class StudentDiscountForm
@@ -108,6 +110,8 @@ class StudentDiscountForm
                             ->maxValue(fn (Get $get) => $get('type') === 'percentage' ? 100 : null)
                             ->prefix(fn (Get $get) => $get('type') === 'fixed' ? 'UGX' : null)
                             ->suffix(fn (Get $get) => $get('type') === 'percentage' ? '%' : null)
+                            ->mask(fn (Get $get) => $get('type') === 'fixed' ? RawJs::make(MoneyInput::MASK) : null)
+                            ->stripCharacters(',')
                             ->disabled(fn (Get $get) => $get('award_level') === 'full')
                             ->dehydrated()
                             ->required(),

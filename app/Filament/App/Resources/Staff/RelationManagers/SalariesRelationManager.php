@@ -2,6 +2,7 @@
 
 namespace App\Filament\App\Resources\Staff\RelationManagers;
 
+use App\Filament\Support\MoneyInput;
 use Filament\Actions\BulkActionGroup;
 use Filament\Actions\CreateAction;
 use Filament\Actions\DeleteBulkAction;
@@ -28,7 +29,7 @@ class SalariesRelationManager extends RelationManager
     {
         return $schema
             ->components([
-                TextInput::make('base_salary')
+                MoneyInput::make('base_salary')
                     ->label('Monthly base salary')
                     ->required()
                     ->numeric()

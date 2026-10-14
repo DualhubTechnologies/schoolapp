@@ -2,6 +2,7 @@
 
 namespace App\Filament\App\Resources\FeeStructures\Schemas;
 
+use App\Filament\Support\MoneyInput;
 use App\Models\FeeStructure;
 use App\Models\ResidencyType;
 use App\Models\SchoolClass;
@@ -161,7 +162,7 @@ class FeeStructureForm
                     Section::make('Amount')
                         ->icon('heroicon-o-currency-dollar')
                         ->schema([
-                            TextInput::make('amount')
+                            MoneyInput::make('amount')
                                 ->label('Fee amount')
                                 ->numeric()
                                 ->prefix('UGX')

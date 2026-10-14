@@ -77,7 +77,7 @@ abstract class FinanceEntryResource extends Resource
                 ->default(today())
                 ->maxDate(today())
                 ->required(),
-            TextInput::make('amount')
+            MoneyInput::make('amount')
                 ->label('Amount')
                 ->prefix('UGX')
                 ->numeric()

@@ -6,6 +6,7 @@ use App\Filament\App\Resources\BankAccounts\Pages\ManageBankAccounts;
 use App\Filament\App\Resources\BankStatementLines\Pages\ListBankStatementLines;
 use App\Filament\Concerns\GatedByModule;
 use App\Filament\Support\ConfirmWithPassword;
+use App\Filament\Support\MoneyInput;
 use App\Models\BankAccount;
 use App\Models\BankStatementLine;
 use App\Support\FinanceAccess;
@@ -87,7 +88,7 @@ class BankAccountResource extends Resource
             TextInput::make('account_number')
                 ->label('Account number')
                 ->maxLength(40),
-            TextInput::make('opening_balance')
+            MoneyInput::make('opening_balance')
                 ->label('Balance on the opening date')
                 ->prefix('UGX')
                 ->numeric()

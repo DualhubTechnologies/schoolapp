@@ -44,7 +44,7 @@
                                     @if ($category->isAutomatic())<span class="tb-auto">automatic</span>@endif
                                 </td>
                                 <td class="tb-r">
-                                    <input type="text" inputmode="numeric" class="tb-input" wire:model.blur="amounts.{{ $category->id }}" placeholder="0">
+                                    <input type="text" inputmode="numeric" class="tb-input" x-data x-mask:dynamic="$money($input, '.', ',', 0)" wire:model.blur="amounts.{{ $category->id }}" placeholder="0">
                                 </td>
                                 <td class="tb-r tb-muted">{{ isset($actuals[$category->id]) && $actuals[$category->id] ? $n($actuals[$category->id]) : '—' }}</td>
                             </tr>

@@ -2,6 +2,7 @@
 
 namespace App\Filament\App\Resources\Staff\Schemas;
 
+use App\Filament\Support\MoneyInput;
 use App\Models\Staff;
 use App\Support\EmailCheck;
 use App\Support\ImageShrinker;
@@ -121,11 +122,11 @@ class StaffForm
                             ->required(),
                         // New staff only: their pay from the start. Later
                         // changes, allowances and deductions are on the record.
-                        TextInput::make('monthly_salary')
+                        MoneyInput::make('monthly_salary')
                             ->label('Monthly salary (UGX)')
                             ->numeric()
                             ->minValue(0)
-                            ->placeholder('e.g. 800000')
+                            ->placeholder('e.g. 800,000')
                             ->helperText('Before tax. Allowances, deductions and bank details can be added after saving.')
                             ->visibleOn('create')
                             ->dehydrated(false),

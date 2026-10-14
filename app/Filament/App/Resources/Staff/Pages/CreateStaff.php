@@ -22,7 +22,7 @@ class CreateStaff extends CreateRecordPage
     /** The salary typed on the form becomes their first salary, from the day they were employed. */
     protected function afterCreate(): void
     {
-        $salary = $this->data['monthly_salary'] ?? null;
+        $salary = str_replace(',', '', (string) ($this->data['monthly_salary'] ?? ''));
 
         if (is_numeric($salary) && (float) $salary > 0) {
             StaffSalary::create([

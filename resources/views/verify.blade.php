@@ -21,7 +21,7 @@
     <meta charset="utf-8">
     <meta name="viewport" content="width=device-width, initial-scale=1">
     <meta name="robots" content="noindex, nofollow">
-    <title>{{ $code ? $code.' — ' : '' }}Verify a document | SchoolHub</title>
+    <title>{{ $code ? $code.' - ' : '' }}Verify a document | SchoolHub</title>
     <link rel="icon" type="image/svg+xml" href="{{ $site }}/images/schoolhub-icon.svg">
     <style>
         :root { --ink: #0d1f38; --muted: #5b6b80; --line: #e2e8f0; --bg: #f4f7fb; --ok: #0f7a4a; --ok-bg: #e8f6ef; --info: #1d4f91; --info-bg: #e8f0fb; --bad: #b42318; --bad-bg: #fdecea; --brand: #1e3a5f; }

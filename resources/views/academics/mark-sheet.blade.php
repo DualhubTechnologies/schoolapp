@@ -7,7 +7,7 @@
     $entered = $marks->filter(fn ($m) => $m->score !== null || $m->is_absent);
 @endphp
 
-@section('title', "Mark sheet — {$subject->name} — {$class->name}")
+@section('title', "Mark sheet - {$subject->name} - {$class->name}")
 
 @section('styles')
     @page { size: A4; margin: 12mm; }

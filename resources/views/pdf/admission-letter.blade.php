@@ -40,7 +40,7 @@
 <html lang="en">
 <head>
     <meta charset="utf-8">
-    <title>Letter of Admission — {{ $name }}</title>
+    <title>Letter of Admission - {{ $name }}</title>
     <style>
         @page { size: A4 portrait; margin: 0; }
         body { margin: 12mm 18mm 11mm 18mm; font-family: 'DejaVu Sans', sans-serif; font-size: 9.4px; color: #1f2937; line-height: 1.42; }

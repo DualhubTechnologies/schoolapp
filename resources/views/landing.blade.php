@@ -13,10 +13,10 @@
 <head>
     <meta charset="utf-8">
     <meta name="viewport" content="width=device-width, initial-scale=1">
-    <title>SchoolHub — School management software for Ugandan schools</title>
+    <title>SchoolHub - School management software for Ugandan schools</title>
     <meta name="description" content="Run your school smarter: fees, income and spending, learners and marks in one place, with new-curriculum O-Level and A-Level report cards generated in seconds. For Ugandan primary and secondary schools. Free for {{ $trialDays }} days.">
     <meta name="theme-color" content="#ffffff">
-    <meta property="og:title" content="SchoolHub — School management software for Ugandan schools">
+    <meta property="og:title" content="SchoolHub - School management software for Ugandan schools">
     <meta property="og:description" content="Income against expenditure, fees, payroll and new-curriculum O-Level and A-Level report cards in one system. Free {{ $trialDays }}-day trial.">
     <meta property="og:type" content="website">
     <meta property="og:url" content="{{ rtrim((string) config('app.url'), '/') }}/">

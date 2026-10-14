@@ -5,7 +5,7 @@
     $n = fn ($v) => number_format((float) $v, 0);
 @endphp
 
-@section('title', "{$title} — {$period->period_label}")
+@section('title', "{$title} - {$period->period_label}")
 
 @section('styles')
     @page { size: A4 landscape; margin: 10mm; }

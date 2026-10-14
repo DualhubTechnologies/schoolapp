@@ -38,7 +38,7 @@
 <head>
     <meta charset="utf-8">
     <meta name="viewport" content="width=device-width, initial-scale=1">
-    <title>Terms and Conditions — SchoolHub</title>
+    <title>Terms and Conditions - SchoolHub</title>
     <meta name="description" content="The terms under which schools use SchoolHub, including the free trial, fees, and how school data is protected.">
     @include('partials.site-head', ['path' => '/terms-and-conditions'])
     <link rel="preconnect" href="https://fonts.googleapis.com">

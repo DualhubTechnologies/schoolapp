@@ -2,7 +2,7 @@
 <html lang="en">
 <head>
     <meta charset="utf-8">
-    <title>Student Profile — {{ $student->name }}</title>
+    <title>Student Profile - {{ $student->name }}</title>
     {{-- Dompdf: tables for layout, no flex or grid. No "*" reset, which would also clear the page margin. --}}
     <style>
         @page { margin: 13mm 14mm 14mm; }

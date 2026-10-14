@@ -7,6 +7,7 @@ use App\Filament\App\Resources\FeeStructures\FeeStructureResource;
 use App\Filament\Support\MoneyInput;
 use App\Models\FeeStructure;
 use App\Models\ResidencyType;
+use App\Models\Student;
 use App\Models\Term;
 use App\Services\AttentionItems;
 use App\Services\BillingService;
@@ -22,6 +23,7 @@ use Filament\Pages\Page;
 use Filament\Schemas\Components\Utilities\Get;
 use Filament\Schemas\Schema;
 use Filament\Support\Icons\Heroicon;
+use Illuminate\Support\Collection;
 
 /**
  * The start of a new term: the termly fees in force, kept as they were or
@@ -56,6 +58,19 @@ class StartTermBilling extends Page
     public function term(): ?Term
     {
         return Term::current();
+    }
+
+    /**
+     * Learners or classes that billing would get wrong, and the new learners
+     * who will pay admission fees (BillingService::checksBeforeBilling).
+     *
+     * @return array{missingResidency: Collection<int, Student>, classesWithoutFees: Collection<int, string>, newLearners: Collection<int, Student>}|null
+     */
+    public function checks(): ?array
+    {
+        $term = $this->term();
+
+        return $term ? app(BillingService::class)->checksBeforeBilling($term) : null;
     }
 
     public function previousTerm(): ?Term

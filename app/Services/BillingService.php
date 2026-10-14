@@ -89,6 +89,50 @@ class BillingService
     }
 
     /**
+     * What to look at before billing a term, so nobody is under- or
+     * over-billed by mistake:
+     *
+     *   missingResidency  learners with no Day/Boarding set, in a class
+     *                     whose fees depend on it: they would miss them
+     *   classesWithoutFees  classes with learners but no termly fees
+     *   newLearners       learners who will pay the admission fees
+     *
+     * @return array{missingResidency: Collection<int, Student>, classesWithoutFees: Collection<int, string>, newLearners: Collection<int, Student>}
+     */
+    public function checksBeforeBilling(Term $term): array
+    {
+        $termly = FeeStructure::termlyFor($term);
+
+        $learners = Student::query()
+            ->with('schoolClass')
+            ->where('school_id', $term->school_id)
+            ->where('status', 'active')
+            ->whereNotNull('school_class_id')
+            ->orderBy('name')
+            ->get();
+
+        $classesByResidency = $termly->whereNotNull('residency_type_id')->pluck('school_class_id')->unique();
+
+        $hasAdmissionFees = $termly->where('applies_to', 'new_only')->isNotEmpty()
+            || FeeStructure::where('school_id', $term->school_id)->where('frequency', 'once')->where('is_active', true)->exists();
+
+        return [
+            'missingResidency' => $learners
+                ->filter(fn (Student $student): bool => $student->residency_type_id === null && $classesByResidency->contains($student->school_class_id))
+                ->values(),
+            'classesWithoutFees' => $learners
+                ->reject(fn (Student $student): bool => $termly->contains('school_class_id', $student->school_class_id))
+                ->map(fn (Student $student): string => (string) $student->schoolClass?->name)
+                ->unique()
+                ->sort()
+                ->values(),
+            'newLearners' => $hasAdmissionFees
+                ? $learners->filter(fn (Student $student): bool => $student->isNewIn($term))->values()
+                : collect(),
+        ];
+    }
+
+    /**
      * Set the termly fees for a term before billing it. Each changed
      * amount becomes a new version of the fee starting in this term, so
      * earlier terms keep the amount they were billed at (the Fee structure

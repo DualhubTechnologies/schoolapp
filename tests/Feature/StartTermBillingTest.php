@@ -3,6 +3,7 @@
 use App\Filament\Pages\StartTermBilling;
 use App\Models\AcademicYear;
 use App\Models\FeeStructure;
+use App\Models\ResidencyType;
 use App\Models\School;
 use App\Models\SchoolClass;
 use App\Models\Student;
@@ -107,4 +108,24 @@ it('bills a learner admitted after the term was billed straight away', function 
     expect($billing->billNewLearner($late))->toBe(500000.0)
         ->and($late->balance())->toBe(500000.0)
         ->and($billing->billNewLearner($late))->toBe(0.0); // never twice
+});
+
+it('warns before billing about learners who would be missed, and names the new learners', function () {
+    $day = ResidencyType::create(['school_id' => $this->school->id, 'name' => 'Day', 'is_active' => true]);
+    FeeStructure::create(['school_id' => $this->school->id, 'school_class_id' => $this->class->id, 'term_id' => $this->term2->id, 'name' => 'Lunch', 'frequency' => 'per_term', 'applies_to' => 'all', 'residency_type_id' => $day->id, 'amount' => 150000, 'is_active' => true]);
+    FeeStructure::create(['school_id' => $this->school->id, 'school_class_id' => $this->class->id, 'name' => 'Admission', 'frequency' => 'once', 'applies_to' => 'new_only', 'amount' => 100000, 'is_active' => true]);
+    $s2 = SchoolClass::create(['school_id' => $this->school->id, 'name' => 'S.2']);
+    Student::create(['school_id' => $this->school->id, 'school_class_id' => $s2->id, 'name' => 'Peter Okello', 'admission_no' => 'ADM-T002', 'status' => 'active', 'residency_type_id' => $day->id]);
+    Student::create(['school_id' => $this->school->id, 'school_class_id' => $this->class->id, 'name' => 'Aisha Nakato', 'admission_no' => 'ADM-T003', 'status' => 'active', 'residency_type_id' => $day->id, 'is_new_learner' => true]);
+
+    $checks = app(BillingService::class)->checksBeforeBilling($this->term3);
+
+    expect($checks['missingResidency']->pluck('name')->all())->toBe(['Sarah Nakato'])
+        ->and($checks['classesWithoutFees']->all())->toBe(['S.2'])
+        ->and($checks['newLearners']->pluck('name')->all())->toBe(['Aisha Nakato']);
+
+    Livewire::test(StartTermBilling::class)
+        ->assertSee('1 learner with no Day or Boarding set')
+        ->assertSee('No fees are set for S.2')
+        ->assertSee('1 new learner will pay the admission fees');
 });

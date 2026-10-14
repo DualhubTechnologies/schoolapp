@@ -275,8 +275,11 @@ class StudentForm
             // Day / Boarding. Required on purpose: fees tied
             // to a residency would silently miss a student
             // who has none, and under-billing is discovered
-            // late and awkwardly.
+            // late and awkwardly. A boarding-only or day-only
+            // school has nothing to choose: the learner gets
+            // its one residency when saved (Student::booted).
             Select::make('residency_type_id')
+                ->hidden(fn (): bool => in_array(auth()->user()?->school?->boarding_type, ['boarding', 'day'], true))
                 ->label('Residency')
                 ->relationship(
                     'residencyType',

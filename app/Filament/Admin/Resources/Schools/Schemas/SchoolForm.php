@@ -61,6 +61,7 @@ class SchoolForm
                         Select::make('boarding_type')
                             ->label('Day / boarding')
                             ->options(School::BOARDING_TYPES)
+                            ->helperText('In a boarding school every learner is a boarder, and in a day school a day scholar: SchoolHub sets it for you.')
                             ->native(false),
 
                         Select::make('ownership')

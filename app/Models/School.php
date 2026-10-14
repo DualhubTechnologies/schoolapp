@@ -3,6 +3,7 @@
 namespace App\Models;
 
 use App\Concerns\Auditable;
+use App\Services\SchoolStarterSetup;
 use App\Support\PrivateFiles;
 use Carbon\CarbonImmutable;
 use Illuminate\Database\Eloquent\Model;
@@ -123,6 +124,56 @@ class School extends Model
                 $school->schoolpay_webhook_token = Str::random(48);
             }
         });
+
+        // A school that becomes boarding-only (or day-only) gets that
+        // residency on every learner who has none yet.
+        static::saved(function (School $school): void {
+            if ($school->wasChanged('boarding_type')) {
+                $school->fillSingleResidency();
+            }
+        });
+    }
+
+    /**
+     * A boarding-only school's Boarding residency, or a day-only school's
+     * Day; null for a day-and-boarding school, whose learners each have
+     * their own. Made when the school has not set it up yet.
+     */
+    public function singleResidencyId(): ?int
+    {
+        $name = match ($this->boarding_type) {
+            'boarding' => 'Boarding',
+            'day' => 'Day',
+            default => null,
+        };
+
+        if ($name === null || ! $this->exists) {
+            return null;
+        }
+
+        $existing = ResidencyType::query()
+            ->where('school_id', $this->getKey())
+            ->where('is_active', true)
+            ->where('name', 'like', $name === 'Boarding' ? '%board%' : '%day%')
+            ->orderBy('id')
+            ->value('id');
+
+        return (int) ($existing ?? ResidencyType::create([
+            'school_id' => $this->getKey(),
+            'name' => $name,
+            'description' => SchoolStarterSetup::RESIDENCY[$name],
+            'is_active' => true,
+        ])->getKey());
+    }
+
+    /** Gives every learner without a residency the school's single one. */
+    public function fillSingleResidency(): int
+    {
+        $residencyId = $this->singleResidencyId();
+
+        return $residencyId
+            ? Student::query()->where('school_id', $this->getKey())->whereNull('residency_type_id')->update(['residency_type_id' => $residencyId])
+            : 0;
     }
 
     /** SchoolPay is switched on and has what SchoolHub needs to talk to it. */

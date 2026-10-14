@@ -70,6 +70,14 @@ class Student extends Model
      */
     protected static function booted(): void
     {
+        // In a boarding-only school every learner is a boarder (and in a
+        // day-only school a day scholar), however they were added.
+        static::saving(function (Student $student): void {
+            if ($student->residency_type_id === null && $student->school_id) {
+                $student->setAttribute('residency_type_id', School::find($student->school_id)?->singleResidencyId());
+            }
+        });
+
         // A learner off the van has no trip either; one back on it rides
         // both ways unless told otherwise.
         static::saving(function (Student $student): void {

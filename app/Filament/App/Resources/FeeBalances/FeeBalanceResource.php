@@ -25,6 +25,9 @@ class FeeBalanceResource extends Resource
     use GatedByModule;
     use PlacedInMenu;
 
+    /** A learner's account is reached from their search result ("Fees account"); listing them again would repeat every name. */
+    protected static bool $isGloballySearchable = false;
+
     protected static ?string $model = Student::class;
 
     protected static string|BackedEnum|null $navigationIcon = Heroicon::OutlinedWallet;

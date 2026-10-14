@@ -3,12 +3,13 @@
     Save as: resources/views/filament/partials/topbar.blade.php
 
     This REPLACES Filament's topbar completely. Filament's own bar is
-    hidden in CSS (.fi-topbar { display: none }) and this is injected
+    drawn empty (App\Filament\Support\HiddenTopbar) and this is injected
     via the PAGE_START render hook instead.
 
     Layout:
-      LEFT   sidebar toggle · date + live clock · role badge
-      RIGHT  user menu with sign out
+      LEFT   sidebar toggle · (phones) the school · search (Ctrl+K)
+      RIGHT  today's date and time · plan · help · needs-attention bell ·
+             user menu with sign out
 --}}
 
 @php
@@ -69,32 +70,27 @@
             <div class="sh-topbar-brand">{{ $topbarBrand }}</div>
         @endif
 
-        {{-- Date + live clock --}}
-        <div class="sh-chip" x-data="{
-                time: '',
-                tick() { this.time = new Date().toLocaleTimeString('en-GB', { hour12: false }); }
-             }"
-             x-init="tick(); setInterval(() => tick(), 1000)">
-            <svg width="18" height="18" fill="none" stroke="currentColor" stroke-width="1.8" viewBox="0 0 24 24">
-                <path stroke-linecap="round" stroke-linejoin="round"
-                      d="M6.75 3v2.25M17.25 3v2.25M3 18.75V7.5a2.25 2.25 0 012.25-2.25h13.5A2.25 2.25 0 0121 7.5v11.25m-18 0A2.25 2.25 0 005.25 21h13.5A2.25 2.25 0 0021 18.75m-18 0v-7.5A2.25 2.25 0 015.25 9h13.5A2.25 2.25 0 0121 11.25v7.5" />
-            </svg>
-            <span class="sh-chip-value">{{ now()->format('l, j F Y') }}</span>
-            <span class="sh-chip-divider"></span>
-            <span class="sh-chip-clock" x-text="time"></span>
-        </div>
-
-        {{-- Role badge --}}
-        @if ($role)
-            <div class="sh-chip sh-chip-role">
-                <svg width="18" height="18" fill="none" stroke="currentColor" stroke-width="1.8" viewBox="0 0 24 24">
-                    <path stroke-linecap="round" stroke-linejoin="round"
-                          d="M9 12.75L11.25 15 15 9.75m-3-7.036A11.959 11.959 0 013.598 6 11.99 11.99 0 003 9.749c0 5.592 3.824 10.29 9 11.622 5.176-1.332 9-6.03 9-11.622 0-1.31-.21-2.571-.598-3.751A11.959 11.959 0 0112 2.714z" />
-                </svg>
-                <span>ROLE</span>
-                <span class="sh-chip-value">{{ $role }}</span>
+        {{-- Find a learner, parent, staff member or receipt from any page (Ctrl+K). --}}
+        @if (filament()->isGlobalSearchEnabled() && $user?->school_id)
+            <div class="sh-topbar-search">
+                @livewire(\Filament\Livewire\GlobalSearch::class, key('sh-global-search'))
             </div>
         @endif
+
+    </div>
+
+    {{-- ---------- RIGHT ---------- --}}
+    <div class="sh-topbar-right" x-data="{ open: false }">
+
+        {{-- Today, with a live clock. --}}
+        <div class="sh-topbar-when" x-data="{
+                time: '',
+                tick() { this.time = new Date().toLocaleTimeString('en-GB', { hour: '2-digit', minute: '2-digit', hour12: false }); }
+             }"
+             x-init="tick(); setInterval(() => tick(), 15000)">
+            <span>{{ now()->format('D j M Y') }}</span>
+            <b x-text="time"></b>
+        </div>
 
         {{-- Subscribed plan --}}
         @if ($plan)
@@ -112,10 +108,6 @@
             </{{ $tag }}>
         @endif
 
-    </div>
-
-    {{-- ---------- RIGHT ---------- --}}
-    <div class="sh-topbar-right" x-data="{ open: false }">
 
         {{-- Help: a WhatsApp chat with the SchoolHub team, saying who is asking and from which page. --}}
         @if ($user?->school_id)

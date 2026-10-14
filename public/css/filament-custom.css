@@ -47,6 +47,13 @@
 
     --sh-amber: #d97d0d;
 
+    /* Classic accents, shared with the sign-in screens */
+    --sh-gold: #c4973a;
+    --sh-gold-light: #e2c47e;
+    --sh-gold-soft: #fbf5e6;
+    --sh-gold-line: #ead8ab;
+    --sh-serif: "Libre Baskerville", Georgia, "Times New Roman", serif;
+
     /* Card accents */
 
     --sh-rail-1: #1a5fa8;
@@ -97,8 +104,7 @@
 *   ============================================================ */
 
 .fi-sidebar {
-
-    background: var(--sh-navy-900) !important;
+    background: linear-gradient(180deg, #11284a 0%, var(--sh-navy-900) 38%, #0a1830 100%) !important;
 
     border-right: none !important;
 
@@ -107,12 +113,8 @@
 }
 
 .fi-sidebar-header {
-
-    background: var(--sh-navy-800) !important;
-
-    border-bottom:
-
-        1px solid rgba(255, 255, 255, 0.07) !important;
+    background: rgba(255, 255, 255, 0.03) !important;
+    border-bottom: 1px solid rgba(226, 196, 126, 0.22) !important;
 
     display: flex !important;
 
@@ -191,31 +193,34 @@
 /* Active nav */
 
 html .fi-sidebar .fi-sidebar-item.fi-active,
-
 html .fi-sidebar .fi-sidebar-item.fi-active > a {
-
-    background: var(--sh-blue-600) !important;
+    /* The page you are on: a soft lift with a gold edge, not a bright block. */
+    background: rgba(255, 255, 255, 0.09) !important;
 
     background-image: none !important;
 
 }
 
 html .fi-sidebar .fi-sidebar-item.fi-active .fi-sidebar-item-label,
+html .fi-sidebar .fi-sidebar-item.fi-active .fi-sidebar-item-icon {
+    color: #ffffff !important;
+    opacity: 1 !important;
+}
+
+html .fi-sidebar .fi-sidebar-item.fi-active .fi-sidebar-item-label {
+    font-weight: 600 !important;
+}
 
 html .fi-sidebar .fi-sidebar-item.fi-active .fi-sidebar-item-icon {
-
-    color: #ffffff !important;
-
-    opacity: 1 !important;
-
+    color: var(--sh-gold-light) !important;
 }
 
 
 /* Group headings */
 
 html .fi-sidebar .fi-sidebar-group-label {
-
-    color: var(--sh-nav-group) !important;
+    /* Muted gold small capitals, like the sign-in panel. */
+    color: rgba(226, 196, 126, 0.78) !important;
 
     text-transform: uppercase;
 
@@ -249,8 +254,8 @@ html .fi-sidebar .fi-sidebar-group-collapse-btn {
 /* Sidebar badges */
 
 .fi-sidebar-item .fi-badge {
-
-    background: #c0392b !important;
+    /* A count is neutral; real warnings keep their colour (below). */
+    background: rgba(255, 255, 255, 0.13) !important;
 
     border-radius: 20px !important;
 
@@ -261,16 +266,15 @@ html .fi-sidebar .fi-sidebar-group-collapse-btn {
 }
 
 .fi-sidebar-item .fi-badge,
-
 .fi-sidebar-item .fi-badge span {
-
     color: #ffffff !important;
-
     font-size: 0.65rem !important;
-
     font-weight: 700 !important;
-
 }
+
+.fi-sidebar-item .fi-badge.fi-color-danger { background: #c0392b !important; }
+.fi-sidebar-item .fi-badge.fi-color-warning { background: #b5721a !important; }
+.fi-sidebar-item .fi-badge.fi-color-success { background: #0f7a68 !important; }
 
 
 /* Sidebar scrollbar */
@@ -437,9 +441,8 @@ html .fi-sidebar .fi-sidebar-item > .fi-sidebar-item-btn:focus-visible {
 }
 
 html .fi-sidebar .fi-sidebar-item.fi-active > .fi-sidebar-item-btn {
-
-    background-color: var(--sh-blue-600) !important;
-
+    background-color: rgba(255, 255, 255, 0.09) !important;
+    box-shadow: inset 3px 0 0 var(--sh-gold-light);
 }
 
 .fi-sidebar-item-icon {
@@ -1084,13 +1087,9 @@ html .fi-body {
 *   ============================================================ */
 
 @media (max-width: 1100px) {
-
-    .sh-topbar-left .sh-chip {
-
+    .sh-topbar .sh-chip {
         display: none;
-
     }
-
 }
 
 @media (max-width: 640px) {
@@ -1131,6 +1130,82 @@ html .fi-body {
 
     }
 
+}
+
+
+/* Topbar: search on the left, today's date on the right. */
+.sh-topbar-left {
+    flex: 1 1 auto;
+    flex-wrap: nowrap !important;
+}
+
+.sh-topbar-search {
+    flex: 1 1 auto;
+    min-width: 0;
+    max-width: 30rem;
+    margin-left: 0.25rem;
+}
+
+.sh-topbar-search .fi-global-search-ctn,
+.sh-topbar-search .fi-global-search {
+    width: 100%;
+}
+
+.sh-topbar-search .fi-input-wrp {
+    border-radius: 10px !important;
+    background: var(--sh-bg) !important;
+    box-shadow: 0 0 0 1px var(--sh-border) !important;
+    transition: background 0.15s ease, box-shadow 0.15s ease;
+}
+
+.sh-topbar-search .fi-input-wrp:focus-within {
+    background: #fff !important;
+    box-shadow: 0 0 0 2px var(--sh-navy-700) !important;
+}
+
+.sh-topbar-search .fi-input {
+    font-size: 0.875rem !important;
+}
+
+.sh-topbar-search .fi-global-search-results-ctn {
+    inset-inline: 0 auto;
+    width: 100%;
+    min-width: 22rem;
+    max-width: none;
+    border-radius: 12px;
+    border: 1px solid var(--sh-border);
+    box-shadow: 0 20px 40px -18px rgba(13, 31, 56, 0.35);
+}
+
+.sh-topbar-right {
+    gap: 0.35rem;
+}
+
+.sh-topbar-when {
+    display: flex;
+    align-items: baseline;
+    gap: 0.45rem;
+    margin-right: 0.4rem;
+    padding-right: 0.8rem;
+    border-right: 1px solid var(--sh-border);
+    font-size: 0.8rem;
+    color: var(--sh-text-muted);
+    white-space: nowrap;
+}
+
+.sh-topbar-when b {
+    font-weight: 600;
+    color: var(--sh-text);
+    font-variant-numeric: tabular-nums;
+}
+
+@media (max-width: 1279px) {
+    .sh-topbar-when { display: none; }
+}
+
+/* Phones: the school's name takes the bar (the Learners page has its own search). */
+@media (max-width: 639px) {
+    .sh-topbar-search { display: none; }
 }
 
 
@@ -1189,34 +1264,17 @@ html .fi-body {
 /* Page heading */
 
 .fi-header {
-
-    background:
-
-        linear-gradient(
-
-            180deg,
-
-            #f2f7fd 0%,
-
-            #eaf2fb 100%
-
-        ) !important;
-
-    border:
-
-        1px solid var(--sh-border) !important;
-
-    border-bottom:
-
-        3px solid var(--sh-blue-600) !important;
-
-    border-radius:
-
-        12px 12px 0 0 !important;
-
-    padding:
-
-        1.05rem 1.35rem !important;
+    /* The title of every page: a white card under a letterhead rule (navy
+       over gold), as on the sign-in card and the printed reports. */
+    background: #fff !important;
+    border: 1px solid var(--sh-border) !important;
+    border-radius: 12px !important;
+    box-shadow:
+        inset 0 3px 0 var(--sh-navy-700),
+        inset 0 4px 0 #fff,
+        inset 0 5px 0 var(--sh-gold-line),
+        0 1px 2px rgba(13, 31, 56, 0.04) !important;
+    padding: 1.2rem 1.4rem 1.05rem !important;
 
     margin-top: 0 !important;
 
@@ -1225,19 +1283,11 @@ html .fi-body {
 }
 
 .fi-header-heading {
-
-    color:
-
-        var(--sh-blue-600) !important;
-
+    color: var(--sh-navy-800) !important;
+    font-family: var(--sh-serif) !important;
     font-weight: 700 !important;
-
-    font-size: 1.3rem !important;
-
-    text-transform: uppercase !important;
-
-    letter-spacing: 0.02em !important;
-
+    font-size: 1.4rem !important;
+    letter-spacing: -0.01em !important;
 }
 
 .fi-header-subheading {

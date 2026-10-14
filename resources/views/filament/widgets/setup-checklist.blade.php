@@ -58,33 +58,44 @@
     </div>
 
     <style>
-        .fi-wi-widget:has(.sh-setup-host), .sh-setup-host { display: contents; }
-        .sh-setup-pop { position: fixed; z-index: 30; right: 1.25rem; bottom: 1.25rem; width: min(22rem, calc(100vw - 2rem)); max-height: calc(100vh - 6rem); overflow-y: auto; padding: 1rem; background: #fff; border: 1px solid #e3e9f2; border-radius: 1rem; box-shadow: 0 18px 40px -12px rgba(15, 23, 42, .25); }
-        body:has(.sh-mnav) .sh-setup-pop { bottom: calc(5rem + env(safe-area-inset-bottom)); }
-        .sh-setup-head { display: flex; align-items: flex-start; justify-content: space-between; gap: .75rem; }
-        .sh-setup-head strong { display: block; font-size: .95rem; color: #13294b; }
+        /* A card in the dashboard's flow, right under the greeting (it used to float over the charts). */
+        .sh-setup-pop {
+            display: grid; grid-template-columns: minmax(0, 15rem) minmax(0, 1fr) auto; grid-template-areas: "head next toggle" "bar bar bar" "list list list";
+            align-items: center; column-gap: 1.25rem; padding: 1rem 1.15rem .9rem 1.25rem; background: #fff; border: 1px solid #e3e9f2; border-left: 3px solid var(--sh-gold, #c4973a); border-radius: 12px; box-shadow: 0 1px 2px rgba(13, 31, 56, .04);
+        }
+        .sh-setup-head { grid-area: head; display: flex; align-items: flex-start; justify-content: space-between; gap: .75rem; }
+        .sh-setup-next { grid-area: next; }
+        .sh-setup-toggle { grid-area: toggle; }
+        .sh-setup-bar { grid-area: bar; }
+        .sh-setup { grid-area: list; }
+        @media (max-width: 767px) {
+            .sh-setup-pop { grid-template-columns: minmax(0, 1fr); grid-template-areas: "head" "bar" "next" "toggle" "list"; }
+        }
+        .sh-setup-head strong { display: block; font-family: var(--sh-serif, Georgia, serif); font-size: 1rem; color: #13294b; }
         .sh-setup-head span { font-size: .8rem; color: #64748b; }
         .sh-setup-close { flex: none; display: grid; place-items: center; width: 1.9rem; height: 1.9rem; margin: -.35rem -.35rem 0 0; border-radius: 50%; color: #64748b; }
         .sh-setup-close:hover { background: #f1f5f9; color: #13294b; }
         .sh-setup-close svg { width: 1.1rem; height: 1.1rem; }
-        .sh-setup-bar { height: .35rem; border-radius: 99px; background: #eef2f7; overflow: hidden; margin: .75rem 0; }
-        .sh-setup-bar span { display: block; height: 100%; border-radius: inherit; background: linear-gradient(90deg, #2563eb, #4f46e5); }
-        .sh-setup-next { display: flex; align-items: center; justify-content: space-between; gap: .75rem; padding: .65rem .75rem; border-radius: .75rem; background: #f5f9ff; border: 1px solid #dbeafe; }
+        .sh-setup-bar { height: .3rem; border-radius: 99px; background: #eef2f7; overflow: hidden; margin: .85rem 0 0; }
+        .sh-setup-bar span { display: block; height: 100%; border-radius: inherit; background: linear-gradient(90deg, var(--sh-gold, #c4973a), var(--sh-gold-light, #e2c47e)); }
+        .sh-setup-next { display: flex; align-items: center; justify-content: space-between; gap: .75rem; padding: .6rem .75rem; border-radius: .6rem; background: var(--sh-gold-soft, #fbf5e6); border: 1px solid var(--sh-gold-line, #ead8ab); }
         .sh-setup-next small { display: block; font-size: .7rem; text-transform: uppercase; letter-spacing: .04em; color: #64748b; }
         .sh-setup-next b { font-size: .88rem; color: #13294b; }
-        .sh-setup { display: grid; gap: .4rem; margin-top: .75rem; }
+        .sh-setup { display: grid; grid-template-columns: repeat(auto-fill, minmax(16rem, 1fr)); gap: .25rem 1rem; margin-top: .75rem; }
         .sh-setup li { display: flex; align-items: flex-start; gap: .65rem; padding: .5rem .25rem; }
         .sh-setup li.is-done { opacity: .6; }
         .sh-setup-mark { flex: none; display: grid; place-items: center; width: 1.5rem; height: 1.5rem; border-radius: 50%; background: #eef2f7; color: #475569; font-size: .72rem; font-weight: 700; }
         .sh-setup li.is-done .sh-setup-mark { background: #dcfce7; color: #166534; }
-        .sh-setup li.is-next .sh-setup-mark { background: #2563eb; color: #fff; }
+        .sh-setup li.is-next .sh-setup-mark { background: var(--sh-navy-700, #1b3a63); color: #fff; }
         .sh-setup-mark svg { width: .9rem; height: .9rem; }
         .sh-setup-body { flex: 1; min-width: 0; }
         .sh-setup-body strong, .sh-setup-body a { display: block; font-size: .85rem; font-weight: 600; color: #13294b; }
         .sh-setup-body a:hover { color: #2563eb; text-decoration: underline; }
         .sh-setup-body span { display: block; font-size: .76rem; color: #64748b; }
         .sh-setup li.is-done strong { text-decoration: line-through; }
-        .sh-setup-toggle { display: block; margin: .65rem auto 0; font-size: .8rem; font-weight: 600; color: #2563eb; }
+        .sh-setup-toggle { display: block; justify-self: end; font-size: .8rem; font-weight: 600; color: var(--sh-navy-700, #1b3a63); white-space: nowrap; }
+        .sh-setup-toggle:hover { text-decoration: underline; }
+        @media (max-width: 767px) { .sh-setup-toggle { justify-self: center; margin-top: .65rem; } .sh-setup-next { margin-top: .75rem; } }
         .dark .sh-setup-pop { background: #111827; border-color: #1f2937; }
         .dark .sh-setup-head strong, .dark .sh-setup-next b, .dark .sh-setup-body strong, .dark .sh-setup-body a { color: #f1f5f9; }
         .dark .sh-setup-next { background: #172036; border-color: #1e3a8a; }

@@ -31,25 +31,36 @@
     padding: 1.75rem 2rem;
     border-radius: 18px;
     color: #fff;
-    /* Built from the sidebar's own navy (--sh-navy-*) and brand blue, so the two read as one. */
+    /* The sidebar's own navy, with the gold of the sign-in screens. */
     background:
-        radial-gradient(55% 120% at 100% 0%, rgba(36, 114, 196, 0.55), transparent 65%),
-        radial-gradient(35% 80% at 88% 110%, rgba(217, 125, 13, 0.22), transparent 70%),
+        radial-gradient(55% 120% at 100% 0%, rgba(98, 132, 214, 0.32), transparent 65%),
+        radial-gradient(35% 80% at 88% 110%, rgba(196, 151, 58, 0.18), transparent 70%),
         linear-gradient(120deg, #0d1f38 0%, #12294a 45%, #1b3a63 100%);
     border: 1px solid rgba(255, 255, 255, 0.06);
     box-shadow: 0 18px 40px -24px rgba(13, 31, 56, 0.7);
 }
 
 .shd-banner::after {
+    /* A fine engraved lattice, fading in towards the term card. */
     content: "";
     position: absolute;
     inset: 0;
     background-image:
-        linear-gradient(rgba(255, 255, 255, 0.06) 1px, transparent 1px),
-        linear-gradient(90deg, rgba(255, 255, 255, 0.06) 1px, transparent 1px);
-    background-size: 28px 28px;
-    mask-image: linear-gradient(90deg, transparent 30%, #000 100%);
-    -webkit-mask-image: linear-gradient(90deg, transparent 30%, #000 100%);
+        repeating-linear-gradient(45deg, rgba(226, 196, 126, 0.07) 0 1px, transparent 1px 22px),
+        repeating-linear-gradient(-45deg, rgba(226, 196, 126, 0.07) 0 1px, transparent 1px 22px);
+    mask-image: linear-gradient(90deg, transparent 35%, #000 100%);
+    -webkit-mask-image: linear-gradient(90deg, transparent 35%, #000 100%);
+    pointer-events: none;
+}
+
+/* A thin gold frame inside the banner, like the sign-in panel. */
+.shd-banner::before {
+    content: "";
+    position: absolute;
+    inset: 0.55rem;
+    z-index: 0;
+    border: 1px solid rgba(226, 196, 126, 0.2);
+    border-radius: 12px;
     pointer-events: none;
 }
 
@@ -59,22 +70,23 @@
 
 .shd-banner-chip {
     align-self: flex-start;
-    padding: 0.2rem 0.65rem;
+    padding: 0.22rem 0.7rem;
     border-radius: 999px;
-    background: rgba(36, 114, 196, 0.22);
-    border: 1px solid rgba(36, 114, 196, 0.4);
-    font-size: 0.72rem;
-    font-weight: 600;
-    letter-spacing: 0.02em;
-    color: #cfdcef;
+    border: 1px solid rgba(226, 196, 126, 0.45);
+    font-size: 0.66rem;
+    font-weight: 700;
+    letter-spacing: 0.16em;
+    text-transform: uppercase;
+    color: #e2c47e;
 }
 
 .shd-banner-title {
-    margin-top: 0.7rem;
-    font-size: 1.65rem;
-    font-weight: 800;
-    letter-spacing: -0.02em;
-    line-height: 1.2;
+    margin-top: 0.75rem;
+    font-family: var(--sh-serif, Georgia, serif);
+    font-size: 1.75rem;
+    font-weight: 700;
+    letter-spacing: -0.01em;
+    line-height: 1.25;
     color: #fff;
 }
 
@@ -99,8 +111,8 @@
 }
 
 .shd-banner-btn:hover { background: rgba(255, 255, 255, 0.13); transform: translateY(-1px); }
-.shd-banner-btn.is-primary { background: #1a5fa8; color: #fff; border-color: #2472c4; box-shadow: 0 6px 16px -8px rgba(0, 0, 0, 0.5); }
-.shd-banner-btn.is-primary:hover { background: #2472c4; }
+.shd-banner-btn.is-primary { background: #e2c47e; color: #13213f; border-color: #edd59c; box-shadow: 0 6px 16px -8px rgba(0, 0, 0, 0.55); }
+.shd-banner-btn.is-primary:hover { background: #ebd193; }
 .shd-banner-btn-icon { width: 1.05rem; height: 1.05rem; }
 
 .shd-term {
@@ -110,14 +122,14 @@
     padding: 1rem 1.15rem;
     border-radius: 14px;
     background: rgba(255, 255, 255, 0.05);
-    border: 1px solid rgba(255, 255, 255, 0.1);
+    border: 1px solid rgba(226, 196, 126, 0.22);
     backdrop-filter: blur(6px);
 }
 
-.shd-term-label { font-size: 0.7rem; font-weight: 700; letter-spacing: 0.08em; text-transform: uppercase; color: #6b7d99; }
-.shd-term-name { margin-top: 0.25rem; font-size: 0.98rem; font-weight: 700; color: #fff; }
+.shd-term-label { font-size: 0.66rem; font-weight: 700; letter-spacing: 0.16em; text-transform: uppercase; color: rgba(226, 196, 126, 0.8); }
+.shd-term-name { margin-top: 0.3rem; font-family: var(--sh-serif, Georgia, serif); font-size: 1.05rem; font-weight: 700; color: #fff; }
 .shd-term-bar { margin-top: 0.8rem; height: 0.45rem; border-radius: 999px; background: rgba(255, 255, 255, 0.1); overflow: hidden; }
-.shd-term-bar span { display: block; height: 100%; border-radius: inherit; background: linear-gradient(90deg, #b5721a, #d97d0d); }
+.shd-term-bar span { display: block; height: 100%; border-radius: inherit; background: linear-gradient(90deg, #c4973a, #e2c47e); }
 .shd-term-foot { margin-top: 0.5rem; display: flex; justify-content: space-between; gap: 0.5rem; font-size: 0.76rem; color: #a9b6cc; }
 
 /* ── KPI cards ── */
@@ -273,4 +285,30 @@ a.shd-kpi:hover .shd-kpi-go { opacity: 1; color: var(--t); }
     .shd-kpis { grid-template-columns: 1fr; }
     .shd-banner-title { font-size: 1.35rem; }
     .shd-banner-btn { flex: 1 1 auto; justify-content: center; }
+}
+
+/* A titled row of figures ("This term: received vs spent"): a card with its title inside. */
+.fi-wi-stats-overview .fi-section-not-contained.fi-section-has-header {
+    padding: 1.1rem 1.25rem 1.25rem;
+    border: 1px solid var(--sh-border, #e4e8f0);
+    border-radius: 16px;
+    box-shadow: 0 1px 2px rgba(13, 31, 56, 0.04);
+}
+
+.fi-wi-stats-overview .fi-section-not-contained.fi-section-has-header > .fi-section-header {
+    margin-bottom: 0.9rem;
+}
+
+.fi-wi-stats-overview .fi-section-header-heading {
+    font-family: var(--sh-serif, Georgia, serif);
+    font-size: 1.05rem;
+    font-weight: 700;
+    color: var(--sh-navy-800, #12294a);
+}
+
+/* Every card title on the dashboard in the serif, like the greeting and page titles. */
+.fi-wi .fi-section-header-heading,
+.fi-wi .fi-ta-header-heading {
+    font-family: var(--sh-serif, Georgia, serif);
+    color: var(--sh-navy-800, #12294a);
 }

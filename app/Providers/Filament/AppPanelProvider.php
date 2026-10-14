@@ -26,6 +26,7 @@ use App\Filament\Pages\Auth\RequestPasswordReset;
 use App\Filament\Pages\Auth\ResetPassword;
 use App\Filament\Pages\Auth\VerifyEmail;
 use App\Filament\Support\ErrorNotices;
+use App\Filament\Support\HiddenTopbar;
 use App\Filament\Support\Pages\RecordFormScope;
 use App\Filament\Widgets\StatsOverview;
 use App\Http\Controllers\AppInstallController;
@@ -150,7 +151,10 @@ class AppPanelProvider extends PanelProvider
             ->hiddenErrorNotification(503)
             ->hiddenErrorNotification(419)
             // Find a learner, receipt, staff member or parent from any page: Ctrl+K.
-            ->globalSearchKeyBindings(['command+k', 'ctrl+k'])
+            // The search box sits in SchoolHub's own top bar; Filament's is drawn empty.
+            ->topbarLivewireComponent(HiddenTopbar::class)
+            // "mod" is Ctrl on Windows and Linux, Cmd on a Mac; the hint in the box says which.
+            ->globalSearchKeyBindings(['mod+k'])
             ->globalSearchFieldKeyBindingSuffix()
 
             // After saving a new or edited record, go back to its table.
@@ -282,6 +286,9 @@ class AppPanelProvider extends PanelProvider
                 PanelsRenderHook::HEAD_END,
                 fn () => '<link rel="stylesheet" href="'.asset('css/filament-custom.css').'?v='.filemtime(public_path('css/filament-custom.css')).'">'
                     .'<link rel="stylesheet" href="'.asset('css/dashboard.css').'?v='.filemtime(public_path('css/dashboard.css')).'">'
+                    // The serif of page titles and the greeting, as on the sign-in screens (Georgia when offline).
+                    .'<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>'
+                    .'<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Libre+Baskerville:wght@400;700&display=swap">'
             )
             ->renderHook(
                 PanelsRenderHook::PAGE_START,

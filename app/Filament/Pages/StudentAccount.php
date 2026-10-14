@@ -157,8 +157,8 @@ class StudentAccount extends Page
 
         $ledger = app(StudentLedger::class);
 
-        // The ledger shows everything; the statement narrows to one term.
-        return $this->mode === 'statement' && $this->getTermProperty()
+        // The ledger shows everything; the statement and invoice narrow to one term.
+        return in_array($this->mode, ['statement', 'invoice'], true) && $this->getTermProperty()
             ? $ledger->entries($student, $this->getTermProperty())
             : $ledger->entries($student);
     }

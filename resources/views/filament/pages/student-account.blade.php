@@ -95,7 +95,7 @@
                 </div>
                 <div class="sa-doc-title">
                     <h3>{{ ['ledger' => 'Student ledger', 'statement' => 'Fee statement', 'invoice' => 'Invoice'][$this->mode] }}</h3>
-                    @if ($this->mode === 'statement' && $term)<p>{{ $term->label() }}</p>@endif
+                    @if (in_array($this->mode, ['statement', 'invoice'], true) && $term)<p>{{ $term->label() }}</p>@endif
                     <p>Printed {{ now()->format('j M Y') }}</p>
                 </div>
             </header>
@@ -108,26 +108,84 @@
             </dl>
 
             {{-- ══ INVOICE ══ --}}
+            {{-- This term's fees item by item, what was owed before, what is paid and what is due. --}}
             @if ($this->mode === 'invoice')
-                <table class="sa-table">
-                    <tbody>
-                        <tr><td>Total charged to date</td><td class="sa-num">UGX {{ $n($summary['charged']) }}</td></tr>
-                        <tr><td>Less payments received</td><td class="sa-num is-good">− UGX {{ $n($summary['paid']) }}</td></tr>
-                    </tbody>
-                    <tfoot>
-                        <tr>
-                            <td>{{ $summary['balance'] < 0 ? 'Credit on account' : 'Balance now due' }}</td>
-                            <td @class(['sa-num', 'sa-big', 'is-bad' => $summary['balance'] > 0, 'is-good' => $summary['balance'] <= 0])>UGX {{ $n(abs($summary['balance'])) }}</td>
-                        </tr>
-                    </tfoot>
-                </table>
-                <p class="sa-note">
-                    @if ($student->schoolpay_code)
-                        Pay through <strong>SchoolPay, code {{ $student->schoolpay_code }}</strong>, or at the bursar's office quoting admission number <strong>{{ $student->admission_no }}</strong>.
-                    @else
-                        Pay at the bursar's office, by bank deposit, SchoolPay or mobile money, quoting admission number <strong>{{ $student->admission_no }}</strong>.
+                @if ($term)
+                    @php
+                        $charges = $entries->where('type', 'charge');
+                        $paidInTerm = $entries->where('type', 'payment')->sum('credit');
+                    @endphp
+                    <table class="sa-table">
+                        <thead>
+                            <tr><th>Item</th><th class="sa-num">Amount (UGX)</th></tr>
+                        </thead>
+                        <tbody>
+                            @if ($termSum['opening'] != 0)
+                                <tr class="sa-bf">
+                                    <td>{{ $termSum['opening'] > 0 ? 'Balance from earlier terms' : 'Credit from earlier terms' }}</td>
+                                    <td class="sa-num">{{ $termSum['opening'] < 0 ? '− ' : '' }}{{ $n(abs($termSum['opening'])) }}</td>
+                                </tr>
+                            @endif
+                            @forelse ($charges as $entry)
+                                <tr>
+                                    <td>
+                                        {{ $entry['description'] }}
+                                        @if ($entry['discount'] > 0)<span class="sa-sub is-good">Less {{ $entry['discount_reason'] ?: 'discount' }}: {{ $n($entry['discount']) }}</span>@endif
+                                    </td>
+                                    <td class="sa-num">{{ $n($entry['debit']) }}</td>
+                                </tr>
+                            @empty
+                                <tr><td colspan="2" class="sa-none">Nothing billed for {{ $term->label() }} yet.</td></tr>
+                            @endforelse
+                        </tbody>
+                        <tfoot>
+                            <tr><td>Fees for {{ $term->label() }}</td><td class="sa-num">{{ $n($termSum['charged']) }}</td></tr>
+                            @if ($paidInTerm > 0)
+                                <tr><td>Less payments received</td><td class="sa-num is-good">− {{ $n($paidInTerm) }}</td></tr>
+                            @endif
+                            <tr class="sa-total">
+                                <td>{{ $termSum['closing'] < 0 ? 'Credit on account' : 'Balance due' }}</td>
+                                <td @class(['sa-num', 'sa-big', 'is-bad' => $termSum['closing'] > 0, 'is-good' => $termSum['closing'] <= 0])>UGX {{ $n(abs($termSum['closing'])) }}</td>
+                            </tr>
+                        </tfoot>
+                    </table>
+                @else
+                    <table class="sa-table">
+                        <tbody>
+                            <tr><td>Total charged to date</td><td class="sa-num">UGX {{ $n($summary['charged']) }}</td></tr>
+                            <tr><td>Less payments received</td><td class="sa-num is-good">− UGX {{ $n($summary['paid']) }}</td></tr>
+                        </tbody>
+                        <tfoot>
+                            <tr>
+                                <td>{{ $summary['balance'] < 0 ? 'Credit on account' : 'Balance now due' }}</td>
+                                <td @class(['sa-num', 'sa-big', 'is-bad' => $summary['balance'] > 0, 'is-good' => $summary['balance'] <= 0])>UGX {{ $n(abs($summary['balance'])) }}</td>
+                            </tr>
+                        </tfoot>
+                    </table>
+                @endif
+            @endif
+
+            {{-- How to pay: the learner's SchoolPay code and the school's own accounts. --}}
+            @if (in_array($this->mode, ['invoice', 'statement'], true))
+                @php
+                    $howToPay = collect([
+                        'SchoolPay code' => $student->schoolpay_code,
+                        'Bank' => $school?->fee_payment_bank,
+                        'Mobile money' => $school?->fee_payment_mobile_money,
+                        'Note' => $school?->fee_payment_instructions,
+                    ])->filter();
+                @endphp
+                <section class="sa-pay">
+                    <h4>How to pay</h4>
+                    @if ($howToPay->isNotEmpty())
+                        <dl>
+                            @foreach ($howToPay as $label => $value)
+                                <dt>{{ $label }}</dt><dd>{{ $value }}</dd>
+                            @endforeach
+                        </dl>
                     @endif
-                </p>
+                    <p>Quote admission number <strong>{{ $student->admission_no }}</strong> on every payment, and keep your receipt.</p>
+                </section>
             @endif
 
             {{-- ══ STATEMENT ══ --}}
@@ -258,6 +316,12 @@
         .sa-bf td { background: #fffbeb; font-weight: 600; }
         .sa-none { text-align: center; color: #64748b; padding: 2rem !important; }
         .sa-note { margin-top: 1rem; font-size: .82rem; color: #475569; }
+        .sa-pay { margin-top: 1.25rem; padding: .85rem 1rem; border: 1px solid #dbe3ee; border-radius: 10px; background: #f8fafc; font-size: .85rem; break-inside: avoid; }
+        .sa-pay h4 { font-size: .72rem; font-weight: 700; letter-spacing: .08em; text-transform: uppercase; color: #1e3a5f; margin-bottom: .45rem; }
+        .sa-pay dl { display: grid; grid-template-columns: max-content 1fr; gap: .25rem .9rem; margin-bottom: .5rem; }
+        .sa-pay dt { font-weight: 600; color: #1e3a5f; }
+        .sa-pay dd { color: #16233a; white-space: pre-line; }
+        .sa-pay p { color: #475569; font-size: .8rem; }
 
         @media print {
             @page { size: A4; margin: 14mm; }

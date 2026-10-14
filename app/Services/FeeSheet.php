@@ -34,11 +34,7 @@ class FeeSheet
 
     public function __construct(protected Term $term)
     {
-        $this->classes = SchoolClass::where('school_id', $term->school_id)
-            ->orderBy('level')
-            ->orderBy('name')
-            ->get()
-            ->values();
+        $this->classes = SchoolClass::inOrder($term->school_id);
 
         $residencies = ResidencyType::where('school_id', $term->school_id)
             ->where('is_active', true)
@@ -214,24 +210,12 @@ class FeeSheet
     }
 
     /**
-     * "S.1 – S.3" for classes that follow each other, "S.5 and S.6" for
-     * two, "S.1, S.3 and S.5" otherwise.
+     * "S.1 – S.3", "S.5 and S.6"... (SchoolClass::joinNames).
      *
      * @param  array<int, int|string|null>  $classIds
      */
     public function classLabel(array $classIds): string
     {
-        $picked = $this->classes->filter(fn (SchoolClass $class): bool => in_array($class->getKey(), $classIds));
-        $positions = $picked->keys()->values();
-        $names = $picked->map(fn (SchoolClass $class): string => $class->name)->values();
-
-        $consecutive = $positions->count() > 2 && $positions->last() - $positions->first() === $positions->count() - 1;
-
-        return match (true) {
-            $names->isEmpty() => 'All classes',
-            $consecutive => $names->first().' – '.$names->last(),
-            $names->count() === 1 => $names->first(),
-            default => $names->slice(0, -1)->implode(', ').' and '.$names->last(),
-        };
+        return $classIds ? SchoolClass::joinNames($this->classes, $classIds) : 'All classes';
     }
 }

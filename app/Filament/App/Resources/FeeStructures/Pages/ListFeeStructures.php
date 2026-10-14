@@ -13,7 +13,7 @@ class ListFeeStructures extends ListRecords
     protected function getHeaderActions(): array
     {
         return [
-            CreateAction::make(),
+            CreateAction::make()->label('Add a fee')->icon('heroicon-m-plus'),
         ];
     }
 }

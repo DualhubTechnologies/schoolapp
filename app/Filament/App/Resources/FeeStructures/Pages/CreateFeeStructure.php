@@ -3,6 +3,7 @@
 namespace App\Filament\App\Resources\FeeStructures\Pages;
 
 use App\Filament\App\Resources\FeeStructures\FeeStructureResource;
+use App\Filament\App\Resources\FeeStructures\Schemas\FeeStructureForm;
 use App\Filament\Support\Pages\CreateRecordPage;
 use App\Models\FeeStructure;
 use Filament\Notifications\Notification;
@@ -12,13 +13,38 @@ class CreateFeeStructure extends CreateRecordPage
 {
     protected static string $resource = FeeStructureResource::class;
 
+    protected static ?string $title = 'Add a fee';
+
+    /** Fees are usually added several in a row: tuition, lunch, medical... */
+    protected static bool $canCreateAnother = true;
+
     protected array $classIds = [];
+
+    public function getSubheading(): string
+    {
+        return 'Pick the fee, tick the classes that pay it, choose when it is charged, then the amount.';
+    }
+
+    protected function getFormActions(): array
+    {
+        return [
+            $this->getCreateFormAction()->label('Save')->icon('heroicon-m-check'),
+            $this->getCreateAnotherFormAction()->label('Save & add another'),
+            $this->getCancelFormAction(),
+        ];
+    }
 
     protected function mutateFormDataBeforeCreate(array $data): array
     {
-        // class_ids is dehydrated(false), so it is NOT in $data — read it
-        // from the live form state instead.
-        $this->classIds = (array) ($this->form->getRawState()['class_ids'] ?? []);
+        // The classes and who pays what are not columns (dehydrated(false)),
+        // so they are read from the live form state.
+        $raw = $this->data ?? [];
+        $this->classIds = array_values(array_filter((array) ($raw['class_ids'] ?? [])));
+        $amountFor = $raw['amount_for'] ?? 'all';
+
+        $data['per_residency'] = $amountFor === 'each';
+        $data['residency_type_id'] = FeeStructureForm::onlyResidency($amountFor);
+        $data['is_active'] ??= true;
 
         // The school picker is only shown to a Super Admin.
         $data['school_id'] ??= auth()->user()->school_id;
@@ -99,7 +125,8 @@ class CreateFeeStructure extends CreateRecordPage
         }
 
         Notification::make()
-            ->title("Created {$created} fee record(s)".($skipped ? ", skipped {$skipped} already existing" : ''))
+            ->title($created === 1 ? "{$data['name']} added" : "{$data['name']} added: {$created} fees")
+            ->body($skipped ? "{$skipped} already set, so left as they were." : null)
             ->success()
             ->send();
 

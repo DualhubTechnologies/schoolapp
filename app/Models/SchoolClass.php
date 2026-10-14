@@ -3,11 +3,13 @@
 namespace App\Models;
 
 use App\Concerns\Auditable;
+use Illuminate\Database\Eloquent\Collection as EloquentCollection;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
 use Illuminate\Database\Eloquent\Relations\BelongsToMany;
 use Illuminate\Database\Eloquent\Relations\HasMany;
+use Illuminate\Support\Collection;
 
 class SchoolClass extends Model
 {
@@ -43,6 +45,40 @@ class SchoolClass extends Model
     public function classLevel(): BelongsTo
     {
         return $this->belongsTo(ClassLevel::class);
+    }
+
+    /**
+     * Some of a school's classes the way a school writes them: "S.1 – S.3"
+     * for three or more that follow each other, "S.5 and S.6" for two,
+     * "S.1, S.3 and S.5" otherwise.
+     *
+     * @param  Collection<int, SchoolClass>  $ordered  all the school's classes, in order
+     * @param  array<int, int|string|null>  $ids
+     */
+    public static function joinNames(Collection $ordered, array $ids): string
+    {
+        $picked = $ordered->values()->filter(fn (SchoolClass $class): bool => in_array($class->getKey(), $ids));
+        $positions = $picked->keys()->values();
+        $names = $picked->map(fn (SchoolClass $class): string => $class->name)->values();
+
+        $consecutive = $positions->count() > 2 && $positions->last() - $positions->first() === $positions->count() - 1;
+
+        return match (true) {
+            $names->isEmpty() => 'no classes',
+            $consecutive => $names->first().' – '.$names->last(),
+            $names->count() === 1 => $names->first(),
+            default => $names->slice(0, -1)->implode(', ').' and '.$names->last(),
+        };
+    }
+
+    /**
+     * The school's classes in order (the sort position, then the name).
+     *
+     * @return EloquentCollection<int, SchoolClass>
+     */
+    public static function inOrder(int|string|null $schoolId): EloquentCollection
+    {
+        return SchoolClass::query()->where('school_id', $schoolId)->orderBy('level')->orderBy('name')->get();
     }
 
     /**

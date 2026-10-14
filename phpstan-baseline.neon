@@ -265,76 +265,10 @@ parameters:
 			path: app/Filament/App/Resources/FeeStructures/FeeStructureResource.php
 
 		-
-			message: '#^Cannot access offset ''class_ids'' on array\<string, mixed\>\|Illuminate\\Contracts\\Support\\Arrayable\.$#'
-			identifier: offsetAccess.nonOffsetAccessible
-			count: 1
-			path: app/Filament/App/Resources/FeeStructures/Pages/CreateFeeStructure.php
-
-		-
 			message: '#^Property App\\Filament\\App\\Resources\\FeeStructures\\Pages\\CreateFeeStructure\:\:\$classIds type has no value type specified in iterable type array\.$#'
 			identifier: missingType.iterableValue
 			count: 1
 			path: app/Filament/App/Resources/FeeStructures/Pages/CreateFeeStructure.php
-
-		-
-			message: '#^Call to an undefined method App\\Models\\Term\|Illuminate\\Database\\Eloquent\\Collection\<int, App\\Models\\Term\>\:\:label\(\)\.$#'
-			identifier: method.notFound
-			count: 1
-			path: app/Filament/App/Resources/FeeStructures/Schemas/FeeStructureForm.php
-
-		-
-			message: '#^Method App\\Filament\\App\\Resources\\FeeStructures\\Schemas\\FeeStructureForm\:\:classOptions\(\) has parameter \$schoolId with no type specified\.$#'
-			identifier: missingType.parameter
-			count: 1
-			path: app/Filament/App/Resources/FeeStructures/Schemas/FeeStructureForm.php
-
-		-
-			message: '#^Method App\\Filament\\App\\Resources\\FeeStructures\\Schemas\\FeeStructureForm\:\:classOptions\(\) return type has no value type specified in iterable type array\.$#'
-			identifier: missingType.iterableValue
-			count: 1
-			path: app/Filament/App/Resources/FeeStructures/Schemas/FeeStructureForm.php
-
-		-
-			message: '#^Method App\\Filament\\App\\Resources\\FeeStructures\\Schemas\\FeeStructureForm\:\:residencyOptions\(\) has parameter \$schoolId with no type specified\.$#'
-			identifier: missingType.parameter
-			count: 1
-			path: app/Filament/App/Resources/FeeStructures/Schemas/FeeStructureForm.php
-
-		-
-			message: '#^Method App\\Filament\\App\\Resources\\FeeStructures\\Schemas\\FeeStructureForm\:\:residencyOptions\(\) return type has no value type specified in iterable type array\.$#'
-			identifier: missingType.iterableValue
-			count: 1
-			path: app/Filament/App/Resources/FeeStructures/Schemas/FeeStructureForm.php
-
-		-
-			message: '#^Method App\\Filament\\App\\Resources\\FeeStructures\\Schemas\\FeeStructureForm\:\:scopeClasses\(\) has parameter \$query with generic class Illuminate\\Database\\Eloquent\\Builder but does not specify its types\: TModel$#'
-			identifier: missingType.generics
-			count: 1
-			path: app/Filament/App/Resources/FeeStructures/Schemas/FeeStructureForm.php
-
-		-
-			message: '#^Method App\\Filament\\App\\Resources\\FeeStructures\\Schemas\\FeeStructureForm\:\:scopeClasses\(\) has parameter \$schoolId with no type specified\.$#'
-			identifier: missingType.parameter
-			count: 1
-			path: app/Filament/App/Resources/FeeStructures/Schemas/FeeStructureForm.php
-
-		-
-			message: '#^Method App\\Filament\\App\\Resources\\FeeStructures\\Schemas\\FeeStructureForm\:\:scopeClasses\(\) return type with generic class Illuminate\\Database\\Eloquent\\Builder does not specify its types\: TModel$#'
-			identifier: missingType.generics
-			count: 1
-			path: app/Filament/App/Resources/FeeStructures/Schemas/FeeStructureForm.php
-
-		-
-			message: '#^Method App\\Filament\\App\\Resources\\FeeStructures\\Schemas\\FeeStructureForm\:\:termOptions\(\) has parameter \$schoolId with no type specified\.$#'
-			identifier: missingType.parameter
-			count: 1
-			path: app/Filament/App/Resources/FeeStructures/Schemas/FeeStructureForm.php
-
-		-
-			message: '#^Method App\\Filament\\App\\Resources\\FeeStructures\\Schemas\\FeeStructureForm\:\:termOptions\(\) return type has no value type specified in iterable type array\.$#'
-			identifier: missingType.iterableValue
-			count: 1
-			path: app/Filament/App/Resources/FeeStructures/Schemas/FeeStructureForm.php
 
 		-
 			message: '#^Access to an undefined property Illuminate\\Database\\Eloquent\\Model\:\:\$grade\.$#'

@@ -39,7 +39,7 @@ it('sets Day and Boarding tuition for several classes in one go', function () {
             'frequency' => 'per_term',
             'term_id' => $this->term->id,
             'applies_to' => 'all',
-            'per_residency' => true,
+            'amount_for' => 'each',
             'residency_amounts' => [$this->day->id => '850,000', $this->boarding->id => '1,250,000'],
         ])
         ->call('create')
@@ -60,7 +60,7 @@ it('leaves out a residency whose amount is left empty', function () {
     Livewire::test(CreateFeeStructure::class)
         ->fillForm([
             'name' => 'Lunch', 'class_ids' => [$this->s1->id], 'frequency' => 'per_term', 'term_id' => $this->term->id,
-            'per_residency' => true, 'residency_amounts' => [$this->day->id => '150,000'],
+            'amount_for' => 'each', 'residency_amounts' => [$this->day->id => '150,000'],
         ])
         ->call('create')
         ->assertHasNoFormErrors();
@@ -87,4 +87,47 @@ it('keeps an edited fee consistent when it becomes an admission fee', function (
         ->assertHasNoFormErrors();
 
     expect($fee->fresh()->only(['frequency', 'applies_to', 'term_id']))->toBe(['frequency' => 'once', 'applies_to' => 'new_only', 'term_id' => null]);
+});
+
+it('fills in the settings when a common fee is tapped', function () {
+    Livewire::test(CreateFeeStructure::class)
+        ->fillForm(['common_fee' => 'Lunch'])
+        ->assertFormSet(['name' => 'Lunch', 'frequency' => 'per_term', 'amount_for' => "only:{$this->day->id}"])
+        ->fillForm(['common_fee' => 'Tuition'])
+        ->assertFormSet(['name' => 'Tuition', 'amount_for' => 'each'])
+        ->fillForm(['common_fee' => 'Admission'])
+        ->assertFormSet(['name' => 'Admission', 'frequency' => 'once', 'amount_for' => 'all'])
+        ->fillForm(['common_fee' => 'UNEB registration'])
+        ->assertFormSet(['frequency' => 'on_demand']);
+});
+
+it('saves a fee for one residency only', function () {
+    Livewire::test(CreateFeeStructure::class)
+        ->fillForm([
+            'name' => 'Lunch', 'class_ids' => [$this->s1->id, $this->s2->id], 'frequency' => 'per_term', 'term_id' => $this->term->id,
+            'amount_for' => "only:{$this->day->id}", 'amount' => '150,000',
+        ])
+        ->call('create')
+        ->assertHasNoFormErrors();
+
+    expect(FeeStructure::pluck('residency_type_id')->unique()->all())->toBe([$this->day->id])
+        ->and(FeeStructure::count())->toBe(2);
+});
+
+it('previews the fees it will add and the ones already set', function () {
+    FeeStructure::create(['school_id' => $this->school->id, 'school_class_id' => $this->s1->id, 'term_id' => $this->term->id, 'name' => 'Tuition', 'frequency' => 'per_term', 'applies_to' => 'all', 'residency_type_id' => $this->day->id, 'amount' => 800000, 'is_active' => true]);
+
+    Livewire::test(CreateFeeStructure::class)
+        ->fillForm([
+            'name' => 'Tuition', 'class_ids' => [$this->s1->id, $this->s2->id], 'frequency' => 'per_term', 'term_id' => $this->term->id,
+            'amount_for' => 'each', 'residency_amounts' => [$this->day->id => '850,000', $this->boarding->id => '1,250,000'],
+        ])
+        ->assertSee('3 fees will be added.')
+        ->assertSee('UGX 1,250,000')
+        ->assertSee('Already set, will be skipped:')
+        ->call('create')
+        ->assertHasNoFormErrors();
+
+    expect(FeeStructure::count())->toBe(4)
+        ->and((float) FeeStructure::where('school_class_id', $this->s1->id)->where('residency_type_id', $this->day->id)->value('amount'))->toBe(800000.0);
 });

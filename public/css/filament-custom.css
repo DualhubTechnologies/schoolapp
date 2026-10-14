@@ -4083,3 +4083,31 @@ html .fi-body {
     .sh-footer, .sh-mnav, .fi-no, .sh-setup-pop, .sh-install { display: none !important; }
     body, .fi-body, .fi-layout, .fi-main-ctn { background: #fff !important; }
 }
+
+/* Add a fee: the "What will be added" preview stays in view beside the
+   steps on wide screens. */
+@media (min-width: 1024px) {
+    .sh-fee-aside { position: sticky; top: 5.5rem; align-self: start; }
+}
+.sh-fee-hint { font-size: .85rem; color: #64748b; }
+.sh-fee-preview { display: grid; gap: .5rem; }
+.sh-fee-name { font-size: 1.05rem; font-weight: 700; color: #13294b; }
+.sh-fee-when { font-size: .8rem; color: #64748b; margin-top: -.35rem; }
+.sh-fee-preview table { width: 100%; border-collapse: collapse; font-size: .875rem; }
+.sh-fee-preview td { padding: .5rem 0; border-top: 1px solid #eef2f7; vertical-align: top; }
+.sh-fee-preview td:first-child { font-weight: 600; color: #13294b; }
+.sh-fee-preview td:first-child span { display: block; font-weight: 400; font-size: .78rem; color: #64748b; }
+.sh-fee-preview td:last-child { text-align: right; font-weight: 700; white-space: nowrap; font-variant-numeric: tabular-nums; color: #13294b; }
+.sh-fee-preview em { color: #b45309; font-style: normal; font-weight: 600; }
+.sh-fee-count { font-size: .8rem; font-weight: 600; color: #15803d; }
+.sh-fee-skip { font-size: .78rem; line-height: 1.45; color: #92400e; background: #fffbeb; border: 1px solid #fde68a; border-radius: .5rem; padding: .5rem .65rem; }
+.dark .sh-fee-name, .dark .sh-fee-preview td:first-child, .dark .sh-fee-preview td:last-child { color: #f1f5f9; }
+.dark .sh-fee-preview td { border-color: #1f2937; }
+.dark .sh-fee-skip { background: rgba(245, 158, 11, .12); border-color: rgba(245, 158, 11, .3); color: #fcd34d; }
+
+/* Phones: the sticky Cancel / Save bar keeps each button on one line and
+   wraps the row instead (a page with three buttons, e.g. Add a fee). */
+@media (max-width: 639px) {
+    .fi-sc-actions.fi-sticky .fi-ac { flex-wrap: wrap; row-gap: .5rem; }
+    .fi-sc-actions.fi-sticky .fi-ac .fi-btn { white-space: nowrap; flex: 1 1 auto !important; }
+}

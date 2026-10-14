@@ -43,6 +43,7 @@ class Student extends Model
         'date_of_birth',
         'gender',
         'admission_date',
+        'is_new_learner',
         'photo',
         'address',
         'medical_notes',
@@ -57,6 +58,7 @@ class Student extends Model
         return [
             'date_of_birth' => 'date',
             'admission_date' => 'date',
+            'is_new_learner' => 'boolean',
             'confirmed_at' => 'datetime',
         ];
     }
@@ -113,6 +115,7 @@ class Student extends Model
                 'school_class_id',
                 'section_id',
                 'residency_type_id',
+                'is_new_learner',
                 'transport_route_id',
                 'transport_trip',
                 'house_id',
@@ -237,6 +240,29 @@ class Student extends Model
     public function getAgeAttribute(): ?int
     {
         return $this->date_of_birth?->age;
+    }
+
+    /**
+     * Whether the learner pays new learners' fees (admission, development,
+     * uniform...) in this term: they joined the school as a new learner and
+     * this is their first term on the school's books, i.e. they have no
+     * fees billed in an earlier term.
+     */
+    public function isNewIn(Term $term): bool
+    {
+        if (! $this->is_new_learner) {
+            return false;
+        }
+
+        $termKey = $term->sortKey();
+
+        return ! StudentCharge::query()
+            ->where('student_id', $this->getKey())
+            ->whereNotNull('fee_structure_id')
+            ->where('term_id', '!=', $term->getKey())
+            ->with('term.academicYear')
+            ->get()
+            ->contains(fn (StudentCharge $charge): bool => $charge->term && $charge->term->sortKey() < $termKey);
     }
 
     public function isConfirmed(): bool

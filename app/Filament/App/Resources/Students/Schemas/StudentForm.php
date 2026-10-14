@@ -17,6 +17,7 @@ use Filament\Forms\Components\FileUpload;
 use Filament\Forms\Components\Select;
 use Filament\Forms\Components\Textarea;
 use Filament\Forms\Components\TextInput;
+use Filament\Forms\Components\Toggle;
 use Filament\Forms\Components\ToggleButtons;
 use Filament\Schemas\Components\Component;
 use Filament\Schemas\Components\Grid;
@@ -169,6 +170,8 @@ class StudentForm
             DatePicker::make('admission_date')
                 ->label('Admission date')
                 ->default(now()),
+
+            static::newLearnerField(),
 
             Select::make('status')
                 ->label('Status')
@@ -448,6 +451,20 @@ class StudentForm
      *
      * @return array<int, Component>
      */
+    /**
+     * New to the school, or already here: decides whether the learner pays
+     * the admission fees (admission, development, uniform...) in their
+     * first term. On by default when admitting; imported learners are
+     * continuing unless the import says otherwise.
+     */
+    public static function newLearnerField(): Toggle
+    {
+        return Toggle::make('is_new_learner')
+            ->label('New learner')
+            ->helperText('Joining the school now: pays the admission fees (admission, development, uniform…) once, in the first term. Switch off for a learner who was already at the school.')
+            ->default(true);
+    }
+
     public static function quickFields(): array
     {
         $pick = fn (array $fields, array $names): array => array_values(array_filter(
@@ -479,6 +496,9 @@ class StudentForm
                     static::admissionNumberField(),
 
                     ...$pick(static::enrollmentFields(), ['school_class_id', 'section_id', 'combination_id', 'residency_type_id']),
+
+                    static::newLearnerField()
+                        ->columnSpanFull(),
                 ]),
 
             Section::make('Parent / guardian')

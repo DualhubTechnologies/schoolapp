@@ -23,12 +23,14 @@ use Illuminate\Support\Facades\DB;
  *
  *   per_term    the fee started in this term or an earlier one, and no
  *               newer version has replaced it (FeeStructure::termlyFor)
- *   once        the student has never been charged it
+ *   once        paid on admission: a new learner in their first term who
+ *               has never been charged it (admission, development, uniform)
  *   on_demand   never automatic — billed deliberately to a class or student
  *
  * And to whom:
  *
- *   applies_to        all | new_only
+ *   applies_to        all | new_only (new learners in their first term,
+ *                     Student::isNewIn — continuing learners never pay them)
  *   residency_type_id null = everyone; set = only that residency
  *
  * HOW DISCOUNTS ARE APPLIED
@@ -478,10 +480,15 @@ class BillingService
             ->where('frequency', 'once')
             ->get();
 
+        // Admission fees, and termly fees for new learners only, go to a
+        // learner who has just joined, in their first term: never to the
+        // learners a school already had when it started billing here.
+        $isNew = $student->isNewIn($term);
+
         return $termly->concat($once)
             ->sortBy('id')
-            ->filter(function (FeeStructure $fee) use ($student, $term) {
-                if ($fee->frequency === 'once' && $this->alreadyChargedEver($student, $fee)) {
+            ->filter(function (FeeStructure $fee) use ($student, $isNew) {
+                if ($fee->frequency === 'once' && (! $isNew || $this->alreadyChargedEver($student, $fee))) {
                     return false;
                 }
 
@@ -489,7 +496,7 @@ class BillingService
                     return false;
                 }
 
-                if ($fee->applies_to === 'new_only' && ! $this->isNewThisTerm($student, $term, $fee)) {
+                if ($fee->applies_to === 'new_only' && ! $isNew) {
                     return false;
                 }
 
@@ -517,21 +524,5 @@ class BillingService
             ->where('term_id', $term->getKey())
             ->where('fee_structure_id', $fee->getKey())
             ->exists();
-    }
-
-    /**
-     * "New" means admitted during this term AND never charged this fee.
-     */
-    protected function isNewThisTerm(Student $student, Term $term, FeeStructure $fee): bool
-    {
-        if ($this->alreadyChargedEver($student, $fee)) {
-            return false;
-        }
-
-        if (! $student->admission_date || ! $term->start_date || ! $term->end_date) {
-            return false;
-        }
-
-        return $student->admission_date->betweenIncluded($term->start_date, $term->end_date);
     }
 }

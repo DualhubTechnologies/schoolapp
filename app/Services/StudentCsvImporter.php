@@ -495,6 +495,9 @@ class StudentCsvImporter
                 'address' => ($data['address'] ?? '') ?: null,
                 'medical_notes' => ($data['medical_notes'] ?? '') ?: null,
                 'status' => ($data['status'] ?? '') !== '' ? strtolower($data['status']) : 'active',
+                // New admissions pay the admission fees in their first term;
+                // continuing learners were at the school already.
+                'is_new_learner' => ! $this->confirmOnImport,
             ], $enrolment));
         });
     }

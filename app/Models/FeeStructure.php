@@ -37,15 +37,34 @@ class FeeStructure extends Model
     }
 
     public const FREQUENCIES = [
-        'per_term' => 'Every term (recurring)',
-        'once' => 'Once per student (e.g. admission)',
-        'on_demand' => 'On demand (e.g. trip, uniform)',
+        'per_term' => 'Every term',
+        'once' => 'On admission (new learners, once)',
+        'on_demand' => 'When needed (you bill it)',
     ];
 
     public const APPLIES_TO = [
-        'all' => 'All students',
-        'new_only' => 'New students only',
+        'all' => 'All learners',
+        'new_only' => 'New learners only (first term)',
     ];
+
+    /**
+     * Who pays follows from how often: an admission fee is for new learners,
+     * a fee billed by hand for whoever it is billed to. Only a termly fee
+     * keeps the choice made on the form (where it is the only one shown).
+     *
+     * @param  array<string, mixed>  $data
+     * @return array<string, mixed>
+     */
+    public static function withWhoPays(array $data): array
+    {
+        $data['applies_to'] = match ($data['frequency'] ?? 'per_term') {
+            'once' => 'new_only',
+            'on_demand' => 'all',
+            default => $data['applies_to'] ?? 'all',
+        };
+
+        return $data;
+    }
 
     public function school(): BelongsTo
     {

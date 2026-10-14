@@ -29,7 +29,7 @@ class CreateFeeStructure extends CreateRecordPage
             $data['term_id'] = null;
         }
 
-        return $data;
+        return FeeStructure::withWhoPays($data);
     }
 
     /**

@@ -22,6 +22,7 @@ use Filament\Support\Enums\FontWeight;
 use Filament\Tables\Columns\ImageColumn;
 use Filament\Tables\Columns\TextColumn;
 use Filament\Tables\Filters\SelectFilter;
+use Filament\Tables\Filters\TernaryFilter;
 use Filament\Tables\Table;
 use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Support\Collection;
@@ -164,6 +165,10 @@ class StudentsTable
                 SelectFilter::make('status')
                     ->options(Student::STATUSES)
                     ->default('active'),
+                TernaryFilter::make('is_new_learner')
+                    ->label('New learners')
+                    ->trueLabel('New learners (pay admission fees)')
+                    ->falseLabel('Continuing learners'),
             ])
             ->recordActions([
                 ActionGroup::make([
@@ -248,10 +253,42 @@ class StudentsTable
                         ->color('gray')
                         ->visible(fn (): bool => Modules::allows('id_cards'))
                         ->action(fn (Collection $records) => redirect(StudentIdCards::getUrl(['ids' => $records->pluck('id')->implode(',')]))),
+                    // Who pays the admission fees in their first term.
+                    BulkAction::make('markNew')
+                        ->label('Mark as new learners')
+                        ->icon('heroicon-o-user-plus')
+                        ->color('gray')
+                        ->visible(fn (): bool => Modules::allows('fees'))
+                        ->requiresConfirmation()
+                        ->modalDescription('They pay the admission fees (admission, development, uniform…) once, in their first term.')
+                        ->action(fn (Collection $records) => static::markNewLearners($records, true))
+                        ->deselectRecordsAfterCompletion(),
+                    BulkAction::make('markContinuing')
+                        ->label('Mark as continuing learners')
+                        ->icon('heroicon-o-user')
+                        ->color('gray')
+                        ->visible(fn (): bool => Modules::allows('fees'))
+                        ->requiresConfirmation()
+                        ->modalDescription('They were already at the school, so they do not pay admission fees. Fees already billed are not changed.')
+                        ->action(fn (Collection $records) => static::markNewLearners($records, false))
+                        ->deselectRecordsAfterCompletion(),
                     ConfirmWithPassword::on(DeleteBulkAction::make()),
                 ]),
             ])
             ->paginationPageOptions([10, 25, 50, 100])
             ->defaultPaginationPageOption(25);
+    }
+
+    /**
+     * @param  Collection<int, Student>  $records
+     */
+    protected static function markNewLearners(Collection $records, bool $isNew): void
+    {
+        $records->each(fn (Student $student) => $student->update(['is_new_learner' => $isNew]));
+
+        Notification::make()
+            ->title($records->count().' '.str('learner')->plural($records->count()).' marked as '.($isNew ? 'new' : 'continuing'))
+            ->success()
+            ->send();
     }
 }

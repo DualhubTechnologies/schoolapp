@@ -41,7 +41,7 @@ class FeeStructureTable
                     ->label('Residency')
                     ->badge()
                     ->color(fn ($record) => $record->residencyType?->badgeColor() ?? 'gray')
-                    ->placeholder('All students'),
+                    ->placeholder('All learners'),
 
                 TextColumn::make('frequency')
                     ->badge()

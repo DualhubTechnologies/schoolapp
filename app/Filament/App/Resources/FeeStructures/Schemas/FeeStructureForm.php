@@ -91,7 +91,7 @@ class FeeStructureForm
                         ->columns(2)
                         ->schema([
                             ToggleButtons::make('frequency')
-                                ->hintIcon('heroicon-m-question-mark-circle', tooltip: 'Every term: billed each term. Once: billed a single time, e.g. admission. On demand: charged to a learner only when you add it, e.g. a lost textbook.')
+                                ->hintIcon('heroicon-m-question-mark-circle', tooltip: 'Every term: tuition, lunch, medical. On admission: paid once by a new learner in their first term, e.g. admission, development, uniform, ID card; continuing learners never pay it. When needed: charged only when you bill it, e.g. UNEB registration, a trip, a lost textbook.')
                                 ->label('How often')
                                 ->options(FeeStructure::FREQUENCIES)
                                 ->icons([
@@ -138,7 +138,11 @@ class FeeStructureForm
                                 ->default('all')
                                 ->live()
                                 ->inline()
-                                ->required(),
+                                ->required()
+                                // An admission fee is always for new learners,
+                                // and a fee billed by hand goes to whoever it
+                                // is billed to: the choice is for termly fees.
+                                ->visible(fn (Get $get): bool => $get('frequency') === 'per_term'),
 
                             // Null means everyone pays it, so a school can
                             // either price tuition separately per residency,
@@ -147,10 +151,10 @@ class FeeStructureForm
                             Select::make('residency_type_id')
                                 ->label('Residency')
                                 ->options(fn (Get $get) => static::residencyOptions($get('school_id')))
-                                ->placeholder('All students')
+                                ->placeholder('All learners')
                                 ->native(false)
                                 ->live()
-                                ->helperText('Leave as "All students" unless only boarders or only day students pay this.')
+                                ->helperText('Leave as "All learners" unless only boarders or only day scholars pay this.')
                                 ->columnSpanFull(),
                         ]),
 
@@ -217,13 +221,13 @@ class FeeStructureForm
             ? mb_strtolower((string) ResidencyType::whereKey($get('residency_type_id'))->value('name')).' students'
             : 'students';
 
-        $who = ($get('applies_to') === 'new_only' ? 'new ' : 'all ').$residency;
+        $who = ($get('frequency') === 'once' || ($get('frequency') === 'per_term' && $get('applies_to') === 'new_only') ? 'new ' : 'all ').$residency;
 
         $when = match ($get('frequency')) {
             'per_term' => ($termId = $get('term_id'))
                 ? 'every term from <strong>'.$e(Term::with('academicYear')->find($termId)?->label()).'</strong> onwards'
                 : 'every term (choose the starting term)',
-            'once' => 'once per student, the first time they are billed',
+            'once' => 'once, on admission,',
             'on_demand' => 'only when you bill it to a class or student from Bill Students',
             default => '',
         };

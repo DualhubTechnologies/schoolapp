@@ -9,6 +9,7 @@ use App\Filament\App\Widgets\PlatformServerKpis;
 use App\Filament\App\Widgets\WelcomeBanner;
 use App\Filament\Auth\ConfirmedAppAuthentication;
 use App\Filament\Pages\Auth\Login;
+use App\Filament\Pages\Auth\RequestPasswordReset;
 use App\Filament\Pages\Auth\ResetPassword;
 use App\Filament\Support\ErrorNotices;
 use App\Filament\Support\Pages\RecordFormScope;
@@ -49,7 +50,7 @@ class AdminPanelProvider extends PanelProvider
                 ConfirmedAppAuthentication::make()->recoverable(),
             ])
 
-            ->passwordReset(resetAction: ResetPassword::class)
+            ->passwordReset(RequestPasswordReset::class, ResetPassword::class)
             ->viteTheme('resources/css/filament/admin/theme.css')
 
             // --- Branding ---

@@ -22,6 +22,7 @@ use App\Filament\App\Widgets\WelcomeBanner;
 use App\Filament\Auth\ConfirmedAppAuthentication;
 use App\Filament\Pages\Auth\Login;
 use App\Filament\Pages\Auth\RegisterSchool;
+use App\Filament\Pages\Auth\RequestPasswordReset;
 use App\Filament\Pages\Auth\ResetPassword;
 use App\Filament\Pages\Auth\VerifyEmail;
 use App\Filament\Support\ErrorNotices;
@@ -90,7 +91,7 @@ class AppPanelProvider extends PanelProvider
             // School Admin. Not in the Windows app: its one school is set up
             // on first run (DesktopSetupController).
             ->registration(Edition::isDesktop() ? null : RegisterSchool::class)
-            ->passwordReset(resetAction: ResetPassword::class)
+            ->passwordReset(RequestPasswordReset::class, ResetPassword::class)
 
             // Public landing page at the site root. Registered here (not in
             // routes/web.php) so Filament sees "/" is taken and sends

@@ -2,6 +2,7 @@
 
 namespace App\Filament\Pages;
 
+use App\Filament\Concerns\PlacedInMenu;
 use App\Models\LicenceKeyRecord;
 use App\Models\School;
 use App\Services\Subscriptions\SubscriptionManager;
@@ -24,11 +25,9 @@ use RuntimeException;
  */
 class Licence extends Page
 {
+    use PlacedInMenu;
+
     protected static string|BackedEnum|null $navigationIcon = Heroicon::OutlinedKey;
-
-    protected static string|\UnitEnum|null $navigationGroup = 'Settings';
-
-    protected static ?int $navigationSort = 91;
 
     protected static ?string $title = 'Licence';
 

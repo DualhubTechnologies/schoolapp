@@ -8,6 +8,7 @@ use App\Filament\App\Resources\AllowanceTypes\Pages\ListAllowanceTypes;
 use App\Filament\App\Resources\AllowanceTypes\Schemas\AllowanceTypeForm;
 use App\Filament\App\Resources\AllowanceTypes\Tables\AllowanceTypesTable;
 use App\Filament\Concerns\GatedByModule;
+use App\Filament\Concerns\PlacedInMenu;
 use App\Models\AllowanceType;
 use App\Support\PayrollAccess;
 use BackedEnum;
@@ -20,19 +21,13 @@ use Illuminate\Database\Eloquent\Builder;
 class AllowanceTypeResource extends Resource
 {
     use GatedByModule;
+    use PlacedInMenu;
 
     protected static ?string $model = AllowanceType::class;
 
     protected static string|BackedEnum|null $navigationIcon = Heroicon::OutlinedGift;
 
-    protected static ?int $navigationSort = 4;
-
     protected static ?string $recordTitleAttribute = 'name';
-
-    public static function getNavigationGroup(): ?string
-    {
-        return 'Human Resources';
-    }
 
     public static function form(Schema $schema): Schema
     {

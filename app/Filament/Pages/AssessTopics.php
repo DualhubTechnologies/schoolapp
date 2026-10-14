@@ -3,6 +3,7 @@
 namespace App\Filament\Pages;
 
 use App\Filament\App\Resources\SyllabusTopics\SyllabusTopicResource;
+use App\Filament\Concerns\PlacedInMenu;
 use App\Models\SchoolClass;
 use App\Models\Student;
 use App\Models\Subject;
@@ -33,11 +34,9 @@ use Livewire\Attributes\Computed;
  */
 class AssessTopics extends Page
 {
+    use PlacedInMenu;
+
     protected static string|BackedEnum|null $navigationIcon = Heroicon::OutlinedCheckBadge;
-
-    protected static string|\UnitEnum|null $navigationGroup = 'Exams & Results';
-
-    protected static ?int $navigationSort = 3;
 
     protected static ?string $title = 'Assess Topics';
 

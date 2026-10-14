@@ -3,6 +3,7 @@
 namespace App\Filament\Pages;
 
 use App\Filament\App\Resources\Staff\StaffResource;
+use App\Filament\Concerns\PlacedInMenu;
 use App\Filament\Support\IdCardsPage;
 use App\Models\Staff;
 use App\Models\Student;
@@ -17,11 +18,9 @@ use Illuminate\Support\Collection;
  */
 class StaffIdCards extends IdCardsPage
 {
+    use PlacedInMenu;
+
     protected static string|BackedEnum|null $navigationIcon = Heroicon::OutlinedUserGroup;
-
-    protected static ?string $navigationLabel = 'Staff ID Cards';
-
-    protected static ?int $navigationSort = 2;
 
     protected static ?string $title = 'Staff ID Cards';
 

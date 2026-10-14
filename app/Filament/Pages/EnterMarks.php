@@ -2,6 +2,7 @@
 
 namespace App\Filament\Pages;
 
+use App\Filament\Concerns\PlacedInMenu;
 use App\Models\Assessment;
 use App\Models\GradingScale;
 use App\Models\Mark;
@@ -42,11 +43,9 @@ use Symfony\Component\HttpFoundation\StreamedResponse;
  */
 class EnterMarks extends Page
 {
+    use PlacedInMenu;
+
     protected static string|BackedEnum|null $navigationIcon = Heroicon::OutlinedPencilSquare;
-
-    protected static string|\UnitEnum|null $navigationGroup = 'Exams & Results';
-
-    protected static ?int $navigationSort = 2;
 
     protected static ?string $title = 'Enter Marks';
 

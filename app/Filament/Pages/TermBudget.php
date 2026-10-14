@@ -2,6 +2,7 @@
 
 namespace App\Filament\Pages;
 
+use App\Filament\Concerns\PlacedInMenu;
 use App\Models\BudgetLine;
 use App\Models\FinanceCategory;
 use App\Models\Term;
@@ -20,15 +21,11 @@ use Livewire\Attributes\Computed;
  */
 class TermBudget extends Page
 {
+    use PlacedInMenu;
+
     protected static string|BackedEnum|null $navigationIcon = Heroicon::OutlinedCalculator;
 
-    protected static string|\UnitEnum|null $navigationGroup = 'Finance';
-
-    protected static ?int $navigationSort = 4;
-
     protected static ?string $title = 'Term Budget';
-
-    protected static ?string $navigationLabel = 'Budget';
 
     protected string $view = 'filament.pages.term-budget';
 

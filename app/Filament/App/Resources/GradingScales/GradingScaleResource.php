@@ -4,6 +4,7 @@ namespace App\Filament\App\Resources\GradingScales;
 
 use App\Filament\App\Resources\GradingScales\Pages\ManageGradingScales;
 use App\Filament\Concerns\GatedByModule;
+use App\Filament\Concerns\PlacedInMenu;
 use App\Models\GradingScale;
 use App\Support\Modules;
 use App\Support\SchoolType;
@@ -25,16 +26,11 @@ use Illuminate\Database\Eloquent\Builder;
 class GradingScaleResource extends Resource
 {
     use GatedByModule;
+    use PlacedInMenu;
 
     protected static ?string $model = GradingScale::class;
 
     protected static string|BackedEnum|null $navigationIcon = Heroicon::OutlinedAdjustmentsHorizontal;
-
-    protected static string|\UnitEnum|null $navigationGroup = 'Academics';
-
-    protected static ?int $navigationSort = 10;
-
-    protected static ?string $navigationLabel = 'Grading Scales';
 
     public static function getEloquentQuery(): Builder
     {

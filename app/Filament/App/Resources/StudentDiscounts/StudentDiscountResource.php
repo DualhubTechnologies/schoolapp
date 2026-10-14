@@ -8,6 +8,7 @@ use App\Filament\App\Resources\StudentDiscounts\Pages\ListStudentDiscounts;
 use App\Filament\App\Resources\StudentDiscounts\Schemas\StudentDiscountForm;
 use App\Filament\App\Resources\StudentDiscounts\Tables\StudentDiscountsTable;
 use App\Filament\Concerns\GatedByModule;
+use App\Filament\Concerns\PlacedInMenu;
 use App\Models\StudentDiscount;
 use BackedEnum;
 use Filament\Resources\Resource;
@@ -19,16 +20,11 @@ use Illuminate\Database\Eloquent\Builder;
 class StudentDiscountResource extends Resource
 {
     use GatedByModule;
+    use PlacedInMenu;
 
     protected static ?string $model = StudentDiscount::class;
 
     protected static string|BackedEnum|null $navigationIcon = Heroicon::OutlinedReceiptPercent;
-
-    protected static string|\UnitEnum|null $navigationGroup = 'Fees';
-
-    protected static ?int $navigationSort = 6;
-
-    protected static ?string $navigationLabel = 'Discounts & Bursaries';
 
     protected static ?string $modelLabel = 'discount';
 

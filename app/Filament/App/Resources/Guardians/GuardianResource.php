@@ -9,6 +9,7 @@ use App\Filament\App\Resources\Guardians\Pages\ViewGuardian;
 use App\Filament\App\Resources\Guardians\Schemas\GuardianForm;
 use App\Filament\App\Resources\Guardians\Tables\GuardiansTable;
 use App\Filament\Concerns\GatedByModule;
+use App\Filament\Concerns\PlacedInMenu;
 use App\Models\Guardian;
 use App\Support\Modules;
 use BackedEnum;
@@ -22,6 +23,7 @@ use Illuminate\Database\Eloquent\Model;
 class GuardianResource extends Resource
 {
     use GatedByModule;
+    use PlacedInMenu;
 
     protected static ?string $model = Guardian::class;
 
@@ -45,8 +47,6 @@ class GuardianResource extends Resource
         return array_filter(['Phone' => $record->phone, 'Relationship' => $record->relationship ? ucfirst($record->relationship) : null]);
     }
 
-    protected static ?int $navigationSort = 2;
-
     protected static ?string $modelLabel = 'Guardian';
 
     protected static ?string $pluralModelLabel = 'Guardians / Parents';
@@ -64,11 +64,6 @@ class GuardianResource extends Resource
     public static function shouldRegisterNavigation(): bool
     {
         return ! auth()->user()?->hasRole('Super Admin');
-    }
-
-    public static function getNavigationGroup(): ?string
-    {
-        return 'Students';
     }
 
     public static function getEloquentQuery(): Builder

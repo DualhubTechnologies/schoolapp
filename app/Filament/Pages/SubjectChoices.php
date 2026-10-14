@@ -2,6 +2,7 @@
 
 namespace App\Filament\Pages;
 
+use App\Filament\Concerns\PlacedInMenu;
 use App\Models\Combination;
 use App\Models\SchoolClass;
 use App\Models\Section;
@@ -30,11 +31,9 @@ use Livewire\Attributes\Computed;
  */
 class SubjectChoices extends Page
 {
+    use PlacedInMenu;
+
     protected static string|BackedEnum|null $navigationIcon = Heroicon::OutlinedAdjustmentsHorizontal;
-
-    protected static string|\UnitEnum|null $navigationGroup = 'Academics';
-
-    protected static ?int $navigationSort = 3;
 
     protected static ?string $title = 'Subject Choices';
 

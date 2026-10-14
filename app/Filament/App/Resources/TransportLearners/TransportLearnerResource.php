@@ -4,6 +4,7 @@ namespace App\Filament\App\Resources\TransportLearners;
 
 use App\Filament\App\Resources\TransportLearners\Pages\ManageTransportLearners;
 use App\Filament\Concerns\GatedByModule;
+use App\Filament\Concerns\PlacedInMenu;
 use App\Models\SchoolClass;
 use App\Models\Student;
 use App\Models\TransportRoute;
@@ -30,16 +31,11 @@ use Illuminate\Database\Eloquent\Model;
 class TransportLearnerResource extends Resource
 {
     use GatedByModule;
+    use PlacedInMenu;
 
     protected static ?string $model = Student::class;
 
     protected static string|BackedEnum|null $navigationIcon = Heroicon::OutlinedUserGroup;
-
-    protected static string|\UnitEnum|null $navigationGroup = 'Transport';
-
-    protected static ?int $navigationSort = 2;
-
-    protected static ?string $navigationLabel = 'Learners on the van';
 
     protected static ?string $modelLabel = 'learner';
 

@@ -3,6 +3,7 @@
 namespace App\Filament\App\Resources\Incomes;
 
 use App\Filament\App\Resources\Incomes\Pages\ManageIncomes;
+use App\Filament\Concerns\PlacedInMenu;
 use App\Filament\Support\FinanceEntryResource;
 use BackedEnum;
 use Filament\Support\Icons\Heroicon;
@@ -13,13 +14,11 @@ use Filament\Support\Icons\Heroicon;
  */
 class IncomeResource extends FinanceEntryResource
 {
+    use PlacedInMenu;
+
     protected static string $entryType = 'income';
 
     protected static string|BackedEnum|null $navigationIcon = Heroicon::OutlinedArrowDownTray;
-
-    protected static ?int $navigationSort = 3;
-
-    protected static ?string $navigationLabel = 'Other Income';
 
     protected static ?string $modelLabel = 'income';
 

@@ -8,6 +8,7 @@ use App\Filament\App\Resources\AcademicYears\Pages\ListAcademicYears;
 use App\Filament\App\Resources\AcademicYears\Schemas\AcademicYearForm;
 use App\Filament\App\Resources\AcademicYears\Tables\AcademicYearsTable;
 use App\Filament\Concerns\GatedByModule;
+use App\Filament\Concerns\PlacedInMenu;
 use App\Models\AcademicYear;
 use BackedEnum;
 use Filament\Resources\Resource;
@@ -19,16 +20,11 @@ use Illuminate\Database\Eloquent\Builder;
 class AcademicYearResource extends Resource
 {
     use GatedByModule;
+    use PlacedInMenu;
 
     protected static ?string $model = AcademicYear::class;
 
     protected static string|BackedEnum|null $navigationIcon = Heroicon::OutlinedCalendarDays;
-
-    protected static string|\UnitEnum|null $navigationGroup = 'Academics';
-
-    protected static ?int $navigationSort = 1;
-
-    protected static ?string $navigationLabel = 'Academic Years';
 
     protected static ?string $recordTitleAttribute = 'name';
 

@@ -8,6 +8,7 @@ use App\Filament\App\Resources\ClassLevels\Pages\ListClassLevels;
 use App\Filament\App\Resources\ClassLevels\Schemas\ClassLevelForm;
 use App\Filament\App\Resources\ClassLevels\Tables\ClassLevelsTable;
 use App\Filament\Concerns\GatedByModule;
+use App\Filament\Concerns\PlacedInMenu;
 use App\Models\ClassLevel;
 use BackedEnum;
 use Filament\Resources\Resource;
@@ -19,16 +20,11 @@ use Illuminate\Database\Eloquent\Builder;
 class ClassLevelResource extends Resource
 {
     use GatedByModule;
+    use PlacedInMenu;
 
     protected static ?string $model = ClassLevel::class;
 
     protected static string|BackedEnum|null $navigationIcon = Heroicon::OutlinedRectangleStack;
-
-    protected static string|\UnitEnum|null $navigationGroup = 'Academics';
-
-    protected static ?int $navigationSort = 3;
-
-    protected static ?string $navigationLabel = 'Class Levels';
 
     protected static ?string $modelLabel = 'class level';
 

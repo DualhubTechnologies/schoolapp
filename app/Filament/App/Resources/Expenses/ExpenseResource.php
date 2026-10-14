@@ -3,6 +3,7 @@
 namespace App\Filament\App\Resources\Expenses;
 
 use App\Filament\App\Resources\Expenses\Pages\ManageExpenses;
+use App\Filament\Concerns\PlacedInMenu;
 use App\Filament\Support\FinanceEntryResource;
 use BackedEnum;
 use Filament\Support\Icons\Heroicon;
@@ -12,13 +13,11 @@ use Filament\Support\Icons\Heroicon;
  */
 class ExpenseResource extends FinanceEntryResource
 {
+    use PlacedInMenu;
+
     protected static string $entryType = 'expense';
 
     protected static string|BackedEnum|null $navigationIcon = Heroicon::OutlinedArrowUpTray;
-
-    protected static ?int $navigationSort = 2;
-
-    protected static ?string $navigationLabel = 'Expenses';
 
     protected static ?string $modelLabel = 'expense';
 

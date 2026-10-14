@@ -2,6 +2,7 @@
 
 namespace App\Filament\Pages;
 
+use App\Filament\Concerns\PlacedInMenu;
 use App\Models\AcademicYear;
 use App\Models\Term;
 use App\Services\Finance\FinanceReport;
@@ -20,11 +21,9 @@ use Symfony\Component\HttpFoundation\StreamedResponse;
  */
 class IncomeExpenditure extends Page
 {
+    use PlacedInMenu;
+
     protected static string|BackedEnum|null $navigationIcon = Heroicon::OutlinedScale;
-
-    protected static string|\UnitEnum|null $navigationGroup = 'Finance';
-
-    protected static ?int $navigationSort = 1;
 
     protected static ?string $title = 'Income vs Expenditure';
 

@@ -4,6 +4,7 @@ namespace App\Filament\App\Resources\TransportRoutes;
 
 use App\Filament\App\Resources\TransportRoutes\Pages\ManageTransportRoutes;
 use App\Filament\Concerns\GatedByModule;
+use App\Filament\Concerns\PlacedInMenu;
 use App\Filament\Support\MoneyInput;
 use App\Models\TransportRoute;
 use BackedEnum;
@@ -29,16 +30,11 @@ use Illuminate\Validation\Rules\Unique;
 class TransportRouteResource extends Resource
 {
     use GatedByModule;
+    use PlacedInMenu;
 
     protected static ?string $model = TransportRoute::class;
 
     protected static string|BackedEnum|null $navigationIcon = Heroicon::OutlinedTruck;
-
-    protected static string|\UnitEnum|null $navigationGroup = 'Transport';
-
-    protected static ?int $navigationSort = 1;
-
-    protected static ?string $navigationLabel = 'Routes';
 
     protected static ?string $modelLabel = 'route';
 

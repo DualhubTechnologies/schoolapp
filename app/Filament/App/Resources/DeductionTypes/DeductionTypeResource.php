@@ -8,6 +8,7 @@ use App\Filament\App\Resources\DeductionTypes\Pages\ListDeductionTypes;
 use App\Filament\App\Resources\DeductionTypes\Schemas\DeductionTypeForm;
 use App\Filament\App\Resources\DeductionTypes\Tables\DeductionTypesTable;
 use App\Filament\Concerns\GatedByModule;
+use App\Filament\Concerns\PlacedInMenu;
 use App\Models\DeductionType;
 use App\Support\PayrollAccess;
 use BackedEnum;
@@ -20,19 +21,13 @@ use Illuminate\Database\Eloquent\Builder;
 class DeductionTypeResource extends Resource
 {
     use GatedByModule;
+    use PlacedInMenu;
 
     protected static ?string $model = DeductionType::class;
 
     protected static string|BackedEnum|null $navigationIcon = Heroicon::OutlinedMinusCircle;
 
-    protected static ?int $navigationSort = 5;
-
     protected static ?string $recordTitleAttribute = 'name';
-
-    public static function getNavigationGroup(): ?string
-    {
-        return 'Human Resources';
-    }
 
     public static function form(Schema $schema): Schema
     {

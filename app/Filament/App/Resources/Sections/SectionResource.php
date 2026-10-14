@@ -8,6 +8,7 @@ use App\Filament\App\Resources\Sections\Pages\ListSections;
 use App\Filament\App\Resources\Sections\Schemas\SectionForm;
 use App\Filament\App\Resources\Sections\Tables\SectionsTable;
 use App\Filament\Concerns\GatedByModule;
+use App\Filament\Concerns\PlacedInMenu;
 use App\Models\Section;
 use BackedEnum;
 use Filament\Resources\Resource;
@@ -19,14 +20,13 @@ use Illuminate\Database\Eloquent\Builder;
 class SectionResource extends Resource
 {
     use GatedByModule;
+    use PlacedInMenu;
 
     protected static ?string $model = Section::class;
 
     protected static string|BackedEnum|null $navigationIcon = Heroicon::OutlinedSquares2x2;
 
     protected static ?string $recordTitleAttribute = 'name';
-
-    protected static ?int $navigationSort = 5;
 
     protected static ?string $pluralModelLabel = 'Sections / Streams';
 
@@ -43,11 +43,6 @@ class SectionResource extends Resource
     public static function shouldRegisterNavigation(): bool
     {
         return ! auth()->user()?->hasRole('Super Admin');
-    }
-
-    public static function getNavigationGroup(): ?string
-    {
-        return 'Academics';
     }
 
     public static function getEloquentQuery(): Builder

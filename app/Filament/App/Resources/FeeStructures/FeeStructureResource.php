@@ -8,6 +8,7 @@ use App\Filament\App\Resources\FeeStructures\Pages\ListFeeStructures;
 use App\Filament\App\Resources\FeeStructures\Schemas\FeeStructureForm;
 use App\Filament\App\Resources\FeeStructures\Tables\FeeStructureTable;
 use App\Filament\Concerns\GatedByModule;
+use App\Filament\Concerns\PlacedInMenu;
 use App\Models\FeeStructure;
 use BackedEnum;
 use Filament\Resources\Resource;
@@ -21,16 +22,13 @@ use Illuminate\Database\Eloquent\Model;
 class FeeStructureResource extends Resource
 {
     use GatedByModule;
+    use PlacedInMenu;
 
     protected static ?string $model = FeeStructure::class;
 
     protected static string|BackedEnum|null $navigationIcon = Heroicon::OutlinedTableCells;
 
-    protected static ?string $navigationLabel = 'Fee Setup';
-
     protected static ?string $recordTitleAttribute = 'name';
-
-    protected static ?int $navigationSort = 7;
 
     protected static ?string $modelLabel = 'Fee Structure';
 
@@ -61,11 +59,6 @@ class FeeStructureResource extends Resource
     public static function shouldRegisterNavigation(): bool
     {
         return ! auth()->user()?->hasRole('Super Admin');
-    }
-
-    public static function getNavigationGroup(): ?string
-    {
-        return 'Fees';
     }
 
     public static function getEloquentQuery(): Builder

@@ -3,6 +3,7 @@
 namespace App\Filament\App\Pages;
 
 use App\Filament\Concerns\GatedByModule;
+use App\Filament\Concerns\PlacedInMenu;
 use App\Models\Student;
 use App\Models\StudentCharge;
 use App\Models\Term;
@@ -21,12 +22,9 @@ use Livewire\Attributes\Computed;
 class TransportCollections extends Page
 {
     use GatedByModule;
+    use PlacedInMenu;
 
     protected static string|BackedEnum|null $navigationIcon = Heroicon::OutlinedBanknotes;
-
-    protected static string|\UnitEnum|null $navigationGroup = 'Transport';
-
-    protected static ?int $navigationSort = 3;
 
     protected static ?string $title = 'Transport collections';
 

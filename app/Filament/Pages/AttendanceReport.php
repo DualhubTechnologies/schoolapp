@@ -2,6 +2,7 @@
 
 namespace App\Filament\Pages;
 
+use App\Filament\Concerns\PlacedInMenu;
 use App\Models\AttendanceRecord;
 use App\Models\SchoolClass;
 use App\Models\Section;
@@ -28,11 +29,9 @@ use Symfony\Component\HttpFoundation\StreamedResponse;
  */
 class AttendanceReport extends Page
 {
+    use PlacedInMenu;
+
     protected static string|BackedEnum|null $navigationIcon = Heroicon::OutlinedPresentationChartLine;
-
-    protected static string|\UnitEnum|null $navigationGroup = 'Students';
-
-    protected static ?int $navigationSort = 21;
 
     protected static ?string $title = 'Attendance Report';
 

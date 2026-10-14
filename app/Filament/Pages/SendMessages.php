@@ -2,6 +2,7 @@
 
 namespace App\Filament\Pages;
 
+use App\Filament\Concerns\PlacedInMenu;
 use App\Jobs\SendMessageBatch;
 use App\Models\MessageBatch;
 use App\Models\School;
@@ -28,15 +29,11 @@ use Livewire\Attributes\Computed;
  */
 class SendMessages extends Page
 {
+    use PlacedInMenu;
+
     protected static string|BackedEnum|null $navigationIcon = Heroicon::OutlinedChatBubbleLeftRight;
 
-    protected static string|\UnitEnum|null $navigationGroup = 'Students';
-
-    protected static ?int $navigationSort = 30;
-
     protected static ?string $title = 'Messages';
-
-    protected static ?string $navigationLabel = 'Messages (SMS)';
 
     protected string $view = 'filament.pages.send-messages';
 

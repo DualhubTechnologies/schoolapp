@@ -5,6 +5,7 @@ namespace App\Filament\App\Resources\BankAccounts;
 use App\Filament\App\Resources\BankAccounts\Pages\ManageBankAccounts;
 use App\Filament\App\Resources\BankStatementLines\Pages\ListBankStatementLines;
 use App\Filament\Concerns\GatedByModule;
+use App\Filament\Concerns\PlacedInMenu;
 use App\Filament\Support\ConfirmWithPassword;
 use App\Filament\Support\MoneyInput;
 use App\Models\BankAccount;
@@ -33,16 +34,11 @@ use Illuminate\Database\Eloquent\Builder;
 class BankAccountResource extends Resource
 {
     use GatedByModule;
+    use PlacedInMenu;
 
     protected static ?string $model = BankAccount::class;
 
     protected static string|BackedEnum|null $navigationIcon = Heroicon::OutlinedBuildingLibrary;
-
-    protected static string|\UnitEnum|null $navigationGroup = 'Finance';
-
-    protected static ?int $navigationSort = 6;
-
-    protected static ?string $navigationLabel = 'Bank accounts';
 
     protected static ?string $modelLabel = 'bank account';
 

@@ -8,6 +8,7 @@ use App\Filament\App\Resources\SchoolClasses\Pages\ListSchoolClasses;
 use App\Filament\App\Resources\SchoolClasses\Schemas\SchoolClassForm;
 use App\Filament\App\Resources\SchoolClasses\Tables\SchoolClassesTable;
 use App\Filament\Concerns\GatedByModule;
+use App\Filament\Concerns\PlacedInMenu;
 use App\Models\SchoolClass;
 use BackedEnum;
 use Filament\Resources\Resource;
@@ -19,14 +20,13 @@ use Illuminate\Database\Eloquent\Builder;
 class SchoolClassResource extends Resource
 {
     use GatedByModule;
+    use PlacedInMenu;
 
     protected static ?string $model = SchoolClass::class;
 
     protected static string|BackedEnum|null $navigationIcon = Heroicon::OutlinedBuildingLibrary;
 
     protected static ?string $recordTitleAttribute = 'name';
-
-    protected static ?int $navigationSort = 4;
 
     protected static ?string $modelLabel = 'Class';
 
@@ -45,11 +45,6 @@ class SchoolClassResource extends Resource
     public static function shouldRegisterNavigation(): bool
     {
         return ! auth()->user()?->hasRole('Super Admin');
-    }
-
-    public static function getNavigationGroup(): ?string
-    {
-        return 'Academics';
     }
 
     public static function getEloquentQuery(): Builder

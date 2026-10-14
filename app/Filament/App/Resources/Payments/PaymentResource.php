@@ -5,6 +5,7 @@ namespace App\Filament\App\Resources\Payments;
 use App\Filament\App\Resources\Payments\Pages\ListPayments;
 use App\Filament\App\Resources\Payments\Tables\PaymentsTable;
 use App\Filament\Concerns\GatedByModule;
+use App\Filament\Concerns\PlacedInMenu;
 use App\Filament\Pages\ReceivePayment;
 use App\Models\StudentPayment;
 use App\Support\Modules;
@@ -24,16 +25,11 @@ use Illuminate\Support\Carbon;
 class PaymentResource extends Resource
 {
     use GatedByModule;
+    use PlacedInMenu;
 
     protected static ?string $model = StudentPayment::class;
 
     protected static string|BackedEnum|null $navigationIcon = Heroicon::OutlinedClipboardDocumentCheck;
-
-    protected static string|\UnitEnum|null $navigationGroup = 'Fees';
-
-    protected static ?int $navigationSort = 2;
-
-    protected static ?string $navigationLabel = 'Payments';
 
     protected static ?string $modelLabel = 'payment';
 

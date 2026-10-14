@@ -8,6 +8,7 @@ use App\Filament\App\Resources\Houses\Pages\ListHouses;
 use App\Filament\App\Resources\Houses\Schemas\HouseForm;
 use App\Filament\App\Resources\Houses\Tables\HousesTable;
 use App\Filament\Concerns\GatedByModule;
+use App\Filament\Concerns\PlacedInMenu;
 use App\Models\House;
 use BackedEnum;
 use Filament\Resources\Resource;
@@ -19,16 +20,13 @@ use Illuminate\Database\Eloquent\Builder;
 class HouseResource extends Resource
 {
     use GatedByModule;
+    use PlacedInMenu;
 
     protected static ?string $model = House::class;
 
     protected static string|BackedEnum|null $navigationIcon = Heroicon::OutlinedFlag;
 
     protected static ?string $recordTitleAttribute = 'name';
-
-    protected static string|\UnitEnum|null $navigationGroup = 'Academics';
-
-    protected static ?int $navigationSort = 6;
 
     public static function form(Schema $schema): Schema
     {

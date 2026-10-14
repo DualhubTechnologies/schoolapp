@@ -4,6 +4,7 @@ namespace App\Filament\App\Resources\Combinations;
 
 use App\Filament\App\Resources\Combinations\Pages\ManageCombinations;
 use App\Filament\Concerns\GatedByModule;
+use App\Filament\Concerns\PlacedInMenu;
 use App\Models\Combination;
 use App\Models\SchoolClass;
 use App\Models\Subject;
@@ -31,16 +32,11 @@ use Illuminate\Validation\Rules\Unique;
 class CombinationResource extends Resource
 {
     use GatedByModule;
+    use PlacedInMenu;
 
     protected static ?string $model = Combination::class;
 
     protected static string|BackedEnum|null $navigationIcon = Heroicon::OutlinedSquaresPlus;
-
-    protected static string|\UnitEnum|null $navigationGroup = 'Academics';
-
-    protected static ?int $navigationSort = 9;
-
-    protected static ?string $navigationLabel = 'A-Level Combinations';
 
     protected static ?string $modelLabel = 'combination';
 

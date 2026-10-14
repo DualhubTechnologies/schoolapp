@@ -3,6 +3,7 @@
 namespace App\Filament\Pages;
 
 use App\Filament\Concerns\ChoosesExam;
+use App\Filament\Concerns\PlacedInMenu;
 use App\Models\SchoolClass;
 use App\Models\Section;
 use App\Models\Term;
@@ -23,16 +24,11 @@ use Symfony\Component\HttpFoundation\StreamedResponse;
 class ClassResults extends Page
 {
     use ChoosesExam;
+    use PlacedInMenu;
 
     protected static string|BackedEnum|null $navigationIcon = Heroicon::OutlinedTableCells;
 
-    protected static string|\UnitEnum|null $navigationGroup = 'Exams & Results';
-
-    protected static ?int $navigationSort = 4;
-
     protected static ?string $title = 'Results & Broadsheet';
-
-    protected static ?string $navigationLabel = 'Results';
 
     protected string $view = 'filament.pages.class-results';
 

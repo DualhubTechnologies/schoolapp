@@ -2,6 +2,7 @@
 
 namespace App\Filament\Pages;
 
+use App\Filament\Concerns\PlacedInMenu;
 use App\Models\Term;
 use App\Services\FeeSheet;
 use App\Support\Modules;
@@ -17,15 +18,11 @@ use Filament\Support\Icons\Heroicon;
  */
 class FeeStructureSheet extends Page
 {
+    use PlacedInMenu;
+
     protected static string|BackedEnum|null $navigationIcon = Heroicon::OutlinedPrinter;
 
-    protected static string|\UnitEnum|null $navigationGroup = 'Fees';
-
-    protected static ?int $navigationSort = 8;
-
     protected static ?string $title = 'Fees Structure';
-
-    protected static ?string $navigationLabel = 'Fees Sheet';
 
     protected string $view = 'filament.pages.fee-structure-sheet';
 

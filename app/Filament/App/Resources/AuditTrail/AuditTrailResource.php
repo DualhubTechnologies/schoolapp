@@ -4,6 +4,7 @@ namespace App\Filament\App\Resources\AuditTrail;
 
 use App\Filament\App\Resources\AuditTrail\Pages\ListActivities;
 use App\Filament\Concerns\GatedByModule;
+use App\Filament\Concerns\PlacedInMenu;
 use App\Models\User;
 use BackedEnum;
 use Filament\Forms\Components\DatePicker;
@@ -19,16 +20,11 @@ use Spatie\Activitylog\Models\Activity;
 class AuditTrailResource extends Resource
 {
     use GatedByModule;
+    use PlacedInMenu;
 
     protected static ?string $model = Activity::class;
 
     protected static string|BackedEnum|null $navigationIcon = Heroicon::OutlinedClipboardDocumentList;
-
-    protected static string|\UnitEnum|null $navigationGroup = 'Settings';
-
-    protected static ?int $navigationSort = 3;
-
-    protected static ?string $navigationLabel = 'Audit Trail';
 
     protected static ?string $modelLabel = 'Activity';
 

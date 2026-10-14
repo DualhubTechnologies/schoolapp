@@ -8,6 +8,7 @@ use App\Filament\App\Resources\PayrollPeriods\Pages\ViewPayrollPeriod;
 use App\Filament\App\Resources\PayrollPeriods\Schemas\PayrollPeriodForm;
 use App\Filament\App\Resources\PayrollPeriods\Tables\PayrollPeriodsTable;
 use App\Filament\Concerns\GatedByModule;
+use App\Filament\Concerns\PlacedInMenu;
 use App\Models\PayrollPeriod;
 use App\Support\PayrollAccess;
 use BackedEnum;
@@ -30,18 +31,15 @@ use Illuminate\Database\Eloquent\Model;
 class PayrollPeriodResource extends Resource
 {
     use GatedByModule;
+    use PlacedInMenu;
 
     protected static ?string $model = PayrollPeriod::class;
 
     protected static string|BackedEnum|null $navigationIcon = Heroicon::OutlinedWallet;
 
-    protected static ?string $navigationLabel = 'Payroll';
-
     protected static ?string $modelLabel = 'payroll run';
 
     protected static ?string $pluralModelLabel = 'Payroll';
-
-    protected static ?int $navigationSort = 2;
 
     /**
      * "September 2026".
@@ -177,11 +175,6 @@ class PayrollPeriodResource extends Resource
     public static function shouldRegisterNavigation(): bool
     {
         return PayrollAccess::allowed();
-    }
-
-    public static function getNavigationGroup(): ?string
-    {
-        return 'Human Resources';
     }
 
     /**

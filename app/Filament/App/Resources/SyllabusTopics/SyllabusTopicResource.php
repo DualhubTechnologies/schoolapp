@@ -4,6 +4,7 @@ namespace App\Filament\App\Resources\SyllabusTopics;
 
 use App\Filament\App\Resources\SyllabusTopics\Pages\ManageSyllabusTopics;
 use App\Filament\Concerns\GatedByModule;
+use App\Filament\Concerns\PlacedInMenu;
 use App\Models\Subject;
 use App\Models\SyllabusTopic;
 use App\Support\AcademicAccess;
@@ -29,16 +30,11 @@ use Illuminate\Database\Eloquent\Builder;
 class SyllabusTopicResource extends Resource
 {
     use GatedByModule;
+    use PlacedInMenu;
 
     protected static ?string $model = SyllabusTopic::class;
 
     protected static string|BackedEnum|null $navigationIcon = Heroicon::OutlinedListBullet;
-
-    protected static string|\UnitEnum|null $navigationGroup = 'Exams & Results';
-
-    protected static ?int $navigationSort = 4;
-
-    protected static ?string $navigationLabel = 'Syllabus topics';
 
     protected static ?string $recordTitleAttribute = 'name';
 

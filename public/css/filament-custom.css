@@ -4111,3 +4111,83 @@ html .fi-body {
     .fi-sc-actions.fi-sticky .fi-ac { flex-wrap: wrap; row-gap: .5rem; }
     .fi-sc-actions.fi-sticky .fi-ac .fi-btn { white-space: nowrap; flex: 1 1 auto !important; }
 }
+
+/* ── Reports (App\Filament\Pages\Reports) ───────────────────────────── */
+.rp-intro { font-size: .9rem; color: #475569; margin-top: -.5rem; }
+.rp-area { margin-top: .25rem; }
+.rp-area-title { font-size: .72rem; font-weight: 700; letter-spacing: .1em; text-transform: uppercase; color: #64748b; margin-bottom: .6rem; }
+.rp-cards { display: grid; gap: .75rem; grid-template-columns: repeat(auto-fill, minmax(17rem, 1fr)); }
+.rp-card { display: flex; align-items: flex-start; gap: .85rem; padding: 1rem 1.1rem; background: #fff; border: 1px solid #e3e9f2; border-radius: .9rem; transition: border-color .15s, box-shadow .15s, transform .15s; }
+.rp-card:hover { border-color: #93c5fd; box-shadow: 0 10px 24px -14px rgba(37, 99, 235, .45); transform: translateY(-1px); }
+.rp-card-icon { flex: none; display: grid; place-items: center; width: 2.5rem; height: 2.5rem; border-radius: .7rem; background: #eff6ff; color: #2563eb; }
+.rp-card-icon svg { width: 1.3rem; height: 1.3rem; }
+.rp-card-body { flex: 1; min-width: 0; }
+.rp-card-body b { display: block; font-size: .95rem; color: #13294b; }
+.rp-card-body span { display: block; margin-top: .2rem; font-size: .8rem; line-height: 1.45; color: #64748b; }
+.rp-card-go { flex: none; width: 1.1rem; height: 1.1rem; color: #94a3b8; align-self: center; }
+
+.rp-toolbar { display: flex; flex-wrap: wrap; align-items: flex-end; justify-content: space-between; gap: .75rem 1rem; }
+.rp-filters { display: flex; flex-wrap: wrap; gap: .75rem; }
+.rp-field { display: grid; gap: .3rem; min-width: 11rem; }
+.rp-field > span { font-size: .8rem; font-weight: 600; color: #374151; }
+.rp-actions { display: flex; gap: .5rem; }
+
+.rp-paper { background: #fff; border: 1px solid #e3e9f2; border-radius: 14px; padding: 1.5rem 1.75rem; color: #111827; }
+.rp-letterhead { display: flex; align-items: center; gap: 1rem; padding-bottom: 1rem; border-bottom: 3px double #1e3a5f; margin-bottom: 1.1rem; }
+.rp-logo { width: 3.4rem; height: 3.4rem; object-fit: contain; }
+.rp-school { flex: 1; min-width: 0; }
+.rp-school h2 { font-size: 1.05rem; font-weight: 800; text-transform: uppercase; color: #1e3a5f; letter-spacing: .02em; }
+.rp-school p, .rp-doc p { font-size: .78rem; color: #64748b; }
+.rp-doc { text-align: right; }
+.rp-doc h3 { font-size: .95rem; font-weight: 800; text-transform: uppercase; letter-spacing: .08em; color: #13294b; }
+
+.rp-tiles { display: grid; gap: .6rem; grid-template-columns: repeat(auto-fit, minmax(9rem, 1fr)); margin-bottom: 1.1rem; }
+.rp-tiles > div { background: #f8fafc; border: 1px solid #eef2f7; border-radius: .7rem; padding: .65rem .8rem; }
+.rp-tiles span { display: block; font-size: .68rem; font-weight: 700; letter-spacing: .06em; text-transform: uppercase; color: #64748b; }
+.rp-tiles b { display: block; margin-top: .15rem; font-size: 1.1rem; font-weight: 800; color: #13294b; font-variant-numeric: tabular-nums; }
+.rp-tiles .is-main { background: #eff6ff; border-color: #bfdbfe; }
+.rp-tiles .is-main b { color: #1d4ed8; }
+.rp-tiles .is-good b { color: #15803d; }
+.rp-tiles .is-bad b { color: #b91c1c; }
+
+.rp-h { margin: 1.25rem 0 .5rem; font-size: .75rem; font-weight: 700; letter-spacing: .08em; text-transform: uppercase; color: #1e3a5f; }
+.rp-scroll { overflow-x: auto; }
+.rp-table { width: 100%; border-collapse: collapse; font-size: .875rem; }
+.rp-narrow { max-width: 36rem; }
+.rp-table th { text-align: left; font-size: .7rem; font-weight: 700; letter-spacing: .05em; text-transform: uppercase; color: #64748b; padding: .55rem .7rem; border-bottom: 1.5px solid #1e3a5f; white-space: nowrap; }
+.rp-table td { padding: .5rem .7rem; border-bottom: 1px solid #f1f5f9; }
+.rp-table tbody tr:nth-child(even) td { background: #fafbfc; }
+.rp-table tr.rp-sub td { font-size: .82rem; color: #475569; }
+.rp-table tr.rp-sub td:first-child { padding-left: 1.6rem; }
+.rp-table tr.rp-total td { font-weight: 800; background: #f1f5fb !important; border-top: 1.5px solid #1e3a5f; color: #13294b; }
+.rp-num { text-align: right !important; font-variant-numeric: tabular-nums; white-space: nowrap; }
+.rp-strong { font-weight: 700; }
+.rp-bad { color: #b91c1c; }
+.rp-bar-cell { white-space: nowrap; }
+.rp-bar { display: inline-block; vertical-align: middle; width: 5rem; height: .45rem; border-radius: 99px; background: #e5e7eb; overflow: hidden; margin-right: .4rem; }
+.rp-bar i { display: block; height: 100%; background: linear-gradient(90deg, #22c55e, #16a34a); border-radius: inherit; }
+.rp-bar-cell em { font-style: normal; font-weight: 700; font-size: .8rem; color: #374151; }
+.rp-note { margin-top: .75rem; font-size: .75rem; color: #64748b; }
+.rp-empty { padding: 2rem 1rem; text-align: center; color: #64748b; font-size: .9rem; }
+.rp-foot { margin-top: 1.25rem; padding-top: .6rem; border-top: 1px solid #eef2f7; font-size: .7rem; color: #94a3b8; text-align: right; }
+
+@media (max-width: 640px) {
+    .rp-paper { padding: 1rem; }
+    .rp-letterhead { flex-wrap: wrap; }
+    .rp-doc { text-align: left; width: 100%; }
+    .rp-field { min-width: 0; flex: 1 1 9rem; }
+}
+
+@media print {
+    @page { size: A4; margin: 12mm; }
+    .rp-no-print, .fi-header { display: none !important; }
+    .fi-main, .fi-page, .fi-main-ctn { padding: 0 !important; margin: 0 !important; }
+    .rp-paper { border: none; padding: 0; border-radius: 0; }
+    .rp-table { font-size: .78rem; }
+    .rp-table th, .rp-table td { padding: .3rem .5rem; }
+    .rp-tiles > div, .rp-table tr.rp-total td, .rp-table tbody tr:nth-child(even) td, .rp-bar, .rp-bar i { -webkit-print-color-adjust: exact; print-color-adjust: exact; }
+}
+.rp-ranges { display: flex; flex-wrap: wrap; gap: .35rem; }
+.rp-range { padding: .5rem .8rem; border-radius: .55rem; border: 1px solid #d6dee9; background: #fff; font-size: .82rem; font-weight: 600; color: #334155; }
+.rp-range:hover { border-color: #93c5fd; }
+.rp-range.is-on { background: #2563eb; border-color: #2563eb; color: #fff; }

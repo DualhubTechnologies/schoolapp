@@ -2,6 +2,7 @@
 
 namespace App\Filament\Pages;
 
+use App\Filament\Concerns\PlacedInMenu;
 use App\Models\AttendanceRecord;
 use App\Models\SchoolClass;
 use App\Models\Section;
@@ -31,15 +32,11 @@ use Livewire\Attributes\Computed;
  */
 class TakeAttendance extends Page
 {
+    use PlacedInMenu;
+
     protected static string|BackedEnum|null $navigationIcon = Heroicon::OutlinedCheckCircle;
 
-    protected static string|\UnitEnum|null $navigationGroup = 'Students';
-
-    protected static ?int $navigationSort = 20;
-
     protected static ?string $title = 'Class Register';
-
-    protected static ?string $navigationLabel = 'Attendance register';
 
     protected string $view = 'filament.pages.take-attendance';
 

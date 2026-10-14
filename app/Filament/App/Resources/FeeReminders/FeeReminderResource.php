@@ -4,6 +4,7 @@ namespace App\Filament\App\Resources\FeeReminders;
 
 use App\Filament\App\Resources\FeeReminders\Pages\ListFeeReminders;
 use App\Filament\Concerns\GatedByModule;
+use App\Filament\Concerns\PlacedInMenu;
 use App\Filament\Pages\StudentAccount;
 use App\Models\FeeReminder;
 use App\Support\Modules;
@@ -25,16 +26,11 @@ use Illuminate\Database\Eloquent\Model;
 class FeeReminderResource extends Resource
 {
     use GatedByModule;
+    use PlacedInMenu;
 
     protected static ?string $model = FeeReminder::class;
 
     protected static string|BackedEnum|null $navigationIcon = Heroicon::OutlinedBellAlert;
-
-    protected static string|\UnitEnum|null $navigationGroup = 'Fees';
-
-    protected static ?int $navigationSort = 5;
-
-    protected static ?string $navigationLabel = 'Fee Reminders';
 
     protected static ?string $modelLabel = 'fee reminder';
 

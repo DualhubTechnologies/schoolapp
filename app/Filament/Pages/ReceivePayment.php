@@ -2,6 +2,7 @@
 
 namespace App\Filament\Pages;
 
+use App\Filament\Concerns\PlacedInMenu;
 use App\Filament\Support\MoneyInput;
 use App\Models\Student;
 use App\Models\StudentPayment;
@@ -33,15 +34,11 @@ use Illuminate\Support\Facades\DB;
  */
 class ReceivePayment extends Page
 {
+    use PlacedInMenu;
+
     protected static string|BackedEnum|null $navigationIcon = Heroicon::OutlinedBanknotes;
 
-    protected static string|\UnitEnum|null $navigationGroup = 'Fees';
-
-    protected static ?int $navigationSort = 1;
-
     protected static ?string $title = 'Receive Payment';
-
-    protected static ?string $navigationLabel = 'Receive Payment';
 
     protected string $view = 'filament.pages.receive-payment';
 

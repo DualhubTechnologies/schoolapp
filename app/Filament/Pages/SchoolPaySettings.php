@@ -4,6 +4,7 @@ namespace App\Filament\Pages;
 
 use App\Filament\Admin\Resources\Schools\Schemas\SchoolForm;
 use App\Filament\App\Resources\SchoolPayTransactions\SchoolPayTransactionResource;
+use App\Filament\Concerns\PlacedInMenu;
 use App\Support\Edition;
 use App\Support\Modules;
 use BackedEnum;
@@ -21,13 +22,9 @@ use Filament\Schemas\Schema;
  */
 class SchoolPaySettings extends Page
 {
+    use PlacedInMenu;
+
     protected static string|BackedEnum|null $navigationIcon = 'heroicon-o-credit-card';
-
-    protected static string|\UnitEnum|null $navigationGroup = 'Settings';
-
-    protected static ?int $navigationSort = 2;
-
-    protected static ?string $navigationLabel = 'SchoolPay';
 
     protected static ?string $title = 'SchoolPay';
 

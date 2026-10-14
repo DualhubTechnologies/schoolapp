@@ -2,6 +2,7 @@
 
 namespace App\Filament\Pages;
 
+use App\Filament\Concerns\PlacedInMenu;
 use App\Models\Assessment;
 use App\Models\SchoolClass;
 use App\Models\Term;
@@ -26,11 +27,9 @@ use Livewire\Attributes\Computed;
  */
 class MarksProgress extends Page
 {
+    use PlacedInMenu;
+
     protected static string|BackedEnum|null $navigationIcon = Heroicon::OutlinedChartBar;
-
-    protected static string|\UnitEnum|null $navigationGroup = 'Exams & Results';
-
-    protected static ?int $navigationSort = 3;
 
     protected static ?string $title = 'Marks Progress';
 

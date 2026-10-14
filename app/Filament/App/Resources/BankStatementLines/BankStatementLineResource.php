@@ -4,6 +4,7 @@ namespace App\Filament\App\Resources\BankStatementLines;
 
 use App\Filament\App\Resources\BankStatementLines\Pages\ListBankStatementLines;
 use App\Filament\Concerns\GatedByModule;
+use App\Filament\Concerns\PlacedInMenu;
 use App\Models\BankStatementLine;
 use App\Models\FinanceCategory;
 use App\Models\FinanceEntry;
@@ -34,16 +35,11 @@ use RuntimeException;
 class BankStatementLineResource extends Resource
 {
     use GatedByModule;
+    use PlacedInMenu;
 
     protected static ?string $model = BankStatementLine::class;
 
     protected static string|BackedEnum|null $navigationIcon = Heroicon::OutlinedScale;
-
-    protected static string|\UnitEnum|null $navigationGroup = 'Finance';
-
-    protected static ?int $navigationSort = 7;
-
-    protected static ?string $navigationLabel = 'Bank reconciliation';
 
     protected static ?string $modelLabel = 'statement line';
 

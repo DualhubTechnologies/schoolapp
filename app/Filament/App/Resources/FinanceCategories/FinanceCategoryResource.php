@@ -4,6 +4,7 @@ namespace App\Filament\App\Resources\FinanceCategories;
 
 use App\Filament\App\Resources\FinanceCategories\Pages\ManageFinanceCategories;
 use App\Filament\Concerns\GatedByModule;
+use App\Filament\Concerns\PlacedInMenu;
 use App\Models\FinanceCategory;
 use App\Support\FinanceAccess;
 use BackedEnum;
@@ -27,16 +28,11 @@ use Illuminate\Database\Eloquent\Model;
 class FinanceCategoryResource extends Resource
 {
     use GatedByModule;
+    use PlacedInMenu;
 
     protected static ?string $model = FinanceCategory::class;
 
     protected static string|BackedEnum|null $navigationIcon = Heroicon::OutlinedTag;
-
-    protected static string|\UnitEnum|null $navigationGroup = 'Finance';
-
-    protected static ?int $navigationSort = 5;
-
-    protected static ?string $navigationLabel = 'Categories';
 
     protected static ?string $modelLabel = 'category';
 

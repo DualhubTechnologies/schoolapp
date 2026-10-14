@@ -44,6 +44,7 @@ use App\Http\Middleware\RequireDesktopSetup;
 use App\Http\Middleware\ServerEditionOnly;
 use App\Support\DashboardProfile;
 use App\Support\Edition;
+use App\Support\Menu;
 use App\Support\PublicSite;
 use App\Support\UndoDelete;
 use Filafly\LogoTools\LogoToolsPlugin;
@@ -210,16 +211,13 @@ class AppPanelProvider extends PanelProvider
             // Groups in order of daily use: front-office work first,
             // one-time setup last. Settings starts collapsed because it
             // is rarely opened once the school is configured.
+            // The menu's groups, in order (App\Support\Menu): daily work
+            // first, the one-time set-up and settings folded at the bottom.
             ->navigationGroups([
-                NavigationGroup::make('Students'),
-                NavigationGroup::make('ID Cards'),
-                NavigationGroup::make('Fees'),
-                NavigationGroup::make('Transport'),
-                NavigationGroup::make('Finance'),
-                NavigationGroup::make('Exams & Results'),
-                NavigationGroup::make('Human Resources'),
-                NavigationGroup::make('Academics'),
-                NavigationGroup::make('Settings')->collapsed(),
+                ...collect(Menu::GROUPS)
+                    ->map(fn (bool $folded, string $group) => NavigationGroup::make($group)->collapsed($folded)->collapsible())
+                    ->values()
+                    ->all(),
                 NavigationGroup::make('Platform Management'),
             ])
             // A locked school (awaiting approval, suspended, expired) can

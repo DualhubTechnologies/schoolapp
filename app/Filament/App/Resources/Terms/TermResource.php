@@ -8,6 +8,7 @@ use App\Filament\App\Resources\Terms\Pages\ListTerms;
 use App\Filament\App\Resources\Terms\Schemas\TermForm;
 use App\Filament\App\Resources\Terms\Tables\TermsTable;
 use App\Filament\Concerns\GatedByModule;
+use App\Filament\Concerns\PlacedInMenu;
 use App\Models\Term;
 use BackedEnum;
 use Filament\Resources\Resource;
@@ -19,16 +20,11 @@ use Illuminate\Database\Eloquent\Builder;
 class TermResource extends Resource
 {
     use GatedByModule;
+    use PlacedInMenu;
 
     protected static ?string $model = Term::class;
 
     protected static string|BackedEnum|null $navigationIcon = Heroicon::OutlinedCalendar;
-
-    protected static string|\UnitEnum|null $navigationGroup = 'Academics';
-
-    protected static ?int $navigationSort = 2;
-
-    protected static ?string $navigationLabel = 'Terms';
 
     protected static ?string $recordTitleAttribute = 'name';
 

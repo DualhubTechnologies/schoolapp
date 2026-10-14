@@ -2,6 +2,7 @@
 
 namespace App\Filament\Pages;
 
+use App\Filament\Concerns\PlacedInMenu;
 use App\Models\AcademicYear;
 use App\Models\Promotion;
 use App\Models\PromotionRule;
@@ -29,15 +30,11 @@ use Livewire\Attributes\Computed;
  */
 class PromoteStudents extends Page
 {
+    use PlacedInMenu;
+
     protected static string|BackedEnum|null $navigationIcon = Heroicon::OutlinedArrowTrendingUp;
 
-    protected static string|\UnitEnum|null $navigationGroup = 'Students';
-
-    protected static ?int $navigationSort = 3;
-
     protected static ?string $title = 'Year-end Promotion';
-
-    protected static ?string $navigationLabel = 'Promote Students';
 
     protected string $view = 'filament.pages.promote-students';
 

@@ -3,6 +3,7 @@
 namespace App\Filament\Pages;
 
 use App\Filament\App\Resources\Students\StudentResource;
+use App\Filament\Concerns\PlacedInMenu;
 use App\Filament\Support\IdCardsPage;
 use App\Models\House;
 use App\Models\ResidencyType;
@@ -20,11 +21,9 @@ use Illuminate\Support\Collection;
  */
 class StudentIdCards extends IdCardsPage
 {
+    use PlacedInMenu;
+
     protected static string|BackedEnum|null $navigationIcon = Heroicon::OutlinedIdentification;
-
-    protected static ?string $navigationLabel = 'Student ID Cards';
-
-    protected static ?int $navigationSort = 1;
 
     protected static ?string $title = 'Student ID Cards';
 

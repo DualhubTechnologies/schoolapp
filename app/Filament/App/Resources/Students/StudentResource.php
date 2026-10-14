@@ -8,6 +8,7 @@ use App\Filament\App\Resources\Students\Pages\ViewStudent;
 use App\Filament\App\Resources\Students\Schemas\StudentForm;
 use App\Filament\App\Resources\Students\Tables\StudentsTable;
 use App\Filament\Concerns\GatedByModule;
+use App\Filament\Concerns\PlacedInMenu;
 use App\Filament\Pages\ReceivePayment;
 use App\Filament\Pages\StudentAccount;
 use App\Models\Student;
@@ -25,14 +26,13 @@ use Illuminate\Database\Eloquent\Model;
 class StudentResource extends Resource
 {
     use GatedByModule;
+    use PlacedInMenu;
 
     protected static ?string $model = Student::class;
 
     protected static string|BackedEnum|null $navigationIcon = Heroicon::OutlinedAcademicCap;
 
     protected static ?string $recordTitleAttribute = 'name';
-
-    protected static ?int $navigationSort = 1;
 
     /** @return list<string> */
     public static function getGloballySearchableAttributes(): array
@@ -88,11 +88,6 @@ class StudentResource extends Resource
     public static function shouldRegisterNavigation(): bool
     {
         return ! auth()->user()?->hasRole('Super Admin');
-    }
-
-    public static function getNavigationGroup(): ?string
-    {
-        return 'Students';
     }
 
     public static function getNavigationBadge(): ?string

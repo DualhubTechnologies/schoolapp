@@ -3,6 +3,7 @@
 namespace App\Filament\Pages;
 
 use App\Exceptions\InvalidActivationCode;
+use App\Filament\Concerns\PlacedInMenu;
 use App\Models\Plan;
 use App\Models\School;
 use App\Models\SubscriptionPayment;
@@ -25,13 +26,9 @@ use Livewire\Attributes\Url;
  */
 class SchoolSubscription extends Page
 {
+    use PlacedInMenu;
+
     protected static string|BackedEnum|null $navigationIcon = Heroicon::OutlinedCreditCard;
-
-    protected static string|\UnitEnum|null $navigationGroup = 'Settings';
-
-    protected static ?int $navigationSort = 90;
-
-    protected static ?string $navigationLabel = 'Subscription';
 
     protected static ?string $title = 'Subscription';
 

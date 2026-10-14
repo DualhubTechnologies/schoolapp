@@ -3,6 +3,7 @@
 namespace App\Filament\Pages;
 
 use App\Filament\Concerns\ChoosesExam;
+use App\Filament\Concerns\PlacedInMenu;
 use App\Models\Mark;
 use App\Models\ReportCardTemplate;
 use App\Models\ResidencyType;
@@ -44,12 +45,9 @@ use Livewire\Attributes\Computed;
 class ReportCards extends Page
 {
     use ChoosesExam;
+    use PlacedInMenu;
 
     protected static string|BackedEnum|null $navigationIcon = Heroicon::OutlinedDocumentText;
-
-    protected static string|\UnitEnum|null $navigationGroup = 'Exams & Results';
-
-    protected static ?int $navigationSort = 5;
 
     protected static ?string $title = 'Report Cards';
 

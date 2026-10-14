@@ -4,6 +4,7 @@ namespace App\Filament\App\Resources\Assessments;
 
 use App\Filament\App\Resources\Assessments\Pages\ManageAssessments;
 use App\Filament\Concerns\GatedByModule;
+use App\Filament\Concerns\PlacedInMenu;
 use App\Filament\Pages\EnterMarks;
 use App\Models\Assessment;
 use App\Models\SchoolClass;
@@ -38,16 +39,11 @@ use Illuminate\Database\Eloquent\Builder;
 class AssessmentResource extends Resource
 {
     use GatedByModule;
+    use PlacedInMenu;
 
     protected static ?string $model = Assessment::class;
 
     protected static string|BackedEnum|null $navigationIcon = Heroicon::OutlinedClipboardDocumentList;
-
-    protected static string|\UnitEnum|null $navigationGroup = 'Exams & Results';
-
-    protected static ?int $navigationSort = 1;
-
-    protected static ?string $navigationLabel = 'Exams';
 
     protected static ?string $modelLabel = 'exam';
 

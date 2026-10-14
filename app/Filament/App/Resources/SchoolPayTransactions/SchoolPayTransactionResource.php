@@ -4,6 +4,7 @@ namespace App\Filament\App\Resources\SchoolPayTransactions;
 
 use App\Filament\App\Resources\SchoolPayTransactions\Pages\ListSchoolPayTransactions;
 use App\Filament\Concerns\GatedByModule;
+use App\Filament\Concerns\PlacedInMenu;
 use App\Filament\Pages\ReceivePayment;
 use App\Models\SchoolPayTransaction;
 use App\Models\Student;
@@ -33,16 +34,11 @@ use RuntimeException;
 class SchoolPayTransactionResource extends Resource
 {
     use GatedByModule;
+    use PlacedInMenu;
 
     protected static ?string $model = SchoolPayTransaction::class;
 
     protected static string|BackedEnum|null $navigationIcon = Heroicon::OutlinedCreditCard;
-
-    protected static string|\UnitEnum|null $navigationGroup = 'Fees';
-
-    protected static ?int $navigationSort = 3;
-
-    protected static ?string $navigationLabel = 'SchoolPay payments';
 
     protected static ?string $modelLabel = 'SchoolPay payment';
 

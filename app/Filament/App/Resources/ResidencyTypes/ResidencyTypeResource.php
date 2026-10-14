@@ -8,6 +8,7 @@ use App\Filament\App\Resources\ResidencyTypes\Pages\ListResidencyTypes;
 use App\Filament\App\Resources\ResidencyTypes\Schemas\ResidencyTypeForm;
 use App\Filament\App\Resources\ResidencyTypes\Tables\ResidencyTypesTable;
 use App\Filament\Concerns\GatedByModule;
+use App\Filament\Concerns\PlacedInMenu;
 use App\Models\ResidencyType;
 use BackedEnum;
 use Filament\Resources\Resource;
@@ -19,16 +20,11 @@ use Illuminate\Database\Eloquent\Builder;
 class ResidencyTypeResource extends Resource
 {
     use GatedByModule;
+    use PlacedInMenu;
 
     protected static ?string $model = ResidencyType::class;
 
     protected static string|BackedEnum|null $navigationIcon = Heroicon::OutlinedHomeModern;
-
-    protected static string|\UnitEnum|null $navigationGroup = 'Academics';
-
-    protected static ?int $navigationSort = 7;
-
-    protected static ?string $navigationLabel = 'Residency Types';
 
     protected static ?string $modelLabel = 'residency type';
 

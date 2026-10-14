@@ -3,6 +3,7 @@
 namespace App\Filament\Pages;
 
 use App\Filament\Admin\Resources\Schools\Schemas\SchoolForm;
+use App\Filament\Concerns\PlacedInMenu;
 use App\Support\Modules;
 use BackedEnum;
 use Filament\Forms\Concerns\InteractsWithForms;
@@ -15,12 +16,9 @@ use Filament\Support\Icons\Heroicon;
 class SchoolProfile extends Page implements HasForms
 {
     use InteractsWithForms;
+    use PlacedInMenu;
 
     protected static string|BackedEnum|null $navigationIcon = Heroicon::OutlinedBuildingOffice2;
-
-    protected static string|\UnitEnum|null $navigationGroup = 'Settings';
-
-    protected static ?int $navigationSort = 1;
 
     protected static ?string $title = 'School Profile';
 

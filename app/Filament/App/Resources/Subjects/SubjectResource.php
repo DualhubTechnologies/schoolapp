@@ -4,6 +4,7 @@ namespace App\Filament\App\Resources\Subjects;
 
 use App\Filament\App\Resources\Subjects\Pages\ManageSubjects;
 use App\Filament\Concerns\GatedByModule;
+use App\Filament\Concerns\PlacedInMenu;
 use App\Models\Subject;
 use App\Support\Modules;
 use App\Support\SchoolType;
@@ -32,14 +33,11 @@ use Illuminate\Validation\Rules\Unique;
 class SubjectResource extends Resource
 {
     use GatedByModule;
+    use PlacedInMenu;
 
     protected static ?string $model = Subject::class;
 
     protected static string|BackedEnum|null $navigationIcon = Heroicon::OutlinedBookOpen;
-
-    protected static string|\UnitEnum|null $navigationGroup = 'Academics';
-
-    protected static ?int $navigationSort = 8;
 
     protected static ?string $recordTitleAttribute = 'name';
 

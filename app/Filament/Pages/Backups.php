@@ -3,6 +3,7 @@
 namespace App\Filament\Pages;
 
 use App\Console\Commands\BackupRun;
+use App\Filament\Concerns\PlacedInMenu;
 use App\Support\Edition;
 use App\Support\Modules;
 use BackedEnum;
@@ -25,11 +26,9 @@ use Symfony\Component\HttpFoundation\BinaryFileResponse;
  */
 class Backups extends Page
 {
+    use PlacedInMenu;
+
     protected static string|BackedEnum|null $navigationIcon = Heroicon::OutlinedArchiveBox;
-
-    protected static string|\UnitEnum|null $navigationGroup = 'Settings';
-
-    protected static ?int $navigationSort = 90;
 
     protected static ?string $title = 'Backups';
 

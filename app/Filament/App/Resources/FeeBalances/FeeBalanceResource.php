@@ -5,6 +5,7 @@ namespace App\Filament\App\Resources\FeeBalances;
 use App\Filament\App\Resources\FeeBalances\Pages\ListFeeBalances;
 use App\Filament\App\Resources\FeeBalances\Tables\FeeBalancesTable;
 use App\Filament\Concerns\GatedByModule;
+use App\Filament\Concerns\PlacedInMenu;
 use App\Models\Student;
 use BackedEnum;
 use Filament\Resources\Resource;
@@ -22,16 +23,11 @@ use Illuminate\Database\Eloquent\Builder;
 class FeeBalanceResource extends Resource
 {
     use GatedByModule;
+    use PlacedInMenu;
 
     protected static ?string $model = Student::class;
 
     protected static string|BackedEnum|null $navigationIcon = Heroicon::OutlinedWallet;
-
-    protected static string|\UnitEnum|null $navigationGroup = 'Fees';
-
-    protected static ?int $navigationSort = 3;
-
-    protected static ?string $navigationLabel = 'Student Accounts';
 
     protected static ?string $modelLabel = 'student account';
 

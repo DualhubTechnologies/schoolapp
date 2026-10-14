@@ -38,8 +38,6 @@ use Livewire\Attributes\Computed;
  */
 abstract class IdCardsPage extends Page
 {
-    protected static string|\UnitEnum|null $navigationGroup = 'ID Cards';
-
     protected string $view = 'filament.pages.id-cards';
 
     /** Set when opened for one person (a table row action). */

@@ -5,6 +5,7 @@ namespace App\Filament\App\Resources\Billing;
 use App\Filament\App\Resources\Billing\Pages\ListBilling;
 use App\Filament\App\Resources\Billing\Tables\BillingTable;
 use App\Filament\Concerns\GatedByModule;
+use App\Filament\Concerns\PlacedInMenu;
 use App\Models\StudentCharge;
 use BackedEnum;
 use Filament\Resources\Resource;
@@ -22,16 +23,11 @@ use Illuminate\Database\Eloquent\Builder;
 class BillingResource extends Resource
 {
     use GatedByModule;
+    use PlacedInMenu;
 
     protected static ?string $model = StudentCharge::class;
 
     protected static string|BackedEnum|null $navigationIcon = Heroicon::OutlinedCalculator;
-
-    protected static string|\UnitEnum|null $navigationGroup = 'Fees';
-
-    protected static ?int $navigationSort = 4;
-
-    protected static ?string $navigationLabel = 'Billing';
 
     protected static ?string $modelLabel = 'charge';
 

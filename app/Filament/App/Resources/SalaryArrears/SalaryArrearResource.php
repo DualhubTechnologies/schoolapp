@@ -8,6 +8,7 @@ use App\Filament\App\Resources\SalaryArrears\Pages\ListSalaryArrears;
 use App\Filament\App\Resources\SalaryArrears\Schemas\SalaryArrearForm;
 use App\Filament\App\Resources\SalaryArrears\Tables\SalaryArrearsTable;
 use App\Filament\Concerns\GatedByModule;
+use App\Filament\Concerns\PlacedInMenu;
 use App\Models\SalaryArrear;
 use App\Support\PayrollAccess;
 use BackedEnum;
@@ -20,12 +21,11 @@ use Illuminate\Database\Eloquent\Builder;
 class SalaryArrearResource extends Resource
 {
     use GatedByModule;
+    use PlacedInMenu;
 
     protected static ?string $model = SalaryArrear::class;
 
     protected static string|BackedEnum|null $navigationIcon = Heroicon::OutlinedExclamationTriangle;
-
-    protected static ?string $navigationLabel = 'Salary Arrears';
 
     protected static ?string $modelLabel = 'Salary Arrear';
 
@@ -84,13 +84,6 @@ class SalaryArrearResource extends Resource
     public static function shouldRegisterNavigation(): bool
     {
         return PayrollAccess::allowed();
-    }
-
-    protected static ?int $navigationSort = 3;
-
-    public static function getNavigationGroup(): ?string
-    {
-        return 'Human Resources';
     }
 
     public static function getPages(): array

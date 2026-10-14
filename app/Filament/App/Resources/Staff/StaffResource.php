@@ -8,6 +8,7 @@ use App\Filament\App\Resources\Staff\Pages\ListStaff;
 use App\Filament\App\Resources\Staff\Schemas\StaffForm;
 use App\Filament\App\Resources\Staff\Tables\StaffTable;
 use App\Filament\Concerns\GatedByModule;
+use App\Filament\Concerns\PlacedInMenu;
 use App\Models\Staff;
 use App\Support\PayrollAccess;
 use BackedEnum;
@@ -22,6 +23,7 @@ use Illuminate\Database\Eloquent\Model;
 class StaffResource extends Resource
 {
     use GatedByModule;
+    use PlacedInMenu;
 
     protected static ?string $model = Staff::class;
 
@@ -44,8 +46,6 @@ class StaffResource extends Resource
 
         return array_filter(['Position' => $record->position, 'Phone' => $record->phone]);
     }
-
-    protected static ?int $navigationSort = 1;
 
     /**
      * "Jane Akello (STF-004)".
@@ -72,11 +72,6 @@ class StaffResource extends Resource
     public static function shouldRegisterNavigation(): bool
     {
         return PayrollAccess::allowed();
-    }
-
-    public static function getNavigationGroup(): ?string
-    {
-        return 'Human Resources';
     }
 
     public static function getEloquentQuery(): Builder

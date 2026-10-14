@@ -71,6 +71,9 @@ class Modules
         'PromoteStudents' => 'promotion',
         // Attendance
         'TakeAttendance' => 'attendance',
+        'EnrolmentReport' => 'students',
+        'FeeCollectionsReport' => 'fees',
+        'FeesByClassReport' => 'fees',
         'AttendanceReport' => 'attendance',
         // Messages
         'SendMessages' => 'messages',

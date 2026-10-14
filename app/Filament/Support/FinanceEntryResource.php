@@ -40,8 +40,6 @@ abstract class FinanceEntryResource extends Resource
 
     protected static ?string $model = FinanceEntry::class;
 
-    protected static string|\UnitEnum|null $navigationGroup = 'Finance';
-
     /** income | expense */
     protected static string $entryType = 'expense';
 

@@ -56,7 +56,7 @@ class FeeSheet
     }
 
     /**
-     * @return list<array{classes: string, rows: list<array{name: string, amounts: array<int, float|null>}>, totals: array<int, float>}>
+     * @return array<int, array{classes: string, rows: array<int, array{name: string, amounts: array<int, float|null>}>, totals: array<int, float>}>
      */
     public function termly(): array
     {
@@ -69,7 +69,7 @@ class FeeSheet
      * Paid once, by a new learner in their first term: admission fees, and
      * termly fees charged to new learners only.
      *
-     * @return list<array{classes: string, rows: list<array{name: string, amounts: array<int, float|null>}>, totals: array<int, float>}>
+     * @return array<int, array{classes: string, rows: array<int, array{name: string, amounts: array<int, float|null>}>, totals: array<int, float>}>
      */
     public function admission(): array
     {
@@ -79,7 +79,7 @@ class FeeSheet
     /**
      * What a new learner pays in the first term, per group of classes.
      *
-     * @return list<array{classes: string, totals: array<int, float>}>
+     * @return array<int, array{classes: string, totals: array<int, float>}>
      */
     public function firstTerm(): array
     {
@@ -100,7 +100,7 @@ class FeeSheet
      * Charges billed only to the learners they concern, e.g. "UNEB
      * registration — S.4: 164,000 · S.6: 186,000".
      *
-     * @return list<array{name: string, detail: string}>
+     * @return array<int, array{name: string, detail: string}>
      */
     public function other(): array
     {
@@ -108,7 +108,6 @@ class FeeSheet
             ->where('school_id', $this->term->school_id)
             ->where('frequency', 'on_demand')
             ->where('is_active', true)
-            ->with('residencyType')
             ->get()
             ->groupBy(fn (FeeStructure $fee): string => trim($fee->name))
             ->sortKeys()
@@ -117,9 +116,11 @@ class FeeSheet
                 'detail' => $fees
                     ->groupBy(fn (FeeStructure $fee): string => $fee->residency_type_id.'|'.(float) $fee->amount)
                     ->map(function (Collection $same): string {
+                        /** @var FeeStructure $first */
                         $first = $same->first();
+                        $residency = $first->residency_type_id ? ($this->columns[(int) $first->residency_type_id] ?? null) : null;
                         $who = $this->classLabel($same->pluck('school_class_id')->all())
-                            .($first->residencyType ? ' ('.mb_strtolower($first->residencyType->name).')' : '');
+                            .($residency ? ' ('.mb_strtolower($residency).')' : '');
 
                         return $who.': '.number_format((float) $first->amount);
                     })
@@ -146,7 +147,7 @@ class FeeSheet
      * One table per group of classes with exactly the same fees.
      *
      * @param  Collection<int, FeeStructure>  $fees
-     * @return list<array{classes: string, rows: list<array{name: string, amounts: array<int, float|null>}>, totals: array<int, float>}>
+     * @return array<int, array{classes: string, rows: array<int, array{name: string, amounts: array<int, float|null>}>, totals: array<int, float>}>
      */
     protected function groups(Collection $fees): array
     {
@@ -176,7 +177,7 @@ class FeeSheet
             ->filter()
             ->groupBy(fn (array $class): string => json_encode($class['rows']) ?: '')
             ->map(function (Collection $classes): array {
-                $rows = $classes->first()['rows'];
+                $rows = $classes->first()['rows'] ?? [];
 
                 return [
                     'classes' => $this->classLabel($classes->pluck('class')->all()),
@@ -220,12 +221,9 @@ class FeeSheet
      */
     public function classLabel(array $classIds): string
     {
-        $positions = $this->classes
-            ->filter(fn (SchoolClass $class): bool => in_array($class->getKey(), $classIds))
-            ->keys()
-            ->values();
-
-        $names = $positions->map(fn (int $position): string => $this->classes[$position]->name)->values();
+        $picked = $this->classes->filter(fn (SchoolClass $class): bool => in_array($class->getKey(), $classIds));
+        $positions = $picked->keys()->values();
+        $names = $picked->map(fn (SchoolClass $class): string => $class->name)->values();
 
         $consecutive = $positions->count() > 2 && $positions->last() - $positions->first() === $positions->count() - 1;
 

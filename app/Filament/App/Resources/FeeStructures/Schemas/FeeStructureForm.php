@@ -319,7 +319,7 @@ class FeeStructureForm
     }
 
     /** "Day and Boarding", for the per-residency switch. */
-    protected static function residencyList($schoolId): string
+    protected static function residencyList(int|string|null $schoolId): string
     {
         $names = array_values(static::residencyOptions($schoolId));
 

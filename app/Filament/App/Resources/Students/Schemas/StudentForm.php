@@ -444,14 +444,6 @@ class StudentForm
     }
 
     /**
-     * Quick admission: only what fees, marks and parents need, so a learner
-     * is admitted at the counter in under a minute. Everything else (photo,
-     * LIN, date of birth, house, address...) is added later on the
-     * learner's profile, which says what is still missing.
-     *
-     * @return array<int, Component>
-     */
-    /**
      * New to the school, or already here: decides whether the learner pays
      * the admission fees (admission, development, uniform...) in their
      * first term. On by default when admitting; imported learners are
@@ -465,6 +457,14 @@ class StudentForm
             ->default(true);
     }
 
+    /**
+     * Quick admission: only what fees, marks and parents need, so a learner
+     * is admitted at the counter in under a minute. Everything else (photo,
+     * LIN, date of birth, house, address...) is added later on the
+     * learner's profile, which says what is still missing.
+     *
+     * @return array<int, Component>
+     */
     public static function quickFields(): array
     {
         $pick = fn (array $fields, array $names): array => array_values(array_filter(

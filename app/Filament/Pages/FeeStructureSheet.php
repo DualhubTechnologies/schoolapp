@@ -41,6 +41,7 @@ class FeeStructureSheet extends Page
         return $this->termId ? Term::with('academicYear')->find($this->termId) : null;
     }
 
+    /** @return array<int, string> term id => "Term 1 — 2026" */
     public function getTermOptionsProperty(): array
     {
         return Term::query()

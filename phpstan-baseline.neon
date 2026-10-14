@@ -962,66 +962,6 @@ parameters:
 			path: app/Filament/Pages/EnterMarks.php
 
 		-
-			message: '#^Access to an undefined property Illuminate\\Database\\Eloquent\\Model\:\:\$classLevel\.$#'
-			identifier: property.notFound
-			count: 2
-			path: app/Filament/Pages/FeeStructureSheet.php
-
-		-
-			message: '#^Anonymous function should return array\{rows\: Illuminate\\Support\\Collection\<int, array\{name\: string, amounts\: array\<float\|null\>\}\>, totals\: array\<0\|float\>\} but returns array\{rows\: Illuminate\\Support\\Collection\<int, array\{name\: string, amounts\: array\<float\|null\>\}\>, totals\: array\<0\|float\>\}\.$#'
-			identifier: return.type
-			count: 1
-			path: app/Filament/Pages/FeeStructureSheet.php
-
-		-
-			message: '#^Method App\\Filament\\Pages\\FeeStructureSheet\:\:getOneOffSectionsProperty\(\) return type with generic class Illuminate\\Support\\Collection does not specify its types\: TKey, TValue$#'
-			identifier: missingType.generics
-			count: 1
-			path: app/Filament/Pages/FeeStructureSheet.php
-
-		-
-			message: '#^Method App\\Filament\\Pages\\FeeStructureSheet\:\:getSectionsProperty\(\) return type with generic class Illuminate\\Support\\Collection does not specify its types\: TKey, TValue$#'
-			identifier: missingType.generics
-			count: 1
-			path: app/Filament/Pages/FeeStructureSheet.php
-
-		-
-			message: '#^Method App\\Filament\\Pages\\FeeStructureSheet\:\:getTermOptionsProperty\(\) return type has no value type specified in iterable type array\.$#'
-			identifier: missingType.iterableValue
-			count: 1
-			path: app/Filament/Pages/FeeStructureSheet.php
-
-		-
-			message: '#^Method App\\Filament\\Pages\\FeeStructureSheet\:\:group\(\) return type with generic class Illuminate\\Support\\Collection does not specify its types\: TKey, TValue$#'
-			identifier: missingType.generics
-			count: 1
-			path: app/Filament/Pages/FeeStructureSheet.php
-
-		-
-			message: '#^Parameter \#1 \$callback of method Illuminate\\Support\\Collection\<\(int\|string\),Illuminate\\Support\\Collection\<int, App\\Models\\FeeStructure\>\>\:\:map\(\) expects callable\(Illuminate\\Support\\Collection\<int, App\\Models\\FeeStructure\>, int\|string\)\: array\{rows\: Illuminate\\Support\\Collection\<int, array\{name\: string, amounts\: array\<float\|null\>\}\>, totals\: array\<0\|float\>\}, Closure\(Illuminate\\Support\\Collection\)\: array\{rows\: Illuminate\\Support\\Collection\<int, array\{name\: string, amounts\: array\<float\|null\>\}\>, totals\: array\<0\|float\>\} given\.$#'
-			identifier: argument.type
-			count: 1
-			path: app/Filament/Pages/FeeStructureSheet.php
-
-		-
-			message: '#^Unable to resolve the template type TGroupKey in call to method Illuminate\\Support\\Collection\<int,App\\Models\\FeeStructure\>\:\:groupBy\(\)$#'
-			identifier: argument.templateType
-			count: 1
-			path: app/Filament/Pages/FeeStructureSheet.php
-
-		-
-			message: '#^Using nullsafe property access "\?\-\>name" on left side of \?\? is unnecessary\. Use \-\> instead\.$#'
-			identifier: nullsafe.neverNull
-			count: 1
-			path: app/Filament/Pages/FeeStructureSheet.php
-
-		-
-			message: '#^Using nullsafe property access "\?\-\>sort_order" on left side of \?\? is unnecessary\. Use \-\> instead\.$#'
-			identifier: nullsafe.neverNull
-			count: 1
-			path: app/Filament/Pages/FeeStructureSheet.php
-
-		-
 			message: '#^Access to an undefined property App\\Filament\\Pages\\IncomeExpenditure\:\:\$report\.$#'
 			identifier: property.notFound
 			count: 1
@@ -2921,12 +2861,6 @@ parameters:
 		-
 			message: '#^Call to an undefined method Illuminate\\Database\\Eloquent\\Model\:\:label\(\)\.$#'
 			identifier: method.notFound
-			count: 1
-			path: app/Services/BillingService.php
-
-		-
-			message: '#^Cannot call method betweenIncluded\(\) on string\.$#'
-			identifier: method.nonObject
 			count: 1
 			path: app/Services/BillingService.php
 

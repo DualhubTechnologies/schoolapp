@@ -19,6 +19,7 @@ it('shows the sign-in page in the SchoolHub design, with the parents note and re
         ->assertSee('Welcome back')
         ->assertSee('class="sha-card', false)
         ->assertSee('Parents:', false)
+        ->assertSee('sha-note sha-note-parents', false) // left out of the phone layout
         ->assertSee('Register your school');
 });
 

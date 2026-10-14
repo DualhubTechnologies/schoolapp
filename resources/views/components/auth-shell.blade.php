@@ -182,6 +182,7 @@
             @media (max-width: 900px) {
                 .sha { grid-template-columns: 1fr; }
                 .sha-side { display: none; }
+                .sha-note-parents { display: none; }
                 .sha-main {
                     padding: 1rem 1rem 1.5rem;
                     background:

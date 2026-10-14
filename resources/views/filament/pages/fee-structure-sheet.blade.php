@@ -1,5 +1,5 @@
 {{--
-    Fees Structure — the sheet a school publishes.
+    Fees Structure — the sheet a school publishes (data from App\Services\FeeSheet).
 
     Styled with the scoped .fs-* rules at the bottom rather than Tailwind
     utilities, so it looks right without rebuilding the theme and prints
@@ -7,14 +7,24 @@
 --}}
 
 @php
-    $school      = auth()->user()?->school;
-    $term        = $this->term;
-    $residencies = $this->residencies;
-    $sections    = $this->sections;
-    $oneOff      = $this->oneOffSections;
-    $logo        = $school?->logo ? \Illuminate\Support\Facades\Storage::disk('public')->url($school->logo) : null;
-    $contacts    = collect([$school?->phone, $school?->email, $school?->website])->filter()->implode('  ·  ');
-    $money       = fn ($v) => $v === null ? null : number_format((float) $v, 0);
+    $school    = auth()->user()?->school;
+    $term      = $this->term;
+    $sheet     = $this->sheet;
+    $columns   = $sheet?->columns() ?? [];
+    $termly    = $sheet?->termly() ?? [];
+    $admission = $sheet?->admission() ?? [];
+    $firstTerm = $sheet?->firstTerm() ?? [];
+    $other     = $sheet?->other() ?? [];
+    $logo      = $school?->logo ? \Illuminate\Support\Facades\Storage::disk('public')->url($school->logo) : null;
+    $contacts  = collect([$school?->phone, $school?->email, $school?->website])->filter()->implode('  ·  ');
+    $money     = fn ($v) => $v === null ? null : number_format((float) $v, 0);
+    $notes     = collect(preg_split('/\R/', (string) $school?->fee_sheet_notes))->map(fn ($line) => trim($line))->filter()->values();
+    $howToPay  = collect([
+        'Bank' => $school?->fee_payment_bank,
+        'Mobile money' => $school?->fee_payment_mobile_money,
+        'SchoolPay' => $school?->schoolpay_enabled ? 'Pay with the learner\'s SchoolPay code, at the bank or on mobile money.' : null,
+        'Note' => $school?->fee_payment_instructions,
+    ])->filter();
 @endphp
 
 <x-filament-panels::page>
@@ -37,12 +47,7 @@
         </x-filament::button>
     </div>
 
-    @if ($residencies->isEmpty())
-        <div class="fs-empty fs-empty-warn">
-            No residency types set up yet. Add them under <strong>Academics → Residency Types</strong>
-            (for example Day and Boarding) — they become the columns on this sheet.
-        </div>
-    @elseif ($sections->isEmpty() && $oneOff->isEmpty())
+    @if (! $termly && ! $admission && ! $other)
         <div class="fs-empty">
             No fees are set up for {{ $term?->label() ?? 'this term' }} yet.
             Add them under <strong>Fees → Fee Setup</strong>.
@@ -73,93 +78,110 @@
             <div class="fs-title">
                 <h2>Fees Structure</h2>
                 <span class="fs-pill">{{ $term?->label() }}</span>
+                @if ($term?->start_date && $term?->end_date)
+                    <p class="fs-dates">Term begins {{ $term->start_date->format('l j F Y') }} and ends {{ $term->end_date->format('l j F Y') }}</p>
+                @endif
             </div>
 
-            {{-- ── Termly fees, one table per level ── --}}
-            @foreach ($sections as $levelName => $data)
-                <section class="fs-block">
-                    <h3 class="fs-block-title">{{ $levelName }}</h3>
-
-                    <table class="fs-table">
-                        <thead>
-                            <tr>
-                                <th>Item</th>
-                                @foreach ($residencies as $residency)
-                                    <th class="fs-num">{{ $residency->name }} <span>(UGX)</span></th>
-                                @endforeach
-                            </tr>
-                        </thead>
-                        <tbody>
-                            @foreach ($data['rows'] as $row)
-                                <tr>
-                                    <td>{{ $row['name'] }}</td>
-                                    @foreach ($residencies as $residency)
-                                        <td class="fs-num">
-                                            {{ $money($row['amounts'][$residency->id] ?? null) ?? '—' }}
-                                        </td>
-                                    @endforeach
-                                </tr>
-                            @endforeach
-                        </tbody>
-                        <tfoot>
-                            <tr>
-                                <td>Total per term</td>
-                                @foreach ($residencies as $residency)
-                                    <td class="fs-num">{{ $money($data['totals'][$residency->id] ?? 0) }}</td>
-                                @endforeach
-                            </tr>
-                        </tfoot>
-                    </table>
-                </section>
-            @endforeach
-
-            {{-- ── One-off fees ── --}}
-            @if ($oneOff->isNotEmpty())
+            {{-- ── Fees per term, one table per group of classes ── --}}
+            @if ($termly)
                 <div class="fs-subtitle">
-                    <h2>One-time fees</h2>
-                    <p>Paid once, on admission — not part of the termly total.</p>
+                    <h2>Fees per term</h2>
+                    <p>Paid every term by every learner.</p>
                 </div>
 
-                @foreach ($oneOff as $levelName => $data)
-                    <section class="fs-block">
-                        <h3 class="fs-block-title">{{ $levelName }}</h3>
+                @foreach ($termly as $group)
+                    @include('filament.pages.partials.fee-sheet-table', ['group' => $group, 'columns' => $columns, 'money' => $money, 'totalLabel' => 'Total per term'])
+                @endforeach
+            @endif
 
+            {{-- ── On admission ── --}}
+            @if ($admission)
+                <div class="fs-subtitle">
+                    <h2>On admission (new learners)</h2>
+                    <p>Paid once, in a new learner's first term. Continuing learners do not pay these.</p>
+                </div>
+
+                @foreach ($admission as $group)
+                    @include('filament.pages.partials.fee-sheet-table', ['group' => $group, 'columns' => $columns, 'money' => $money, 'totalLabel' => 'Total on admission'])
+                @endforeach
+
+                @if ($firstTerm)
+                    <section class="fs-block">
+                        <h3 class="fs-block-title">A new learner's first term in all</h3>
                         <table class="fs-table">
                             <thead>
                                 <tr>
-                                    <th>Item</th>
-                                    @foreach ($residencies as $residency)
-                                        <th class="fs-num">{{ $residency->name }} <span>(UGX)</span></th>
+                                    <th>Classes</th>
+                                    @foreach ($columns as $heading)
+                                        <th class="fs-num">{{ $heading }} <span>(UGX)</span></th>
                                     @endforeach
                                 </tr>
                             </thead>
                             <tbody>
-                                @foreach ($data['rows'] as $row)
-                                    <tr>
-                                        <td>{{ $row['name'] }}</td>
-                                        @foreach ($residencies as $residency)
-                                            <td class="fs-num">
-                                                {{ $money($row['amounts'][$residency->id] ?? null) ?? '—' }}
-                                            </td>
+                                @foreach ($firstTerm as $row)
+                                    <tr class="fs-strong">
+                                        <td>{{ $row['classes'] }}</td>
+                                        @foreach ($columns as $column => $heading)
+                                            <td class="fs-num">{{ $money($row['totals'][$column] ?? 0) }}</td>
                                         @endforeach
                                     </tr>
                                 @endforeach
                             </tbody>
-                            <tfoot>
-                                <tr>
-                                    <td>Total</td>
-                                    @foreach ($residencies as $residency)
-                                        <td class="fs-num">{{ $money($data['totals'][$residency->id] ?? 0) }}</td>
-                                    @endforeach
-                                </tr>
-                            </tfoot>
                         </table>
                     </section>
-                @endforeach
+                @endif
             @endif
 
+            {{-- ── Charged only where they apply ── --}}
+            @if ($other)
+                <div class="fs-subtitle">
+                    <h2>Other charges</h2>
+                    <p>Billed only to the learners they concern.</p>
+                </div>
+
+                <table class="fs-table fs-other">
+                    <tbody>
+                        @foreach ($other as $item)
+                            <tr>
+                                <td>{{ $item['name'] }}</td>
+                                <td class="fs-detail">{{ $item['detail'] }}</td>
+                            </tr>
+                        @endforeach
+                    </tbody>
+                </table>
+            @endif
+
+            {{-- ── How to pay, requirements and notes ── --}}
+            <div @class(['fs-info', 'fs-info-2' => $notes->isNotEmpty()])>
+                <section class="fs-box">
+                    <h3 class="fs-block-title">How to pay</h3>
+                    <dl class="fs-pay">
+                        @foreach ($howToPay as $label => $value)
+                            <dt>{{ $label }}</dt>
+                            <dd>{{ $value }}</dd>
+                        @endforeach
+                    </dl>
+                    <p class="fs-quote">Quote the learner's name and admission number on every payment, and keep your receipt.</p>
+                </section>
+
+                @if ($notes->isNotEmpty())
+                    <section class="fs-box">
+                        <h3 class="fs-block-title">Requirements and notes</h3>
+                        <ul class="fs-notes">
+                            @foreach ($notes as $note)
+                                <li>{{ $note }}</li>
+                            @endforeach
+                        </ul>
+                    </section>
+                @endif
+            </div>
+
             <footer class="fs-footer">
-                <p>Fees are payable at the beginning of each term. Please quote the student's admission number on every payment.</p>
+                <div class="fs-sign">
+                    <div><span></span>Bursar</div>
+                    <div><span></span>Head teacher</div>
+                </div>
                 <p class="fs-issued">Issued {{ now()->format('j F Y') }}</p>
             </footer>
         </article>
@@ -226,11 +248,33 @@
         .fs-table tfoot td.fs-num { font-size: 1rem; color: #1e3a5f; }
         .fs-num { text-align: right !important; font-variant-numeric: tabular-nums; white-space: nowrap; width: 11rem; }
 
-        .fs-footer { margin-top: 2rem; padding-top: 1rem; border-top: 1px solid #e5e7eb; text-align: center; font-size: .8rem; color: #4b5563; }
-        .fs-issued { margin-top: .35rem; color: #9ca3af; }
+        .fs-dates { font-size: .82rem; color: #4b5563; }
+        .fs-subtitle { text-align: left; }
+        .fs-table tr.fs-strong td { font-weight: 600; }
+        .fs-other td { vertical-align: top; }
+        .fs-other td:first-child { font-weight: 600; width: 34%; }
+        .fs-detail { color: #374151; }
+
+        .fs-info { display: grid; gap: 1rem; margin-top: 2rem; break-inside: avoid; }
+        .fs-info-2 { grid-template-columns: 1fr 1fr; }
+        .fs-box { border: 1px solid #dbe3ee; border-radius: 10px; padding: .9rem 1rem; background: #f8fafc; }
+        .fs-pay { display: grid; grid-template-columns: max-content 1fr; gap: .3rem .9rem; font-size: .85rem; }
+        .fs-pay dt { font-weight: 600; color: #1e3a5f; }
+        .fs-pay dd { color: #111827; white-space: pre-line; }
+        .fs-quote { margin-top: .6rem; font-size: .78rem; color: #4b5563; }
+        .fs-notes { list-style: disc; padding-left: 1.1rem; font-size: .85rem; display: grid; gap: .2rem; }
+
+        .fs-footer { margin-top: 2.25rem; font-size: .8rem; color: #4b5563; break-inside: avoid; }
+        .fs-sign { display: grid; grid-template-columns: 1fr 1fr; gap: 3rem; }
+        .fs-sign div { text-align: center; font-weight: 600; color: #1e3a5f; }
+        .fs-sign span { display: block; height: 2.2rem; border-bottom: 1px dotted #6b7280; margin-bottom: .35rem; }
+        .fs-issued { margin-top: 1rem; text-align: center; color: #9ca3af; }
 
         @media (max-width: 640px) {
             .fs-paper { padding: 1.5rem 1rem; }
+            .fs-info-2 { grid-template-columns: 1fr; }
+            .fs-table { font-size: .8rem; }
+            .fs-table th, .fs-table td { padding: .5rem .4rem; }
             .fs-letterhead { flex-direction: column; }
             .fs-num { width: auto; }
         }
@@ -249,8 +293,16 @@
             body, .fi-body { background: #fff !important; }
 
             .fs-paper { max-width: none; border: none; box-shadow: none; padding: 0; border-radius: 0; }
+            .fs-table { font-size: .8rem; }
+            .fs-table th, .fs-table td { padding: .32rem .6rem; }
+            .fs-block { margin-bottom: .9rem; }
+            .fs-subtitle { margin: 1.2rem 0 .6rem; padding-top: .8rem; }
+            .fs-title { margin: 1rem 0 .8rem; }
+            .fs-block-title, .fs-subtitle h2, .fs-subtitle p { padding-left: .6rem; }
             .fs-table tbody tr:nth-child(even) td,
-            .fs-table tfoot td { -webkit-print-color-adjust: exact; print-color-adjust: exact; }
+            .fs-table tfoot td,
+            .fs-box { -webkit-print-color-adjust: exact; print-color-adjust: exact; }
+            .fs-info-2 { grid-template-columns: 1fr 1fr; }
         }
     </style>
 </x-filament-panels::page>

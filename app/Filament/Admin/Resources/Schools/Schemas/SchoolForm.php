@@ -196,6 +196,13 @@ class SchoolForm
                             ->rows(2)
                             ->columnSpanFull(),
 
+                        Textarea::make('fee_sheet_notes')
+                            ->label('Requirements and notes on the fees sheet')
+                            ->placeholder("e.g. Requirements: 1 ream of paper, 4 toilet rolls, 1 hard broom.\nBoarders also bring: a mattress, a basin and a jerrycan.\nFees are paid in the bank; do not give cash to any staff member.")
+                            ->helperText('Printed under the fees structure, one line per item.')
+                            ->rows(4)
+                            ->columnSpanFull(),
+
                         TextInput::make('unique_code')
                             ->label('School code')
                             ->disabled()

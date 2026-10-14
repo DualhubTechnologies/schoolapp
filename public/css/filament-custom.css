@@ -4074,3 +4074,12 @@ html .fi-body {
 .sh-help-btn { display: inline-flex; align-items: center; gap: .35rem; width: auto !important; padding-inline: .6rem !important; color: #16a34a !important; text-decoration: none; }
 .sh-help-label { font-size: .8rem; font-weight: 700; }
 @media (max-width: 1500px) { .sh-help-label { display: none; } .sh-help-btn { padding-inline: .45rem !important; } }
+
+/* Printing any page (fees sheet, statements, invoices...): only the page
+   itself, never the app around it — menus, the phone menu's backdrop,
+   the footer, notifications and floating cards. */
+@media print {
+    .fi-sidebar, .fi-sidebar-close-overlay, .fi-topbar-ctn, .fi-topbar, .sh-topbar,
+    .sh-footer, .sh-mnav, .fi-no, .sh-setup-pop, .sh-install { display: none !important; }
+    body, .fi-body, .fi-layout, .fi-main-ctn { background: #fff !important; }
+}

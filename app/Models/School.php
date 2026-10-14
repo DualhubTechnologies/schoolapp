@@ -40,6 +40,7 @@ class School extends Model
         'fee_payment_bank',
         'fee_payment_mobile_money',
         'fee_payment_instructions',
+        'fee_sheet_notes',
         'parent_sms_language',
         'address',
         'city',

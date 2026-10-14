@@ -2,22 +2,18 @@
 
 namespace App\Filament\Pages;
 
-use App\Models\FeeStructure;
-use App\Models\ResidencyType;
 use App\Models\Term;
+use App\Services\FeeSheet;
 use App\Support\Modules;
 use BackedEnum;
 use Filament\Pages\Page;
 use Filament\Support\Icons\Heroicon;
-use Illuminate\Support\Collection;
 
 /**
- * The fees structure as a school publishes it.
- *
- * Pivots the fee records into the layout parents recognise: a table per
- * class level, a column per residency, and a total row — plus a separate
- * section for one-off fees paid on admission, which are not part of the
- * termly total.
+ * The fees structure as a school publishes it (worked out by FeeSheet):
+ * fees per term for each group of classes, what a new learner pays on
+ * admission, the first term in all, other charges, the term's dates, how
+ * to pay, and the school's requirements and notes. Prints on A4.
  */
 class FeeStructureSheet extends Page
 {
@@ -56,118 +52,14 @@ class FeeStructureSheet extends Page
     }
 
     /**
-     * Residency types become the columns — Day, Boarding, and any others
-     * the school runs.
-     *
-     * @return Collection<int, ResidencyType>
+     * The sheet for the chosen term: fees per term, admission fees, first
+     * term totals and other charges (see FeeSheet).
      */
-    public function getResidenciesProperty(): Collection
-    {
-        return ResidencyType::query()
-            ->where('school_id', auth()->user()?->school_id)
-            ->where('is_active', true)
-            ->orderBy('name')
-            ->get();
-    }
-
-    /**
-     * Termly fees, grouped into the printed sections.
-     *
-     * Shape:
-     *   [ level name => [ 'rows' => [...], 'totals' => [...] ] ]
-     *
-     * A row is one fee with an amount per residency. A fee with no
-     * residency set costs the same to everyone, so its amount repeats
-     * across the columns.
-     */
-    public function getSectionsProperty(): Collection
+    public function getSheetProperty(): ?FeeSheet
     {
         $term = $this->getTermProperty();
 
-        if (! $term) {
-            return collect();
-        }
-
-        $residencies = $this->getResidenciesProperty();
-
-        // Everything in force this term, including fees that started in
-        // an earlier term and carry forward.
-        $fees = FeeStructure::termlyFor($term)
-            ->load(['schoolClass.classLevel', 'residencyType']);
-
-        return $this->group($fees, $residencies);
-    }
-
-    /**
-     * One-off fees — admission, uniform, bedding. Paid once, so they are
-     * listed apart from the termly total rather than added into it.
-     */
-    public function getOneOffSectionsProperty(): Collection
-    {
-        $schoolId = auth()->user()?->school_id;
-
-        $fees = FeeStructure::query()
-            ->where('school_id', $schoolId)
-            ->where('is_active', true)
-            ->where('frequency', 'once')
-            ->with(['schoolClass.classLevel', 'residencyType'])
-            ->get();
-
-        return $this->group($fees, $this->getResidenciesProperty());
-    }
-
-    /**
-     * @param  Collection<int, FeeStructure>  $fees
-     * @param  Collection<int, ResidencyType>  $residencies
-     */
-    protected function group(Collection $fees, Collection $residencies): Collection
-    {
-        return $fees
-            // Classes at the same level share a fee structure, so collapse
-            // them: four O-Level classes with the same tuition print once.
-            //
-            // One tier only -- the school is primary or secondary, so there
-            // is no section above the level to group by.
-            ->groupBy(fn (FeeStructure $fee) => $fee->schoolClass?->classLevel?->name ?? 'Unassigned')
-            ->sortBy(fn ($group) => $group->first()?->schoolClass?->classLevel?->sort_order ?? 999)
-            ->map(function (Collection $inLevel) use ($residencies) {
-                $rows = $inLevel
-                    ->groupBy('name')
-                    ->map(function (Collection $sameName, string $feeName) use ($residencies) {
-                        $amounts = [];
-
-                        foreach ($residencies as $residency) {
-                            // The fee for this residency, or the one that
-                            // applies to everybody.
-                            $match = $sameName->first(
-                                fn (FeeStructure $f) => (int) $f->residency_type_id === (int) $residency->getKey()
-                            ) ?? $sameName->first(
-                                fn (FeeStructure $f) => $f->residency_type_id === null
-                            );
-
-                            $amounts[$residency->getKey()] = $match ? (float) $match->amount : null;
-                        }
-
-                        return [
-                            'name' => $feeName,
-                            'amounts' => $amounts,
-                        ];
-                    })
-                    // Biggest items first (tuition before smaller levies),
-                    // so every level's table reads in the same order.
-                    ->sortByDesc(fn (array $row) => max([0, ...array_filter($row['amounts'])]))
-                    ->values();
-
-                $totals = [];
-
-                foreach ($residencies as $residency) {
-                    $totals[$residency->getKey()] = $rows->sum(
-                        fn (array $row) => $row['amounts'][$residency->getKey()] ?? 0
-                    );
-                }
-
-                return ['rows' => $rows, 'totals' => $totals];
-            });
+        return $term ? new FeeSheet($term) : null;
     }
 
     public static function shouldRegisterNavigation(): bool

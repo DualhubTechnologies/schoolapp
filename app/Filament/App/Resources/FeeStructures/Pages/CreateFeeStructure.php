@@ -49,33 +49,53 @@ class CreateFeeStructure extends CreateRecordPage
             throw new \RuntimeException('Please select at least one class.');
         }
 
+        // One amount for everyone (or one residency), or one per residency
+        // ("Different amounts for Day and Boarding"): a fee for each.
+        $variants = ($data['per_residency'] ?? false)
+            ? collect((array) ($data['residency_amounts'] ?? []))
+                ->filter(fn ($amount): bool => is_numeric($amount))
+                ->map(fn ($amount, $residencyId): array => ['residency_type_id' => (int) $residencyId, 'amount' => $amount])
+                ->values()
+                ->all()
+            : [[]];
+
+        unset($data['per_residency'], $data['residency_amounts']);
+
+        if ($variants === []) {
+            Notification::make()->title('Type the amount for at least one residency')->danger()->send();
+
+            $this->halt();
+        }
+
         $first = null;
         $created = 0;
         $skipped = 0;
 
         foreach ($classIds as $classId) {
-            $payload = array_merge($data, ['school_class_id' => $classId]);
+            foreach ($variants as $variant) {
+                $payload = array_merge($data, $variant, ['school_class_id' => $classId]);
 
-            // A fee is a duplicate when the same name already exists for the
-            // same class, term AND residency. Residency matters: "Tuition"
-            // for day students and "Tuition" for boarders are two different
-            // fees, not a duplicate.
-            $exists = FeeStructure::where('school_id', $payload['school_id'])
-                ->where('school_class_id', $classId)
-                ->where('name', $payload['name'])
-                ->where('term_id', $payload['term_id'] ?? null)
-                ->where('residency_type_id', $payload['residency_type_id'] ?? null)
-                ->exists();
+                // A fee is a duplicate when the same name already exists for the
+                // same class, term AND residency. Residency matters: "Tuition"
+                // for day students and "Tuition" for boarders are two different
+                // fees, not a duplicate.
+                $exists = FeeStructure::where('school_id', $payload['school_id'])
+                    ->where('school_class_id', $classId)
+                    ->where('name', $payload['name'])
+                    ->where('term_id', $payload['term_id'] ?? null)
+                    ->where('residency_type_id', $payload['residency_type_id'] ?? null)
+                    ->exists();
 
-            if ($exists) {
-                $skipped++;
+                if ($exists) {
+                    $skipped++;
 
-                continue;
+                    continue;
+                }
+
+                $record = FeeStructure::create($payload);
+                $created++;
+                $first ??= $record;
             }
-
-            $record = FeeStructure::create($payload);
-            $created++;
-            $first ??= $record;
         }
 
         Notification::make()

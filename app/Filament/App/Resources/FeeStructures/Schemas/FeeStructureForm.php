@@ -154,6 +154,7 @@ class FeeStructureForm
                                 ->placeholder('All learners')
                                 ->native(false)
                                 ->live()
+                                ->hidden(fn (Get $get): bool => (bool) $get('per_residency'))
                                 ->helperText('Leave as "All learners" unless only boarders or only day scholars pay this.')
                                 ->columnSpanFull(),
                         ]),
@@ -166,14 +167,34 @@ class FeeStructureForm
                     Section::make('Amount')
                         ->icon('heroicon-o-currency-dollar')
                         ->schema([
+                            // Day and Boarding usually pay different tuition:
+                            // one amount each, saved as a fee per residency.
+                            Toggle::make('per_residency')
+                                ->label(fn (Get $get): string => 'Different amounts for '.static::residencyList($get('school_id')))
+                                ->live()
+                                ->visible(fn (Get $get, string $operation): bool => $operation === 'create' && count(static::residencyOptions($get('school_id'))) > 1),
+
                             MoneyInput::make('amount')
                                 ->label('Fee amount')
                                 ->numeric()
                                 ->prefix('UGX')
-                                ->required()
+                                ->required(fn (Get $get): bool => ! $get('per_residency'))
                                 ->minValue(0)
                                 ->live(onBlur: true)
+                                ->hidden(fn (Get $get): bool => (bool) $get('per_residency'))
                                 ->extraInputAttributes(['class' => 'text-lg font-semibold']),
+
+                            Group::make()
+                                ->schema(fn (Get $get): array => collect(static::residencyOptions($get('school_id')))
+                                    ->map(fn (string $name, int $id) => MoneyInput::make("residency_amounts.{$id}")
+                                        ->label("{$name} pays")
+                                        ->prefix('UGX')
+                                        ->minValue(0)
+                                        ->placeholder('Leave empty if '.mb_strtolower($name).' learners do not pay it')
+                                        ->live(onBlur: true))
+                                    ->values()
+                                    ->all())
+                                ->visible(fn (Get $get): bool => (bool) $get('per_residency')),
 
                             Toggle::make('is_active')
                                 ->label('Active')
@@ -209,6 +230,14 @@ class FeeStructureForm
         $name = trim((string) $get('name')) ?: 'This fee';
         $amount = is_numeric($get('amount')) ? 'UGX '.number_format((float) $get('amount')) : 'an amount not yet set';
 
+        if ($get('per_residency')) {
+            $names = static::residencyOptions($get('school_id'));
+            $amount = collect((array) $get('residency_amounts'))
+                ->filter(fn ($value): bool => is_numeric($value))
+                ->map(fn ($value, $id): string => ($names[$id] ?? 'Residency').' UGX '.number_format((float) $value))
+                ->implode(' · ') ?: 'amounts not yet set';
+        }
+
         $classIds = $operation === 'create' ? (array) $get('class_ids') : array_filter([$get('school_class_id')]);
         $classNames = SchoolClass::whereKey($classIds)->orderBy('name')->pluck('name')->all();
         $classes = match (count($classNames)) {
@@ -217,9 +246,9 @@ class FeeStructureForm
             default => implode(', ', array_slice($classNames, 0, -1)).' and '.last($classNames),
         };
 
-        $residency = $get('residency_type_id')
-            ? mb_strtolower((string) ResidencyType::whereKey($get('residency_type_id'))->value('name')).' students'
-            : 'students';
+        $residency = $get('residency_type_id') && ! $get('per_residency')
+            ? mb_strtolower((string) ResidencyType::whereKey($get('residency_type_id'))->value('name')).' learners'
+            : 'learners';
 
         $who = ($get('frequency') === 'once' || ($get('frequency') === 'per_term' && $get('applies_to') === 'new_only') ? 'new ' : 'all ').$residency;
 
@@ -284,9 +313,19 @@ class FeeStructureForm
 
         return ResidencyType::where('school_id', $schoolId)
             ->where('is_active', true)
-            ->orderBy('name')
+            ->orderBy('id')
             ->pluck('name', 'id')
             ->toArray();
+    }
+
+    /** "Day and Boarding", for the per-residency switch. */
+    protected static function residencyList($schoolId): string
+    {
+        $names = array_values(static::residencyOptions($schoolId));
+
+        return count($names) > 1
+            ? implode(', ', array_slice($names, 0, -1)).' and '.last($names)
+            : 'each residency';
     }
 
     protected static function scopeClasses(Builder $query, $schoolId): Builder

@@ -35,6 +35,23 @@
     .verify img { width: 18mm; height: 18mm; display: block; }
     .verify b { display: block; font-size: .62rem; letter-spacing: .05em; text-transform: uppercase; color: #1e3a5f; }
     .verify .code { display: block; font-family: ui-monospace, Menlo, Consolas, monospace; font-size: .78rem; font-weight: 700; color: #111827; }
+
+    /* One A5 landscape page (194 x 132 mm inside the margins), with the
+       SchoolPay code and the van split too: the page margin replaces the
+       sheet's padding, the details run in three columns, and the footer
+       (balance, QR code, signature) is never left on a page of its own. */
+    @media print {
+        .sheet { padding: 0; max-width: none; }
+        .letterhead { padding-bottom: .55rem; }
+        .letterhead img { width: 3rem; height: 3rem; }
+        .receipt-head { margin: .6rem 0 .55rem; }
+        .grid { grid-template-columns: repeat(3, 1fr); gap: .4rem 1.25rem; }
+        .grid > div { padding-bottom: .2rem; }
+        .amount-box { margin: .65rem 0; padding: .55rem 1rem; }
+        .split { margin: -.2rem 0 .6rem; }
+        .foot { margin-top: .75rem; break-inside: avoid; page-break-inside: avoid; }
+        .verify img { width: 16mm; height: 16mm; }
+    }
 @endsection
 
 @section('content')

@@ -625,6 +625,13 @@
                 </div>
             </div>
 
+            @if (($importProgress['billed_students'] ?? 0) > 0)
+                <p class="mb-6 rounded-lg bg-primary-50 px-4 py-3 text-sm text-primary-800 ring-1 ring-primary-200 dark:bg-primary-500/10 dark:text-primary-300 dark:ring-primary-500/20">
+                    This term was already billed, so {{ number_format($importProgress['billed_students']) }} imported {{ str('learner')->plural($importProgress['billed_students']) }}
+                    {{ $importProgress['billed_students'] === 1 ? 'has' : 'have' }} been billed for it: UGX {{ number_format($importProgress['billed_amount']) }} in all.
+                </p>
+            @endif
+
         @else
 
             <div class="mx-auto flex h-14 w-14 items-center justify-center rounded-full bg-red-50 dark:bg-red-500/10 mb-4">

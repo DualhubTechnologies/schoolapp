@@ -308,6 +308,8 @@ class ListStudents extends ListRecords
             'successful_rows' => $import->successful_rows,
             'failed_rows' => $import->failed_rows,
             'duplicate_rows' => $import->duplicate_rows,
+            'billed_students' => $import->billed_students,
+            'billed_amount' => (float) $import->billed_amount,
             'progress_percent' => $import->progress_percent,
             'elapsed_seconds' => $import->elapsed_seconds ?? 0,
             'estimated_remaining' => $import->estimated_remaining,

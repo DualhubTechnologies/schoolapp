@@ -18,6 +18,8 @@ class StudentImport extends Model
         'successful_rows',
         'failed_rows',
         'duplicate_rows',
+        'billed_students',
+        'billed_amount',
         'column_map',
         'confirm_on_import',
         'validation_errors',
@@ -34,6 +36,7 @@ class StudentImport extends Model
             'validation_errors' => 'array',
             'import_log' => 'array',
             'confirm_on_import' => 'boolean',
+            'billed_amount' => 'decimal:2',
             'started_at' => 'datetime',
             'completed_at' => 'datetime',
         ];

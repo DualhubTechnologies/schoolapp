@@ -9,6 +9,7 @@ use App\Models\SchoolClass;
 use App\Models\Section;
 use App\Models\Student;
 use App\Models\StudentImport;
+use App\Models\Term;
 use App\Services\Subscriptions\SubscriptionManager;
 use App\Support\ImportDate;
 use App\Support\SchoolType;
@@ -294,6 +295,7 @@ class StudentCsvImporter
         $successCount = 0;
         $skipCount = 0;
         $skipped = [];
+        $imported = [];
 
         foreach ($this->rows($path) as $rowNum => $data) {
             $processed++;
@@ -306,7 +308,7 @@ class StudentCsvImporter
                 $skipped[] = $rowErrors[0];
             } else {
                 try {
-                    $this->importRow($data);
+                    $imported[] = $this->importRow($data);
                     $this->existingAdmissionNos[$this->key($data['admission_no'])] = trim("{$data['first_name']} {$data['last_name']}").", {$data['class']}";
                     $successCount++;
                 } catch (\Throwable $e) {
@@ -335,8 +337,12 @@ class StudentCsvImporter
             }
         }
 
+        [$billedStudents, $billedAmount] = $this->billIfTermBilled($imported);
+
         $this->import->update([
             'status' => 'completed',
+            'billed_students' => $billedStudents,
+            'billed_amount' => $billedAmount,
             'total_rows' => $processed,
             'processed_rows' => $processed,
             'successful_rows' => $successCount,
@@ -347,6 +353,47 @@ class StudentCsvImporter
 
         $duration = $this->import->started_at->diffInSeconds($this->import->completed_at);
         $this->import->appendLog("Import completed. {$successCount} students imported, {$skipCount} skipped. Duration: {$duration}s.");
+
+        if ($billedStudents > 0) {
+            $this->import->appendLog('This term was already billed: '.number_format($billedStudents).' imported '.str('learner')->plural($billedStudents).' billed UGX '.number_format($billedAmount).' for it.');
+        }
+    }
+
+    /**
+     * Learners imported after the current term was billed get this term's
+     * fees straight away (admission fees too, for new admissions), as when
+     * one learner is added by hand. Before the term is billed nothing is
+     * charged: billing the term covers them.
+     *
+     * @param  list<Student>  $students
+     * @return array{0: int, 1: float} learners billed, total billed
+     */
+    protected function billIfTermBilled(array $students): array
+    {
+        if ($students === [] || ! Term::current($this->schoolId)) {
+            return [0, 0.0];
+        }
+
+        $billing = app(BillingService::class);
+        $count = 0;
+        $total = 0.0;
+
+        foreach ($students as $student) {
+            try {
+                $owed = $billing->billNewLearner($student);
+            } catch (\Throwable $e) {
+                Log::warning('Billing an imported learner failed', ['import_id' => $this->import->id, 'student_id' => $student->getKey(), 'error' => $e->getMessage()]);
+
+                continue;
+            }
+
+            if ($owed > 0) {
+                $count++;
+                $total += $owed;
+            }
+        }
+
+        return [$count, $total];
     }
 
     /**
@@ -435,9 +482,9 @@ class StudentCsvImporter
     /**
      * Import a single validated row into the database.
      */
-    protected function importRow(array $data): void
+    protected function importRow(array $data): Student
     {
-        DB::transaction(function () use ($data) {
+        return DB::transaction(function () use ($data): Student {
             $classId = $this->classCache[$this->key($data['class'])];
 
             $sectionId = ($data['section'] ?? '') !== ''
@@ -475,7 +522,7 @@ class StudentCsvImporter
                 ];
 
             // `name` is derived from first_name + last_name by the model.
-            Student::create(array_merge([
+            return Student::create(array_merge([
                 'school_id' => $this->schoolId,
                 'admission_no' => $data['admission_no'],
                 'lin' => ($data['lin'] ?? '') ?: null,

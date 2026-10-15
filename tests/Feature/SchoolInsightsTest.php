@@ -1,5 +1,6 @@
 <?php
 
+use App\Filament\App\Pages\AiInsights;
 use App\Filament\App\Pages\Dashboard;
 use App\Models\AcademicYear;
 use App\Models\Assessment;
@@ -129,11 +130,45 @@ it('names learners whose average fell ten points or more since last term', funct
     expect(findings()['marks']['detail'])->toContain('Henry Ssali (S.2)')->not->toContain('Irene Apio');
 });
 
-it('shows the findings on the dashboard, and nothing when there is nothing to say', function () {
-    $this->get(Dashboard::getUrl())->assertOk()->assertDontSee('Worth knowing today');
+it('pops the findings up on the dashboard once a day, and not when there is nothing to say', function () {
+    $this->get(Dashboard::getUrl())->assertOk()->assertDontSee('aria-labelledby="shi-pop-title"', false);
+    expect($this->user->fresh()->insights_seen_on)->toBeNull(); // nothing shown, so not used up
 
     ($this->pay)(($this->learner)('Joan Nakimera'), $this->t3, 150000, '2026-10-15');
     cache()->flush();
 
-    $this->get(Dashboard::getUrl())->assertOk()->assertSee('Worth knowing today')->assertSee('UGX 150,000 received today');
+    $this->get(Dashboard::getUrl())->assertOk()
+        ->assertSee('aria-labelledby="shi-pop-title"', false)
+        ->assertSee('AI Insights')
+        ->assertSee('UGX 150,000 received today');
+
+    // Signing in again or reopening the dashboard the same day: no pop-up.
+    $this->get(Dashboard::getUrl())->assertOk()->assertDontSee('aria-labelledby="shi-pop-title"', false);
+
+    // The next day it pops up again.
+    $this->travelTo($this->today->addDay()->setTime(9, 0));
+    ($this->pay)(($this->learner)('Kato Peter'), $this->t3, 90000, '2026-10-16');
+
+    $this->get(Dashboard::getUrl())->assertOk()->assertSee('aria-labelledby="shi-pop-title"', false);
+});
+
+it('lists every finding under AI Insights in the menu, at any time', function () {
+    ($this->pay)(($this->learner)('Joan Nakimera'), $this->t3, 150000, '2026-10-15');
+    $this->user->forceFill(['insights_seen_on' => '2026-10-15'])->save(); // pop-up already seen
+
+    $this->get(Dashboard::getUrl())->assertOk()
+        ->assertDontSee('aria-labelledby="shi-pop-title"', false)
+        ->assertSee(AiInsights::getUrl());
+
+    $this->get(AiInsights::getUrl())->assertOk()->assertSee('UGX 150,000 received today');
+});
+
+it('says all is clear on AI Insights when there is nothing to point out', function () {
+    $this->get(AiInsights::getUrl())->assertOk()->assertSee('Nothing needs your attention right now');
+});
+
+it('keeps AI Insights to the head and the bursar', function () {
+    $teacher = User::factory()->create(['school_id' => $this->school->id])->assignRole('Teacher');
+
+    $this->actingAs($teacher)->get(AiInsights::getUrl())->assertForbidden();
 });

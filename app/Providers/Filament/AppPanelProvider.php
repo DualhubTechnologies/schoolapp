@@ -9,6 +9,7 @@ use App\Filament\Admin\Resources\ErrorReports\ErrorReportResource;
 use App\Filament\Admin\Resources\OnlineUsers\OnlineUserResource;
 use App\Filament\Admin\Resources\Plans\PlanResource;
 use App\Filament\Admin\Resources\Schools\SchoolResource;
+use App\Filament\App\Pages\AiInsights;
 use App\Filament\App\Pages\Dashboard;
 use App\Filament\App\Pages\TransportCollections;
 use App\Filament\App\Widgets\BursarKpis;
@@ -320,6 +321,7 @@ class AppPanelProvider extends PanelProvider
             ->discoverPages(in: app_path('Filament/Pages'), for: 'App\Filament\Pages')
             ->pages([
                 Dashboard::class,
+                AiInsights::class,
                 TransportCollections::class,
             ])
             ->discoverWidgets(in: app_path('Filament/Widgets'), for: 'App\Filament\Widgets')

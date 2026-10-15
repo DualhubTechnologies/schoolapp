@@ -17,6 +17,7 @@
         <h3>What is looked at</h3>
         <ul>
             <li>Money received today, and fee collection against last term at the same week.</li>
+            <li>Learners in the system who have not been billed this term.</li>
             <li>Learners who have paid nothing this term, and families who always pay but have not yet.</li>
             <li>The same amount recorded twice for a learner on the same day.</li>
             <li>Learners whose average fell ten points or more since last term.</li>

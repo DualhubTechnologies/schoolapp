@@ -2,6 +2,7 @@
 
 namespace App\Services;
 
+use App\Filament\App\Resources\Billing\BillingResource;
 use App\Filament\App\Resources\FeeReminders\FeeReminderResource;
 use App\Filament\App\Resources\Payments\PaymentResource;
 use App\Filament\Pages\ClassResults;
@@ -27,6 +28,7 @@ use Illuminate\Support\Facades\Cache;
  *
  *   - money in today
  *   - fee collection ahead of or behind last term at the same point
+ *   - active learners with no fees billed this term, once it is billed
  *   - learners billed this term who have paid nothing
  *   - families who paid in each of the last two terms but not yet this one
  *   - possible double payments (same learner, amount and day)
@@ -72,6 +74,7 @@ class SchoolInsights
                 ...$items,
                 ...$this->doublePayments(),
                 ...($term ? $this->collectionPace($term) : []),
+                ...($term ? $this->notBilled($term) : []),
                 ...($term ? $this->notPaidAnything($term) : []),
                 ...($term ? $this->usualPayersNotYet($term) : []),
                 ...$this->moneyToday(),
@@ -153,6 +156,39 @@ class SchoolInsights
         $paid = (float) StudentPayment::where('term_id', $term->getKey())->whereDate('paid_on', '<=', $by)->sum('amount');
 
         return (int) round(min($paid, $billed) / $billed * 100);
+    }
+
+    /**
+     * Active learners in a class with no fee on their account this term,
+     * once the term has been billed (before that, the billing prompt on the
+     * dashboard covers everyone): added since and missed, or in a class or
+     * residency with no fees set.
+     *
+     * @return list<Finding>
+     */
+    protected function notBilled(Term $term): array
+    {
+        // Fees from the fee setup: a van fare or a one-off charge alone is not the term's bill.
+        $billed = StudentCharge::where('term_id', $term->getKey())->whereNotNull('fee_structure_id')->distinct()->pluck('student_id');
+
+        if ($billed->isEmpty()) {
+            return [];
+        }
+
+        $ids = Student::where('school_id', $this->schoolId)
+            ->where('status', 'active')
+            ->whereNotNull('school_class_id')
+            ->whereNotIn('id', $billed->all())
+            ->pluck('id');
+
+        if ($ids->isEmpty()) {
+            return [];
+        }
+
+        return [$this->item('not-billed', 'danger', 'heroicon-o-document-minus',
+            $ids->count().' '.($ids->count() === 1 ? 'learner is' : 'learners are').' in the system but not billed this term',
+            $this->names($ids).'. "Bill a term" on Billing adds only what is missing; if nothing is added, check their class has fees set.',
+            BillingResource::getUrl())];
     }
 
     /** @return list<Finding> */

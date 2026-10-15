@@ -5,6 +5,7 @@ use App\Filament\App\Pages\Dashboard;
 use App\Models\AcademicYear;
 use App\Models\Assessment;
 use App\Models\AttendanceRecord;
+use App\Models\FeeStructure;
 use App\Models\Mark;
 use App\Models\School;
 use App\Models\SchoolClass;
@@ -60,6 +61,24 @@ it('says how much came in today', function () {
     ($this->pay)($aisha, $this->t3, 50000, '2026-10-14');
 
     expect(findings()['today']['title'])->toBe('UGX 200,000 received today');
+});
+
+it('names learners in the system who are not billed this term, once the term is billed', function () {
+    $fee = FeeStructure::create(['school_id' => $this->school->id, 'school_class_id' => $this->class->id, 'term_id' => $this->t3->id, 'name' => 'Tuition', 'frequency' => 'per_term', 'applies_to' => 'all', 'amount' => 800000, 'is_active' => true]);
+    $billed = ($this->learner)('Brian Okello');
+    $missed = ($this->learner)('Carol Auma');
+    $vanOnly = ($this->learner)('Derrick Ssempa');
+    ($this->learner)('Left Already')->update(['status' => 'left']);
+
+    expect(findings())->not->toHaveKey('not-billed'); // term not billed yet: the billing prompt covers it
+
+    StudentCharge::create(['school_id' => $this->school->id, 'student_id' => $billed->id, 'term_id' => $this->t3->id, 'fee_structure_id' => $fee->id, 'description' => 'Tuition', 'amount' => 800000, 'charged_on' => '2026-09-14']);
+    ($this->charge)($vanOnly, $this->t3, 150000); // a one-off charge is not the term's fees
+
+    expect(findings()['not-billed'])->toMatchArray([
+        'tone' => 'danger',
+        'title' => '2 learners are in the system but not billed this term',
+    ])->and(findings()['not-billed']['detail'])->toStartWith('Carol Auma (S.2), Derrick Ssempa (S.2).');
 });
 
 it('names the learners billed this term who have paid nothing', function () {

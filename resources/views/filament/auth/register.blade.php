@@ -3,11 +3,10 @@
     $tick = '<svg viewBox="0 0 20 20" fill="currentColor" aria-hidden="true"><path fill-rule="evenodd" d="M16.704 4.153a.75.75 0 0 1 .143 1.052l-8 10.5a.75.75 0 0 1-1.127.075l-4.5-4.5a.75.75 0 0 1 1.06-1.06l3.894 3.893 7.48-9.817a.75.75 0 0 1 1.05-.143Z" clip-rule="evenodd"/></svg>';
 @endphp
 
-<x-auth-shell eyebrow="New school" heading="Register your school" subheading="Takes about a minute. Your logo, address and other details can be added later." :wide="true">
+<x-auth-shell heading="Register your school" subheading="Takes about a minute. Your logo, address and other details can be added later." :wide="true">
     <x-slot:side>
         <span class="shr-pill">{{ $trialDays }}-day free trial</span>
         <h1>Start running your school on SchoolHub today.</h1>
-        <div class="sha-orn" aria-hidden="true"><span></span><i></i><span></span></div>
         <p class="sha-lead">Every module is included during the trial. No payment details needed.</p>
 
         <ul class="shr-ticks">
@@ -34,7 +33,7 @@
     </div>
 
     <style>
-        .shr-pill { align-self: flex-start; margin-bottom: 1.1rem; padding: .3rem .8rem; border-radius: 999px; border: 1px solid rgba(226, 196, 126, .5); color: var(--sha-gold-light); font-size: .7rem; font-weight: 700; letter-spacing: .16em; text-transform: uppercase; }
+        .shr-pill { align-self: flex-start; margin-bottom: 1.1rem; padding: .3rem .8rem; border-radius: 999px; border: 1px solid rgba(226, 196, 126, .5); color: var(--sha-gold-light); font-size: .8rem; font-weight: 600; }
         .shr-ticks { list-style: none; margin: 1.75rem 0 0; padding: 0; display: grid; gap: .7rem; font-size: .92rem; color: #dbe2ef; }
         .shr-ticks li { display: flex; gap: .65rem; align-items: flex-start; }
         .shr-ticks svg { flex: none; width: 1.15rem; height: 1.15rem; margin-top: .15rem; color: var(--sha-gold-light); }

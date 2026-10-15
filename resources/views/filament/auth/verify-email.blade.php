@@ -1,4 +1,4 @@
-<x-auth-shell eyebrow="Email confirmation" heading="Check your email" subheading="One last step before you sign in.">
+<x-auth-shell heading="Check your email" subheading="One last step before you sign in.">
     <div class="shv">
         <p class="shv-text">
             We sent a 6-digit code to <strong>{{ $maskedEmail }}</strong>. Enter it below to confirm this email address belongs to you.

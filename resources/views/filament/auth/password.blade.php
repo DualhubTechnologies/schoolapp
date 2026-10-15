@@ -1,5 +1,5 @@
 {{-- "Forgot your password?" and "Choose a new password", in the sign-in design. --}}
-<x-auth-shell eyebrow="Account recovery" :heading="$this->getHeading()" :subheading="$this->getSubheading()">
+<x-auth-shell :heading="$this->getHeading()" :subheading="$this->getSubheading()">
     {{ $this->content }}
 
     @if ($this instanceof \App\Filament\Pages\Auth\RequestPasswordReset && filament()->getId() !== 'admin')

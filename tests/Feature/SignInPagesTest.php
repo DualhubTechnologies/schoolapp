@@ -13,10 +13,12 @@ beforeEach(function () {
     $this->withoutVite();
 });
 
-it('shows the sign-in page in the SchoolHub design, with the parents note and registration', function () {
+it('greets by the time of day in Uganda, with the parents note and registration', function () {
+    $this->travelTo('2026-10-15 06:00:00'); // 9 am in Kampala
+
     $this->get(Filament::getLoginUrl())
         ->assertOk()
-        ->assertSee('Welcome back')
+        ->assertSee('Good morning')
         ->assertSee('class="sha-card', false)
         ->assertSee('Parents:', false)
         ->assertSee('sha-note sha-note-parents', false) // left out of the phone layout

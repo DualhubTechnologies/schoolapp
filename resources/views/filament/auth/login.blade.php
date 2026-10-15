@@ -1,8 +1,12 @@
-@php $isPlatform = filament()->getId() === 'admin'; @endphp
+@php
+    $isPlatform = filament()->getId() === 'admin';
+    // Said the way the school office would say it, by the time of day in Uganda.
+    $hour = now('Africa/Kampala')->hour;
+    $greeting = $hour < 12 ? 'Good morning' : ($hour < 17 ? 'Good afternoon' : 'Good evening');
+@endphp
 
 <x-auth-shell
-    :eyebrow="$isPlatform ? 'SchoolHub staff' : 'Sign in'"
-    :heading="$isPlatform ? 'Platform sign in' : 'Welcome back'"
+    :heading="$isPlatform ? 'Platform sign in' : $greeting"
     :subheading="$isPlatform ? 'For SchoolHub staff managing schools and subscriptions.' : 'Sign in to your school\'s SchoolHub account.'"
 >
     {{ $this->content }}
@@ -16,10 +20,8 @@
     @endunless
 
     @if (filament()->hasRegistration())
-        <div class="sha-or">New to SchoolHub?</div>
-        <a href="{{ filament()->getRegistrationUrl() }}" class="sha-btn-outline">
-            Register your school: {{ config('subscriptions.trial_days') }} days free
-            <svg viewBox="0 0 20 20" fill="currentColor" aria-hidden="true"><path fill-rule="evenodd" d="M3 10a.75.75 0 0 1 .75-.75h10.638L10.23 5.29a.75.75 0 1 1 1.04-1.08l5.5 5.25a.75.75 0 0 1 0 1.08l-5.5 5.25a.75.75 0 1 1-1.04-1.08l4.158-3.96H3.75A.75.75 0 0 1 3 10Z" clip-rule="evenodd"/></svg>
-        </a>
+        <p class="sha-alt-register">
+            New to SchoolHub? <a href="{{ filament()->getRegistrationUrl() }}">Register your school</a>, the first {{ config('subscriptions.trial_days') }} days are free.
+        </p>
     @endif
 </x-auth-shell>

@@ -12,7 +12,7 @@
     Livewire binds the page to its first element, so anything before it
     would leave the form unbound.
 --}}
-@props(['heading', 'subheading' => null, 'eyebrow' => null, 'wide' => false])
+@props(['heading', 'subheading' => null, 'wide' => false])
 
 @php
     $contact = config('contact');
@@ -57,19 +57,8 @@
             .sha-side > * { position: relative; z-index: 1; }
             .sha-logo img { height: 2.6rem; width: auto; }
             .sha-side-body { flex: 1; display: flex; flex-direction: column; justify-content: center; }
-            .sha-eyebrow { font-size: .7rem; font-weight: 600; letter-spacing: .24em; text-transform: uppercase; color: var(--sha-gold-light); margin-bottom: 1rem; }
             .sha-side h1 { font-family: var(--sha-serif); font-size: 2.15rem; line-height: 1.28; font-weight: 400; color: #fff; letter-spacing: -.01em; max-width: 26rem; }
-            .sha-orn { display: flex; align-items: center; gap: .6rem; margin: 1.35rem 0 1.2rem; }
-            .sha-orn span { width: 2.75rem; height: 1px; background: linear-gradient(90deg, transparent, var(--sha-gold-light)); }
-            .sha-orn span:last-child { background: linear-gradient(90deg, var(--sha-gold-light), transparent); }
-            .sha-orn i { width: .45rem; height: .45rem; transform: rotate(45deg); background: var(--sha-gold-light); }
             .sha-lead { font-size: 1rem; line-height: 1.65; color: #c3cee4; max-width: 27rem; }
-            .sha-points { list-style: none; margin: 2.1rem 0 0; padding: 0; display: flex; flex-direction: column; gap: 1.15rem; }
-            .sha-points li { display: flex; gap: 1rem; align-items: flex-start; }
-            .sha-points strong { display: block; color: #fff; font-size: .95rem; font-weight: 600; }
-            .sha-points span { font-size: .85rem; color: #9fadc8; line-height: 1.5; }
-            .sha-ic { flex: none; display: grid; place-items: center; width: 2.5rem; height: 2.5rem; border-radius: 50%; border: 1px solid rgba(226, 196, 126, .55); box-shadow: inset 0 0 0 3px rgba(226, 196, 126, .08); color: var(--sha-gold-light); }
-            .sha-ic svg { width: 1.15rem; height: 1.15rem; }
 
             .sha-side-foot { display: flex; flex-direction: column; gap: 1rem; }
             .sha-help { display: flex; align-items: center; gap: .75rem; padding: .8rem 1rem; border-radius: .5rem; background: rgba(255, 255, 255, .05); border: 1px solid rgba(226, 196, 126, .22); font-size: .85rem; color: #c9d3e6; text-decoration: none; transition: background .15s, border-color .15s; }
@@ -97,9 +86,6 @@
             }
             .sha-card::before { content: ""; position: absolute; left: -1px; right: -1px; top: 0; height: 6px; border-radius: 4px 4px 0 0; background: linear-gradient(var(--sha-navy) 0 4px, transparent 4px 5px, var(--sha-gold) 5px 6px); }
             .sha-card-head { text-align: center; margin-bottom: 1.75rem; }
-            .sha-seal { display: inline-grid; place-items: center; width: 4rem; height: 4rem; margin-bottom: 1rem; border-radius: 50%; background: #fff; border: 1px solid var(--sha-gold-line); box-shadow: 0 0 0 4px var(--sha-gold-soft), 0 0 0 5px var(--sha-gold-line); }
-            .sha-seal img { width: 2.5rem; height: 2.5rem; border-radius: .55rem; }
-            .sha-kicker { font-size: .68rem; font-weight: 700; letter-spacing: .24em; text-transform: uppercase; color: var(--sha-gold); margin-bottom: .45rem; }
             .sha-h { font-family: var(--sha-serif); font-size: 1.7rem; font-weight: 700; color: var(--sha-ink); line-height: 1.25; letter-spacing: -.01em; }
             .sha-sub { margin-top: .55rem; color: var(--sha-muted); font-size: .92rem; line-height: 1.55; }
 
@@ -118,11 +104,6 @@
             .sha-alt { margin-top: 1.5rem; padding-top: 1.25rem; border-top: 1px solid var(--sha-soft); text-align: center; font-size: .9rem; color: var(--sha-muted); }
             .sha-alt a { color: var(--primary-600); font-weight: 600; text-decoration: none; }
             .sha-alt a:hover { text-decoration: underline; text-decoration-color: var(--sha-gold); text-underline-offset: 3px; }
-            .sha-or { display: flex; align-items: center; gap: .85rem; margin: 1.6rem 0 1rem; font-size: .78rem; font-weight: 600; letter-spacing: .14em; text-transform: uppercase; color: var(--sha-muted); }
-            .sha-or::before, .sha-or::after { content: ""; flex: 1; height: 1px; background: var(--sha-line); }
-            .sha-btn-outline { display: flex; align-items: center; justify-content: center; gap: .5rem; min-height: 2.875rem; padding: .55rem 1rem; border-radius: 6px; border: 1px solid #c9d2e3; background: #fff; color: var(--primary-600); font-size: .9rem; font-weight: 600; text-align: center; text-decoration: none; transition: border-color .15s, background .15s; }
-            .sha-btn-outline:hover { border-color: var(--primary-600); background: var(--primary-50); }
-            .sha-btn-outline svg { width: 1rem; height: 1rem; flex: none; }
             .sha-note { display: flex; gap: .75rem; align-items: flex-start; margin-top: 1.25rem; padding: .85rem 1rem; border-radius: 4px; background: var(--sha-gold-soft); border: 1px solid var(--sha-gold-line); border-left: 3px solid var(--sha-gold); color: #5c4718; font-size: .84rem; line-height: 1.5; }
             .sha-note strong { color: #3f300c; }
             .sha-note svg { flex: none; width: 1.2rem; height: 1.2rem; margin-top: .05rem; color: var(--sha-gold); }
@@ -157,18 +138,39 @@
             .sha .fi-section-content-ctn { border: 0; }
             .sha .fi-section-content { padding: 0; }
 
+            /* ── Human touches: a plain headline and a real report card on the panel ── */
+            .sha-side::before, .sha-side::after { display: none; }
+            .sha-side { gap: 1.5rem; }
+            .sha-side-body { flex: 1; min-height: 0; justify-content: flex-start; padding-top: 2.5rem; }
+            .sha-side h1 { font-size: 2rem; line-height: 1.3; max-width: 24rem; }
+            .sha-lead { margin-top: .9rem; font-size: .95rem; color: #b9c5dc; max-width: 25rem; }
+            .sha-sheet { flex: 1; min-height: 12rem; margin: 2rem -1.5rem 0 0; padding: 0 0 0 .25rem; overflow: hidden; mask-image: linear-gradient(#000 70%, transparent); -webkit-mask-image: linear-gradient(#000 70%, transparent); }
+            .sha-sheet img {
+                display: block; width: 92%; max-width: 26rem; margin: .5rem 0 2rem 1.25rem; border-radius: 3px;
+                transform: rotate(-3.5deg); transform-origin: top left;
+                box-shadow: 0 2px 4px rgba(0, 0, 0, .25), 0 22px 40px -12px rgba(0, 0, 0, .55);
+            }
+            .sha-sheet figcaption { margin-bottom: 1.1rem; font-family: var(--sha-serif); font-style: italic; font-size: .85rem; color: #9fb0cc; }
+            .sha-card::before { height: 3px; background: var(--sha-navy); }
+            .sha-card-head { text-align: left; margin-bottom: 1.5rem; }
+            .sha-h { font-size: 1.85rem; }
+            .sha-alt-register { margin-top: 1.5rem; padding-top: 1.25rem; border-top: 1px solid var(--sha-soft); font-size: .9rem; color: var(--sha-muted); }
+            .sha-alt-register a { color: var(--primary-600); font-weight: 600; text-decoration: underline; text-decoration-color: var(--sha-gold-line); text-underline-offset: 3px; }
+            .sha-alt-register a:hover { text-decoration-color: var(--primary-600); }
+            @media (max-height: 780px) {
+                .sha-side-body { padding-top: 1rem; }
+                .sha-side h1 { font-size: 1.7rem; }
+            }
+
             /* Short laptop screens: keep everything on one screen. */
             @media (max-height: 780px) {
                 .sha-side { padding-top: 2rem; padding-bottom: 2rem; gap: 1.25rem; }
                 .sha-side h1 { font-size: 1.75rem; }
-                .sha-points { margin-top: 1.5rem; gap: .9rem; }
                 .sha-side .shr-next { display: none; }
                 .sha-main { padding-top: .75rem; }
                 .sha-card { padding-top: 1.75rem; padding-bottom: 1.75rem; }
                 .sha-card-head { margin-bottom: 1.25rem; }
-                .sha-seal { display: none; }
                 .sha-note { margin-top: 1rem; }
-                .sha-or { margin: 1.1rem 0 .75rem; }
                 .sha-foot { margin-top: 1rem; }
             }
 
@@ -207,25 +209,14 @@
             @if (isset($side) && $side->isNotEmpty())
                 {{ $side }}
             @else
-                <p class="sha-eyebrow">School management for Uganda</p>
-                <h1>Run your whole school from one place.</h1>
-                <div class="sha-orn" aria-hidden="true"><span></span><i></i><span></span></div>
-                <p class="sha-lead">Fees, exams and report cards, payroll and finance, built for Ugandan primary and secondary schools.</p>
+                <h1>Fees, marks and report cards, all in one place.</h1>
+                <p class="sha-lead">For Ugandan primary and secondary schools. The bursar records a payment in seconds, teachers enter marks from their phones, and the report cards are ready to print when the term ends.</p>
 
-                <ul class="sha-points">
-                    <li>
-                        <span class="sha-ic"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6"><path stroke-linecap="round" stroke-linejoin="round" d="M2.25 8.25h19.5M2.25 9h19.5m-16.5 5.25h6m-6 2.25h3m-3.75 3h15a2.25 2.25 0 0 0 2.25-2.25V6.75A2.25 2.25 0 0 0 19.5 4.5h-15a2.25 2.25 0 0 0-2.25 2.25v10.5A2.25 2.25 0 0 0 4.5 19.5Z"/></svg></span>
-                        <div><strong>Fees &amp; receipts</strong><span>Billing, balances, receipts and reminder letters.</span></div>
-                    </li>
-                    <li>
-                        <span class="sha-ic"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6"><path stroke-linecap="round" stroke-linejoin="round" d="M4.26 10.147a60.438 60.438 0 0 0-.491 6.347A48.62 48.62 0 0 1 12 20.904a48.62 48.62 0 0 1 8.232-4.41 60.46 60.46 0 0 0-.491-6.347m-15.482 0a50.636 50.636 0 0 0-2.658-.813A59.906 59.906 0 0 1 12 3.493a59.903 59.903 0 0 1 10.399 5.84c-.896.248-1.783.52-2.658.814m-15.482 0A50.717 50.717 0 0 1 12 13.489a50.702 50.702 0 0 1 7.74-3.342"/></svg></span>
-                        <div><strong>Exams &amp; report cards</strong><span>PLE aggregates, the new O-Level curriculum and A-Level points.</span></div>
-                    </li>
-                    <li>
-                        <span class="sha-ic"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6"><path stroke-linecap="round" stroke-linejoin="round" d="M15 19.128a9.38 9.38 0 0 0 2.625.372 9.337 9.337 0 0 0 4.121-.952 4.125 4.125 0 0 0-7.533-2.493M15 19.128v-.003c0-1.113-.285-2.16-.786-3.07M15 19.128v.106A12.318 12.318 0 0 1 8.624 21c-2.331 0-4.512-.645-6.374-1.766l-.001-.109a6.375 6.375 0 0 1 11.964-3.07M12 6.375a3.375 3.375 0 1 1-6.75 0 3.375 3.375 0 0 1 6.75 0Zm8.25 2.25a2.625 2.625 0 1 1-5.25 0 2.625 2.625 0 0 1 5.25 0Z"/></svg></span>
-                        <div><strong>Staff &amp; payroll</strong><span>PAYE, NSSF and LST worked out for you, with payslips.</span></div>
-                    </li>
-                </ul>
+                {{-- A real SchoolHub report card, laid on the panel like a sheet on a desk. --}}
+                <figure class="sha-sheet">
+                    <figcaption>An end-of-term report, as SchoolHub prints it.</figcaption>
+                    <img src="{{ asset('images/site/report-card-o-level.jpg') }}" alt="An end-of-term report card made in SchoolHub">
+                </figure>
             @endif
         </div>
 
@@ -248,10 +239,6 @@
 
         <div @class(['sha-card', 'sha-card-wide' => $wide])>
             <header class="sha-card-head">
-                @unless ($wide)
-                    <span class="sha-seal" aria-hidden="true"><img src="{{ asset('images/schoolhub-icon.svg') }}" alt=""></span>
-                @endunless
-                @if ($eyebrow)<p class="sha-kicker">{{ $eyebrow }}</p>@endif
                 <h2 class="sha-h">{{ $heading }}</h2>
                 @if ($subheading)<p class="sha-sub">{{ $subheading }}</p>@endif
             </header>

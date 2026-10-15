@@ -4,11 +4,9 @@ namespace App\Services;
 
 use App\Filament\App\Resources\FeeReminders\FeeReminderResource;
 use App\Filament\App\Resources\Payments\PaymentResource;
-use App\Filament\Pages\AttendanceReport;
 use App\Filament\Pages\ClassResults;
 use App\Filament\Pages\Reports\FeeCollectionsReport;
 use App\Filament\Pages\Reports\FeesByClassReport;
-use App\Models\AttendanceRecord;
 use App\Models\Mark;
 use App\Models\Student;
 use App\Models\StudentCharge;
@@ -22,7 +20,8 @@ use Illuminate\Support\Facades\Cache;
 
 /**
  * "Worth knowing today": plain rules over the school's own records that
- * point out what a head or bursar would want to notice, each with a link
+ * point out what a head or bursar would want to notice (fees and marks;
+ * attendance is left out on purpose), each with a link
  * to where it is dealt with. No AI service: every finding says what it is
  * based on, and only areas the user may open (Modules) are looked at.
  *
@@ -31,7 +30,6 @@ use Illuminate\Support\Facades\Cache;
  *   - learners billed this term who have paid nothing
  *   - families who paid in each of the last two terms but not yet this one
  *   - possible double payments (same learner, amount and day)
- *   - learners absent three or more days in the last week
  *   - learners whose average fell 10 points or more since last term
  *
  * @phpstan-type Finding array{key: string, tone: string, icon: string, title: string, detail: ?string, url: ?string}
@@ -78,10 +76,6 @@ class SchoolInsights
                 ...($term ? $this->usualPayersNotYet($term) : []),
                 ...$this->moneyToday(),
             ];
-        }
-
-        if (Modules::allows('attendance')) {
-            $items = [...$items, ...$this->oftenAbsent()];
         }
 
         if (Modules::allows('exams') || Modules::allows('exams_all')) {
@@ -223,29 +217,6 @@ class SchoolInsights
             $pairs->count().' possible double '.str('payment')->plural($pairs->count()).' to check',
             'The same amount recorded twice for the same learner on the same day: '.$this->names($pairs->pluck('student_id')->unique()).'.',
             PaymentResource::getUrl())];
-    }
-
-    // ── Attendance ──
-
-    /** @return list<Finding> */
-    protected function oftenAbsent(): array
-    {
-        $ids = AttendanceRecord::where('school_id', $this->schoolId)
-            ->where('status', 'absent')
-            ->whereDate('date', '>', $this->today->subDays(7))
-            ->selectRaw('student_id, count(*) as days')
-            ->groupBy('student_id')
-            ->havingRaw('count(*) >= 3')
-            ->pluck('student_id');
-
-        if ($ids->isEmpty()) {
-            return [];
-        }
-
-        return [$this->item('absent', 'warning', 'heroicon-o-user-minus',
-            $ids->count().' '.str('learner')->plural($ids->count()).' absent 3 or more days this past week',
-            $this->names($ids).'.',
-            AttendanceReport::getUrl())];
     }
 
     // ── Marks ──

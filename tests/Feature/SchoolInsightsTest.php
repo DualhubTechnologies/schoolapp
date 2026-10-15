@@ -105,13 +105,13 @@ it('flags the same amount paid twice for a learner on one day', function () {
     expect(findings()['doubles'])->toMatchArray(['tone' => 'danger', 'title' => '1 possible double payment to check']);
 });
 
-it('names learners absent three or more days this past week', function () {
+it('leaves attendance out', function () {
     $s = ($this->learner)('Grace Atim');
     foreach (['2026-10-12', '2026-10-13', '2026-10-14'] as $day) {
         AttendanceRecord::create(['school_id' => $this->school->id, 'student_id' => $s->id, 'school_class_id' => $this->class->id, 'date' => $day, 'status' => 'absent']);
     }
 
-    expect(findings()['absent']['detail'])->toBe('Grace Atim (S.2).');
+    expect(findings())->not->toHaveKey('absent');
 });
 
 it('names learners whose average fell ten points or more since last term', function () {

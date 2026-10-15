@@ -13,6 +13,7 @@ use App\Filament\App\Pages\Dashboard;
 use App\Filament\App\Pages\TransportCollections;
 use App\Filament\App\Widgets\BursarKpis;
 use App\Filament\App\Widgets\HrKpis;
+use App\Filament\App\Widgets\Insights;
 use App\Filament\App\Widgets\LeadershipKpis;
 use App\Filament\App\Widgets\PlatformActivityKpis;
 use App\Filament\App\Widgets\PlatformKpis;
@@ -329,6 +330,7 @@ class AppPanelProvider extends PanelProvider
                 // Per-user-group dashboard widgets (App\Filament\App\Pages\Dashboard
                 // picks which ones each user sees).
                 WelcomeBanner::class,
+                Insights::class,
                 LeadershipKpis::class,
                 BursarKpis::class,
                 HrKpis::class,

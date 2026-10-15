@@ -4,6 +4,7 @@ namespace App\Filament\App\Pages;
 
 use App\Filament\App\Widgets\BursarKpis;
 use App\Filament\App\Widgets\HrKpis;
+use App\Filament\App\Widgets\Insights;
 use App\Filament\App\Widgets\LeadershipKpis;
 use App\Filament\App\Widgets\ParentChildren;
 use App\Filament\App\Widgets\PlatformActivityKpis;
@@ -189,6 +190,7 @@ class Dashboard extends BaseDashboard
                 SetupChecklist::class,
                 TermBillingPrompt::class,
                 WorkGuide::class,
+                Insights::class,
                 LeadershipKpis::class,
                 FinanceSnapshot::class,
                 FeeCollectionChart::class,
@@ -203,6 +205,7 @@ class Dashboard extends BaseDashboard
                 WelcomeBanner::class,
                 TermBillingPrompt::class,
                 WorkGuide::class,
+                Insights::class,
                 BursarKpis::class,
                 FinanceSnapshot::class,
                 FeeCollectionChart::class,

@@ -1,18 +1,18 @@
 <x-filament-panels::page>
-    <p class="rp-intro">Every report can be printed on A4 or downloaded for Excel. Pick one to open it.</p>
+    <p class="rpt-intro">Every report can be printed on A4 or downloaded for Excel. Pick one to open it.</p>
 
     @foreach (\App\Filament\Pages\Reports\AllReports::available() as $area => $reports)
-        <section class="rp-area">
-            <h3 class="rp-area-title">{{ $area }}</h3>
-            <div class="rp-cards">
+        <section class="rpt-area">
+            <h3 class="rpt-area-title">{{ $area }}</h3>
+            <div class="rpt-cards">
                 @foreach ($reports as $report)
-                    <a href="{{ $report['url'] }}" class="rp-card">
-                        <span class="rp-card-icon"><x-filament::icon :icon="$report['icon']" /></span>
-                        <span class="rp-card-body">
+                    <a href="{{ $report['url'] }}" class="rpt-card">
+                        <span class="rpt-card-icon"><x-filament::icon :icon="$report['icon']" /></span>
+                        <span class="rpt-card-body">
                             <b>{{ $report['title'] }}</b>
                             <span>{{ $report['about'] }}</span>
                         </span>
-                        <x-filament::icon icon="heroicon-m-chevron-right" class="rp-card-go" />
+                        <x-filament::icon icon="heroicon-m-chevron-right" class="rpt-card-go" />
                     </a>
                 @endforeach
             </div>

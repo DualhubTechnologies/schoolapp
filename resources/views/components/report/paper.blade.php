@@ -10,15 +10,15 @@
     $contacts = collect([$school?->phone, $school?->email])->filter()->implode('  ·  ');
 @endphp
 
-<article class="rp-paper">
-    <header class="rp-letterhead">
-        @if ($logo)<img src="{{ $logo }}" alt="" class="rp-logo">@endif
-        <div class="rp-school">
+<article class="rpt-paper">
+    <header class="rpt-letterhead">
+        @if ($logo)<img src="{{ $logo }}" alt="" class="rpt-logo">@endif
+        <div class="rpt-school">
             <h2>{{ $school?->name }}</h2>
             @if ($school?->address)<p>{{ $school->address }}</p>@endif
             @if ($contacts)<p>{{ $contacts }}</p>@endif
         </div>
-        <div class="rp-doc">
+        <div class="rpt-doc">
             <h3>{{ $title }}</h3>
             @if ($coverage)<p>{{ $coverage }}</p>@endif
         </div>
@@ -26,5 +26,5 @@
 
     {{ $slot }}
 
-    <footer class="rp-foot">Printed {{ now()->format('j M Y, g:i a') }} by {{ auth()->user()?->name }} · SchoolHub</footer>
+    <footer class="rpt-foot">Printed {{ now()->format('j M Y, g:i a') }} by {{ auth()->user()?->name }} · SchoolHub</footer>
 </article>

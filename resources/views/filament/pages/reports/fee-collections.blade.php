@@ -9,11 +9,11 @@
 
 <x-filament-panels::page>
     <x-report.toolbar>
-        <div class="rp-field">
+        <div class="rpt-field">
             <span>Period</span>
-            <div class="rp-ranges">
+            <div class="rpt-ranges">
                 @foreach (['today' => 'Today', 'week' => 'This week', 'month' => 'This month', 'term' => 'This term'] as $key => $label)
-                    <button type="button" wire:click="setRange('{{ $key }}')" @class(['rp-range', 'is-on' => $this->range() === $key])>{{ $label }}</button>
+                    <button type="button" wire:click="setRange('{{ $key }}')" @class(['rpt-range', 'is-on' => $this->range() === $key])>{{ $label }}</button>
                 @endforeach
             </div>
         </div>
@@ -23,9 +23,9 @@
 
     <x-report.paper :title="$this->getTitle()" :coverage="$this->coverage()">
         @if (! $total)
-            <p class="rp-empty">No fees were received in this period.</p>
+            <p class="rpt-empty">No fees were received in this period.</p>
         @else
-            <div class="rp-tiles">
+            <div class="rpt-tiles">
                 <div class="is-main"><span>Collected</span><b>UGX {{ $n($total['total']) }}</b></div>
                 <div><span>Receipts</span><b>{{ $n($total['receipts']) }}</b></div>
                 <div><span>Days with payments</span><b>{{ $dayCount }}</b></div>
@@ -36,46 +36,46 @@
                 @endforeach
             </div>
 
-            <h4 class="rp-h">Day by day</h4>
-            <div class="rp-scroll">
-                <table class="rp-table">
+            <h4 class="rpt-h">Day by day</h4>
+            <div class="rpt-scroll">
+                <table class="rpt-table">
                     <thead>
                         <tr>
                             <th>Date</th>
-                            <th class="rp-num">Receipts</th>
+                            <th class="rpt-num">Receipts</th>
                             @foreach ($methods as $name)
-                                <th class="rp-num">{{ $name }}</th>
+                                <th class="rpt-num">{{ $name }}</th>
                             @endforeach
-                            <th class="rp-num">Total (UGX)</th>
+                            <th class="rpt-num">Total (UGX)</th>
                         </tr>
                     </thead>
                     <tbody>
                         @foreach ($days as $row)
-                            <tr @class(['rp-total' => $row['kind'] === 'total'])>
+                            <tr @class(['rpt-total' => $row['kind'] === 'total'])>
                                 <td>{{ $row['label'] }}</td>
-                                <td class="rp-num">{{ $row['receipts'] }}</td>
+                                <td class="rpt-num">{{ $row['receipts'] }}</td>
                                 @foreach ($methods as $key => $name)
-                                    <td class="rp-num">{{ $row['methods'][$key] > 0 ? $n($row['methods'][$key]) : '—' }}</td>
+                                    <td class="rpt-num">{{ $row['methods'][$key] > 0 ? $n($row['methods'][$key]) : '—' }}</td>
                                 @endforeach
-                                <td class="rp-num rp-strong">{{ $n($row['total']) }}</td>
+                                <td class="rpt-num rpt-strong">{{ $n($row['total']) }}</td>
                             </tr>
                         @endforeach
                     </tbody>
                 </table>
             </div>
 
-            <h4 class="rp-h">By class</h4>
-            <table class="rp-table rp-narrow">
+            <h4 class="rpt-h">By class</h4>
+            <table class="rpt-table rpt-narrow">
                 <thead>
-                    <tr><th>Class</th><th class="rp-num">Receipts</th><th class="rp-num">Collected (UGX)</th><th class="rp-num">Share</th></tr>
+                    <tr><th>Class</th><th class="rpt-num">Receipts</th><th class="rpt-num">Collected (UGX)</th><th class="rpt-num">Share</th></tr>
                 </thead>
                 <tbody>
                     @foreach ($classes as $row)
                         <tr>
                             <td>{{ $row['label'] }}</td>
-                            <td class="rp-num">{{ $row['receipts'] }}</td>
-                            <td class="rp-num rp-strong">{{ $n($row['total']) }}</td>
-                            <td class="rp-num">{{ $total['total'] > 0 ? round($row['total'] / $total['total'] * 100) : 0 }}%</td>
+                            <td class="rpt-num">{{ $row['receipts'] }}</td>
+                            <td class="rpt-num rpt-strong">{{ $n($row['total']) }}</td>
+                            <td class="rpt-num">{{ $total['total'] > 0 ? round($row['total'] / $total['total'] * 100) : 0 }}%</td>
                         </tr>
                     @endforeach
                 </tbody>

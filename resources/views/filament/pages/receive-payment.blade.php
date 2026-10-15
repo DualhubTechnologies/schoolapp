@@ -27,7 +27,8 @@
         </form>
 
         {{-- ── Right: who is paying, and what they owe ── --}}
-        <aside class="rp-side">
+        {{-- On phones a chosen learner's balance (or the receipt just issued) comes first, before the amount is typed. --}}
+        <aside @class(['rp-side', 'is-active' => $student || $issued])>
 
             @if ($issued)
                 <div class="rp-card rp-issued">
@@ -112,6 +113,10 @@
         .rp-main { display: flex; flex-direction: column; gap: 1.5rem; }
         .rp-actions { display: flex; flex-wrap: wrap; gap: .75rem; }
         .rp-side { display: flex; flex-direction: column; gap: 1rem; position: sticky; top: 5.5rem; }
+        @media (max-width: 1023px) {
+            .rp-side { position: static; }
+            .rp-side.is-active { order: -1; }
+        }
 
         .rp-card { background: #fff; border: 1px solid #e4e8f0; border-radius: 12px; padding: 1.25rem; }
         .rp-muted { font-size: .8rem; color: #64748b; }

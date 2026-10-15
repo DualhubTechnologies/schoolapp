@@ -27,9 +27,9 @@
 
     <x-report.paper :title="$this->getTitle()" :coverage="$this->coverage()">
         @if (! $total)
-            <p class="rp-empty">No learners to count.</p>
+            <p class="rpt-empty">No learners to count.</p>
         @else
-            <div class="rp-tiles">
+            <div class="rpt-tiles">
                 <div><span>Learners</span><b>{{ number_format($total['total']) }}</b></div>
                 <div><span>Boys</span><b>{{ number_format($total['boys']) }}</b></div>
                 <div><span>Girls</span><b>{{ number_format($total['girls']) }}</b></div>
@@ -38,37 +38,37 @@
                 @endforeach
             </div>
 
-            <div class="rp-scroll">
-                <table class="rp-table">
+            <div class="rpt-scroll">
+                <table class="rpt-table">
                     <thead>
                         <tr>
                             <th>Class</th>
-                            <th class="rp-num">Boys</th>
-                            <th class="rp-num">Girls</th>
-                            <th class="rp-num">Total</th>
+                            <th class="rpt-num">Boys</th>
+                            <th class="rpt-num">Girls</th>
+                            <th class="rpt-num">Total</th>
                             @foreach ($residencies as $name)
-                                <th class="rp-num">{{ $name }}</th>
+                                <th class="rpt-num">{{ $name }}</th>
                             @endforeach
-                            <th class="rp-num">New</th>
+                            <th class="rpt-num">New</th>
                         </tr>
                     </thead>
                     <tbody>
                         @foreach ($rows as $row)
-                            <tr @class(['rp-sub' => $row['kind'] === 'stream', 'rp-total' => $row['kind'] === 'total'])>
+                            <tr @class(['rpt-sub' => $row['kind'] === 'stream', 'rpt-total' => $row['kind'] === 'total'])>
                                 <td>{{ $row['label'] }}</td>
-                                <td class="rp-num">{{ $row['boys'] }}</td>
-                                <td class="rp-num">{{ $row['girls'] }}</td>
-                                <td class="rp-num rp-strong">{{ $row['total'] }}</td>
+                                <td class="rpt-num">{{ $row['boys'] }}</td>
+                                <td class="rpt-num">{{ $row['girls'] }}</td>
+                                <td class="rpt-num rpt-strong">{{ $row['total'] }}</td>
                                 @foreach ($residencies as $id => $name)
-                                    <td class="rp-num">{{ $row['residency'][$id] ?? 0 }}</td>
+                                    <td class="rpt-num">{{ $row['residency'][$id] ?? 0 }}</td>
                                 @endforeach
-                                <td class="rp-num">{{ $row['new'] }}</td>
+                                <td class="rpt-num">{{ $row['new'] }}</td>
                             </tr>
                         @endforeach
                     </tbody>
                 </table>
             </div>
-            <p class="rp-note">Streams are listed under their class. "New" counts learners admitted as new to the school.</p>
+            <p class="rpt-note">Streams are listed under their class. "New" counts learners admitted as new to the school.</p>
         @endif
     </x-report.paper>
 </x-filament-panels::page>

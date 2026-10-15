@@ -140,3 +140,9 @@ it('downloads a report for Excel', function () {
             && $export->array()[2][0] === 'Total';
     });
 });
+
+it('keeps the report styles apart from the Receive Payment page', function () {
+    // Receive Payment styles its own rp-* classes; the shared stylesheet
+    // must not (its report rules once turned the balance card sideways).
+    expect(file_get_contents(public_path('css/filament-custom.css')))->not->toMatch('/\.rp-[a-z]/');
+});

@@ -101,6 +101,16 @@ class ReceivePayment extends Page
                                 ->minValue(1)
                                 ->required()
                                 ->autofocus()
+                                // The balance right under the box, so it is in view while typing (on a phone the card is above).
+                                ->helperText(function (): string {
+                                    $balance = (float) $this->getAccountProperty()['balance'];
+
+                                    return match (true) {
+                                        $balance > 0 => 'Owes UGX '.number_format($balance),
+                                        $balance < 0 => 'In credit UGX '.number_format(abs($balance)),
+                                        default => 'Fully paid',
+                                    };
+                                })
                                 ->extraInputAttributes(['class' => 'text-lg font-semibold']),
 
                             DatePicker::make('paid_on')

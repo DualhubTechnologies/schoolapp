@@ -434,7 +434,7 @@
         .prose p { margin-top: 1rem; }
         .prose ul.ticks { margin-top: 1rem; }
         .prose a { color: var(--blue-600); font-weight: 600; text-decoration: underline; text-underline-offset: 2px; }
-        .info-grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: 1.25rem; }
+        .info-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(14rem, 1fr)); gap: 1.25rem; }
         .team-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(13rem, 16rem)); justify-content: center; gap: 2rem; }
         .team-card { display: flex; flex-direction: column; align-items: center; text-align: center; padding: 1rem 1rem 1.75rem; border-radius: var(--radius-lg); background: var(--slate-100); }
         .team-photo { display: grid; place-items: end center; width: 100%; max-width: 12.25rem; aspect-ratio: 1; overflow: hidden; border-radius: 50%; background: #e0e3fb; color: #8f96c8; }

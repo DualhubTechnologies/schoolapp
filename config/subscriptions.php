@@ -60,6 +60,6 @@ return [
         'airtel_money' => env('SUBSCRIPTION_AIRTEL', ''),
         'bank' => env('SUBSCRIPTION_BANK', ''),                // e.g. "Stanbic, A/C 9030000000000, SchoolHub Ltd"
         'contact_phone' => env('SUBSCRIPTION_CONTACT_PHONE', ''),
-        'contact_email' => env('SUBSCRIPTION_CONTACT_EMAIL', ''),
+        'contact_email' => env('SUBSCRIPTION_CONTACT_EMAIL', 'support@schoolhubug.com'),
     ],
 ];

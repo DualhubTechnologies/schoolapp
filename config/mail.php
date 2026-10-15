@@ -117,4 +117,11 @@ return [
         'name' => env('MAIL_FROM_NAME', env('APP_NAME', 'Laravel')),
     ],
 
+    // System emails go out through the mail server above (e.g. Gmail); a
+    // reply reaches the support mailbox instead of that sending account.
+    'reply_to' => [
+        'address' => env('MAIL_REPLY_TO_ADDRESS', 'support@schoolhubug.com'),
+        'name' => env('MAIL_REPLY_TO_NAME', 'SchoolHub Support'),
+    ],
+
 ];

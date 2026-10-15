@@ -20,7 +20,7 @@ beforeEach(function () {
     $this->withoutVite();
     $this->withoutDefer();
     Notification::fake();
-    config(['app.debug' => false, 'contact.email' => 'team@schoolhub.test']);
+    config(['app.debug' => false, 'contact.support_email' => 'team@schoolhub.test']);
 
     // The same line throws every time, so both requests are one error.
     Route::middleware('web')->get('/_test/boom', fn () => throw new RuntimeException('Boom from the test'));

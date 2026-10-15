@@ -93,12 +93,12 @@ class ErrorRecorder
             'user_agent' => $request ? Str::limit((string) $request->userAgent(), 490, '') : null,
         ]);
 
-        if (($isNew || $cameBack) && filled(config('contact.email'))) {
+        if (($isNew || $cameBack) && filled(config('contact.support_email'))) {
             // After the response is sent, so a slow mail server never
             // delays the error page -- and a mail failure is only logged.
             defer(function () use ($report, $reference, $cameBack): void {
                 try {
-                    Notification::route('mail', config('contact.email'))->notify(new ErrorReported($report, $reference, $cameBack));
+                    Notification::route('mail', config('contact.support_email'))->notify(new ErrorReported($report, $reference, $cameBack));
                 } catch (Throwable $mailError) {
                     logger()->warning('Could not email the error report: '.$mailError->getMessage());
                 }

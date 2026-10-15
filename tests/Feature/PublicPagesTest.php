@@ -34,7 +34,15 @@ it('shows the phone, location and opening hours on the Contact page', function (
         ->assertSee('0782 863209')
         ->assertSee('Wakiso, Uganda')
         ->assertSee('Monday to Friday, 8:00 am – 6:00 pm')
-        ->assertSee('Request a demo');
+        ->assertSee('Request a demo')
+        ->assertSee('info@schoolhubug.com')
+        ->assertSee('support@schoolhubug.com');
+});
+
+it('gives the founder their own address on the team page, and sends system emails with replies to support', function () {
+    $this->get('/team')->assertOk()->assertSee('mailto:adrian.mugizi@schoolhubug.com', false);
+
+    expect(config('mail.reply_to.address'))->toBe('support@schoolhubug.com');
 });
 
 it('shows the team: the founder, the company and a card to join', function () {

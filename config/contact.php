@@ -3,6 +3,8 @@
 /*
  * How schools reach the SchoolHub team: shown on the landing page (demo
  * booking, WhatsApp, call, email). Demo requests are emailed to "email".
+ * The system's own emails (password resets, codes) are sent through the
+ * mail server in .env (MAIL_*), with replies going to "support_email".
  */
 return [
 
@@ -12,7 +14,12 @@ return [
     // International format without "+" or spaces, for wa.me links.
     'whatsapp' => env('CONTACT_WHATSAPP', '256782863209'),
 
-    'email' => env('CONTACT_EMAIL', 'dualhubtechnologies@gmail.com'),
+    // General enquiries, sales and demo requests: on the website.
+    'email' => env('CONTACT_EMAIL', 'info@schoolhubug.com'),
+
+    // Schools already using SchoolHub: help with the system. Also where
+    // error reports go (App\Support\ErrorRecorder).
+    'support_email' => env('CONTACT_SUPPORT_EMAIL', 'support@schoolhubug.com'),
 
     // Who builds and supports SchoolHub, and who founded it: on the About
     // page's team section, the footer and the terms.
@@ -32,7 +39,7 @@ return [
             'linkedin' => 'https://www.linkedin.com/in/adrian-mugizi-1a0854152',
             'facebook' => null,
             'x' => null,
-            'email' => env('CONTACT_EMAIL', 'dualhubtechnologies@gmail.com'),
+            'email' => env('CONTACT_FOUNDER_EMAIL', 'adrian.mugizi@schoolhubug.com'),
         ],
     ],
 

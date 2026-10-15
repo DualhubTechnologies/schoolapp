@@ -21,7 +21,11 @@
                 <div class="info">
                     <small>Location</small>
                     <b>{{ $contact['location'] }}</b>
-                    <span><a href="{{ $mailUrl }}">{{ $contact['email'] }}</a></span>
+                </div>
+                <div class="info">
+                    <small>Email</small>
+                    <b><a href="{{ $mailUrl }}">{{ $contact['email'] }}</a></b>
+                    <span>Already using SchoolHub? <a href="mailto:{{ $contact['support_email'] }}">{{ $contact['support_email'] }}</a></span>
                 </div>
             </div>
         </div>

@@ -95,3 +95,11 @@ it('suggests the plan that fits the students being added', function () {
 
     $page->assertSee('You are adding 400 students.');
 });
+
+it('lets a school on the free trial have any number of learners', function () {
+    $school = School::create(['name' => 'Trial Secondary', 'slug' => 'trial-sec', 'email' => 'trial@example.com', 'school_type' => 'secondary', 'status' => 'active']);
+    SubscriptionManager::startTrial($school);
+
+    expect(SubscriptionManager::current($school)->plan->max_students)->toBeNull()
+        ->and(SubscriptionManager::roomForStudents($school))->toBeNull();
+});

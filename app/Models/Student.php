@@ -5,6 +5,7 @@ namespace App\Models;
 use App\Concerns\HasFeeAccount;
 use App\Services\Subscriptions\SubscriptionManager;
 use App\Support\PrivateFiles;
+use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
@@ -166,6 +167,24 @@ class Student extends Model
     public function user(): BelongsTo
     {
         return $this->belongsTo(User::class);
+    }
+
+    /**
+     * Learners the school cannot reach a parent for: no parent or guardian
+     * on record, or no phone number at all (the parent's, their other
+     * number, or the learner's own: what fee reminders and SMS use).
+     *
+     * @param  Builder<Student>  $query
+     */
+    public function scopeWithoutParentContact(Builder $query): void
+    {
+        $filled = fn (Builder $q, string $column) => $q->whereNotNull($column)->where($column, '!=', '');
+
+        $query->where(fn (Builder $q) => $q
+            ->whereNull('guardian_id')
+            ->orWhere(fn (Builder $q) => $q
+                ->whereDoesntHave('guardian', fn (Builder $g) => $g->where(fn (Builder $g) => $filled($g, 'phone')->orWhere(fn (Builder $g) => $filled($g, 'alt_phone'))))
+                ->where(fn (Builder $q) => $q->whereNull('phone')->orWhere('phone', ''))));
     }
 
     /**

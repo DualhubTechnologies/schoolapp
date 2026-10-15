@@ -5,9 +5,11 @@ namespace App\Services;
 use App\Filament\App\Resources\Billing\BillingResource;
 use App\Filament\App\Resources\FeeReminders\FeeReminderResource;
 use App\Filament\App\Resources\Payments\PaymentResource;
+use App\Filament\App\Resources\Students\StudentResource;
 use App\Filament\Pages\ClassResults;
 use App\Filament\Pages\Reports\FeeCollectionsReport;
 use App\Filament\Pages\Reports\FeesByClassReport;
+use App\Filament\Pages\StartTermBilling;
 use App\Models\Mark;
 use App\Models\Student;
 use App\Models\StudentCharge;
@@ -28,7 +30,8 @@ use Illuminate\Support\Facades\Cache;
  *
  *   - money in today
  *   - fee collection ahead of or behind last term at the same point
- *   - active learners with no fees billed this term, once it is billed
+ *   - active learners with no fees billed this term (the whole term, if unbilled)
+ *   - learners with no parent or phone number on record
  *   - learners billed this term who have paid nothing
  *   - families who paid in each of the last two terms but not yet this one
  *   - possible double payments (same learner, amount and day)
@@ -79,6 +82,10 @@ class SchoolInsights
                 ...($term ? $this->usualPayersNotYet($term) : []),
                 ...$this->moneyToday(),
             ];
+        }
+
+        if (Modules::allows('students') || Modules::allows('fees')) {
+            $items = [...$items, ...$this->noParentContact()];
         }
 
         if (Modules::allows('exams') || Modules::allows('exams_all')) {
@@ -159,21 +166,16 @@ class SchoolInsights
     }
 
     /**
-     * Active learners in a class with no fee on their account this term,
-     * once the term has been billed (before that, the billing prompt on the
-     * dashboard covers everyone): added since and missed, or in a class or
-     * residency with no fees set.
+     * Active learners in a class with no fee on their account this term
+     * (a van fare or one-off charge alone is not the term's bill). Before
+     * anyone is billed it is the whole term to start; after, the learners
+     * added since and missed, or in a class with no fees set.
      *
      * @return list<Finding>
      */
     protected function notBilled(Term $term): array
     {
-        // Fees from the fee setup: a van fare or a one-off charge alone is not the term's bill.
         $billed = StudentCharge::where('term_id', $term->getKey())->whereNotNull('fee_structure_id')->distinct()->pluck('student_id');
-
-        if ($billed->isEmpty()) {
-            return [];
-        }
 
         $ids = Student::where('school_id', $this->schoolId)
             ->where('status', 'active')
@@ -183,6 +185,13 @@ class SchoolInsights
 
         if ($ids->isEmpty()) {
             return [];
+        }
+
+        if ($billed->isEmpty()) {
+            return [$this->item('not-billed', 'danger', 'heroicon-o-document-minus',
+                $term->label().' has not been billed yet',
+                number_format($ids->count()).' '.($ids->count() === 1 ? 'learner has' : 'learners have').' no fees for this term, so no balances, invoices or reminders. Start the term to bill everyone in one go.',
+                StartTermBilling::getUrl())];
         }
 
         return [$this->item('not-billed', 'danger', 'heroicon-o-document-minus',
@@ -253,6 +262,31 @@ class SchoolInsights
             $pairs->count().' possible double '.str('payment')->plural($pairs->count()).' to check',
             'The same amount recorded twice for the same learner on the same day: '.$this->names($pairs->pluck('student_id')->unique()).'.',
             PaymentResource::getUrl())];
+    }
+
+    // ── Learners ──
+
+    /**
+     * Active learners with no parent on record or no phone number to reach
+     * the family: reminders, SMS and parent logins cannot reach them.
+     *
+     * @return list<Finding>
+     */
+    protected function noParentContact(): array
+    {
+        $ids = Student::where('school_id', $this->schoolId)
+            ->where('status', 'active')
+            ->withoutParentContact()
+            ->pluck('id');
+
+        if ($ids->isEmpty()) {
+            return [];
+        }
+
+        return [$this->item('no-contact', 'warning', 'heroicon-o-phone-x-mark',
+            $ids->count().' '.($ids->count() === 1 ? 'learner has' : 'learners have').' no parent or phone number',
+            'Fee reminders, messages and parent logins cannot reach them: '.$this->names($ids).'.',
+            StudentResource::getUrl('index', ['filters' => ['status' => ['value' => 'active'], 'parent_contact' => ['value' => '0']]]))];
     }
 
     // ── Marks ──

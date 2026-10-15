@@ -8,7 +8,7 @@
             <div class="shi-clear">
                 <x-filament::icon icon="heroicon-o-check-badge" class="shi-clear-icon" />
                 <strong>Nothing needs your attention right now</strong>
-                <span>Payments, fee collection and marks all look as expected.</span>
+                <span>Billing, payments, parents' contacts and marks all look as expected.</span>
             </div>
         @endif
     </section>
@@ -17,7 +17,8 @@
         <h3>What is looked at</h3>
         <ul>
             <li>Money received today, and fee collection against last term at the same week.</li>
-            <li>Learners in the system who have not been billed this term.</li>
+            <li>Learners in the system who have not been billed this term, or a term not billed at all.</li>
+            <li>Learners with no parent or phone number on record.</li>
             <li>Learners who have paid nothing this term, and families who always pay but have not yet.</li>
             <li>The same amount recorded twice for a learner on the same day.</li>
             <li>Learners whose average fell ten points or more since last term.</li>

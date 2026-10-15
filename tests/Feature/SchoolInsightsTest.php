@@ -2,10 +2,13 @@
 
 use App\Filament\App\Pages\AiInsights;
 use App\Filament\App\Pages\Dashboard;
+use App\Filament\App\Resources\Students\Pages\ListStudents;
+use App\Filament\Pages\StartTermBilling;
 use App\Models\AcademicYear;
 use App\Models\Assessment;
 use App\Models\AttendanceRecord;
 use App\Models\FeeStructure;
+use App\Models\Guardian;
 use App\Models\Mark;
 use App\Models\School;
 use App\Models\SchoolClass;
@@ -20,6 +23,7 @@ use App\Services\Subscriptions\SubscriptionManager;
 use Carbon\CarbonImmutable;
 use Database\Seeders\RoleSeeder;
 use Filament\Facades\Filament;
+use Livewire\Livewire;
 
 beforeEach(function () {
     $this->seed(RoleSeeder::class);
@@ -63,14 +67,18 @@ it('says how much came in today', function () {
     expect(findings()['today']['title'])->toBe('UGX 200,000 received today');
 });
 
-it('names learners in the system who are not billed this term, once the term is billed', function () {
+it('names learners in the system who are not billed this term, and a term not billed at all', function () {
     $fee = FeeStructure::create(['school_id' => $this->school->id, 'school_class_id' => $this->class->id, 'term_id' => $this->t3->id, 'name' => 'Tuition', 'frequency' => 'per_term', 'applies_to' => 'all', 'amount' => 800000, 'is_active' => true]);
     $billed = ($this->learner)('Brian Okello');
     $missed = ($this->learner)('Carol Auma');
     $vanOnly = ($this->learner)('Derrick Ssempa');
     ($this->learner)('Left Already')->update(['status' => 'left']);
 
-    expect(findings())->not->toHaveKey('not-billed'); // term not billed yet: the billing prompt covers it
+    // A new term nobody has been billed for: the whole term to start.
+    expect(findings()['not-billed'])->toMatchArray([
+        'title' => 'Term 3 — 2026 has not been billed yet',
+        'url' => StartTermBilling::getUrl(),
+    ])->and(findings()['not-billed']['detail'])->toStartWith('3 learners have no fees for this term');
 
     StudentCharge::create(['school_id' => $this->school->id, 'student_id' => $billed->id, 'term_id' => $this->t3->id, 'fee_structure_id' => $fee->id, 'description' => 'Tuition', 'amount' => 800000, 'charged_on' => '2026-09-14']);
     ($this->charge)($vanOnly, $this->t3, 150000); // a one-off charge is not the term's fees
@@ -79,6 +87,25 @@ it('names learners in the system who are not billed this term, once the term is 
         'tone' => 'danger',
         'title' => '2 learners are in the system but not billed this term',
     ])->and(findings()['not-billed']['detail'])->toStartWith('Carol Auma (S.2), Derrick Ssempa (S.2).');
+});
+
+it('names learners with no parent or phone number, and links to them on Students', function () {
+    $parent = Guardian::create(['school_id' => $this->school->id, 'name' => 'Mr. Okello', 'phone' => '0772000111']);
+    $noPhone = Guardian::create(['school_id' => $this->school->id, 'name' => 'Mrs. Auma', 'phone' => '']);
+    ($this->learner)('Reachable Child')->update(['guardian_id' => $parent->id]);
+    ($this->learner)('Own Phone')->update(['guardian_id' => $noPhone->id, 'phone' => '0701000222']);
+    ($this->learner)('No Parent');
+    ($this->learner)('Parent No Phone')->update(['guardian_id' => $noPhone->id]);
+
+    $finding = findings()['no-contact'];
+
+    expect($finding['title'])->toBe('2 learners have no parent or phone number')
+        ->and($finding['detail'])->toContain('No Parent (S.2), Parent No Phone (S.2)');
+
+    Livewire::withQueryParams(['filters' => ['status' => ['value' => 'active'], 'parent_contact' => ['value' => '0']]])
+        ->test(ListStudents::class)
+        ->assertCanSeeTableRecords(Student::whereIn('name', ['No Parent', 'Parent No Phone'])->get())
+        ->assertCanNotSeeTableRecords(Student::whereIn('name', ['Reachable Child', 'Own Phone'])->get());
 });
 
 it('names the learners billed this term who have paid nothing', function () {

@@ -169,6 +169,15 @@ class StudentsTable
                     ->label('New learners')
                     ->trueLabel('New learners (pay admission fees)')
                     ->falseLabel('Continuing learners'),
+                // "No parent or phone": what AI Insights links to (Student::withoutParentContact).
+                TernaryFilter::make('parent_contact')
+                    ->label('Parent contact')
+                    ->trueLabel('Parent and phone on record')
+                    ->falseLabel('No parent or phone')
+                    ->queries(
+                        true: fn (Builder $query) => $query->whereNotIn('students.id', Student::query()->withoutParentContact()->select('id')),
+                        false: fn (Builder $query) => $query->whereIn('students.id', Student::query()->withoutParentContact()->select('id')),
+                    ),
             ])
             ->recordActions([
                 ActionGroup::make([

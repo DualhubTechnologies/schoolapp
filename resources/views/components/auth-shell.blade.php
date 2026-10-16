@@ -151,6 +151,28 @@
                 box-shadow: 0 2px 4px rgba(0, 0, 0, .25), 0 22px 40px -12px rgba(0, 0, 0, .55);
             }
             .sha-sheet figcaption { margin-bottom: 1.1rem; font-family: var(--sha-serif); font-style: italic; font-size: .85rem; color: #9fb0cc; }
+            /* The sheets on the panel, one after another */
+            .sha-show { display: flex; flex-direction: column; }
+            .sha-show-captions { position: relative; min-height: 1.4rem; margin-bottom: 1.1rem; }
+            .sha-show-captions figcaption { position: absolute; inset: 0 0 auto 0; margin: 0; opacity: 0; transform: translateY(4px); transition: opacity .6s ease, transform .6s ease; }
+            .sha-show-captions figcaption.is-on { position: relative; opacity: 1; transform: none; }
+            .sha-show-stage { position: relative; flex: 1; min-height: 12rem; }
+            .sha-sheet .sha-show-stage img {
+                position: absolute; top: 0; left: 0; margin: .5rem 0 2rem 1.25rem;
+                opacity: 0; transform: rotate(var(--tilt, -3.5deg)) translate(1.5rem, .75rem) scale(.97);
+                transition: opacity .9s ease, transform 1.1s cubic-bezier(.2, .7, .2, 1);
+            }
+            .sha-sheet .sha-show-stage img.is-on { opacity: 1; transform: rotate(var(--tilt, -3.5deg)); animation: sha-drift 9s ease-in-out infinite alternate; }
+            .sha-show-stage img.is-1 { --tilt: 2.5deg; margin-top: 1.5rem; }
+            .sha-show-stage img.is-2 { --tilt: -1.5deg; width: 80%; max-width: 22rem; margin-top: 1.25rem; border-radius: 12px; }
+            .sha-show-stage img.is-3 { --tilt: 3deg; }
+            @keyframes sha-drift { from { translate: 0 0; } to { translate: 0 -.6rem; } }
+            .sha-show-dots { display: flex; gap: .45rem; margin: -.35rem 0 .9rem; }
+            .sha-show-dots button { width: .5rem; height: .5rem; padding: 0; border: 0; border-radius: 999px; background: rgba(226, 196, 126, .35); cursor: pointer; transition: width .3s ease, background .3s ease; }
+            .sha-show-dots button.is-on { width: 1.4rem; background: #e2c47e; }
+            @media (prefers-reduced-motion: reduce) {
+                .sha-sheet .sha-show-stage img, .sha-show-captions figcaption { transition: none; animation: none; }
+            }
             .sha-card::before { height: 3px; background: var(--sha-navy); }
             .sha-card-head { text-align: left; margin-bottom: 1.5rem; }
             .sha-h { font-size: 1.85rem; }
@@ -212,10 +234,43 @@
                 <h1>Fees, marks and report cards, all in one place.</h1>
                 <p class="sha-lead">For Ugandan primary and secondary schools. The bursar records a payment in seconds, teachers enter marks from their phones, and the report cards are ready to print when the term ends.</p>
 
-                {{-- A real SchoolHub report card, laid on the panel like a sheet on a desk. --}}
-                <figure class="sha-sheet">
-                    <figcaption>An end-of-term report, as SchoolHub prints it.</figcaption>
-                    <img src="{{ asset('images/site/report-card-o-level.jpg') }}" alt="An end-of-term report card made in SchoolHub">
+                {{-- What SchoolHub produces, one sheet at a time, laid on the panel like
+                     papers on a desk. Moves on by itself on larger screens (the panel is
+                     hidden on phones); stays on the first with reduced motion or no script. --}}
+                @php
+                    $slides = [
+                        ['images/site/report-card-o-level.jpg', 'An end-of-term report, as SchoolHub prints it.', 'An end-of-term report card made in SchoolHub'],
+                        ['images/site/receipt.jpg', 'A fee receipt in seconds, with a code anyone can check.', 'A fee receipt made in SchoolHub'],
+                        ['images/site/director-dashboard.jpg', 'What the Director sees: money in today and what is owed.', 'The Director\'s dashboard in SchoolHub, with sample figures'],
+                        ['images/site/report-card-a-level.jpg', 'An A-Level report, principal passes and points worked out.', 'An A-Level report card made in SchoolHub'],
+                    ];
+                @endphp
+                <figure class="sha-sheet sha-show"
+                    x-data="{
+                        on: 0,
+                        count: {{ count($slides) }},
+                        timer: null,
+                        play() { if (window.matchMedia('(prefers-reduced-motion: reduce)').matches) return; this.stop(); this.timer = setInterval(() => this.on = (this.on + 1) % this.count, 5500); },
+                        stop() { clearInterval(this.timer); },
+                        go(i) { this.on = i; this.play(); },
+                    }"
+                    x-init="play()"
+                    @mouseenter="stop()" @mouseleave="play()">
+                    <div class="sha-show-captions">
+                        @foreach ($slides as $i => [$image, $caption])
+                            <figcaption @class(['is-on' => $i === 0]) :class="{ 'is-on': on === {{ $i }} }">{{ $caption }}</figcaption>
+                        @endforeach
+                    </div>
+                    <div class="sha-show-dots" role="tablist" aria-label="What SchoolHub makes">
+                        @foreach ($slides as $i => [$image, $caption])
+                            <button type="button" @class(['is-on' => $i === 0]) :class="{ 'is-on': on === {{ $i }} }" @click="go({{ $i }})" aria-label="{{ $caption }}"></button>
+                        @endforeach
+                    </div>
+                    <div class="sha-show-stage">
+                        @foreach ($slides as $i => [$image, $caption, $alt])
+                            <img src="{{ asset($image) }}" alt="{{ $alt }}" @class(['is-on' => $i === 0, "is-{$i}"]) :class="{ 'is-on': on === {{ $i }} }" @if ($i > 0) loading="lazy" @endif>
+                        @endforeach
+                    </div>
                 </figure>
             @endif
         </div>

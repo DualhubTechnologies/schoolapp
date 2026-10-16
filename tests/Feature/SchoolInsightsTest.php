@@ -26,6 +26,11 @@ use Filament\Facades\Filament;
 use Livewire\Livewire;
 
 beforeEach(function () {
+    // The day the findings are worked out for; set first, so the school's
+    // free trial starts on it too (whatever the real date is).
+    $this->today = CarbonImmutable::parse('2026-10-15');
+    $this->travelTo($this->today->setTime(9, 0));
+
     $this->seed(RoleSeeder::class);
     $this->withoutVite();
     Filament::setCurrentPanel('app');
@@ -50,8 +55,6 @@ beforeEach(function () {
 
     $this->user = User::factory()->create(['school_id' => $this->school->id])->assignRole('School Admin');
     $this->actingAs($this->user);
-    $this->today = CarbonImmutable::parse('2026-10-15');
-    $this->travelTo($this->today->setTime(9, 0));
 });
 
 function findings(): array

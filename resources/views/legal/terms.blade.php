@@ -221,6 +221,7 @@
                 <li>We protect data with access controls, encrypted connections and regular backups, and keep a record of changes made in each school's account.</li>
                 <li>To send emails and text messages, we use trusted service providers who receive only what is needed to deliver each message.</li>
                 <li>If we become aware of a data breach affecting a school, we will tell the school without undue delay so it can meet its own obligations.</li>
+                <li>Our <a href="{{ route('filament.app.legal.privacy') }}">Privacy Policy</a> explains in full what we collect, who we share it with and the rights people have.</li>
                 <li>We may keep anonymous, combined statistics (for example, the number of schools using SchoolHub) that cannot identify any school or person.</li>
             </ul>
         </section>
@@ -309,7 +310,7 @@
 <footer>
     <div class="foot">
         <span>© {{ date('Y') }} SchoolHub · {{ $company }}</span>
-        <span><a href="{{ url('/') }}">Home</a><a href="{{ filament()->getRegistrationUrl() }}">Register</a><a href="{{ filament()->getLoginUrl() }}">Sign in</a></span>
+        <span><a href="{{ url('/') }}">Home</a><a href="{{ route('filament.app.legal.privacy') }}">Privacy</a><a href="{{ filament()->getRegistrationUrl() }}">Register</a><a href="{{ filament()->getLoginUrl() }}">Sign in</a></span>
     </div>
 </footer>
 

@@ -108,6 +108,7 @@ class AppPanelProvider extends PanelProvider
                     ->name('site.page');
                 // Terms and conditions, linked from registration and the site footers.
                 Route::view('/terms-and-conditions', 'legal.terms')->name('legal.terms');   // /terms is the academic Terms resource
+                Route::view('/privacy-policy', 'legal.privacy')->middleware(ServerEditionOnly::class)->name('legal.privacy');
                 // A new school administrator confirms their email with the code we sent.
                 Route::get('/verify-email', VerifyEmail::class)->name('auth.verify-email');
                 // "Add to home screen": the school's own name and logo on the phone.

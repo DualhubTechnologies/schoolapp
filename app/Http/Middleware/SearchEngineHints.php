@@ -27,6 +27,7 @@ class SearchEngineHints
         'filament.app.landing',
         'filament.app.site.page',
         'filament.app.legal.terms',
+        'filament.app.legal.privacy',
         'robots',
         'sitemap',
     ];

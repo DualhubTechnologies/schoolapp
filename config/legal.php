@@ -11,6 +11,13 @@ return [
 
     'terms_version' => '2026-10-06',
 
+    // The privacy policy (resources/views/legal/privacy.blade.php): bump
+    // to the new date when its wording changes.
+    'privacy_version' => '2026-10-17',
+
+    // How long nightly backups are kept (php artisan backup:run --keep).
+    'backup_days' => 14,
+
     // How long a locked (unpaid) school's data is kept before it may be deleted.
     'locked_retention_months' => 12,
 

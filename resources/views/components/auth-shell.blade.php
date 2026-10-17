@@ -291,7 +291,7 @@
 
         <footer class="sha-foot">
             <a href="{{ $waUrl }}" class="sha-foot-help" target="_blank" rel="noopener">Need help? WhatsApp or call {{ $contact['phone'] }}</a>
-            <span>{{ $copyright }} · <a href="{{ route('filament.app.legal.terms') }}" target="_blank" rel="noopener">Terms</a></span>
+            <span>{{ $copyright }} · <a href="{{ route('filament.app.legal.terms') }}" target="_blank" rel="noopener">Terms</a> · <a href="{{ route('filament.app.legal.privacy') }}" target="_blank" rel="noopener">Privacy</a></span>
         </footer>
     </main>
 </div>

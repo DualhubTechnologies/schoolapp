@@ -25,6 +25,7 @@
                     <li><a href="{{ $loginUrl }}">Sign in</a></li>
                     <li><a href="{{ filament()->getRequestPasswordResetUrl() }}">Reset password</a></li>
                     <li><a href="{{ route('filament.app.legal.terms') }}">Terms &amp; conditions</a></li>
+                    <li><a href="{{ route('filament.app.legal.privacy') }}">Privacy policy</a></li>
                 </ul>
             </div>
             <div>

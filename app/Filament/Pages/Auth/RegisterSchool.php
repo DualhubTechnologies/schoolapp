@@ -107,7 +107,7 @@ class RegisterSchool extends Register
                         $this->getPasswordConfirmationFormComponent(),
                         Checkbox::make('terms')
                             // Opens in a new tab so the half-filled form is not lost.
-                            ->label(new HtmlString('I am authorised to register this school and accept the <a href="'.e(route('filament.app.legal.terms')).'" target="_blank" rel="noopener" class="shr-terms-link">terms and conditions</a>.'))
+                            ->label(new HtmlString('I am authorised to register this school and accept the <a href="'.e(route('filament.app.legal.terms')).'" target="_blank" rel="noopener" class="shr-terms-link">terms and conditions</a> and the <a href="'.e(route('filament.app.legal.privacy')).'" target="_blank" rel="noopener" class="shr-terms-link">privacy policy</a>.'))
                             ->accepted()
                             ->validationMessages(['accepted' => 'Please confirm to continue.'])
                             ->dehydrated(false)

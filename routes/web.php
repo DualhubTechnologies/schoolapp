@@ -46,15 +46,14 @@ Route::post('/webhooks/schoolpay/{token}', SchoolPayWebhookController::class)
     ->middleware(['throttle:120,1', ServerEditionOnly::class])
     ->name('schoolpay.webhook');
 
-// For search engines: the public pages to list, and the old website's
-// privacy page, which Google still shows, sent to where it lives now
-// (301, so Google moves its listing too).
+// For search engines: the public pages to list.
 Route::get('/sitemap.xml', function () {
     $site = rtrim((string) config('app.url'), '/');
     $pages = [
         ['/', 'weekly', '1.0'],
         ...array_map(fn (string $slug): array => ['/'.$slug, 'monthly', '0.8'], array_keys(PublicSite::PAGES)),
         ['/terms-and-conditions', 'monthly', '0.5'],
+        ['/privacy-policy', 'monthly', '0.5'],
     ];
 
     $xml = '<?xml version="1.0" encoding="UTF-8"?>'."\n".'<urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9">'."\n";
@@ -73,8 +72,6 @@ Route::get('/robots.txt', fn () => response(
     200,
     ['Content-Type' => 'text/plain'],
 ))->middleware(ServerEditionOnly::class)->name('robots');
-
-Route::permanentRedirect('/privacy-policy', '/terms-and-conditions#privacy')->middleware(ServerEditionOnly::class);
 
 // The parent page: a learner's fees and report cards from the short link
 // in an SMS, no login (see ParentPageController).

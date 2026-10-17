@@ -33,11 +33,20 @@ it('points search engines at a sitemap of the public pages', function () {
         ->assertOk()
         ->assertHeader('Content-Type', 'application/xml')
         ->assertSee('<loc>https://www.schoolhubug.com/</loc>', false)
-        ->assertSee('<loc>https://www.schoolhubug.com/terms-and-conditions</loc>', false);
+        ->assertSee('<loc>https://www.schoolhubug.com/terms-and-conditions</loc>', false)
+        ->assertSee('<loc>https://www.schoolhubug.com/privacy-policy</loc>', false);
 });
 
-it('sends the old website\'s privacy page, which Google still lists, to where it lives now', function () {
-    $this->get('/privacy-policy')->assertStatus(301)->assertRedirect('/terms-and-conditions#privacy');
+it('serves the privacy policy at the address Google already lists, linked from the site and the terms', function () {
+    $this->get('/privacy-policy')->assertOk()
+        ->assertSee('Privacy Policy')
+        ->assertSee('Data Protection and Privacy Act, 2019')
+        ->assertSee("Africa's Talking", false)
+        ->assertSee('support@schoolhubug.com')
+        ->assertSee('Personal Data Protection Office');
+
+    $this->get('/terms-and-conditions')->assertOk()->assertSee('/privacy-policy', false);
+    $this->get('/contact')->assertOk()->assertSee('/privacy-policy', false);
 });
 
 it('writes the business details as valid JSON that Google can read', function () {

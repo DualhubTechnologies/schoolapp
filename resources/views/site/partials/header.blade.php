@@ -4,7 +4,7 @@
 <header class="header" id="header">
     <div class="container header-inner">
         <a href="{{ route('filament.app.landing') }}" class="brand" aria-label="SchoolHub home">
-            <img src="{{ asset('images/schoolhub-logo-light-cropped.svg') }}" alt="SchoolHub" width="185" height="44">
+            <img src="{{ asset('images/schoolhub-logo-sidebar.svg') }}" alt="SchoolHub" width="185" height="44">
         </a>
 
         <nav class="nav" aria-label="Main">

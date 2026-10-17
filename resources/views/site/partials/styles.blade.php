@@ -870,3 +870,25 @@
         /* A first line too long for one line wraps instead of running under the picture. */
         .hero h1 .h1-line.h1-wrap { white-space: normal; display: inline; }
         .hero h1 .h1-wrap + span { display: block; }
+
+        /* ── The top menu in the posters' colours: navy (#1F3A8B) with orange
+           (#F59E0B), white words, the current page in orange. The drop-down
+           menus stay white so they read easily. ── */
+        .header, .header.is-scrolled { --nav-navy: #1e3a8a; --nav-orange: #f59e0b; background: var(--nav-navy); border-bottom: 3px solid var(--nav-orange); box-shadow: 0 6px 20px -12px rgba(15, 23, 42, .5); backdrop-filter: none; -webkit-backdrop-filter: none; }
+        .header .nav, .header .nav > a, .header .nav-drop > a { color: #dbe4ff; }
+        .header .nav > a:hover, .header .nav-drop > a:hover { color: #fff; }
+        .header .nav-drop > svg { color: #9fb2e8; }
+        .header .nav > a[aria-current="page"], .header .nav-drop > a[aria-current="page"] { color: var(--nav-orange); }
+        .header .nav-menu a { color: var(--slate-700); }
+        .header-actions .link-signin, .header-actions .link-signin:hover { background: transparent; color: #fff; border-color: rgba(255, 255, 255, .45); box-shadow: none; }
+        .header-actions .link-signin:hover { border-color: #fff; background: rgba(255, 255, 255, .08); }
+        .header-actions .btn-secondary { background: transparent; color: #fff; border-color: rgba(255, 255, 255, .45); box-shadow: none; }
+        .header-actions .btn-secondary:hover { background: rgba(255, 255, 255, .08); border-color: #fff; }
+        .header-actions .btn-primary { background: var(--nav-orange); color: #172554; box-shadow: 0 8px 20px -10px rgba(245, 158, 11, .8); }
+        .header-actions .btn-primary:hover { background: #fbbf24; filter: none; box-shadow: 0 10px 24px -10px rgba(245, 158, 11, .9); }
+        .header .menu-btn { background: transparent; color: #fff; border-color: rgba(255, 255, 255, .45); }
+        .header .mobile-nav { background: var(--nav-navy); border-top-color: rgba(255, 255, 255, .12); }
+        .header .mobile-nav a:not(.btn) { color: #e2e8ff; border-bottom-color: rgba(255, 255, 255, .1); }
+        .header .mobile-nav a[aria-current="page"] { color: var(--nav-orange); }
+        .header .mobile-nav .btn-secondary { background: transparent; color: #fff; border-color: rgba(255, 255, 255, .45); }
+        .header .mobile-nav .btn-primary { background: var(--nav-orange); color: #172554; }

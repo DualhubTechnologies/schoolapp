@@ -94,6 +94,12 @@
         .foot a { color: var(--muted); text-decoration: none; margin-left: 1.25rem; }
         .foot a:hover { color: var(--ink); }
 
+        /* The top bar in the posters' colours, as on the rest of the website. */
+        .top { background: #1e3a8a; border-bottom: 3px solid #f59e0b; backdrop-filter: none; }
+        .top-links a { color: #dbe4ff; }
+        .top-links a:hover { color: #fff; }
+        .top-links a.btn { background: #f59e0b; color: #172554 !important; }
+        .top-links a.btn:hover { background: #fbbf24; color: #172554 !important; }
         @media (max-width: 900px) {
             .layout { grid-template-columns: 1fr; }
             .toc { position: static; }
@@ -113,7 +119,7 @@
 
 <header class="top">
     <div class="top-inner">
-        <a href="{{ url('/') }}" aria-label="SchoolHub home"><img src="{{ asset('images/schoolhub-logo-light-cropped.svg') }}" alt="SchoolHub" width="185" height="44"></a>
+        <a href="{{ url('/') }}" aria-label="SchoolHub home"><img src="{{ asset('images/schoolhub-logo-sidebar.svg') }}" alt="SchoolHub" width="185" height="44"></a>
         <nav class="top-links">
             <a href="{{ url('/') }}" class="hide-sm">Home</a>
             <a href="{{ filament()->getLoginUrl() }}" class="hide-sm">Sign in</a>

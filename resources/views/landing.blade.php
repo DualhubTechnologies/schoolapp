@@ -204,6 +204,8 @@
 
     @include('site.sections.modules')
 
+    @include('site.sections.designer')
+
     @include('site.sections.windows')
 
     @include('site.sections.pricing')

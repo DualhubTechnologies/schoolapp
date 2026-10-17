@@ -12,6 +12,7 @@
     @include('site.sections.features', ['allModules' => true])
     @include('site.sections.automation')
     @include('site.sections.modules')
+    @include('site.sections.designer')
     @include('site.sections.how')
     @include('site.sections.windows')
 @endsection

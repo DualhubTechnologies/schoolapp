@@ -2,6 +2,7 @@
 
 use App\Filament\Admin\Resources\DemoRequests\Pages\ManageDemoRequests;
 use App\Models\DemoRequest;
+use App\Models\ReportCardTemplate;
 use App\Models\User;
 use App\Notifications\DemoRequested;
 use App\Support\PublicSite;
@@ -205,4 +206,19 @@ it('leads the home page with the school\'s money and its report cards', function
         ->assertSee('A-Level report cards with UACE grades and points, generated automatically')
         ->assertSee('images/site/report-card-o-level.jpg')
         ->assertSee('images/site/report-card-a-level.jpg');
+});
+
+it('shows that each school designs its own report card, with the real choices', function () {
+    $this->get('/')->assertOk()
+        ->assertSee('id="report-card-designer"', false)
+        ->assertSee("Not a fixed format. Your school's own report card.", false)
+        ->assertSeeInOrder(['Classic', 'Modern', 'Compact'])
+        ->assertSee('Choose which of 20 parts to print');
+
+    // The page lists the parts a school can print; keep it in step with the system.
+    expect(count(ReportCardTemplate::SECTIONS))->toBe(20)
+        ->and(count(ReportCardTemplate::DESIGNS))->toBe(3)
+        ->and(count(ReportCardTemplate::BORDERS))->toBe(4);
+
+    $this->get('/features')->assertOk()->assertSee('id="report-card-designer"', false);
 });

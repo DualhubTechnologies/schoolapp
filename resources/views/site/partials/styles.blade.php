@@ -850,3 +850,23 @@
         .page-hero + #features .section-head .eyebrow { display: none; }
         .page-hero + #pricing .section-head p { margin-top: 0; }
 
+
+        /* ── Phones: a shorter page. Decorative mock-ups give way to the words,
+           report cards show as a cropped preview (tap to open in full), and
+           the plans sit side by side to swipe through. ── */
+        @media (max-width: 640px) {
+            .section { padding: 3.5rem 0; }
+            .section-head { margin-bottom: 2rem; }
+            .flow-ui { display: none; }
+            #modules .showcase { gap: 3rem; }
+            #modules .show-media[aria-hidden="true"] { display: none; }
+            #modules .show-media { padding: .75rem; }
+            #modules .rc-shot { max-height: 20rem; -webkit-mask-image: linear-gradient(#000 70%, transparent); mask-image: linear-gradient(#000 70%, transparent); }
+            .plans { display: flex; gap: .875rem; overflow-x: auto; scroll-snap-type: x mandatory; margin: 0 -1rem; padding: .5rem 1rem 1rem; -webkit-overflow-scrolling: touch; }
+            .plans > .plan { flex: 0 0 84%; scroll-snap-align: center; }
+            .rcd-parts span:nth-child(n+9) { display: none; }
+            .rcd-parts::after { content: "and 12 more"; padding: .25rem .2rem; font-size: .78rem; color: var(--slate-500); }
+        }
+        /* A first line too long for one line wraps instead of running under the picture. */
+        .hero h1 .h1-line.h1-wrap { white-space: normal; display: inline; }
+        .hero h1 .h1-wrap + span { display: block; }

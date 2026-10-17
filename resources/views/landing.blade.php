@@ -71,8 +71,8 @@
         <div class="container hero-grid">
             <div class="hero-copy">
                 <span class="badge"><b>New curriculum</b> O-Level and A-Level report cards, worked out for you</span>
-                <h1><span class="h1-line">Run your school</span> <span>smarter.</span></h1>
-                <p class="hero-lead">Everything your school needs in one place. Track fees, manage students, record marks, and generate curriculum-aligned report cards in seconds. Built for Ugandan primary and secondary schools.</p>
+                <h1><span class="h1-line h1-wrap">Fees, marks and payroll.</span> <span>One system.</span></h1>
+                <p class="hero-lead">Receive fees with instant receipts, turn marks into curriculum-aligned report cards in seconds, and run payroll with PAYE and NSSF worked out. Built for Ugandan primary and secondary schools.</p>
 
                 <div class="hero-actions">
                     @if ($signedIn)
@@ -196,11 +196,15 @@
         </div>
     </section>
 
+    @include('site.sections.problems')
+
     @include('site.sections.features')
 
     @include('site.sections.how')
 
     @include('site.sections.automation')
+
+    @include('site.sections.insights')
 
     @include('site.sections.modules')
 

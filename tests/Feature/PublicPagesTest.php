@@ -196,8 +196,8 @@ it('lists the modules schools get, and promises no student portal yet', function
 
 it('leads the home page with the school\'s money and its report cards', function () {
     $this->get('/')->assertOk()
-        ->assertSee('Run your school')
-        ->assertSee('generate curriculum-aligned report cards in seconds')
+        ->assertSee('Fees, marks and payroll.')
+        ->assertSee('turn marks into curriculum-aligned report cards in seconds')
         ->assertSee('Made for schools across Uganda')
         ->assertDontSee('Print every report card')
         ->assertSee('Income vs expenditure')
@@ -221,4 +221,13 @@ it('shows that each school designs its own report card, with the real choices', 
         ->and(count(ReportCardTemplate::BORDERS))->toBe(4);
 
     $this->get('/features')->assertOk()->assertSee('id="report-card-designer"', false);
+});
+
+it('speaks to each person\'s problems, and shows AI Insights as available now', function () {
+    $this->get('/')->assertOk()
+        ->assertSee('Every school knows these problems')
+        ->assertSeeInOrder(['Directors and owners', 'Bursars', 'Teachers and directors of studies', 'Parents'])
+        ->assertSee('AI Insights · available now')
+        ->assertSee('SchoolHub tells you what needs your attention today')
+        ->assertSee('Learners with no parent or phone number on record');
 });

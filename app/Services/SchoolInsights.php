@@ -4,13 +4,17 @@ namespace App\Services;
 
 use App\Filament\App\Resources\Billing\BillingResource;
 use App\Filament\App\Resources\FeeReminders\FeeReminderResource;
+use App\Filament\App\Resources\LibraryLoans\LibraryLoanResource;
 use App\Filament\App\Resources\Payments\PaymentResource;
+use App\Filament\App\Resources\SickBayVisits\SickBayVisitResource;
 use App\Filament\App\Resources\Students\StudentResource;
 use App\Filament\Pages\ClassResults;
 use App\Filament\Pages\Reports\FeeCollectionsReport;
 use App\Filament\Pages\Reports\FeesByClassReport;
 use App\Filament\Pages\StartTermBilling;
+use App\Models\LibraryLoan;
 use App\Models\Mark;
+use App\Models\SickBayVisit;
 use App\Models\Student;
 use App\Models\StudentCharge;
 use App\Models\StudentPayment;
@@ -35,6 +39,8 @@ use Illuminate\Support\Facades\Cache;
  *   - learners billed this term who have paid nothing
  *   - families who paid in each of the last two terms but not yet this one
  *   - possible double payments (same learner, amount and day)
+ *   - library books not returned (overdue, or near the end of term)
+ *   - learners resting in the sick bay
  *   - learners whose average fell 10 points or more since last term
  *
  * @phpstan-type Finding array{key: string, tone: string, icon: string, title: string, detail: ?string, url: ?string}
@@ -86,6 +92,14 @@ class SchoolInsights
 
         if (Modules::allows('students') || Modules::allows('fees')) {
             $items = [...$items, ...$this->noParentContact()];
+        }
+
+        if (Modules::allows('library')) {
+            $items = [...$items, ...$this->booksNotReturned($term)];
+        }
+
+        if (Modules::allows('sickbay')) {
+            $items = [...$items, ...$this->restingInSickBay()];
         }
 
         if (Modules::allows('exams') || Modules::allows('exams_all')) {
@@ -287,6 +301,51 @@ class SchoolInsights
             $ids->count().' '.($ids->count() === 1 ? 'learner has' : 'learners have').' no parent or phone number',
             'Fee reminders, messages and parent logins cannot reach them: '.$this->names($ids).'.',
             StudentResource::getUrl('index', ['filters' => ['status' => ['value' => 'active'], 'parent_contact' => ['value' => '0']]]))];
+    }
+
+    // ── Library and sick bay ──
+
+    /**
+     * Books still out that are overdue, or, in the last two weeks of the
+     * term (and after it ends), every book a learner still has.
+     *
+     * @return list<Finding>
+     */
+    protected function booksNotReturned(?Term $term): array
+    {
+        $endingSoon = $term?->end_date && $this->today->gte($term->end_date->toImmutable()->subDays(14));
+
+        $loans = LibraryLoan::outstanding()
+            ->where('school_id', $this->schoolId)
+            ->whereNotNull('student_id')
+            ->when(! $endingSoon, fn ($q) => $q->whereDate('due_on', '<', $this->today))
+            ->get(['student_id']);
+
+        if ($loans->isEmpty()) {
+            return [];
+        }
+
+        $title = $loans->count().' library '.str('book')->plural($loans->count()).' not returned';
+
+        return [$this->item('library', 'warning', 'heroicon-o-book-open',
+            $endingSoon ? $title.' before the end of term' : $title.' on time',
+            'Still with '.$this->names($loans->pluck('student_id')->unique()).'. A book that is lost can be billed to the learner\'s fees.',
+            LibraryLoanResource::getUrl())];
+    }
+
+    /** @return list<Finding> */
+    protected function restingInSickBay(): array
+    {
+        $visits = SickBayVisit::inSickBay()->where('school_id', $this->schoolId)->whereNotNull('student_id')->get(['student_id']);
+
+        if ($visits->isEmpty()) {
+            return [];
+        }
+
+        return [$this->item('sick-bay', 'info', 'heroicon-o-heart',
+            $visits->count().' '.($visits->count() === 1 ? 'learner is' : 'learners are').' resting in the sick bay',
+            $this->names($visits->pluck('student_id')->unique()).'.',
+            SickBayVisitResource::getUrl())];
     }
 
     // ── Marks ──

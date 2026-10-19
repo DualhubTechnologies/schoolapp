@@ -3,6 +3,7 @@
 namespace App\Services;
 
 use App\Models\AttendanceRecord;
+use App\Models\SickBayVisit;
 use App\Models\Student;
 use App\Models\StudentPayment;
 use App\Models\Term;
@@ -164,6 +165,51 @@ class ParentMessages
         }
 
         return $result;
+    }
+
+    /**
+     * "Hope Primary: Sarah Nakato was seen at the school sick bay today at
+     * 10:15 with Fever. She is being sent home; please come for her…"
+     */
+    public function sickBayVisit(SickBayVisit $visit): string
+    {
+        $student = $visit->student;
+        $school = $student->school;
+        $next = match ($visit->outcome) {
+            'sent_home' => 'We are sending them home; please arrange to pick them up',
+            'referred' => 'They have been taken to '.($visit->referred_to ?: 'hospital').' for treatment',
+            'resting' => 'They are resting in the sick bay',
+            default => 'They have gone back to class',
+        };
+
+        $text = "{$school->name}: {$student->name} was seen at the school sick bay on ".$visit->visited_at->format('j M').' at '.$visit->visited_at->format('H:i')
+            ." ({$visit->complaint}). {$next}.";
+
+        return $school->phone ? $text.' Call '.$school->phone.' for details.' : $text;
+    }
+
+    /** Text the learner's family about a visit. Null when sent, else why not. */
+    public function sendSickBayVisit(SickBayVisit $visit): ?string
+    {
+        if (! $visit->student) {
+            return 'Only learners\' parents are texted.';
+        }
+
+        $phone = app(FeeReminderService::class)->phoneFor($visit->student);
+
+        if (! $phone) {
+            return 'No phone number on record for '.$visit->student->name.'\'s parent.';
+        }
+
+        $sent = $this->sms->send($phone, $this->sickBayVisit($visit));
+
+        if (! $sent['ok']) {
+            return 'The SMS could not be sent: '.($sent['error'] ?? 'unknown error').'.';
+        }
+
+        $visit->forceFill(['parent_notified_at' => now()])->save();
+
+        return null;
     }
 
     protected function balanceText(Student $student, string $language): string

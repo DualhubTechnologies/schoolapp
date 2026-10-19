@@ -31,6 +31,8 @@ class Modules
         'exams' => ['Exams & results', 'Enter marks (own subjects), results, report cards'],
         'exams_all' => ['Marks for all subjects', 'Enter marks for every subject and manage exams (Director of Studies)'],
         'hr' => ['HR & payroll', 'Staff records, salaries, payroll, payslips'],
+        'library' => ['Library', 'Books, lending to learners and staff, books not returned, billing lost books'],
+        'sickbay' => ['Sick bay', 'Sick bay visits, treatment, medicine stock, texting parents'],
         'academics' => ['Academics set-up', 'Years, terms, classes, streams, subjects, grading'],
         'settings' => ['Settings', 'School profile, users & access, audit trail'],
     ];
@@ -42,6 +44,8 @@ class Modules
         'Accountant' => ['fees', 'transport', 'finance', 'hr'],
         'Bursar' => ['fees', 'transport', 'finance'],
         'Admissions' => ['admissions', 'students', 'id_cards', 'messages'],
+        'Librarian' => ['library', 'students'],
+        'Nurse' => ['sickbay', 'students'],
         'Staff' => [],
         'Parent' => [],
         'Student' => [],
@@ -51,7 +55,7 @@ class Modules
      * The order roles are offered in: the head, then the money roles a
      * school sets up first, then teachers and other staff.
      */
-    public const ROLE_ORDER = ['School Admin', 'Bursar', 'Accountant', 'Admissions', 'Director of Studies', 'Teacher', 'Staff', 'Parent', 'Student', 'Super Admin'];
+    public const ROLE_ORDER = ['School Admin', 'Bursar', 'Accountant', 'Admissions', 'Director of Studies', 'Teacher', 'Librarian', 'Nurse', 'Staff', 'Parent', 'Student', 'Super Admin'];
 
     /** Modules only primary schools have: the school van is a primary thing. */
     public const PRIMARY_ONLY = ['transport'];
@@ -117,6 +121,12 @@ class Modules
         'SalaryArrearResource' => 'hr',
         'AllowanceTypeResource' => 'hr',
         'DeductionTypeResource' => 'hr',
+        // Library
+        'LibraryBookResource' => 'library',
+        'LibraryLoanResource' => 'library',
+        // Sick bay
+        'SickBayVisitResource' => 'sickbay',
+        'SickBayMedicineResource' => 'sickbay',
         // Academics set-up
         'AcademicYearResource' => 'academics',
         'TermResource' => 'academics',

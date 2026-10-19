@@ -21,6 +21,8 @@
             <li>Learners with no parent or phone number on record.</li>
             <li>Learners who have paid nothing this term, and families who always pay but have not yet.</li>
             <li>The same amount recorded twice for a learner on the same day.</li>
+            <li>Library books not returned on time, and every book still out near the end of term.</li>
+            <li>Learners resting in the sick bay.</li>
             <li>Learners whose average fell ten points or more since last term.</li>
         </ul>
     </section>

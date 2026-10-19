@@ -22,6 +22,8 @@ use App\Filament\App\Resources\GradingScales\GradingScaleResource;
 use App\Filament\App\Resources\Guardians\GuardianResource;
 use App\Filament\App\Resources\Houses\HouseResource;
 use App\Filament\App\Resources\Incomes\IncomeResource;
+use App\Filament\App\Resources\LibraryBooks\LibraryBookResource;
+use App\Filament\App\Resources\LibraryLoans\LibraryLoanResource;
 use App\Filament\App\Resources\Payments\PaymentResource;
 use App\Filament\App\Resources\PayrollPeriods\PayrollPeriodResource;
 use App\Filament\App\Resources\ResidencyTypes\ResidencyTypeResource;
@@ -29,6 +31,8 @@ use App\Filament\App\Resources\SalaryArrears\SalaryArrearResource;
 use App\Filament\App\Resources\SchoolClasses\SchoolClassResource;
 use App\Filament\App\Resources\SchoolPayTransactions\SchoolPayTransactionResource;
 use App\Filament\App\Resources\Sections\SectionResource;
+use App\Filament\App\Resources\SickBayMedicines\SickBayMedicineResource;
+use App\Filament\App\Resources\SickBayVisits\SickBayVisitResource;
 use App\Filament\App\Resources\Staff\StaffResource;
 use App\Filament\App\Resources\StudentDiscounts\StudentDiscountResource;
 use App\Filament\App\Resources\Students\StudentResource;
@@ -80,6 +84,8 @@ class Menu
         'Exams & Results' => false,
         'Finance' => false,
         'Staff & Payroll' => false,
+        'Library' => false,
+        'Sick Bay' => false,
         'Transport' => false,
         'Reports' => false,
         'School Setup' => true,
@@ -125,6 +131,12 @@ class Menu
         PayrollPeriodResource::class => ['Staff & Payroll', 2, 'Payroll'],
         SalaryArrearResource::class => ['Staff & Payroll', 3, 'Salary Arrears'],
         StaffIdCards::class => ['Staff & Payroll', 4, 'Staff ID Cards'],
+
+        LibraryLoanResource::class => ['Library', 1, 'Lending'],
+        LibraryBookResource::class => ['Library', 2, 'Books'],
+
+        SickBayVisitResource::class => ['Sick Bay', 1, 'Sick Bay Register'],
+        SickBayMedicineResource::class => ['Sick Bay', 2, 'Medicines'],
 
         TransportRouteResource::class => ['Transport', 1, 'Routes'],
         TransportLearnerResource::class => ['Transport', 2, 'Learners on the Van'],

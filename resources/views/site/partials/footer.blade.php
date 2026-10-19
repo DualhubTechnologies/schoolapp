@@ -91,6 +91,12 @@
                 observer.observe(el);
             });
             document.documentElement.classList.add('reveal-ready');
+
+            // Never leave a section invisible: if a scroll is too quick for the
+            // observer (or a page is printed or captured), show everything.
+            setTimeout(function () {
+                revealables.forEach(function (el) { el.classList.add('is-visible'); });
+            }, 2500);
         }
 
         // Per term / per year pricing.

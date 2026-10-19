@@ -892,3 +892,13 @@
         .header .mobile-nav a[aria-current="page"] { color: var(--nav-orange); }
         .header .mobile-nav .btn-secondary { background: transparent; color: #fff; border-color: rgba(255, 255, 255, .45); }
         .header .mobile-nav .btn-primary { background: var(--nav-orange); color: #172554; }
+
+        /* Pricing page: the page title already says it, so the section's own
+           heading goes; less white space before the plans. */
+        .page-hero { padding: 3.25rem 0 2.25rem; }
+        .page-hero + #pricing { padding-top: 2.25rem; }
+        .page-hero + #pricing .section-head { display: none; }
+        .page-hero + #pricing .toggle-wrap { margin-top: 0; }
+        @media (max-width: 640px) { .page-hero { padding: 2.25rem 0 1.75rem; } .page-hero + #pricing { padding-top: 1.75rem; } }
+        .page-hero + #pricing { padding-bottom: 3rem; }
+        .page-hero + #pricing ~ #faq { padding-top: 3.5rem; }

@@ -6,6 +6,7 @@ use App\Filament\App\Resources\FeeBalances\FeeBalanceResource;
 use App\Filament\Pages\ReceivePayment;
 use App\Filament\Pages\StudentAccount;
 use App\Filament\Support\FeeReminderActions;
+use App\Filament\Support\LinkGuardian;
 use App\Filament\Support\MoneyInput;
 use App\Models\Student;
 use App\Support\OwnSchool;
@@ -60,9 +61,8 @@ class FeeBalancesTable
                     ->placeholder('—')
                     ->toggleable(),
 
-                TextColumn::make('guardian.name')
-                    ->label('Guardian')
-                    ->placeholder('Not linked')
+                LinkGuardian::column(TextColumn::make('guardian.name')
+                    ->label('Guardian'))
                     ->description(fn (Student $record) => $record->guardian?->phone)
                     ->toggleable(),
 

@@ -6,6 +6,7 @@ use App\Filament\Pages\ReceivePayment;
 use App\Filament\Pages\StudentAccount;
 use App\Filament\Pages\StudentIdCards;
 use App\Filament\Support\ConfirmWithPassword;
+use App\Filament\Support\LinkGuardian;
 use App\Models\Student;
 use App\Support\Modules;
 use App\Support\OwnSchool;
@@ -84,9 +85,8 @@ class StudentsTable
                     ->toggleable(),
 
                 // Guardian, with their phone underneath. Search matches either.
-                TextColumn::make('guardian.name')
-                    ->label('Guardian')
-                    ->placeholder('Not linked')
+                LinkGuardian::column(TextColumn::make('guardian.name')
+                    ->label('Guardian'))
                     ->description(fn (Student $record): ?string => $record->guardian?->phone)
                     ->searchable(query: fn (Builder $query, string $search): Builder => $query->whereHas(
                         'guardian',

@@ -2,7 +2,9 @@
 
 namespace App\Filament\Pages;
 
+use App\Filament\App\Resources\Students\StudentResource;
 use App\Filament\Support\FeeReminderActions;
+use App\Filament\Support\LinkGuardian;
 use App\Models\Student;
 use App\Models\Term;
 use App\Services\StudentLedger;
@@ -129,6 +131,17 @@ class StudentAccount extends Page
                 ->visible(fn () => $this->studentId !== null)
                 ->action(fn () => $this->js('window.print()')),
         ];
+    }
+
+    /** "Guardian: not linked · Add the parent" under the learner's name. */
+    public function linkGuardianAction(): Action
+    {
+        return LinkGuardian::action()
+            ->record(fn (): ?Student => $this->getStudentProperty())
+            ->label('Add the parent')
+            ->link()
+            ->size('sm')
+            ->visible(fn (): bool => ($student = $this->getStudentProperty()) !== null && $student->guardian_id === null && StudentResource::canEdit($student));
     }
 
     // ── What the view needs ──

@@ -43,8 +43,12 @@
                         @if ($student->residencyType) · {{ $student->residencyType->name }} @endif
                     </div>
                     <div class="sa-muted">
-                        Guardian: {{ $student->guardian?->name ?? 'not linked' }}
-                        @if ($student->guardian?->phone) · {{ $student->guardian->phone }} @endif
+                        @if ($student->guardian)
+                            Guardian: {{ $student->guardian->name }}
+                            @if ($student->guardian->phone) · {{ $student->guardian->phone }} @endif
+                        @else
+                            Guardian: not linked · {{ $this->linkGuardianAction }}
+                        @endif
                     </div>
                 </div>
                 <span @class(['sa-pill', 'is-good' => $student->enrolment_status === 'confirmed', 'is-warn' => $student->enrolment_status !== 'confirmed'])>

@@ -508,32 +508,42 @@ class StudentForm
                 ->icon('heroicon-o-user-group')
                 ->description('Their phone receives receipts, fee reminders and the learner\'s fees page.')
                 ->columns(['default' => 1, 'sm' => 2])
-                ->schema([
-                    static::parentSearchField()
-                        ->columnSpanFull(),
+                ->schema(static::parentFields()),
+        ];
+    }
 
-                    TextInput::make('new_guardian_name')
-                        ->label('Parent\'s full name')
-                        ->required(fn (Get $get): bool => blank($get('guardian_id')))
-                        ->visible(fn (Get $get): bool => blank($get('guardian_id')))
-                        ->maxLength(150),
+    /**
+     * Pick the family, or type a new parent in (see resolveQuickGuardian).
+     *
+     * @return array<int, Component>
+     */
+    public static function parentFields(): array
+    {
+        return [
+            static::parentSearchField()
+                ->columnSpanFull(),
 
-                    TextInput::make('new_guardian_phone')
-                        ->label('Parent\'s phone')
-                        ->tel()
-                        ->placeholder('07XX XXX XXX')
-                        ->required(fn (Get $get): bool => blank($get('guardian_id')))
-                        ->visible(fn (Get $get): bool => blank($get('guardian_id')))
-                        ->maxLength(30),
+            TextInput::make('new_guardian_name')
+                ->label('Parent\'s full name')
+                ->required(fn (Get $get): bool => blank($get('guardian_id')))
+                ->visible(fn (Get $get): bool => blank($get('guardian_id')))
+                ->maxLength(150),
 
-                    ToggleButtons::make('new_guardian_relationship')
-                        ->label('Relationship')
-                        ->options(Guardian::RELATIONSHIPS)
-                        ->default('guardian')
-                        ->inline()
-                        ->visible(fn (Get $get): bool => blank($get('guardian_id')))
-                        ->columnSpanFull(),
-                ]),
+            TextInput::make('new_guardian_phone')
+                ->label('Parent\'s phone')
+                ->tel()
+                ->placeholder('07XX XXX XXX')
+                ->required(fn (Get $get): bool => blank($get('guardian_id')))
+                ->visible(fn (Get $get): bool => blank($get('guardian_id')))
+                ->maxLength(30),
+
+            ToggleButtons::make('new_guardian_relationship')
+                ->label('Relationship')
+                ->options(Guardian::RELATIONSHIPS)
+                ->default('guardian')
+                ->inline()
+                ->visible(fn (Get $get): bool => blank($get('guardian_id')))
+                ->columnSpanFull(),
         ];
     }
 

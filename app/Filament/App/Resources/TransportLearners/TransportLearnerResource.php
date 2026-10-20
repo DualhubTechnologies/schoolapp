@@ -5,6 +5,7 @@ namespace App\Filament\App\Resources\TransportLearners;
 use App\Filament\App\Resources\TransportLearners\Pages\ManageTransportLearners;
 use App\Filament\Concerns\GatedByModule;
 use App\Filament\Concerns\PlacedInMenu;
+use App\Filament\Support\LinkGuardian;
 use App\Models\SchoolClass;
 use App\Models\Student;
 use App\Models\TransportRoute;
@@ -95,9 +96,8 @@ class TransportLearnerResource extends Resource
                     ->label('Fare per term (UGX)')
                     ->state(fn (Student $record): ?float => $record->transportRoute?->fareFor($record->transport_trip))
                     ->numeric(),
-                TextColumn::make('guardian.name')
-                    ->label('Parent / guardian')
-                    ->placeholder('Not linked')
+                LinkGuardian::column(TextColumn::make('guardian.name')
+                    ->label('Parent / guardian'))
                     ->description(fn (Student $record): ?string => $record->guardian?->phone),
             ])
             ->filters([

@@ -36,6 +36,7 @@ use Filament\Tables\Filters\Filter;
 use Filament\Tables\Filters\SelectFilter;
 use Filament\Tables\Table;
 use Illuminate\Database\Eloquent\Builder;
+use Illuminate\Support\Str;
 
 /**
  * The sick bay register, as the school nurse keeps it: who came and when,
@@ -191,21 +192,30 @@ class SickBayVisitResource extends Resource
                         ->whereHas('student', fn (Builder $s) => $s->where('name', 'like', "%{$search}%")->orWhere('admission_no', 'like', "%{$search}%"))
                         ->orWhereHas('staff', fn (Builder $s) => $s->where('name', 'like', "%{$search}%")))),
                 TextColumn::make('complaint')
-                    ->description(fn (SickBayVisit $record): ?string => $record->diagnosis)
+                    ->description(fn (SickBayVisit $record): ?string => $record->diagnosis ? Str::limit($record->diagnosis, 40) : null)
+                    ->tooltip(fn (SickBayVisit $record): ?string => strlen((string) $record->diagnosis) > 40 ? $record->diagnosis : null)
                     ->searchable()
+                    ->extraCellAttributes(['style' => 'min-width: 9rem'])
                     ->wrap(),
                 TextColumn::make('temperature')
                     ->label('Temp.')
                     ->formatStateUsing(fn ($state): string => $state.' °C')
                     ->color(fn (SickBayVisit $record): ?string => $record->hasFever() ? 'danger' : null)
                     ->placeholder('—'),
+                // Medicines from stock one per line, the nurse's note in
+                // short underneath; the full note on hover.
                 TextColumn::make('treatment')
                     ->label('Given')
-                    ->state(fn (SickBayVisit $record): ?string => collect([$record->treatment])
-                        ->merge($record->dispensed->map(fn ($d) => $d->medicine?->name.' × '.$d->quantity))
-                        ->filter()->implode('; ') ?: null)
+                    ->state(fn (SickBayVisit $record): array => $record->dispensed->isNotEmpty()
+                        ? $record->dispensed->map(fn ($dispense): string => $dispense->medicine?->name.' × '.$dispense->quantity)->all()
+                        : array_filter([Str::limit((string) $record->treatment, 40)]))
+                    ->listWithLineBreaks()
+                    ->description(fn (SickBayVisit $record): ?string => $record->dispensed->isNotEmpty() && filled($record->treatment)
+                        ? Str::limit((string) $record->treatment, 40)
+                        : null)
+                    ->tooltip(fn (SickBayVisit $record): ?string => strlen((string) $record->treatment) > 40 ? $record->treatment : null)
                     ->placeholder('—')
-                    ->limit(60)
+                    ->extraCellAttributes(['style' => 'min-width: 12rem'])
                     ->wrap()
                     ->toggleable(),
                 TextColumn::make('outcome')
@@ -214,17 +224,13 @@ class SickBayVisitResource extends Resource
                         ? 'Rested, left '.$record->discharged_at->format('H:i')
                         : (SickBayVisit::OUTCOMES[$state] ?? $state))
                     ->badge()
+                    ->description(fn (SickBayVisit $record): ?string => $record->parent_notified_at ? 'Parent texted '.$record->parent_notified_at->format($record->parent_notified_at->isSameDay($record->visited_at) ? 'H:i' : 'j M, H:i') : null)
                     ->color(fn (string $state, SickBayVisit $record): string => match (true) {
                         $state === 'resting' && ! $record->discharged_at => 'info',
                         $state === 'sent_home' => 'warning',
                         $state === 'referred' => 'danger',
                         default => 'success',
                     }),
-                TextColumn::make('parent_notified_at')
-                    ->label('Parent texted')
-                    ->dateTime('j M, H:i')
-                    ->placeholder('—')
-                    ->toggleable(),
             ])
             ->filters([
                 Filter::make('in_sick_bay')
@@ -249,7 +255,9 @@ class SickBayVisitResource extends Resource
             ])
             ->recordActions([
                 Action::make('discharge')
-                    ->label('Left the sick bay')
+                    ->label('Discharge')
+                    ->tooltip('The patient has left the sick bay')
+                    ->modalHeading(fn (SickBayVisit $record): string => $record->patientName().' has left the sick bay')
                     ->icon('heroicon-o-arrow-right-start-on-rectangle')
                     ->color('success')
                     ->visible(fn (SickBayVisit $record): bool => $record->outcome === 'resting' && ! $record->discharged_at)

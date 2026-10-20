@@ -90,7 +90,7 @@ it('lends a textbook to a whole class while copies last, and not twice', functio
     Livewire::test(ManageLibraryBooks::class)
         ->callAction(TestAction::make('issueToClass')->table($book), data: ['school_class_id' => $this->class->id, 'due_on' => '2026-12-04'])
         ->assertHasNoActionErrors()
-        ->assertNotified('2 copies lent');
+        ->assertNotified('2 copies issued');
 
     expect(LibraryLoan::outstanding()->count())->toBe(2)
         ->and(LibraryLoan::with('student')->get()->pluck('student.name')->sort()->values()->all())->toBe(['Agnes', 'Brian']);
@@ -98,7 +98,7 @@ it('lends a textbook to a whole class while copies last, and not twice', functio
     $book->addCopies(1);
     Livewire::test(ManageLibraryBooks::class)
         ->callAction(TestAction::make('issueToClass')->table($book->fresh()), data: ['school_class_id' => $this->class->id])
-        ->assertNotified('1 copy lent');
+        ->assertNotified('1 copy issued');
 
     expect(LibraryLoan::outstanding()->count())->toBe(3);
 });
@@ -150,7 +150,7 @@ it('points out books not returned: overdue ones, and all of them near the end of
 });
 
 it('opens the library to the librarian and not to a teacher', function () {
-    $this->get(LibraryLoanResource::getUrl())->assertOk()->assertSee('Lend a book');
+    $this->get(LibraryLoanResource::getUrl())->assertOk()->assertSee('Issue a book');
 
     $teacher = User::factory()->create(['school_id' => $this->school->id])->assignRole('Teacher');
     $this->actingAs($teacher)->get(LibraryLoanResource::getUrl())->assertForbidden();

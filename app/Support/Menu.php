@@ -132,7 +132,7 @@ class Menu
         SalaryArrearResource::class => ['Staff & Payroll', 3, 'Salary Arrears'],
         StaffIdCards::class => ['Staff & Payroll', 4, 'Staff ID Cards'],
 
-        LibraryLoanResource::class => ['Library', 1, 'Lending'],
+        LibraryLoanResource::class => ['Library', 1, 'Issue & Return'],
         LibraryBookResource::class => ['Library', 2, 'Books'],
 
         SickBayVisitResource::class => ['Sick Bay', 1, 'Sick Bay Register'],

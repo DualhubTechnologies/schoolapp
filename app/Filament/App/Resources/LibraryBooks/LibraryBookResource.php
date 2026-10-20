@@ -109,7 +109,7 @@ class LibraryBookResource extends Resource
                     ->color('gray'),
                 TextColumn::make('copies_count')->label('Copies')->numeric()->sortable()->alignCenter(),
                 TextColumn::make('available_count')->label('On the shelf')->badge()->color(fn (int $state): string => $state > 0 ? 'success' : 'danger')->alignCenter(),
-                TextColumn::make('out_count')->label('Borrowed')->badge()->color(fn (int $state): string => $state > 0 ? 'warning' : 'gray')->alignCenter(),
+                TextColumn::make('out_count')->label('Issued out')->badge()->color(fn (int $state): string => $state > 0 ? 'warning' : 'gray')->alignCenter(),
                 TextColumn::make('price')->label('Price (UGX)')->numeric()->placeholder('—')->toggleable(),
                 TextColumn::make('shelf')->placeholder('—')->toggleable(isToggledHiddenByDefault: true),
             ])
@@ -118,11 +118,11 @@ class LibraryBookResource extends Resource
             ])
             ->recordActions([
                 Action::make('issueToClass')
-                    ->label('Lend to a class')
+                    ->label('Issue to a class')
                     ->icon('heroicon-o-user-group')
                     ->color('primary')
                     ->visible(fn (LibraryBook $record): bool => $record->available_count > 0)
-                    ->modalHeading(fn (LibraryBook $record): string => 'Lend "'.$record->title.'" to a class')
+                    ->modalHeading(fn (LibraryBook $record): string => 'Issue "'.$record->title.'" to a class')
                     ->modalDescription(fn (LibraryBook $record): string => "A copy to each learner who has none yet, in name order, while the {$record->available_count} on the shelf last.")
                     ->schema([
                         Select::make('school_class_id')
@@ -138,7 +138,7 @@ class LibraryBookResource extends Resource
                             ->visible(fn (Get $get): bool => filled($get('school_class_id')) && Section::where('school_class_id', $get('school_class_id'))->exists())
                             ->native(false),
                         DatePicker::make('due_on')
-                            ->label('Bring back by')
+                            ->label('Return date')
                             ->default(fn () => Term::current(auth()->user()?->school_id)?->end_date)
                             ->helperText('Usually the end of term for textbooks.')
                             ->native(false),
@@ -147,7 +147,7 @@ class LibraryBookResource extends Resource
                         $result = $lending->issueToClass($record, (int) $data['school_class_id'], $data['section_id'] ?? null, filled($data['due_on'] ?? null) ? Carbon::parse($data['due_on']) : null);
 
                         Notification::make()
-                            ->title($result['issued'].' '.str('copy')->plural($result['issued']).' lent')
+                            ->title($result['issued'].' '.str('copy')->plural($result['issued']).' issued')
                             ->body(collect([
                                 $result['already'] ? $result['already'].' already had one' : null,
                                 $result['short'] ? $result['short'].' learners got none: not enough copies on the shelf' : null,
@@ -208,7 +208,7 @@ class LibraryBookResource extends Resource
                     EditAction::make(),
                     DeleteAction::make()
                         ->visible(fn (LibraryBook $record): bool => ! $record->loans()->exists())
-                        ->modalDescription('The book and all its copies will be removed. Books that have ever been lent cannot be deleted, to keep the record.'),
+                        ->modalDescription('The book and all its copies will be removed. Books that have ever been issued cannot be deleted, to keep the record.'),
                 ]),
             ])
             ->emptyStateHeading('No books yet')

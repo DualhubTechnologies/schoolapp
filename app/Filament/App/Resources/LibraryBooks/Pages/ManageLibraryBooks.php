@@ -14,7 +14,7 @@ class ManageLibraryBooks extends ManageRecords
 
     public function getSubheading(): ?string
     {
-        return 'Every title in the library and its numbered copies. Lend books under Library → Lending, or lend a textbook to a whole class from here.';
+        return 'Every title in the library and its numbered copies. Issue books under Library → Issue & Return, or issue a textbook to a whole class from here.';
     }
 
     protected function getHeaderActions(): array

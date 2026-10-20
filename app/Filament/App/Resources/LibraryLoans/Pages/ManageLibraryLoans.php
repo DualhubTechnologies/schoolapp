@@ -24,14 +24,14 @@ class ManageLibraryLoans extends ManageRecords
 
     public function getSubheading(): ?string
     {
-        return 'Books out with learners and staff. Overdue ones show in red; at the end of term, AI Insights names the learners who still have books.';
+        return 'Books issued to learners and staff. Overdue ones show in red; at the end of term, AI Insights names the learners who have not returned their books.';
     }
 
     protected function getHeaderActions(): array
     {
         return [
             Action::make('lend')
-                ->label('Lend a book')
+                ->label('Issue a book')
                 ->icon('heroicon-o-book-open')
                 ->modalWidth('lg')
                 ->schema([
@@ -52,7 +52,7 @@ class ManageLibraryLoans extends ManageRecords
                         ->getOptionLabelUsing(fn ($value): ?string => LibraryCopy::with('book')->where('school_id', auth()->user()?->school_id)->whereKey($value)->first()?->label())
                         ->required(),
                     ToggleButtons::make('who')
-                        ->label('Borrowed by')
+                        ->label('Issued to')
                         ->options(['learner' => 'A learner', 'staff' => 'A member of staff'])
                         ->default('learner')
                         ->inline()
@@ -72,7 +72,7 @@ class ManageLibraryLoans extends ManageRecords
                         ->visible(fn (Get $get): bool => $get('who') === 'staff')
                         ->required(fn (Get $get): bool => $get('who') === 'staff'),
                     DatePicker::make('due_on')
-                        ->label('Bring back by')
+                        ->label('Return date')
                         ->default(today()->addWeeks(2))
                         ->minDate(today())
                         ->native(false),
@@ -85,8 +85,8 @@ class ManageLibraryLoans extends ManageRecords
                     $loan = $lending->issue($copy, $student, $data['who'] === 'staff' ? (int) $data['staff_id'] : null, filled($data['due_on'] ?? null) ? Carbon::parse($data['due_on']) : null, $data['notes'] ?? null);
 
                     Notification::make()
-                        ->title($copy->label().' lent')
-                        ->body('To '.$loan->fresh()->borrowerName().($loan->due_on ? ', due back '.$loan->due_on->format('j M') : '').'.')
+                        ->title($copy->label().' issued')
+                        ->body('To '.$loan->fresh()->borrowerName().($loan->due_on ? ', to be returned by '.$loan->due_on->format('j M') : '').'.')
                         ->success()
                         ->send();
                 }),

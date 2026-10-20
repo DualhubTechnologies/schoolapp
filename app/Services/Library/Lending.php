@@ -30,7 +30,7 @@ class Lending
         }
 
         if (! $student && ! $staffId) {
-            throw new InvalidArgumentException('Choose who is borrowing the book.');
+            throw new InvalidArgumentException('Choose who the book is issued to.');
         }
 
         return DB::transaction(function () use ($copy, $student, $staffId, $dueOn, $notes): LibraryLoan {

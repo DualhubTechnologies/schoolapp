@@ -41,7 +41,9 @@ class LibraryLoanResource extends Resource
 
     protected static string|BackedEnum|null $navigationIcon = Heroicon::OutlinedArrowsRightLeft;
 
-    protected static ?string $modelLabel = 'loan';
+    protected static ?string $modelLabel = 'issued book';
+
+    protected static ?string $pluralModelLabel = 'Issued books';
 
     protected static ?string $slug = 'library/lending';
 
@@ -86,13 +88,13 @@ class LibraryLoanResource extends Resource
                         ->orWhereHas('book', fn (Builder $b) => $b->where('title', 'like', "%{$search}%"))))
                     ->wrap(),
                 TextColumn::make('borrower')
-                    ->label('Borrowed by')
+                    ->label('Issued to')
                     ->state(fn (LibraryLoan $record): string => $record->borrowerName())
                     ->searchable(query: fn (Builder $query, string $search) => $query->where(fn (Builder $q) => $q
                         ->whereHas('student', fn (Builder $s) => $s->where('name', 'like', "%{$search}%")->orWhere('admission_no', 'like', "%{$search}%"))
                         ->orWhereHas('staff', fn (Builder $s) => $s->where('name', 'like', "%{$search}%")))),
-                TextColumn::make('issued_on')->label('Lent')->date('j M Y')->sortable(),
-                TextColumn::make('due_on')->label('Due back')->date('j M Y')->sortable()->placeholder('—')
+                TextColumn::make('issued_on')->label('Date issued')->date('j M Y')->sortable(),
+                TextColumn::make('due_on')->label('Return date')->date('j M Y')->sortable()->placeholder('—')
                     ->color(fn (LibraryLoan $record): ?string => $record->state() === 'overdue' ? 'danger' : null),
                 TextColumn::make('state')
                     ->label('Status')
@@ -112,7 +114,7 @@ class LibraryLoanResource extends Resource
             ->filters([
                 SelectFilter::make('state')
                     ->label('Show')
-                    ->options(['out' => 'Still out', 'overdue' => 'Overdue', 'returned' => 'Returned', 'lost' => 'Lost', 'all' => 'Everything'])
+                    ->options(['out' => 'Not yet returned', 'overdue' => 'Overdue', 'returned' => 'Returned', 'lost' => 'Lost', 'all' => 'Everything'])
                     ->default('out')
                     ->query(fn (Builder $query, array $data) => static::whereState($query, $data['value'] ?? 'out')),
                 SelectFilter::make('class')
@@ -122,7 +124,7 @@ class LibraryLoanResource extends Resource
                         ? $query->whereHas('student', fn (Builder $s) => $s->where('school_class_id', $data['value']))
                         : $query),
                 SelectFilter::make('who')
-                    ->label('Borrower')
+                    ->label('Issued to')
                     ->options(['learners' => 'Learners', 'staff' => 'Staff'])
                     ->query(fn (Builder $query, array $data) => match ($data['value'] ?? null) {
                         'learners' => $query->whereNotNull('student_id'),
@@ -195,8 +197,8 @@ class LibraryLoanResource extends Resource
                     })
                     ->deselectRecordsAfterCompletion(),
             ])
-            ->emptyStateHeading('No books out')
-            ->emptyStateDescription('Lend a book with "Lend a book" above, or lend a textbook to a whole class from Library → Books.');
+            ->emptyStateHeading('No books issued out')
+            ->emptyStateDescription('Issue a book with "Issue a book" above, or issue a textbook to a whole class from Library → Books.');
     }
 
     public static function getPages(): array

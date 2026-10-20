@@ -33,7 +33,7 @@ class LibraryLoan extends Model
     use Auditable;
 
     public const STATES = [
-        'out' => 'Borrowed',
+        'out' => 'Issued',
         'overdue' => 'Overdue',
         'returned' => 'Returned',
         'lost' => 'Lost',

@@ -33,7 +33,7 @@ class LibraryCopy extends Model
 
     public const STATUSES = [
         self::AVAILABLE => 'On the shelf',
-        self::ON_LOAN => 'Borrowed',
+        self::ON_LOAN => 'Issued out',
         self::LOST => 'Lost',
         self::WITHDRAWN => 'Withdrawn',
     ];

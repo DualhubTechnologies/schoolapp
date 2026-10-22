@@ -2,6 +2,7 @@
 
 use App\Http\Controllers\DesktopSetupController;
 use App\Http\Controllers\LicenceActivationController;
+use App\Http\Controllers\MomoCallbackController;
 use App\Http\Controllers\NssfScheduleController;
 use App\Http\Controllers\ParentPageController;
 use App\Http\Controllers\PayslipController;
@@ -45,6 +46,14 @@ Route::post('/webhooks/schoolpay/{token}', SchoolPayWebhookController::class)
     ->where('token', '[A-Za-z0-9]{40,64}')
     ->middleware(['throttle:120,1', ServerEditionOnly::class])
     ->name('schoolpay.webhook');
+
+// MTN calls here when a school has answered a "Pay now" prompt for its
+// SchoolHub subscription. It only makes SchoolHub ask MTN for the
+// payment's status; no CSRF token (bootstrap/app.php).
+Route::match(['put', 'post'], '/webhooks/momo/{reference}', MomoCallbackController::class)
+    ->whereUuid('reference')
+    ->middleware(['throttle:60,1', ServerEditionOnly::class])
+    ->name('momo.callback');
 
 // For search engines: the public pages to list.
 Route::get('/sitemap.xml', function () {

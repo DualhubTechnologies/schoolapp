@@ -57,6 +57,13 @@ Schedule::command('sms:send-queued')
     ->withoutOverlapping()
     ->onOneServer();
 
+// "Pay now" payments MTN has not called back about (see MomoCheckout).
+Schedule::command('momo:check-pending')
+    ->everyTwoMinutes()
+    ->when(fn (): bool => Edition::isServer())
+    ->withoutOverlapping()
+    ->onOneServer();
+
 // SchoolPay sends each payment once by web hook; morning and evening,
 // record any it missed over the last three days.
 Schedule::command('schoolpay:sync')

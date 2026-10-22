@@ -46,4 +46,18 @@ return [
         'database' => env('MAXMIND_DATABASE', storage_path('app/geoip/GeoLite2-City.mmdb')),
     ],
 
+    // MTN MoMo Collections: schools pay for SchoolHub from their phones
+    // (Subscription page → Pay now). Keys come from momodeveloper.mtn.com;
+    // in the sandbox, `php artisan momo:sandbox-user` makes the API user
+    // and key. The sandbox only takes EUR; MTN Uganda live is
+    // MOMO_ENVIRONMENT=mtnuganda, MOMO_CURRENCY=UGX and MTN's live address.
+    'momo' => [
+        'environment' => env('MOMO_ENVIRONMENT', 'sandbox'),
+        'base_url' => env('MOMO_BASE_URL', 'https://sandbox.momodeveloper.mtn.com'),
+        'subscription_key' => env('MOMO_COLLECTION_KEY'),
+        'api_user' => env('MOMO_API_USER'),
+        'api_key' => env('MOMO_API_KEY'),
+        'currency' => env('MOMO_CURRENCY', 'EUR'),
+    ],
+
 ];

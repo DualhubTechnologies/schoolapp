@@ -4,9 +4,12 @@ namespace App\Filament\Pages;
 
 use App\Exceptions\InvalidActivationCode;
 use App\Filament\Concerns\PlacedInMenu;
+use App\Models\MomoPayment;
 use App\Models\Plan;
 use App\Models\School;
 use App\Models\SubscriptionPayment;
+use App\Services\Payments\MtnMomo;
+use App\Services\Subscriptions\MomoCheckout;
 use App\Services\Subscriptions\SubscriptionManager;
 use App\Support\Edition;
 use App\Support\Modules;
@@ -17,12 +20,15 @@ use Filament\Support\Icons\Heroicon;
 use Illuminate\Support\Collection;
 use Livewire\Attributes\Computed;
 use Livewire\Attributes\Url;
+use RuntimeException;
 
 /**
  * The school's own view of its SchoolHub subscription: plan, days left,
  * usage against the plan's limits, how to pay, and payment history.
  *
  * @property-read School $school
+ * @property-read Collection<int, Plan> $plans
+ * @property-read MomoPayment|null $momoPayment
  */
 class SchoolSubscription extends Page
 {
@@ -121,6 +127,86 @@ class SchoolSubscription extends Page
         unset($this->status, $this->usage, $this->payments);
 
         Notification::make()->title('Activated')->body('Your subscription has been updated.')->success()->send();
+    }
+
+    // ── Pay now: an MTN MoMo prompt on the school's phone ──
+
+    public ?int $payPlanId = null;
+
+    public string $payCycle = 'term';
+
+    public string $payPhone = '';
+
+    public ?int $momoPaymentId = null;
+
+    /** MTN MoMo is set up, and this person may pay. */
+    public function canPayByPhone(): bool
+    {
+        return $this->isManager() && MtnMomo::isConfigured();
+    }
+
+    public function openPay(int $planId): void
+    {
+        if (! $this->canPayByPhone()) {
+            return;
+        }
+
+        $this->payPlanId = $planId;
+        $this->payCycle = 'term';
+        $this->payPhone = (string) (auth()->user()->phone ?? '');
+        $this->momoPaymentId = null;
+    }
+
+    public function closePay(): void
+    {
+        $this->payPlanId = null;
+        $this->momoPaymentId = null;
+        unset($this->momoPayment);
+    }
+
+    public function payNow(MomoCheckout $checkout): void
+    {
+        $plan = $this->plans->firstWhere('id', $this->payPlanId);
+
+        if (! $this->canPayByPhone() || ! $plan) {
+            return;
+        }
+
+        try {
+            $payment = $checkout->start($this->school, auth()->user(), $plan, $this->payCycle, $this->payPhone);
+        } catch (RuntimeException $e) {
+            Notification::make()->title('Payment not started')->body($e->getMessage())->danger()->send();
+
+            return;
+        }
+
+        $this->momoPaymentId = $payment->getKey();
+        unset($this->momoPayment);
+    }
+
+    /** Polled while the prompt is on the phone. */
+    public function checkMomo(MomoCheckout $checkout): void
+    {
+        $payment = $this->momoPayment;
+
+        if (! $payment?->isPending()) {
+            return;
+        }
+
+        $payment = $checkout->refresh($payment);
+        unset($this->momoPayment);
+
+        if ($payment->status === MomoPayment::SUCCESSFUL) {
+            unset($this->status, $this->usage, $this->payments);
+        }
+    }
+
+    #[Computed]
+    public function momoPayment(): ?MomoPayment
+    {
+        return $this->momoPaymentId
+            ? MomoPayment::where('school_id', $this->school->getKey())->with('subscription')->find($this->momoPaymentId)
+            : null;
     }
 
     #[Computed]

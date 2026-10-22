@@ -17,6 +17,7 @@
     ][$st['state']];
     $locked = in_array($st['state'], \App\Services\Subscriptions\SubscriptionManager::LOCKED, true);
     $suggested = $this->suggestedPlanId();
+    $canPayByPhone = $this->canPayByPhone();
 @endphp
 
 <x-filament-panels::page>
@@ -141,6 +142,11 @@
                             <li>All modules included</li>
                         </ul>
                         @if ($p->description)<div class="sub-muted">{{ $p->description }}</div>@endif
+                        @if ($canPayByPhone)
+                            <button type="button" wire:click="openPay({{ $p->getKey() }})" class="sub-tier-pay">
+                                {{ $plan?->is($p) ? 'Renew' : 'Pay' }} now with MTN MoMo
+                            </button>
+                        @endif
                         <button type="button" wire:click="chooseplan({{ $p->getKey() }})" class="sub-tier-activate">
                             {{ $plan?->is($p) ? 'Renew with a code' : 'Activate with a code' }}
                         </button>
@@ -219,6 +225,75 @@
         </div>
     @endif
 
+        @if ($payPlanId && $canPayByPhone)
+            @php
+                $payPlan = $this->plans->firstWhere('id', $payPlanId);
+                $momo = $this->momoPayment;
+                $testMode = \App\Services\Payments\MtnMomo::isSandbox();
+            @endphp
+            @if ($payPlan)
+                <div class="sub-modal-backdrop" @if (! $momo?->isPending()) wire:click.self="closePay" @endif>
+                    <div class="sub-modal" @if ($momo?->isPending()) wire:poll.4s="checkMomo" @endif>
+                        <button type="button" class="sub-modal-close" wire:click="closePay" aria-label="Close">&times;</button>
+
+                        @if (! $momo)
+                            <h3>Pay for {{ $payPlan->name }}</h3>
+                            <p class="sub-muted">MTN will send a prompt to the phone. Enter your Mobile Money PIN on it to pay.</p>
+                            @if ($testMode)
+                                <div class="sub-alert sub-alert-amber sub-test">Test mode: no real money is taken.</div>
+                            @endif
+                            <form wire:submit.prevent="payNow">
+                                <div class="sub-label">Pay for</div>
+                                <div class="sub-cycles">
+                                    @foreach (['term' => 'One term', 'year' => 'One year'] as $cycle => $cycleLabel)
+                                        <label @class(['sub-cycle', 'is-on' => $payCycle === $cycle])>
+                                            <input type="radio" wire:model.live="payCycle" value="{{ $cycle }}">
+                                            <span>{{ $cycleLabel }}</span>
+                                            <strong>{{ $money($payPlan->priceFor($cycle)) }}</strong>
+                                        </label>
+                                    @endforeach
+                                </div>
+                                <label class="sub-label" for="sub-pay-phone">MTN Mobile Money number</label>
+                                <input id="sub-pay-phone" type="tel" wire:model="payPhone" placeholder="0772 123456" class="sub-code-input sub-phone-input" autocomplete="tel" required>
+                                <div class="sub-modal-actions">
+                                    <button type="button" wire:click="closePay" class="sub-btn-secondary">Cancel</button>
+                                    <button type="submit" class="sub-code-btn sub-pay-btn" wire:loading.attr="disabled" wire:target="payNow">
+                                        <span wire:loading.remove wire:target="payNow">Pay {{ $money($payPlan->priceFor($payCycle)) }}</span>
+                                        <span wire:loading wire:target="payNow">Sending the prompt…</span>
+                                    </button>
+                                </div>
+                            </form>
+                        @elseif ($momo->isPending())
+                            <div class="sub-wait">
+                                <span class="sub-spinner" aria-hidden="true"></span>
+                                <h3>Check the phone</h3>
+                                <p>A prompt to pay <strong>{{ $momo->currency }} {{ number_format($momo->amount) }}</strong> has been sent to <strong>{{ $momo->phone }}</strong>.</p>
+                                <p class="sub-muted">Enter your Mobile Money PIN to approve it. This page updates by itself once MTN confirms. If no prompt appears, dial *165# and check Approvals.</p>
+                            </div>
+                        @elseif ($momo->status === \App\Models\MomoPayment::SUCCESSFUL)
+                            <div class="sub-wait">
+                                <span class="sub-done" aria-hidden="true">✓</span>
+                                <h3>Payment received</h3>
+                                <p>Thank you. {{ $payPlan->name }} is now active{{ $momo->subscription ? ' until ' . $momo->subscription->ends_on->format('j M Y') : '' }}.</p>
+                                <p class="sub-muted">MTN reference {{ $momo->financial_transaction_id ?: $momo->reference }}. It is listed under Payment history.</p>
+                                <div class="sub-modal-actions"><button type="button" wire:click="closePay" class="sub-code-btn">Done</button></div>
+                            </div>
+                        @else
+                            <div class="sub-wait">
+                                <span class="sub-failed" aria-hidden="true">!</span>
+                                <h3>Not paid</h3>
+                                <p>{{ $momo->reason ?: 'MTN did not complete the payment. Nothing was taken.' }}</p>
+                                <div class="sub-modal-actions">
+                                    <button type="button" wire:click="closePay" class="sub-btn-secondary">Close</button>
+                                    <button type="button" wire:click="openPay({{ $payPlan->getKey() }})" class="sub-code-btn">Try again</button>
+                                </div>
+                            </div>
+                        @endif
+                    </div>
+                </div>
+            @endif
+        @endif
+
     <style>
         .sub-alert { border-radius: 12px; padding: .9rem 1.1rem; font-size: .88rem; line-height: 1.5; }
         .sub-alert-red { background: #fef2f2; border: 1px solid #fecaca; color: #991b1b; }
@@ -278,5 +353,22 @@
         .sub-pay { display: flex; justify-content: space-between; gap: 1rem; padding: .55rem 0; border-bottom: 1px solid #f1f5f9; font-size: .85rem; }
         .sub-pay:last-child { border-bottom: 0; }
         .sub-right { text-align: right; }
+        .sub-tier-pay { margin-top: .4rem; padding: .55rem .75rem; border: 0; border-radius: 8px; background: #ffcc00; color: #16233a; font-weight: 800; font-size: .82rem; cursor: pointer; }
+        .sub-tier-pay:hover { background: #f2c200; }
+        .sub-tier-pay + .sub-tier-activate { margin-top: .1rem; }
+        .sub-test { margin: .7rem 0 0; padding: .5rem .75rem; font-size: .8rem; }
+        .sub-cycles { display: grid; grid-template-columns: 1fr 1fr; gap: .5rem; margin: .35rem 0 .9rem; }
+        .sub-cycle { display: flex; flex-direction: column; gap: .1rem; padding: .6rem .75rem; border: 1px solid #cbd5e1; border-radius: 10px; cursor: pointer; font-size: .82rem; color: #475569; }
+        .sub-cycle input { position: absolute; opacity: 0; pointer-events: none; }
+        .sub-cycle strong { color: #16233a; font-size: .95rem; }
+        .sub-cycle.is-on { border: 2px solid #1a5fa8; background: #f5f9ff; }
+        .sub-phone-input { margin-top: .35rem; text-transform: none; letter-spacing: normal; font-family: inherit; }
+        .sub-pay-btn { background: #16233a; }
+        .sub-wait { text-align: center; display: flex; flex-direction: column; align-items: center; gap: .5rem; padding: .5rem 0; font-size: .9rem; color: #334155; }
+        .sub-wait .sub-modal-actions { align-self: stretch; justify-content: center; }
+        .sub-spinner { width: 2.5rem; height: 2.5rem; border-radius: 50%; border: 4px solid #e2e8f0; border-top-color: #ffcc00; animation: sub-spin 1s linear infinite; }
+        @keyframes sub-spin { to { transform: rotate(360deg); } }
+        .sub-done, .sub-failed { display: grid; place-items: center; width: 2.75rem; height: 2.75rem; border-radius: 50%; font-size: 1.4rem; font-weight: 800; color: #fff; background: #16a34a; }
+        .sub-failed { background: #dc2626; }
     </style>
 </x-filament-panels::page>

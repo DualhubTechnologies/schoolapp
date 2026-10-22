@@ -1100,12 +1100,6 @@ parameters:
 			path: app/Filament/Pages/SchoolProfile.php
 
 		-
-			message: '#^Access to an undefined property App\\Filament\\Pages\\SchoolSubscription\:\:\$plans\.$#'
-			identifier: property.notFound
-			count: 1
-			path: app/Filament/Pages/SchoolSubscription.php
-
-		-
 			message: '#^Access to an undefined property App\\Filament\\Pages\\SchoolSubscription\:\:\$usage\.$#'
 			identifier: property.notFound
 			count: 2

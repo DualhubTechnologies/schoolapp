@@ -113,35 +113,43 @@ class FeeReminderService
      * return the letters' content for the print view.
      *
      * @param  Collection<int, Student>  $students
-     * @return Collection<int, array{student: Student, balance: float, message: string}>
+     * @return Collection<int, array{student: Student, balance: float, deadline: string, due_on: string|null, term: Term|null}>
      */
     public function letters(Collection $students, ?string $deadline = null): Collection
     {
         $term = Term::current();
 
-        return $students
-            ->each->loadMissing(['guardian', 'schoolClass', 'section', 'school'])
-            ->map(fn (Student $student) => ['student' => $student, 'balance' => $student->balance()])
-            ->filter(fn (array $row) => $row['balance'] > 0)
-            ->map(function (array $row) use ($term, $deadline) {
-                $row['deadline'] = $this->deadlineText($deadline);
-                $row['due_on'] = $deadline ? Carbon::parse($deadline)->format('j M Y') : null;
-                $row['term'] = $term;
+        $letters = collect();
 
-                FeeReminder::create([
-                    'school_id' => $row['student']->school_id,
-                    'student_id' => $row['student']->getKey(),
-                    'term_id' => $term?->getKey(),
-                    'channel' => 'letter',
-                    'balance' => $row['balance'],
-                    'message' => 'Printed reminder letter',
-                    'status' => 'printed',
-                    'sent_by' => auth()->user()?->name,
-                ]);
+        foreach ($students as $student) {
+            $student->loadMissing(['guardian', 'schoolClass', 'section', 'school']);
+            $balance = $student->balance();
 
-                return $row;
-            })
-            ->values();
+            if ($balance <= 0) {
+                continue;
+            }
+
+            FeeReminder::create([
+                'school_id' => $student->school_id,
+                'student_id' => $student->getKey(),
+                'term_id' => $term?->getKey(),
+                'channel' => 'letter',
+                'balance' => $balance,
+                'message' => 'Printed reminder letter',
+                'status' => 'printed',
+                'sent_by' => auth()->user()?->name,
+            ]);
+
+            $letters->push([
+                'student' => $student,
+                'balance' => $balance,
+                'deadline' => $this->deadlineText($deadline),
+                'due_on' => $deadline ? Carbon::parse($deadline)->format('j M Y') : null,
+                'term' => $term,
+            ]);
+        }
+
+        return $letters;
     }
 
     public function message(Student $student, float $balance, ?string $template = null, ?string $deadline = null, ?Term $term = null): string

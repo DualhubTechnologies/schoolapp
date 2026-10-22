@@ -14,7 +14,7 @@ use Throwable;
 /**
  * Fees received over a period (this term so far by default): day by day
  * with each way of paying (cash, mobile money, bank, SchoolPay) and the
- * number of receipts, then by class. Voided receipts are left out. The
+ * number of receipts, then by bank account and by class. Voided receipts are left out. The
  * bursar's collections book, and what the bank deposits should add up to.
  */
 class FeeCollectionsReport extends ReportPage
@@ -102,7 +102,7 @@ class FeeCollectionsReport extends ReportPage
     protected function payments(): Collection
     {
         return StudentPayment::query()
-            ->with('student')
+            ->with(['student', 'bankAccount'])
             ->where('school_id', auth()->user()?->school_id)
             ->whereBetween('paid_on', [$this->fromDate()->toDateString(), $this->toDate()->toDateString()])
             ->orderBy('paid_on')
@@ -125,6 +125,23 @@ class FeeCollectionsReport extends ReportPage
             ->all();
 
         return $payments->isEmpty() ? [] : [...$rows, $this->sum('Total', 'total', $payments)];
+    }
+
+    /**
+     * Fees paid by bank, per account they went into, largest first. Bank
+     * receipts from before the account was asked for are kept apart.
+     *
+     * @return array<int, array{label: string, receipts: int, total: float}>
+     */
+    public function byBankAccount(): array
+    {
+        return $this->payments()
+            ->where('method', 'bank')
+            ->groupBy(fn (StudentPayment $payment): string => $payment->bankAccount?->label() ?? 'Account not recorded')
+            ->map(fn (Collection $paid, string $account): array => ['label' => $account, 'receipts' => $paid->count(), 'total' => (float) $paid->sum('amount')])
+            ->sortByDesc('total')
+            ->values()
+            ->all();
     }
 
     /**

@@ -30,6 +30,7 @@ class StudentPayment extends Model
         'paid_on',
         'method',
         'reference',
+        'bank_account_id',
         'paid_by',
         'payer_phone',
         'recorded_by',
@@ -111,6 +112,16 @@ class StudentPayment extends Model
     public function student(): BelongsTo
     {
         return $this->belongsTo(Student::class);
+    }
+
+    /**
+     * The school's account a bank payment went into.
+     *
+     * @return BelongsTo<BankAccount, $this>
+     */
+    public function bankAccount(): BelongsTo
+    {
+        return $this->belongsTo(BankAccount::class);
     }
 
     /**

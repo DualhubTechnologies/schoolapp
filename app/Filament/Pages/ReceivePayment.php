@@ -4,6 +4,7 @@ namespace App\Filament\Pages;
 
 use App\Filament\Concerns\PlacedInMenu;
 use App\Filament\Support\MoneyInput;
+use App\Models\BankAccount;
 use App\Models\Student;
 use App\Models\StudentPayment;
 use App\Models\Term;
@@ -11,6 +12,7 @@ use App\Services\ParentMessages;
 use App\Services\SmsSender;
 use App\Support\Modules;
 use BackedEnum;
+use Carbon\Carbon;
 use Filament\Forms\Components\DatePicker;
 use Filament\Forms\Components\Select;
 use Filament\Forms\Components\Textarea;
@@ -48,6 +50,12 @@ class ReceivePayment extends Page
     /** The receipt just issued, shown until the next payment is started. */
     public ?int $issuedPaymentId = null;
 
+    /**
+     * A slip or transaction number already on another receipt, saved
+     * anyway on the second click (one bank slip can pay for siblings).
+     */
+    public ?string $confirmedReference = null;
+
     public function mount(): void
     {
         $this->form->fill([
@@ -57,9 +65,29 @@ class ReceivePayment extends Page
             'amount' => null,
             'paid_on' => now()->toDateString(),
             'method' => 'cash',
+            'bank_account_id' => $this->onlyBankAccountId(),
             'term_id' => Term::current()?->getKey(),
             'send_sms' => true,
         ]);
+    }
+
+    /** @return array<int, string> the school's bank accounts in use, id => "Fees (Stanbic · 9030…)" */
+    protected function bankAccounts(): array
+    {
+        return BankAccount::where('school_id', auth()->user()?->school_id)
+            ->where('is_active', true)
+            ->orderBy('name')
+            ->get()
+            ->mapWithKeys(fn (BankAccount $account): array => [$account->getKey() => $account->label()])
+            ->all();
+    }
+
+    /** A school with one bank account has nothing to choose. */
+    protected function onlyBankAccountId(): ?int
+    {
+        $accounts = $this->bankAccounts();
+
+        return count($accounts) === 1 ? (int) array_key_first($accounts) : null;
     }
 
     public function form(Schema $schema): Schema
@@ -79,6 +107,7 @@ class ReceivePayment extends Page
                             ->live()
                             ->afterStateUpdated(function ($state, Set $set) {
                                 $this->issuedPaymentId = null;
+                                $this->confirmedReference = null;
                                 $student = $state ? Student::with('guardian')->whereKey($state)->first() : null;
                                 $set('paid_by', $student?->guardian?->name);
                                 $set('payer_phone', $student?->guardian?->phone);
@@ -145,6 +174,15 @@ class ReceivePayment extends Page
                                 ->required(fn (Get $get) => in_array($get('method'), StudentPayment::METHODS_NEEDING_REFERENCE, true))
                                 ->maxLength(100),
 
+                            Select::make('bank_account_id')
+                                ->label('Paid into')
+                                ->options(fn (): array => $this->bankAccounts())
+                                ->placeholder('Which of the school\'s accounts?')
+                                ->helperText('Printed on the receipt, and used to check it against that account\'s bank statement.')
+                                ->native(false)
+                                ->visible(fn (Get $get): bool => $get('method') === 'bank' && $this->bankAccounts() !== [])
+                                ->required(fn (Get $get): bool => $get('method') === 'bank' && $this->bankAccounts() !== []),
+
                             Select::make('term_id')
                                 ->label('For term')
                                 ->options(fn () => Term::where('school_id', auth()->user()?->school_id)
@@ -199,6 +237,16 @@ class ReceivePayment extends Page
             return;
         }
 
+        $reference = trim((string) ($data['reference'] ?? ''));
+
+        if ($this->referenceAlreadyUsed($data['method'], $reference)) {
+            return;
+        }
+
+        $bankAccountId = $data['method'] === 'bank' && filled($data['bank_account_id'] ?? null)
+            ? BankAccount::where('school_id', $student->school_id)->whereKey($data['bank_account_id'])->value('id')
+            : null;
+
         $payment = DB::transaction(fn () => StudentPayment::create([
             'school_id' => $student->school_id,
             'student_id' => $student->getKey(),
@@ -206,13 +254,15 @@ class ReceivePayment extends Page
             'amount' => $data['amount'],
             'paid_on' => $data['paid_on'],
             'method' => $data['method'],
-            'reference' => $data['reference'] ?? null,
+            'reference' => $reference !== '' ? $reference : null,
+            'bank_account_id' => $bankAccountId,
             'paid_by' => $data['paid_by'] ?? null,
             'payer_phone' => $data['payer_phone'] ?? null,
             'notes' => $data['notes'] ?? null,
         ]));
 
         $this->issuedPaymentId = $payment->getKey();
+        $this->confirmedReference = null;
 
         $balance = $student->balance();
         $class = $student->schoolClass?->name;
@@ -237,11 +287,47 @@ class ReceivePayment extends Page
             'amount' => null,
             'paid_on' => now()->toDateString(),
             'method' => $data['method'],
+            'bank_account_id' => $data['bank_account_id'] ?? $this->onlyBankAccountId(),
             'term_id' => $data['term_id'] ?? null,
             'paid_by' => $data['paid_by'] ?? null,
             'payer_phone' => $data['payer_phone'] ?? null,
             'send_sms' => $data['send_sms'] ?? true,
         ]);
+    }
+
+    /**
+     * The same bank slip or mobile money transaction already on a receipt:
+     * stop and say which, the first time. One slip can rightly pay for
+     * siblings, so saving again with the same number goes ahead.
+     */
+    protected function referenceAlreadyUsed(string $method, string $reference): bool
+    {
+        if (! in_array($method, ['bank', 'mobile_money'], true) || $reference === '' || $this->confirmedReference === mb_strtolower($reference)) {
+            return false;
+        }
+
+        $earlier = StudentPayment::with('student')
+            ->where('school_id', auth()->user()?->school_id)
+            ->where('method', $method)
+            ->whereRaw('LOWER(TRIM(reference)) = ?', [mb_strtolower($reference)])
+            ->orderBy('id')
+            ->first();
+
+        if (! $earlier) {
+            return false;
+        }
+
+        $this->confirmedReference = mb_strtolower($reference);
+        $what = $method === 'bank' ? 'Bank slip' : 'Transaction';
+
+        Notification::make()
+            ->title("{$what} {$reference} is already on a receipt")
+            ->body("Receipt {$earlier->receipt_no}, UGX ".number_format((float) $earlier->amount).' for '.($earlier->student->name ?? 'a learner').' on '.Carbon::parse($earlier->paid_on)->format('j M Y').'. Check the number. If this one payment really covers more than one learner, e.g. brothers and sisters, click Save again.')
+            ->warning()
+            ->persistent()
+            ->send();
+
+        return true;
     }
 
     public function startNew(): void

@@ -1,6 +1,7 @@
 @php
     $days = $this->byDay();
     $classes = $this->byClass();
+    $accounts = $this->byBankAccount();
     $total = collect($days)->firstWhere('kind', 'total');
     $methods = \App\Models\StudentPayment::METHODS;
     $n = fn ($v) => number_format((float) $v);
@@ -63,6 +64,24 @@
                     </tbody>
                 </table>
             </div>
+
+            @if ($accounts !== [])
+                <h4 class="rpt-h">Paid by bank, by account</h4>
+                <table class="rpt-table rpt-narrow">
+                    <thead>
+                        <tr><th>Account</th><th class="rpt-num">Receipts</th><th class="rpt-num">Paid in (UGX)</th></tr>
+                    </thead>
+                    <tbody>
+                        @foreach ($accounts as $row)
+                            <tr>
+                                <td>{{ $row['label'] }}</td>
+                                <td class="rpt-num">{{ $row['receipts'] }}</td>
+                                <td class="rpt-num rpt-strong">{{ $n($row['total']) }}</td>
+                            </tr>
+                        @endforeach
+                    </tbody>
+                </table>
+            @endif
 
             <h4 class="rpt-h">By class</h4>
             <table class="rpt-table rpt-narrow">

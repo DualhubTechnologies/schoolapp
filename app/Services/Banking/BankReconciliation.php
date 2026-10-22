@@ -20,7 +20,9 @@ use RuntimeException;
  *
  * - Money in is matched to fee receipts paid by bank or SchoolPay, and to
  *   other income received by bank or cheque; money out to expenses paid by
- *   bank or cheque. Same amount, within a few days.
+ *   bank or cheque. Same amount, within a few days. A receipt marked as
+ *   paid into another of the school's accounts is never offered; one with
+ *   no account (from before receipts said which) is offered on all of them.
  * - Matching by itself happens only when it is clear: one candidate, or
  *   one whose reference appears on the statement line.
  * - What only the bank knew (bank charges, interest, a deposit nobody
@@ -125,6 +127,7 @@ class BankReconciliation
             $records = $records->merge($this->unmatched(StudentPayment::query())
                 ->where('student_payments.school_id', $line->school_id)
                 ->whereIn('method', ['bank', 'schoolpay'])
+                ->where(fn (Builder $query) => $query->whereNull('bank_account_id')->orWhere('bank_account_id', $line->bank_account_id))
                 ->where('amount', $amount)
                 ->whereBetween('paid_on', [$from, $to])
                 ->with('student')
@@ -164,6 +167,10 @@ class BankReconciliation
 
         if ($taken) {
             throw new RuntimeException('That record is already matched to another statement line.');
+        }
+
+        if ($record instanceof StudentPayment && $record->bank_account_id !== null && (int) $record->bank_account_id !== (int) $line->bank_account_id) {
+            throw new RuntimeException('Receipt '.$record->receipt_no.' was paid into another of the school\'s bank accounts.');
         }
 
         $line->forceFill([

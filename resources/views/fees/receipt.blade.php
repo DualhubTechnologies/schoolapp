@@ -93,6 +93,9 @@
             <div><div class="label">Class</div><div>{{ $student?->schoolClass?->name }}{{ $student?->section ? ' · ' . $student->section->name : '' }}</div></div>
             <div><div class="label">Payment method</div><div>{{ $payment->methodLabel() }}</div></div>
             <div><div class="label">Transaction / slip ref.</div><div>{{ $payment->reference ?: '—' }}</div></div>
+            @if ($payment->bankAccount)
+                <div><div class="label">Paid into</div><div>{{ $payment->bankAccount->bank }}{{ $payment->bankAccount->account_number ? ' · A/C ' . $payment->bankAccount->account_number : '' }}</div></div>
+            @endif
             @if ($payment->term)
                 <div><div class="label">Term</div><div>{{ $payment->term->label() }}</div></div>
             @endif

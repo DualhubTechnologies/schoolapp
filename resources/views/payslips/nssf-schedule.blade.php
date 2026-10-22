@@ -54,7 +54,7 @@
         <p>{{ $school->address }}{{ $school->city ? ', ' . $school->city : '' }}</p>
     </div>
 
-    <div class="title-bar">NATIONAL SOCIAL SECURITY FUND — MONTHLY CONTRIBUTION SCHEDULE</div>
+    <div class="title-bar">NATIONAL SOCIAL SECURITY FUND - MONTHLY CONTRIBUTION SCHEDULE</div>
 
     <table class="info-table">
         <tr>
@@ -107,7 +107,7 @@
             <tr>
                 <td class="center">{{ $index + 1 }}</td>
                 <td>{{ $entry->staff->name }}</td>
-                <td>{{ $entry->staff->nssf_number ?? '—' }}</td>
+                <td>{{ $entry->staff->nssf_number ?? '-' }}</td>
                 <td class="amount">{{ number_format($entry->gross_pay, 0) }}</td>
                 <td class="amount">{{ number_format($entry->nssf_employee, 0) }}</td>
                 <td class="amount">{{ number_format($entry->nssf_employer, 0) }}</td>

@@ -48,7 +48,7 @@ return [
     // Google Business Profile so Google matches the two.
     'location' => env('CONTACT_LOCATION', 'Wakiso, Uganda'),
     'locality' => env('CONTACT_LOCALITY', 'Wakiso'),
-    'hours' => env('CONTACT_HOURS', 'Monday to Friday, 8:00 am – 6:00 pm'),
+    'hours' => env('CONTACT_HOURS', 'Monday to Friday, 8:00 am - 6:00 pm'),
     'opens' => env('CONTACT_OPENS', '08:00'),
     'closes' => env('CONTACT_CLOSES', '18:00'),
     'days' => ['Monday', 'Tuesday', 'Wednesday', 'Thursday', 'Friday'],

@@ -44,7 +44,7 @@ class GuardiansTable
                     ->searchable(),
                 TextColumn::make('email')
                     ->searchable()
-                    ->placeholder('—')
+                    ->placeholder('-')
                     ->toggleable(),
                 TextColumn::make('students_count')
                     ->label('Children')

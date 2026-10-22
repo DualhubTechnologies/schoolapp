@@ -33,7 +33,7 @@ trait Auditable
     use LogsActivity;
 
     /**
-     * Columns never worth logging — they change on every save and tell
+     * Columns never worth logging - they change on every save and tell
      * an auditor nothing.
      *
      * @var list<string>

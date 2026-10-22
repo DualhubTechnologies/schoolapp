@@ -84,7 +84,7 @@
         </div>
 
         <div class="grid">
-            <div><div class="label">Received from</div><div class="strong">{{ $payment->paid_by ?: ($student?->guardian?->name ?: '—') }}</div></div>
+            <div><div class="label">Received from</div><div class="strong">{{ $payment->paid_by ?: ($student?->guardian?->name ?: '-') }}</div></div>
             <div><div class="label">Student</div><div class="strong">{{ $student?->name }}</div></div>
             <div><div class="label">Admission no.</div><div>{{ $student?->admission_no }}</div></div>
             @if ($student?->schoolpay_code)
@@ -92,7 +92,7 @@
             @endif
             <div><div class="label">Class</div><div>{{ $student?->schoolClass?->name }}{{ $student?->section ? ' · ' . $student->section->name : '' }}</div></div>
             <div><div class="label">Payment method</div><div>{{ $payment->methodLabel() }}</div></div>
-            <div><div class="label">Transaction / slip ref.</div><div>{{ $payment->reference ?: '—' }}</div></div>
+            <div><div class="label">Transaction / slip ref.</div><div>{{ $payment->reference ?: '-' }}</div></div>
             @if ($payment->bankAccount)
                 <div><div class="label">Paid into</div><div>{{ $payment->bankAccount->bank }}{{ $payment->bankAccount->account_number ? ' · A/C ' . $payment->bankAccount->account_number : '' }}</div></div>
             @endif
@@ -140,12 +140,12 @@
                 </div>
             @endif
             <div class="sign">
-                Received by: {{ $payment->recorded_by ?: '—' }}<br>Signature &amp; stamp
+                Received by: {{ $payment->recorded_by ?: '-' }}<br>Signature &amp; stamp
             </div>
         </div>
 
         @if ($payment->isVoided())
-            <p class="void-note">Voided {{ $payment->voided_at->format('j M Y H:i') }} by {{ $payment->voided_by }} — {{ $payment->void_reason }}</p>
+            <p class="void-note">Voided {{ $payment->voided_at->format('j M Y H:i') }} by {{ $payment->voided_by }} - {{ $payment->void_reason }}</p>
         @endif
     </div>
 @endsection

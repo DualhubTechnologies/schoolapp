@@ -22,7 +22,7 @@ use Illuminate\Support\Collection;
  *                allowances + arrears). Employee NSSF is not deducted
  *                first -- it is not an allowable deduction in Uganda.
  *   LST          annual Local Service Tax by pay band, in equal
- *                instalments over July–October
+ *                instalments over July-October
  *   Deductions   loans, advances, SACCO, welfare... in force that month
  *   Net          gross − NSSF − PAYE − LST − deductions
  *

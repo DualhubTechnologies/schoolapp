@@ -110,7 +110,7 @@ class ErrorReportResource extends Resource
                     ->sortable(),
                 TextColumn::make('lastSchool.name')
                     ->label('Last school')
-                    ->placeholder('—')
+                    ->placeholder('-')
                     ->limit(30),
                 TextColumn::make('first_seen_at')
                     ->label('First seen')
@@ -198,7 +198,7 @@ class ErrorReportResource extends Resource
                         ->fontFamily('mono')
                         ->copyable(),
                     TextEntry::make('exception_class')->label('Exception')->fontFamily('mono'),
-                    TextEntry::make('last_url')->label('Last page')->placeholder('—')->columnSpanFull(),
+                    TextEntry::make('last_url')->label('Last page')->placeholder('-')->columnSpanFull(),
                 ])
                 ->columns(2),
 

@@ -6,7 +6,7 @@ use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
 
 /**
- * One row of a grading scale: e.g. D1, 80–100%, value 1, "Distinction".
+ * One row of a grading scale: e.g. D1, 80-100%, value 1, "Distinction".
  */
 class GradingBand extends Model
 {

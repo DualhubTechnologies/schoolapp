@@ -18,7 +18,7 @@ class TeacherKpis extends KpiCards
 
         if (! $staffId) {
             return [
-                static::card('amber', 'heroicon-o-link', 'Login not linked to staff', '—',
+                static::card('amber', 'heroicon-o-link', 'Login not linked to staff', '-',
                     'Ask the school administrator to link your login to your staff record.'),
             ];
         }
@@ -40,11 +40,11 @@ class TeacherKpis extends KpiCards
             static::card('violet', 'heroicon-o-users', 'My learners', number_format($learners),
                 'Across all my classes', ClassResults::canAccess() ? ClassResults::getUrl() : null),
             static::card($rate === 100 ? 'emerald' : 'amber', 'heroicon-o-pencil-square', 'Marks entered',
-                $rate === null ? '—' : static::percentText($entered, $expected),
+                $rate === null ? '-' : static::percentText($entered, $expected),
                 $expected ? number_format($entered).' of '.number_format($expected).' for the current exam' : 'No open exam this term',
                 EnterMarks::getUrl(), $rate),
             static::card('teal', 'heroicon-o-home-modern', 'Class teacher of',
-                $streams->isEmpty() ? '—' : (string) $streams->count(),
+                $streams->isEmpty() ? '-' : (string) $streams->count(),
                 $streams->isEmpty() ? 'No class assigned' : $streams->take(3)->implode(', ')),
         ];
     }

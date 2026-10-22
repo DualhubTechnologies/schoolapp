@@ -117,7 +117,7 @@ class BankStatementLineResource extends Resource
                     ->label('Balance')
                     ->numeric()
                     ->alignEnd()
-                    ->placeholder('—')
+                    ->placeholder('-')
                     ->toggleable(),
                 TextColumn::make('status')
                     ->label('In SchoolHub')

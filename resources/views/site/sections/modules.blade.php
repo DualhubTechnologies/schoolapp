@@ -43,14 +43,14 @@
                         <p>Teachers enter the marks; nobody adds, averages or grades by hand. SchoolHub works out the 20% school-based mark and the 80% exam, grades every subject and generates report cards for the whole class in seconds, like this one.</p>
                         <ul class="ticks">
                             <li>{!! $check !!} Activities of Integration make up the 20% school-based mark</li>
-                            <li>{!! $check !!} Grades A–E: Exceptional, Outstanding, Satisfactory, Basic, Elementary</li>
+                            <li>{!! $check !!} Grades A-E: Exceptional, Outstanding, Satisfactory, Basic, Elementary</li>
                             <li>{!! $check !!} Comments, conduct, promotion and the head teacher's signature</li>
                             <li>{!! $check !!} A QR code on every card, so anyone can check it is genuine</li>
                         </ul>
                     </div>
                     <div class="show-media">
                         <a class="rc-shot" href="{{ asset('images/site/report-card-o-level.jpg') }}" target="_blank" rel="noopener" title="Open the full report card">
-                            <img src="{{ asset('images/site/report-card-o-level.jpg') }}" alt="An O-Level report card printed by SchoolHub: subjects, CA and End of Term marks, grades A–E with achievement, conduct, comments and the head teacher&rsquo;s signature" width="1500" height="2156" loading="lazy">
+                            <img src="{{ asset('images/site/report-card-o-level.jpg') }}" alt="An O-Level report card printed by SchoolHub: subjects, CA and End of Term marks, grades A-E with achievement, conduct, comments and the head teacher&rsquo;s signature" width="1500" height="2156" loading="lazy">
                         </a>
                         <p class="rc-caption">Classic design · navy and gold · QR code to verify</p>
                     </div>
@@ -63,7 +63,7 @@
                         <p>Teachers enter the marks for each paper. In seconds, SchoolHub grades every paper, works out each principal subject's grade by UNEB's rules, adds the subsidiaries and generates every learner's report card with their points out of 20.</p>
                         <ul class="ticks">
                             <li>{!! $check !!} Subject combinations, with General Paper and a subsidiary</li>
-                            <li>{!! $check !!} Principal grades A–F worked out from each paper, by UNEB's rules</li>
+                            <li>{!! $check !!} Principal grades A-F worked out from each paper, by UNEB's rules</li>
                             <li>{!! $check !!} Points out of 20 and the result for every learner</li>
                             <li>{!! $check !!} Customised for your school: your crest, colours, layout and the parts you print</li>
                         </ul>
@@ -95,7 +95,7 @@
                             </div>
                             <div class="doc-rows">
                                 <div><span>Student</span><b>Nakato Sarah · S.2 East</b></div>
-                                <div><span>Tuition — Term II</span><b>UGX 850,000</b></div>
+                                <div><span>Tuition - Term II</span><b>UGX 850,000</b></div>
                                 <div><span>Paid by</span><b>Mobile money</b></div>
                                 <div><span>Balance remaining</span><b>UGX 400,000</b></div>
                             </div>
@@ -118,7 +118,7 @@
                     <div class="show-media" aria-hidden="true">
                         <div class="doc">
                             <div class="doc-head">
-                                <div><strong>Payslip — July 2026</strong><span>Ssemwanga Peter · Teacher</span></div>
+                                <div><strong>Payslip - July 2026</strong><span>Ssemwanga Peter · Teacher</span></div>
                             </div>
                             <div class="doc-rows">
                                 <div><span>Basic salary</span><b>UGX 1,200,000</b></div>

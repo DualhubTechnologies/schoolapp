@@ -221,7 +221,7 @@ class ReportCards extends Page
                     ->schema([
                         TextInput::make('title')
                             ->label('Report title')
-                            ->placeholder('e.g. End of Term Report — leave empty for the usual title')
+                            ->placeholder('e.g. End of Term Report - leave empty for the usual title')
                             ->maxLength(80),
                         TextInput::make('header_note')
                             ->label('Extra line under the school name')

@@ -65,7 +65,7 @@ class ActivationCodeResource extends Resource
                     ->description(fn (SubscriptionActivationCode $record): ?string => $record->is_gift ? 'Gift voucher' : null),
                 TextColumn::make('plan.name')->label('Plan'),
                 TextColumn::make('amount')->label('Price')->numeric()->prefix('UGX '),
-                TextColumn::make('school.name')->label('School')->placeholder('— not yet assigned —')->searchable(),
+                TextColumn::make('school.name')->label('School')->placeholder('- not yet assigned -')->searchable(),
                 TextColumn::make('status')
                     ->state(fn (SubscriptionActivationCode $record) => ucfirst($record->status()))
                     ->badge()
@@ -202,7 +202,7 @@ class ActivationCodeResource extends Resource
             ->icon('heroicon-o-plus')
             ->color('primary')
             ->modalHeading('Generate activation codes')
-            ->modalDescription('A batch of spare codes for one plan, not tied to any school yet. Keep the list on your phone and hand one out the moment a school pays — whoever types it in first claims it for their school.')
+            ->modalDescription('A batch of spare codes for one plan, not tied to any school yet. Keep the list on your phone and hand one out the moment a school pays - whoever types it in first claims it for their school.')
             ->fillForm(function () {
                 $plan = Plan::where('is_active', true)->where('is_trial', false)->orderBy('sort_order')->first();
 

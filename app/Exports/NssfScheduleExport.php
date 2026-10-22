@@ -29,7 +29,7 @@ class NssfScheduleExport implements FromArray, WithColumnWidths, WithHeadings, W
         $school = $this->period->school;
 
         return [
-            ['NATIONAL SOCIAL SECURITY FUND — CONTRIBUTION SCHEDULE'],
+            ['NATIONAL SOCIAL SECURITY FUND - CONTRIBUTION SCHEDULE'],
             [''],
             ['Employer Name:', $school->name, '', 'NSSF Employer No:', $school->nssf_employer_number ?? 'NOT SET'],
             ['TIN Number:', $school->tin_number ?? 'NOT SET', '', 'Period:', $this->period->period_label],

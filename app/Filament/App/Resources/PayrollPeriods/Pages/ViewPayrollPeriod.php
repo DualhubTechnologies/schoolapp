@@ -53,7 +53,7 @@ class ViewPayrollPeriod extends ViewRecord
 
                     $notes = collect([
                         $result['skipped_no_salary'] ? count($result['skipped_no_salary']).' skipped with no salary set: '.implode(', ', array_slice($result['skipped_no_salary'], 0, 5)) : null,
-                        $result['missed_last_month'] ? "{$result['missed_last_month']} staff were not paid last month — pending arrears were created under Salary Arrears." : null,
+                        $result['missed_last_month'] ? "{$result['missed_last_month']} staff were not paid last month - pending arrears were created under Salary Arrears." : null,
                     ])->filter()->implode(' ');
 
                     Notification::make()

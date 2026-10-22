@@ -34,7 +34,7 @@ class PaymentsTable
                     ->searchable()
                     ->sortable(query: fn (Builder $query, string $direction) => $query->orderBy('receipt_seq', $direction))
                     ->color(fn (StudentPayment $record) => $record->isVoided() ? 'gray' : null)
-                    ->description(fn (StudentPayment $record) => $record->isVoided() ? 'VOID — '.$record->void_reason : null),
+                    ->description(fn (StudentPayment $record) => $record->isVoided() ? 'VOID - '.$record->void_reason : null),
 
                 TextColumn::make('paid_on')
                     ->label('Date')
@@ -63,18 +63,18 @@ class PaymentsTable
 
                 TextColumn::make('reference')
                     ->label('Txn / slip ref.')
-                    ->placeholder('—')
+                    ->placeholder('-')
                     ->searchable()
                     ->toggleable(),
 
                 TextColumn::make('paid_by')
                     ->label('Paid by')
-                    ->placeholder('—')
+                    ->placeholder('-')
                     ->toggleable(isToggledHiddenByDefault: true),
 
                 TextColumn::make('recorded_by')
                     ->label('Received by')
-                    ->placeholder('—')
+                    ->placeholder('-')
                     ->toggleable(),
 
                 TextColumn::make('amount')
@@ -108,7 +108,7 @@ class PaymentsTable
 
                         return match (true) {
                             $from && $until && $from === $until => 'On '.Carbon::parse($from)->format('j M Y'),
-                            $from && $until => Carbon::parse($from)->format('j M').' – '.Carbon::parse($until)->format('j M Y'),
+                            $from && $until => Carbon::parse($from)->format('j M').' - '.Carbon::parse($until)->format('j M Y'),
                             (bool) $from => 'From '.Carbon::parse($from)->format('j M Y'),
                             (bool) $until => 'Until '.Carbon::parse($until)->format('j M Y'),
                             default => null,
@@ -161,7 +161,7 @@ class PaymentsTable
                         ->visible(fn (StudentPayment $record) => ! $record->isVoided())
                         ->requiresConfirmation()
                         ->modalHeading(fn (StudentPayment $record) => "Void receipt {$record->receipt_no}?")
-                        ->modalDescription('The receipt stays in the book marked VOID, and the amount is taken off the student\'s payments. This cannot be undone — record a new payment if needed.')
+                        ->modalDescription('The receipt stays in the book marked VOID, and the amount is taken off the student\'s payments. This cannot be undone - record a new payment if needed.')
                         ->schema([
                             TextInput::make('reason')
                                 ->label('Reason')

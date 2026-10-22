@@ -13,12 +13,12 @@ use Illuminate\Support\Facades\DB;
  *
  * DERIVED, never stored: charges and payments merged into one list in date
  * order with a running balance. Deriving it means it cannot drift out of
- * step with reality — correct a charge or delete a payment and the ledger
+ * step with reality - correct a charge or delete a payment and the ledger
  * is immediately right, with no second copy of the truth to reconcile.
  *
- *   Ledger     every line, all terms — the bursar's working record
- *   Statement  a term's lines, summarised — what a parent receives
- *   Invoice    the current balance as a document — printed on demand
+ *   Ledger     every line, all terms - the bursar's working record
+ *   Statement  a term's lines, summarised - what a parent receives
+ *   Invoice    the current balance as a document - printed on demand
  */
 class StudentLedger
 {
@@ -113,7 +113,7 @@ class StudentLedger
                 'date' => $row->paid_on,
                 'type' => 'payment',
                 'description' => 'Payment received'
-                    .(($label = StudentPayment::METHODS[$row->method] ?? null) ? " — {$label}" : ''),
+                    .(($label = StudentPayment::METHODS[$row->method] ?? null) ? " - {$label}" : ''),
                 'reference' => $row->receipt_no.($row->reference ? " · {$row->reference}" : ''),
                 'term_id' => $row->term_id,
                 'term_name' => $row->term_name,

@@ -22,7 +22,7 @@ abstract class ReportPage extends Page
     /** One line on what the report shows, for All Reports. */
     abstract public static function about(): string;
 
-    /** What the report covers right now, e.g. "Term 3 — 2026" or the dates. */
+    /** What the report covers right now, e.g. "Term 3 - 2026" or the dates. */
     abstract public function coverage(): string;
 
     /**

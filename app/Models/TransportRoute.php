@@ -8,7 +8,7 @@ use Illuminate\Database\Eloquent\Relations\BelongsTo;
 use Illuminate\Database\Eloquent\Relations\HasMany;
 
 /**
- * A school van route with its fare per term, e.g. "Kakiri — 15,000".
+ * A school van route with its fare per term, e.g. "Kakiri - 15,000".
  * Learners on a route are charged the fare each term; learners brought by
  * their parents have no route and pay nothing for transport.
  *
@@ -81,10 +81,10 @@ class TransportRoute extends Model
     }
 
     /**
-     * How the charge reads on a bill, e.g. "Transport — Kakiri (one way)".
+     * How the charge reads on a bill, e.g. "Transport - Kakiri (one way)".
      */
     public function chargeDescription(?string $trip): string
     {
-        return 'Transport — '.$this->name.($trip === 'one_way' ? ' (one way)' : '');
+        return 'Transport - '.$this->name.($trip === 'one_way' ? ' (one way)' : '');
     }
 }

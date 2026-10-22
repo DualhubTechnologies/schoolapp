@@ -55,10 +55,10 @@ class AuditTrailResource extends Resource
                     }),
 
                 // subject_type is a full class name (App\Models\Student).
-                // Show just the model name — the namespace is noise.
+                // Show just the model name - the namespace is noise.
                 TextColumn::make('subject_type')
                     ->label('Record type')
-                    ->formatStateUsing(fn (?string $state): string => $state ? class_basename($state) : '—')
+                    ->formatStateUsing(fn (?string $state): string => $state ? class_basename($state) : '-')
                     ->searchable(),
 
                 TextColumn::make('subject_id')
@@ -73,14 +73,14 @@ class AuditTrailResource extends Resource
 
                 TextColumn::make('properties.ip')
                     ->label('IP')
-                    ->placeholder('—')
+                    ->placeholder('-')
                     ->toggleable(isToggledHiddenByDefault: true),
 
                 TextColumn::make('properties.device')
                     ->label('Device')
                     ->limit(40)
                     ->tooltip(fn ($state) => $state)
-                    ->placeholder('—')
+                    ->placeholder('-')
                     ->toggleable(isToggledHiddenByDefault: true),
             ])
             ->defaultSort('created_at', 'desc')
@@ -120,7 +120,7 @@ class AuditTrailResource extends Resource
 
     /**
      * Scope the log to the signed-in user's school. Activity rows don't
-     * carry school_id themselves, so this filters by who caused them —
+     * carry school_id themselves, so this filters by who caused them -
      * a School Admin sees activity from users in their own school only.
      * Super Admin sees the whole system.
      */

@@ -34,7 +34,7 @@ it('shows the phone, location and opening hours on the Contact page', function (
     $this->get('/contact')->assertOk()
         ->assertSee('0782 863209')
         ->assertSee('Wakiso, Uganda')
-        ->assertSee('Monday to Friday, 8:00 am – 6:00 pm')
+        ->assertSee('Monday to Friday, 8:00 am - 6:00 pm')
         ->assertSee('Request a demo')
         ->assertSee('info@schoolhubug.com')
         ->assertSee('support@schoolhubug.com');
@@ -50,7 +50,7 @@ it('shows the team: the founder, the company and a card to join', function () {
     $this->get('/team')->assertOk()
         ->assertSee('Adrian Mugizi')
         ->assertSee('Founder, FERO TECH SMC LIMITED &amp; SchoolHub.', false)
-        ->assertSee('You — Join us');
+        ->assertSee('You - Join us');
 
     $this->get('/about')->assertOk()->assertSee('/team');
 });

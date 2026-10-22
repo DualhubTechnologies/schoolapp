@@ -11,7 +11,7 @@ use Filament\Tables\Table;
 use Filament\Widgets\TableWidget;
 
 /**
- * The students who owe the most, across all terms — who the bursar
+ * The students who owe the most, across all terms - who the bursar
  * should be chasing first.
  */
 class TopDebtorsTable extends TableWidget
@@ -81,7 +81,7 @@ class TopDebtorsTable extends TableWidget
                     ->label('Paid')
                     ->state(fn (Student $record) => (float) $record->charged_total > 0
                         ? round((float) $record->paid_total / (float) $record->charged_total * 100).'%'
-                        : '—')
+                        : '-')
                     ->badge()
                     ->color(fn (string $state) => match (true) {
                         (int) $state >= 75 => 'success',

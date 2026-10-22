@@ -10,7 +10,7 @@
     $name = Str::title(Str::lower((string) $student->name));
     $guardian = $student->guardian;
     $guardianName = $guardian?->name ? Str::title(Str::lower($guardian->name)) : null;
-    $class = $student->schoolClass?->name ?? '—';
+    $class = $student->schoolClass?->name ?? '-';
     $stream = $student->section?->name;
     $termLabel = $term?->label();
     $confirmed = $student->isConfirmed();
@@ -143,7 +143,7 @@
 
 <p>Dear {{ $guardianName ?: 'Parent / Guardian' }},</p>
 
-<div class="subject">Re: Offer of admission — {{ $name }}, {{ $class }}{{ $termLabel ? ', ' . $termLabel : '' }}</div>
+<div class="subject">Re: Offer of admission - {{ $name }}, {{ $class }}{{ $termLabel ? ', ' . $termLabel : '' }}</div>
 
 <p>
     We are pleased to offer your child, <strong>{{ $name }}</strong>, a place in <strong>{{ $class }}{{ $stream ? ' ' . $stream : '' }}</strong>
@@ -157,8 +157,8 @@
         <td class="k">Admission no.</td><td class="v">{{ $student->admission_no }}</td>
     </tr>
     <tr>
-        <td class="k">Class</td><td class="v">{{ $class }}{{ $stream ? ' — ' . $stream : '' }}</td>
-        <td class="k">Residency</td><td class="v">{{ $student->residencyType?->name ?? '—' }}</td>
+        <td class="k">Class</td><td class="v">{{ $class }}{{ $stream ? ' - ' . $stream : '' }}</td>
+        <td class="k">Residency</td><td class="v">{{ $student->residencyType?->name ?? '-' }}</td>
     </tr>
     <tr>
         <td class="k">Date admitted</td><td class="v">{{ ($student->admission_date ?? $student->created_at)?->format('j M Y') }}</td>
@@ -167,8 +167,8 @@
     </tr>
     @if ($student->lin || $student->schoolpay_code)
         <tr>
-            <td class="k">LIN</td><td class="v">{{ $student->lin ?: '—' }}</td>
-            <td class="k">SchoolPay code</td><td class="v">{{ $student->schoolpay_code ?: '—' }}</td>
+            <td class="k">LIN</td><td class="v">{{ $student->lin ?: '-' }}</td>
+            <td class="k">SchoolPay code</td><td class="v">{{ $student->schoolpay_code ?: '-' }}</td>
         </tr>
     @endif
 </table>

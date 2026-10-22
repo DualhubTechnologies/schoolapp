@@ -101,7 +101,7 @@ abstract class FinanceEntryResource extends Resource
                 ->placeholder($expense ? 'e.g. UMEME, Kakira Sugar, John the plumber' : 'e.g. Ministry of Education, PTA, Parent')
                 ->maxLength(150),
             TextInput::make('description')
-                ->placeholder($expense ? 'e.g. Electricity bill — September' : 'e.g. USE capitation grant — Term 3')
+                ->placeholder($expense ? 'e.g. Electricity bill - September' : 'e.g. USE capitation grant - Term 3')
                 ->required()
                 ->maxLength(255),
             ToggleButtons::make('method')
@@ -144,7 +144,7 @@ abstract class FinanceEntryResource extends Resource
                     ->weight(FontWeight::SemiBold)
                     ->searchable()
                     ->color(fn (FinanceEntry $r) => $r->isVoided() ? 'gray' : null)
-                    ->description(fn (FinanceEntry $r) => $r->isVoided() ? 'VOID — '.$r->void_reason : null),
+                    ->description(fn (FinanceEntry $r) => $r->isVoided() ? 'VOID - '.$r->void_reason : null),
                 TextColumn::make('entry_date')->label('Date')->date('j M Y')->sortable(),
                 TextColumn::make('category.name')->label('Category')->badge()->color($expense ? 'warning' : 'success')->wrap(),
                 TextColumn::make('description')
@@ -177,7 +177,7 @@ abstract class FinanceEntryResource extends Resource
                         ->when($data['from'] ?? null, fn ($q, $d) => $q->whereDate('entry_date', '>=', $d))
                         ->when($data['until'] ?? null, fn ($q, $d) => $q->whereDate('entry_date', '<=', $d)))
                     ->indicateUsing(fn (array $data) => ($data['from'] ?? null) || ($data['until'] ?? null)
-                        ? trim(($data['from'] ? Carbon::parse($data['from'])->format('j M Y') : '…').' – '.($data['until'] ? Carbon::parse($data['until'])->format('j M Y') : '…'))
+                        ? trim(($data['from'] ? Carbon::parse($data['from'])->format('j M Y') : '…').' - '.($data['until'] ? Carbon::parse($data['until'])->format('j M Y') : '…'))
                         : null),
                 SelectFilter::make('finance_category_id')->label('Category')->options(fn () => static::categoryOptions()),
                 SelectFilter::make('term_id')->label('Term')

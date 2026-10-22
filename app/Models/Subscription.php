@@ -70,6 +70,6 @@ class Subscription extends Model
 
     public function periodLabel(): string
     {
-        return $this->starts_on->format('j M Y').' – '.$this->ends_on->format('j M Y');
+        return $this->starts_on->format('j M Y').' - '.$this->ends_on->format('j M Y');
     }
 }

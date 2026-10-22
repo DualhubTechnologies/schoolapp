@@ -53,7 +53,7 @@ class SchoolsTable
 
                 TextColumn::make('plan')
                     ->label('Plan')
-                    ->state(fn (School $record) => SubscriptionManager::current($record)?->plan?->name ?? '—')
+                    ->state(fn (School $record) => SubscriptionManager::current($record)?->plan?->name ?? '-')
                     ->description(function (School $record) {
                         $st = SubscriptionManager::status($record);
 
@@ -206,7 +206,7 @@ class SchoolsTable
                 }
 
                 Notification::make()
-                    ->title($confirmed ? 'Email confirmed — they can sign in now' : 'Already confirmed — they can sign in')
+                    ->title($confirmed ? 'Email confirmed - they can sign in now' : 'Already confirmed - they can sign in')
                     ->success()
                     ->send();
             });

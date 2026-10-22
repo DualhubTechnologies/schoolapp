@@ -57,7 +57,7 @@
     @if (! $r)
         <div class="ie-empty">This period has no dates set. Give the term or academic year a start and end date under Academics.</div>
     @else
-        <div class="ie-print-title">{{ auth()->user()->school?->name }} — Income vs Expenditure — {{ $r['label'] }}</div>
+        <div class="ie-print-title">{{ auth()->user()->school?->name }} - Income vs Expenditure - {{ $r['label'] }}</div>
 
         <div class="ie-tiles">
             <div class="ie-tile">
@@ -77,7 +77,7 @@
             </div>
             <div class="ie-tile">
                 <span>Budget used</span>
-                <strong>{{ $r['totals']['expense_budget'] > 0 ? round($r['totals']['expense'] / $r['totals']['expense_budget'] * 100) . '%' : '—' }}</strong>
+                <strong>{{ $r['totals']['expense_budget'] > 0 ? round($r['totals']['expense'] / $r['totals']['expense_budget'] * 100) . '%' : '-' }}</strong>
                 <em>of planned spending</em>
             </div>
         </div>
@@ -96,8 +96,8 @@
                                 @endphp
                                 <tr>
                                     <td>{{ $row['category']->name }}@if ($row['category']->isAutomatic())<span class="ie-auto">auto</span>@endif</td>
-                                    <td class="ie-r ie-muted">{{ $row['budget'] ? $n($row['budget']) : '—' }}</td>
-                                    <td class="ie-r ie-strong">{{ $row['actual'] ? $n($row['actual']) : '—' }}</td>
+                                    <td class="ie-r ie-muted">{{ $row['budget'] ? $n($row['budget']) : '-' }}</td>
+                                    <td class="ie-r ie-strong">{{ $row['actual'] ? $n($row['actual']) : '-' }}</td>
                                     <td @class(['ie-r', 'ie-bad' => $bad, 'ie-muted' => ! $bad])>{{ $row['budget'] ? ($row['variance'] >= 0 ? '+' : '−') . $n(abs($row['variance'])) : '' }}</td>
                                     <td class="ie-r">
                                         @if ($row['percent'] !== null)

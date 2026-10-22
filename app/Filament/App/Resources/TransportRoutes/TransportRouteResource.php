@@ -121,7 +121,7 @@ class TransportRouteResource extends Resource
                         : (string) $record->students_count),
                 TextColumn::make('driver_name')
                     ->label('Van & driver')
-                    ->placeholder('—')
+                    ->placeholder('-')
                     ->description(fn (TransportRoute $record): ?string => collect([$record->vehicle, $record->driver_phone])->filter()->join(' · ') ?: null),
                 IconColumn::make('is_active')
                     ->label('In use')
@@ -139,7 +139,7 @@ class TransportRouteResource extends Resource
                     ->modalDescription('Learners on this route will be set to "brought by parent". Past transport charges stay on their accounts.'),
             ])
             ->emptyStateHeading('No routes yet')
-            ->emptyStateDescription('Add each van route with its fare per term, e.g. Kakiri — 15,000.');
+            ->emptyStateDescription('Add each van route with its fare per term, e.g. Kakiri - 15,000.');
     }
 
     public static function getPages(): array

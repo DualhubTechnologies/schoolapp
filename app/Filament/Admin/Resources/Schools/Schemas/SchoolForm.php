@@ -148,7 +148,7 @@ class SchoolForm
                         TextEntry::make('registered')
                             ->label('Registered')
                             ->state(fn (?School $record): ?string => $record?->created_at?->format('j M Y, g:i a'))
-                            ->placeholder('—')
+                            ->placeholder('-')
                             ->visibleOn('edit'),
 
                         TextEntry::make('approved')
@@ -164,7 +164,7 @@ class SchoolForm
                             ->state(fn (?School $record): ?string => $record?->terms_accepted_at
                                 ? $record->terms_accepted_at->format('j M Y')." (version {$record->terms_version})"
                                 : null)
-                            ->placeholder('—')
+                            ->placeholder('-')
                             ->visibleOn('edit'),
 
                         TextEntry::make('rejection_reason')

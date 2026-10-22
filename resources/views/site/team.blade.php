@@ -43,7 +43,7 @@
 
                 <article class="team-card team-card-join">
                     <div class="team-photo">{!! $silhouette !!}</div>
-                    <h2>You — Join us</h2>
+                    <h2>You - Join us</h2>
                     <p class="team-role">Help us bring SchoolHub to every school in Uganda.</p>
                     <div class="team-links">
                         <a href="mailto:{{ $contact['email'] }}?subject={{ rawurlencode('Joining the SchoolHub team') }}" class="btn btn-secondary btn-sm">Get in touch</a>

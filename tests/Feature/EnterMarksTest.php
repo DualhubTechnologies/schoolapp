@@ -126,7 +126,7 @@ it('adds a CA for just this class and subject from the mark sheet', function () 
         ->set('assessmentId', $this->assessment->id)
         ->set('classId', $this->class->id)
         ->set('subjectId', $this->subject->id)
-        ->callAction('addCa', data: ['name' => 'CA 1 — English', 'max_score' => 100])
+        ->callAction('addCa', data: ['name' => 'CA 1 - English', 'max_score' => 100])
         ->assertHasNoActionErrors()
         ->assertSet('allExams', true);
 
@@ -174,7 +174,7 @@ it('does not count a CA set for one subject as missing in the others', function 
 
     $missing = app(MarksCompleteness::class)->missingFor($this->assessment->term);
 
-    expect(collect($missing)->flatMap(fn ($c) => $c['missing'])->all())->not->toContain('Mathematics — English CA');
+    expect(collect($missing)->flatMap(fn ($c) => $c['missing'])->all())->not->toContain('Mathematics - English CA');
 });
 
 it('lists for a teacher only the exams set in a subject they mark', function () {

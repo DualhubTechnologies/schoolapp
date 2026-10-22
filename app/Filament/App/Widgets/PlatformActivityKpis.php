@@ -36,7 +36,7 @@ class PlatformActivityKpis extends KpiCards
             static::card('blue', 'heroicon-o-arrow-right-end-on-rectangle', 'Signed in today', number_format($usersToday),
                 $schoolsToday === 1 ? 'From 1 school' : 'From '.number_format($schoolsToday).' schools', $logsUrl),
             static::card($failed ? 'rose' : 'violet', 'heroicon-o-shield-exclamation', 'Failed sign-ins', number_format($failed),
-                $failed ? 'In the last 24 hours — check the logs' : 'None in the last 24 hours', $logsUrl),
+                $failed ? 'In the last 24 hours - check the logs' : 'None in the last 24 hours', $logsUrl),
             static::card('amber', 'heroicon-o-pencil-square', 'Changes today', number_format($changes),
                 'Records added, edited or deleted', $logsUrl),
         ];
@@ -51,7 +51,7 @@ class PlatformActivityKpis extends KpiCards
     protected function onlineCard(string $url): array
     {
         if (config('session.driver') !== 'database') {
-            return static::card('emerald', 'heroicon-o-signal', 'Online now', '—', 'Needs SESSION_DRIVER=database', $url);
+            return static::card('emerald', 'heroicon-o-signal', 'Online now', '-', 'Needs SESSION_DRIVER=database', $url);
         }
 
         $active = UserSession::activeNow()->distinct()->count('user_id');

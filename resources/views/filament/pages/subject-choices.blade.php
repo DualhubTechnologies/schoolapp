@@ -42,13 +42,13 @@
         <div class="sc-card">
             <div class="sc-head">
                 <div>
-                    <strong>{{ $class->name }} — {{ $aLevel ? 'combinations' : 'elective subjects' }}</strong>
+                    <strong>{{ $class->name }} - {{ $aLevel ? 'combinations' : 'elective subjects' }}</strong>
                     <div class="sc-muted">
                         @if ($aLevel)
                             Each learner's combination decides which principal subjects count for points; their mark sheets list only learners taking them.
                         @else
-                            Everyone takes: {{ $this->compulsory()->map->label()->implode(', ') ?: '—' }}.
-                            Tick the extra subjects each learner takes{{ $range ? ' (' . $range['min'] . '–' . $range['max'] . ' each)' : '' }}. Only ticked learners appear on those mark sheets.
+                            Everyone takes: {{ $this->compulsory()->map->label()->implode(', ') ?: '-' }}.
+                            Tick the extra subjects each learner takes{{ $range ? ' (' . $range['min'] . '-' . $range['max'] . ' each)' : '' }}. Only ticked learners appear on those mark sheets.
                         @endif
                     </div>
                 </div>
@@ -77,7 +77,7 @@
                 </div>
 
                 @foreach ($this->combinationGaps() as $combo => $missing)
-                    <div class="sc-warn">{{ $combo }} includes {{ implode(', ', $missing) }}, which {{ count($missing) === 1 ? 'is' : 'are' }} not set up for {{ $class->name }} — add {{ count($missing) === 1 ? 'it' : 'them' }} to the class's subjects so marks can be entered.</div>
+                    <div class="sc-warn">{{ $combo }} includes {{ implode(', ', $missing) }}, which {{ count($missing) === 1 ? 'is' : 'are' }} not set up for {{ $class->name }} - add {{ count($missing) === 1 ? 'it' : 'them' }} to the class's subjects so marks can be entered.</div>
                 @endforeach
 
                 <div class="sc-scroll">
@@ -103,9 +103,9 @@
                                     </td>
                                     <td>
                                         <select class="sc-input" wire:model.live="combos.{{ $s->id }}">
-                                            <option value="">— Choose —</option>
+                                            <option value="">- Choose -</option>
                                             @foreach ($this->combinations as $c)
-                                                <option value="{{ $c->id }}">{{ $c->name }}{{ $c->description ? ' — ' . $c->description : '' }}</option>
+                                                <option value="{{ $c->id }}">{{ $c->name }}{{ $c->description ? ' - ' . $c->description : '' }}</option>
                                             @endforeach
                                         </select>
                                     </td>

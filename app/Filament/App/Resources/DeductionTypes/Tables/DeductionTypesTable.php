@@ -36,7 +36,7 @@ class DeductionTypesTable
                 TextColumn::make('default_rate')
                     ->label('Default rate')
                     ->suffix('%')
-                    ->placeholder('—')
+                    ->placeholder('-')
                     ->sortable(),
                 IconColumn::make('is_active')
                     ->label('Active')

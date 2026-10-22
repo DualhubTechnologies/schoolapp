@@ -21,7 +21,7 @@ use Illuminate\Database\Eloquent\Builder;
 
 /**
  * Mark → grade tables. Each school sets its own cut-offs; the defaults
- * follow the usual Ugandan scales (D1–F9, A–E, A–F).
+ * follow the usual Ugandan scales (D1-F9, A-E, A-F).
  */
 class GradingScaleResource extends Resource
 {
@@ -75,7 +75,7 @@ class GradingScaleResource extends Resource
                 TextColumn::make('bands')
                     ->label('Grades')
                     ->state(fn (GradingScale $record) => $record->bands
-                        ->map(fn ($b) => $b->grade.' '.(float) $b->min_score.'–'.(float) $b->max_score)
+                        ->map(fn ($b) => $b->grade.' '.(float) $b->min_score.'-'.(float) $b->max_score)
                         ->implode('  ·  '))
                     ->wrap(),
             ])

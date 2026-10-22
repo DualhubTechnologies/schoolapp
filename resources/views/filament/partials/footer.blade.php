@@ -1,5 +1,5 @@
 {{--
-    SchoolHub — page footer
+    SchoolHub - page footer
     Save as: resources/views/filament/partials/footer.blade.php
 
     Anchors the bottom of every page. Without this the content just

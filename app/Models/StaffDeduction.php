@@ -67,7 +67,7 @@ class StaffDeduction extends Model
     }
 
     /**
-     * Is this deduction taken in the payroll month running $start–$end?
+     * Is this deduction taken in the payroll month running $start-$end?
      * Judged against the payroll month, not today, so a past month can be
      * recalculated correctly and a deduction starting next month is not
      * taken early.

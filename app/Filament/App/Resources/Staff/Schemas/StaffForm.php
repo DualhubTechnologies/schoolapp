@@ -107,7 +107,7 @@ class StaffForm
                         TextInput::make('staff_no')
                             ->label('Staff number')
                             ->default(fn () => Staff::nextNumber(auth()->user()?->school_id))
-                            ->helperText('Given automatically — change only if needed.')
+                            ->helperText('Given automatically - change only if needed.')
                             ->required()
                             ->unique(ignoreRecord: true, modifyRuleUsing: fn (Unique $rule, Get $get) => $rule->where('school_id', $get('school_id') ?? auth()->user()?->school_id))
                             ->validationMessages(['unique' => 'Another staff member already has this number.']),
@@ -169,7 +169,7 @@ class StaffForm
                         Toggle::make('pays_lst')
                             ->hintIcon('heroicon-m-question-mark-circle', tooltip: 'Local Service Tax: a yearly tax for local government, taken from salary in July to October. The amount depends on the monthly pay band (none below UGX 100,000).')
                             ->label('Pays Local Service Tax')
-                            ->helperText('Deducted July–October, by pay band.')
+                            ->helperText('Deducted July-October, by pay band.')
                             ->default(true),
                     ]),
             ]);

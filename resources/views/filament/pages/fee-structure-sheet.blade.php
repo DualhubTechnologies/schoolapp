@@ -1,5 +1,5 @@
 {{--
-    Fees Structure — the sheet a school publishes (data from App\Services\FeeSheet).
+    Fees Structure - the sheet a school publishes (data from App\Services\FeeSheet).
 
     Styled with the scoped .fs-* rules at the bottom rather than Tailwind
     utilities, so it looks right without rebuilding the theme and prints

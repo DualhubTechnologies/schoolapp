@@ -43,7 +43,7 @@ class AdminPanelProvider extends PanelProvider
     {
         return ErrorNotices::register($panel)
             ->id('admin')
-            ->path('admin')                   // Super Admin only — gated in User::canAccessPanel()
+            ->path('admin')                   // Super Admin only - gated in User::canAccessPanel()
             ->login(Login::class)
             // Name, email and password, and optional two-step sign-in with an
             // authenticator app (with recovery codes if the phone is lost).
@@ -87,7 +87,7 @@ class AdminPanelProvider extends PanelProvider
 
             // --- Plugins ---
             // Icon-only logo for the collapsed sidebar rail.
-            // No darkModeIconLogo() — darkMode is off.
+            // No darkModeIconLogo() - darkMode is off.
             ->plugin(
                 LogoToolsPlugin::make()
                     ->iconLogo(asset('images/schoolhub-icon.svg'))
@@ -133,7 +133,7 @@ class AdminPanelProvider extends PanelProvider
 
             // --- Resources, pages, widgets ---
             // Schools lives here (platform-owner only). UserResource is
-            // shared with the app panel — one class, registered on both.
+            // shared with the app panel - one class, registered on both.
             ->discoverResources(in: app_path('Filament/Admin/Resources'), for: 'App\Filament\Admin\Resources')
             ->resources([
                 UserResource::class,

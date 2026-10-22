@@ -42,14 +42,14 @@
                 <div>
                     <strong>{{ $student->guardian?->name ?: 'The Parent / Guardian' }}</strong><br>
                     Parent / Guardian of {{ $student->name }}<br>
-                    {{ $student->schoolClass?->name }}{{ $student->section ? ' · ' . $student->section->name : '' }} — Adm. No. {{ $student->admission_no }}
+                    {{ $student->schoolClass?->name }}{{ $student->section ? ' · ' . $student->section->name : '' }} - Adm. No. {{ $student->admission_no }}
                 </div>
                 <div>{{ now()->format('j F Y') }}</div>
             </div>
 
             <p>Dear Parent / Guardian,</p>
 
-            <p class="subject">Re: Outstanding school fees{{ $letter['term'] ? ' — ' . $letter['term']->label() : '' }}</p>
+            <p class="subject">Re: Outstanding school fees{{ $letter['term'] ? ' - ' . $letter['term']->label() : '' }}</p>
 
             <div class="body">
                 <p>

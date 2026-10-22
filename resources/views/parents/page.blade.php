@@ -82,7 +82,7 @@
     <div class="balance {{ $owing ? 'owing' : 'clear' }}">
         <div class="label">{{ $balance < 0 ? 'In credit' : 'School fees balance' }}</div>
         <div class="figure">{{ $money(abs($balance)) }}</div>
-        <div class="small">{{ $owing ? 'Still to pay' : ($balance < 0 ? 'Paid ahead' : 'Fully paid — thank you') }} · as at {{ now()->format('j M Y') }}</div>
+        <div class="small">{{ $owing ? 'Still to pay' : ($balance < 0 ? 'Paid ahead' : 'Fully paid - thank you') }} · as at {{ now()->format('j M Y') }}</div>
     </div>
 
     @if ($termSummary)
@@ -161,7 +161,7 @@
     @endif
 
     <footer>
-        This page is private to {{ $student->name }}'s family — please do not share the link.<br>
+        This page is private to {{ $student->name }}'s family - please do not share the link.<br>
         Questions about fees? Contact the school{{ $school->phone ? ' on ' . $school->phone : '' }}.<br>
         SchoolHub &middot; A product of {{ config('contact.brand') }}
     </footer>

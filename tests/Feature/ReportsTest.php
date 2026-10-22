@@ -136,7 +136,7 @@ it('downloads a report for Excel', function () {
     Livewire::test(FeesByClassReport::class)->call('downloadExcel');
 
     Excel::assertDownloaded('Fees_by_Class_Term_3_2026.xlsx', function (ReportExport $export): bool {
-        return $export->headings()[1] === ['Fees by Class — Term 3 — 2026']
+        return $export->headings()[1] === ['Fees by Class - Term 3 - 2026']
             && $export->array()[2][0] === 'Total';
     });
 });

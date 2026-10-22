@@ -59,14 +59,14 @@ class Plan extends Model
         return $limit === null ? 'Unlimited' : number_format($limit);
     }
 
-    /** @return array<int, string> id => "Standard — 800 students · 25 users" */
+    /** @return array<int, string> id => "Standard - 800 students · 25 users" */
     public static function options(bool $includeTrial = false): array
     {
         return static::where('is_active', true)
             ->when(! $includeTrial, fn ($q) => $q->where('is_trial', false))
             ->orderBy('sort_order')
             ->get()
-            ->mapWithKeys(fn (Plan $p) => [$p->id => "{$p->name} — ".static::limitLabel($p->max_students).' students · '.static::limitLabel($p->max_users).' users'])
+            ->mapWithKeys(fn (Plan $p) => [$p->id => "{$p->name} - ".static::limitLabel($p->max_students).' students · '.static::limitLabel($p->max_users).' users'])
             ->all();
     }
 }

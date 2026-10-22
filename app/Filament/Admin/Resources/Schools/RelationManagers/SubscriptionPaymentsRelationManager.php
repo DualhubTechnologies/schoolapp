@@ -23,7 +23,7 @@ class SubscriptionPaymentsRelationManager extends RelationManager
                 TextColumn::make('amount')->numeric()->prefix('UGX ')->weight('bold')
                     ->summarize(Sum::make()->label('Total')->numeric()->prefix('UGX ')),
                 TextColumn::make('method')->formatStateUsing(fn ($state) => SubscriptionPayment::METHODS[$state] ?? $state),
-                TextColumn::make('reference')->placeholder('—')->searchable(),
+                TextColumn::make('reference')->placeholder('-')->searchable(),
                 TextColumn::make('subscription.plan.name')->label('For')
                     ->description(fn (SubscriptionPayment $record) => $record->subscription?->periodLabel()),
                 TextColumn::make('received_by')->label('Recorded by')->toggleable(),

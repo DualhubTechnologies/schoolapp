@@ -16,7 +16,7 @@
                 <tr>
                     <td>{{ $row['name'] }}</td>
                     @foreach ($columns as $column => $heading)
-                        <td class="fs-num">{{ $money($row['amounts'][$column] ?? null) ?? '—' }}</td>
+                        <td class="fs-num">{{ $money($row['amounts'][$column] ?? null) ?? '-' }}</td>
                     @endforeach
                 </tr>
             @endforeach

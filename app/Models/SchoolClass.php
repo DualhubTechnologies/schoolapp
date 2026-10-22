@@ -37,7 +37,7 @@ class SchoolClass extends Model
     }
 
     /**
-     * The academic level this class sits in — O-Level, A-Level, and so on.
+     * The academic level this class sits in - O-Level, A-Level, and so on.
      *
      * Note the older `level` column above is a sort position, not an
      * academic level. Two similar names, two different things.
@@ -48,7 +48,7 @@ class SchoolClass extends Model
     }
 
     /**
-     * Some of a school's classes the way a school writes them: "S.1 – S.3"
+     * Some of a school's classes the way a school writes them: "S.1 - S.3"
      * for three or more that follow each other, "S.5 and S.6" for two,
      * "S.1, S.3 and S.5" otherwise.
      *
@@ -65,7 +65,7 @@ class SchoolClass extends Model
 
         return match (true) {
             $names->isEmpty() => 'no classes',
-            $consecutive => $names->first().' – '.$names->last(),
+            $consecutive => $names->first().' - '.$names->last(),
             $names->count() === 1 => $names->first(),
             default => $names->slice(0, -1)->implode(', ').' and '.$names->last(),
         };

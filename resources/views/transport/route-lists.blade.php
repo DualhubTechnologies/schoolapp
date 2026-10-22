@@ -32,7 +32,7 @@
                 @endif
                 <div class="who">
                     <h1>{{ $school?->name }}</h1>
-                    <p>School van route list{{ $term ? ' — '.$term->label() : '' }}</p>
+                    <p>School van route list{{ $term ? ' - '.$term->label() : '' }}</p>
                 </div>
             </div>
 
@@ -42,8 +42,8 @@
                     <p>{{ $route->students->count() }} {{ \Illuminate\Support\Str::plural('learner', $route->students->count()) }}{{ $route->capacity ? ' · '.$route->capacity.' seats' : '' }}</p>
                 </div>
                 <div style="text-align: right">
-                    <p><strong>{{ $route->vehicle ?: 'Van: —' }}</strong></p>
-                    <p>{{ $route->driver_name ?: 'Driver: —' }}{{ $route->driver_phone ? ' · '.$route->driver_phone : '' }}</p>
+                    <p><strong>{{ $route->vehicle ?: 'Van: -' }}</strong></p>
+                    <p>{{ $route->driver_name ?: 'Driver: -' }}{{ $route->driver_phone ? ' · '.$route->driver_phone : '' }}</p>
                 </div>
             </div>
 
@@ -62,7 +62,7 @@
                                 <td><strong>{{ $student->name }}</strong><br><span class="muted">{{ $student->admission_no }}</span></td>
                                 <td>{{ $student->schoolClass?->name }}{{ $student->section ? ' · '.$student->section->name : '' }}</td>
                                 <td>{{ \App\Models\TransportRoute::TRIPS[$student->transport_trip] ?? 'Both ways' }}</td>
-                                <td>{{ $student->guardian?->name ?? '—' }}<br><span class="muted">{{ $student->guardian?->phone }}</span></td>
+                                <td>{{ $student->guardian?->name ?? '-' }}<br><span class="muted">{{ $student->guardian?->phone }}</span></td>
                                 <td>
                                     @if ($s['label'] === 'Paid')
                                         <span class="paid">Paid</span>

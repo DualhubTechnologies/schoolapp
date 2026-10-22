@@ -128,7 +128,7 @@ class ArrearsRelationManager extends RelationManager
                         $record->update(['status' => 'approved']);
 
                         Notification::make()
-                            ->title('Arrears approved — will be included in next payroll generation')
+                            ->title('Arrears approved - will be included in next payroll generation')
                             ->success()
                             ->send();
                     }),

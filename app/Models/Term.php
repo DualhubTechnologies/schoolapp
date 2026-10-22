@@ -45,7 +45,7 @@ class Term extends Model
 
     /**
      * Only one term per school can be current. Marking a new one current
-     * clears the flag on the rest — invoicing and statements default to
+     * clears the flag on the rest - invoicing and statements default to
      * whichever term this points at.
      */
     protected static function booted(): void
@@ -184,12 +184,12 @@ class Term extends Model
     }
 
     /**
-     * "Term 1 — 2026", for dropdowns and statement headings.
+     * "Term 1 - 2026", for dropdowns and statement headings.
      */
     public function label(): string
     {
         $year = $this->academicYear?->name;
 
-        return $year ? "{$this->name} — {$year}" : $this->name;
+        return $year ? "{$this->name} - {$year}" : $this->name;
     }
 }

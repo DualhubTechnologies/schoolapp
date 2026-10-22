@@ -86,7 +86,7 @@ class CurriculumSetup
         foreach (config("academics.grading.{$curriculum}", []) as $purpose => $bands) {
             $scale = GradingScale::firstOrCreate(
                 ['school_id' => $school->getKey(), 'curriculum' => $curriculum, 'purpose' => $purpose],
-                ['name' => (config('academics.curricula')[$curriculum] ?? $curriculum).' — '.(GradingScale::PURPOSES[$purpose] ?? $purpose)],
+                ['name' => (config('academics.curricula')[$curriculum] ?? $curriculum).' - '.(GradingScale::PURPOSES[$purpose] ?? $purpose)],
             );
 
             if (! $scale->wasRecentlyCreated) {

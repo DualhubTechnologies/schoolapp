@@ -60,7 +60,7 @@ class RecentPaymentsTable extends TableWidget
                     ->color('gray'),
                 TextColumn::make('reference')
                     ->label('Receipt / ref')
-                    ->placeholder('—'),
+                    ->placeholder('-'),
                 TextColumn::make('amount')
                     ->label('Amount (UGX)')
                     ->numeric()

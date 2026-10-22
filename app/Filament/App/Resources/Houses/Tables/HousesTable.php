@@ -26,7 +26,7 @@ class HousesTable
                     ->label('School')
                     ->searchable(),
 
-                // Useful at a glance — shows how evenly students are
+                // Useful at a glance - shows how evenly students are
                 // spread across houses.
                 TextColumn::make('students_count')
                     ->label('Students')

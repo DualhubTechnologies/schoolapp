@@ -79,7 +79,7 @@
                     @foreach ($details as $label => $value)
                         <div>
                             <dt>{{ $label }}</dt>
-                            <dd>{{ $value ?: '—' }}</dd>
+                            <dd>{{ $value ?: '-' }}</dd>
                         </div>
                     @endforeach
                 </dl>

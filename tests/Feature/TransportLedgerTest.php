@@ -29,7 +29,7 @@ function charge(Term $term, float $amount, bool $transport = false): void
     StudentCharge::create([
         'school_id' => test()->school->id, 'student_id' => test()->student->id, 'term_id' => $term->id,
         'transport_route_id' => $transport ? test()->route->id : null,
-        'description' => $transport ? 'Transport — Kakiri' : 'Tuition', 'amount' => $amount, 'discount_amount' => 0,
+        'description' => $transport ? 'Transport - Kakiri' : 'Tuition', 'amount' => $amount, 'discount_amount' => 0,
         'charged_on' => '2026-09-15',
     ]);
 }

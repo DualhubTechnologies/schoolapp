@@ -38,13 +38,13 @@ class TermsTable
                 TextColumn::make('start_date')
                     ->label('Starts')
                     ->date()
-                    ->placeholder('—')
+                    ->placeholder('-')
                     ->sortable(),
 
                 TextColumn::make('end_date')
                     ->label('Ends')
                     ->date()
-                    ->placeholder('—')
+                    ->placeholder('-')
                     ->sortable(),
 
                 IconColumn::make('is_current')

@@ -7,7 +7,7 @@
     $assessments = $results['assessments'];
     $logo = $school?->logo ? Storage::disk('public')->url($school->logo) : null;
     $signature = $school?->signatureUrl();
-    $n = fn ($v) => $v === null ? '—' : rtrim(rtrim(number_format((float) $v, 1), '0'), '.');
+    $n = fn ($v) => $v === null ? '-' : rtrim(rtrim(number_format((float) $v, 1), '0'), '.');
     $title = $template->titleFor($curriculum);
     $style = $template->style();
     $show = fn (string $part): bool => $template->shows($part);
@@ -25,7 +25,7 @@
     // O-Level with the formative/exam split: each CA out of 3 (CA1, CA2, ...),
     // whatever it was marked out of, their average, the CA out of 20 and End
     // of Term out of 80.
-    $outOf3 = fn ($pct) => $pct === null ? '—' : rtrim(rtrim(number_format($pct * \App\Models\Assessment::O_LEVEL_CA_REPORT_SCALE / 100, 2), '0'), '.');
+    $outOf3 = fn ($pct) => $pct === null ? '-' : rtrim(rtrim(number_format($pct * \App\Models\Assessment::O_LEVEL_CA_REPORT_SCALE / 100, 2), '0'), '.');
     $caColumns = $split && ! $exam ? $columns->filter(fn ($a) => $a->isAveragedIn($curriculum))->values() : collect();
     $eotColumns = $caColumns->isNotEmpty() ? $columns->where('type', 'eot')->values() : collect();
     if ($caColumns->isNotEmpty()) {
@@ -195,7 +195,7 @@
 
             <div class="rc-title">
                 <h2>{{ $title }}</h2>
-                <p>{{ $term->label() }}{{ $exam ? ' — '.$exam->name : '' }}</p>
+                <p>{{ $term->label() }}{{ $exam ? ' - '.$exam->name : '' }}</p>
             </div>
 
             <div class="info">
@@ -205,9 +205,9 @@
                 @if ($show('identifiers'))
                     <div>
                         @if ($curriculum === 'a_level')
-                            <div class="label">Combination</div><div class="v">{{ $student->combination?->label() ?? '—' }}</div>
+                            <div class="label">Combination</div><div class="v">{{ $student->combination?->label() ?? '-' }}</div>
                         @else
-                            <div class="label">LIN</div><div class="v">{{ $student->lin ?: '—' }}</div>
+                            <div class="label">LIN</div><div class="v">{{ $student->lin ?: '-' }}</div>
                         @endif
                     </div>
                 @endif
@@ -266,7 +266,7 @@
                                             $examRow === null => '',
                                             $field === 'total' => $n($examRow['total']),
                                             $field === 'aggregate' => $examRow['aggregate'] ?? 'X',
-                                            default => $examRow['division'] === 'X' ? 'Incomplete' : ($examRow['division'] ?? '—'),
+                                            default => $examRow['division'] === 'X' ? 'Incomplete' : ($examRow['division'] ?? '-'),
                                         };
                                     @endphp
                                     <th class="c" colspan="2">{{ $value }}</th>
@@ -282,7 +282,7 @@
                 <thead>
                     <tr>
                         <th style="text-align:left">Subject</th>
-                        @if ($topicScores)<th style="text-align:left">Topics (0–3)</th>@endif
+                        @if ($topicScores)<th style="text-align:left">Topics (0-3)</th>@endif
                         @foreach ($columns as $a)
                             <th class="c" title="{{ $a->name }}">{{ $a->shortLabel() }}<br><span style="font-weight:500">/{{ $a->max_score + 0 }}</span></th>
                         @endforeach
@@ -332,7 +332,7 @@
                                     @endphp
                                     <td class="c">{{ $s ? ($s['absent'] ? 'AB' : $outOf3($s['pct'])) : '' }}</td>
                                 @endforeach
-                                <td class="c">{{ $caPcts ? $outOf3(array_sum($caPcts) / count($caPcts)) : '—' }}</td>
+                                <td class="c">{{ $caPcts ? $outOf3(array_sum($caPcts) / count($caPcts)) : '-' }}</td>
                             @endif
                             @if ($split)
                                 <td class="c">{{ $n($res['formative']) }}</td>
@@ -350,7 +350,7 @@
                                 @if ($curriculum === 'a_level' && $res['subject']->category === 'subsidiary' && $res['grade'] !== null)
                                     {{ ($res['value'] ?? 0) > 0 ? 'O' : 'F' }}
                                 @else
-                                    {{ $res['grade'] ?? '—' }}
+                                    {{ $res['grade'] ?? '-' }}
                                 @endif
                             </td>
                             <td>{{ $res['comment'] ?: $res['descriptor'] }}</td>
@@ -366,18 +366,18 @@
                     @if ($curriculum === 'primary')
                         @if ($finalExam)<div class="kv"><span>Result from</span><b>{{ $finalExam['exam']->name }}</b></div>@endif
                         <div class="kv"><span>Aggregate (4 core subjects)</span><b class="big">{{ $overall['aggregate'] ?? 'X' }}</b></div>
-                        <div class="kv"><span>Division</span><b class="big">{{ $overall['division'] === 'X' ? 'Incomplete' : ($overall['division'] ?? '—') }}</b></div>
+                        <div class="kv"><span>Division</span><b class="big">{{ $overall['division'] === 'X' ? 'Incomplete' : ($overall['division'] ?? '-') }}</b></div>
                     @elseif ($curriculum === 'a_level')
-                        <div class="kv"><span>Total points (out of 20)</span><b class="big">{{ $row['points'] ?? '—' }}</b></div>
-                        <div class="kv"><span>Principal grades</span><b>{{ $row['principal_grades'] ?: '—' }}</b></div>
-                        <div class="kv"><span>Result</span><b>{{ $row['result_code'] ?: '—' }}</b></div>
+                        <div class="kv"><span>Total points (out of 20)</span><b class="big">{{ $row['points'] ?? '-' }}</b></div>
+                        <div class="kv"><span>Principal grades</span><b>{{ $row['principal_grades'] ?: '-' }}</b></div>
+                        <div class="kv"><span>Result</span><b>{{ $row['result_code'] ?: '-' }}</b></div>
                     @elseif ($curriculum === 'o_level')
                         {{-- O-Level: the average and total marks only, no UCE result. --}}
                         <div class="kv"><span>Average score</span><b class="big">{{ $n($row['average']) }}%</b></div>
                         <div class="kv"><span>Total marks</span><b class="big">{{ $n($row['total']) }}</b></div>
                     @else
-                        <div class="kv"><span>Overall achievement</span><b class="big">{{ $row['overall_grade'] ?? '—' }}</b></div>
-                        <div class="kv"><span>Descriptor</span><b>{{ $row['overall_descriptor'] ?? '—' }}</b></div>
+                        <div class="kv"><span>Overall achievement</span><b class="big">{{ $row['overall_grade'] ?? '-' }}</b></div>
+                        <div class="kv"><span>Descriptor</span><b>{{ $row['overall_descriptor'] ?? '-' }}</b></div>
                     @endif
                     @if ($curriculum !== 'o_level')
                         <div class="kv"><span>Average score</span><b>{{ $n($overall['average']) }}%</b></div>
@@ -386,7 +386,7 @@
                 </div>
                 <div class="box">
                     @if ($show('class_position'))
-                        <div class="kv"><span>Position in class</span><b class="big">{{ $overall['position'] ?? '—' }} <span style="font-size:.75rem;font-weight:600">out of {{ $overall['out_of'] }}</span></b></div>
+                        <div class="kv"><span>Position in class</span><b class="big">{{ $overall['position'] ?? '-' }} <span style="font-size:.75rem;font-weight:600">out of {{ $overall['out_of'] }}</span></b></div>
                     @endif
                     @if ($show('stream_position') && $student->section && $overall['stream_position'])
                         <div class="kv"><span>Position in stream</span><b>{{ $overall['stream_position'] }} out of {{ $overall['stream_out_of'] }}</b></div>
@@ -428,7 +428,7 @@
                                 <td>{{ $project['subject'] }}</td>
                                 <td class="c">{{ $n($project['score']) }} / {{ $n($project['max']) }}</td>
                                 <td class="c">{{ $n($project['percent']) }}%</td>
-                                <td class="grade">{{ $project['grade'] ?? '—' }}</td>
+                                <td class="grade">{{ $project['grade'] ?? '-' }}</td>
                                 <td>{{ $project['remark'] }}</td>
                                 @if ($show('teacher_initials'))<td class="c">{{ $project['teacher'] }}</td>@endif
                             </tr>
@@ -441,7 +441,7 @@
                 <div class="box trend">
                     <span class="label">Average by term</span>
                     @foreach ($termAverages[$student->id] as $termName => $average)
-                        <span class="trend-term">{{ $termName }} <b>{{ $average === null ? '—' : $n($average).'%' }}</b></span>
+                        <span class="trend-term">{{ $termName }} <b>{{ $average === null ? '-' : $n($average).'%' }}</b></span>
                     @endforeach
                 </div>
             @endif
@@ -519,16 +519,16 @@
                         @foreach (\App\Services\Academics\UacePrincipalGrade::POINTS as $letter => $points)
                             <span>{{ $letter }} {{ $points }} {{ $points === 1 ? 'point' : 'points' }}</span>
                         @endforeach
-                        <br><span>A–E principal pass · O subsidiary pass · F fail · General Paper and the subsidiary subject: O = 1 point</span>
+                        <br><span>A-E principal pass · O subsidiary pass · F fail · General Paper and the subsidiary subject: O = 1 point</span>
                     </div>
                 @endif
                 @if ($keyScale)
                     <div class="key">
                         <strong>Key:</strong>
                         @foreach ($keyScale->bands as $band)
-                            <span>{{ $band->grade }} {{ $band->min_score + 0 }}–{{ $band->max_score + 0 }}{{ $band->descriptor ? ' ' . $band->descriptor : '' }}</span>
+                            <span>{{ $band->grade }} {{ $band->min_score + 0 }}-{{ $band->max_score + 0 }}{{ $band->descriptor ? ' ' . $band->descriptor : '' }}</span>
                         @endforeach
-                        @if ($examResults)<br><span>* counts in the aggregate · {{ collect(config('academics.primary_divisions'))->map(fn ($d) => "{$d[0]} {$d[1]}–{$d[2]}")->implode(', ') }}</span>@endif
+                        @if ($examResults)<br><span>* counts in the aggregate · {{ collect(config('academics.primary_divisions'))->map(fn ($d) => "{$d[0]} {$d[1]}-{$d[2]}")->implode(', ') }}</span>@endif
                         @if ($topicScores)<br><strong>Topics:</strong> <span>3 all outcomes, with ease</span><span>2 most, enough to achieve</span><span>1 some, not enough</span><span>0 none yet</span>@endif
                     </div>
                 @endif

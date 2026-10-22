@@ -12,7 +12,7 @@ class ManageIncomes extends ManageRecords
 
     public function getSubheading(): ?string
     {
-        return 'Money received besides school fees — capitation grants, donations, sales, hire of facilities. Fees are counted automatically from receipts.';
+        return 'Money received besides school fees - capitation grants, donations, sales, hire of facilities. Fees are counted automatically from receipts.';
     }
 
     protected function getHeaderActions(): array

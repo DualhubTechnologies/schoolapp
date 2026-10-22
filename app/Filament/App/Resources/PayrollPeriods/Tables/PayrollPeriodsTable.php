@@ -66,7 +66,7 @@ class PayrollPeriodsTable
                 TextColumn::make('payment_date')
                     ->label('Paid on')
                     ->date('j M Y')
-                    ->placeholder('—'),
+                    ->placeholder('-'),
             ])
             ->filters([
                 SelectFilter::make('status')->options(PayrollPeriod::STATUSES),

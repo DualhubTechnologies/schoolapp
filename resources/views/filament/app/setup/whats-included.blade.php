@@ -56,7 +56,7 @@
                                     'bg-primary-50 text-primary-700 ring-primary-600/20 dark:bg-primary-500/10 dark:text-primary-400 dark:ring-primary-400/30' => $term['name'] === $currentTerm,
                                     'bg-gray-50 text-gray-600 ring-gray-500/10 dark:bg-white/5 dark:text-gray-400 dark:ring-white/10' => $term['name'] !== $currentTerm,
                                 ])>
-                                    {{ $term['name'] }}: {{ $term['starts']->format('j M') }} – {{ $term['ends']->format('j M') }}
+                                    {{ $term['name'] }}: {{ $term['starts']->format('j M') }} - {{ $term['ends']->format('j M') }}
                                 </span>
                             @endforeach
                         </div>

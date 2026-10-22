@@ -41,7 +41,7 @@ class PromotionRule extends Model
     /**
      * Starting rules per curriculum.
      *
-     *   primary  P1–P3 progress automatically (thematic curriculum); from
+     *   primary  P1-P3 progress automatically (thematic curriculum); from
      *            P4, a 40% annual average and passes in English and Maths
      *   o_level  a 40% annual average and English and Maths at least at
      *            "Basic" (30%) on the new curriculum scale

@@ -67,7 +67,7 @@ class SchoolClassForm
                         // academic level -- that is class_level_id above.
                         TextInput::make('level')
                             ->label('Sort order')
-                            ->helperText('Numeric position in the academic ladder — 1 for the lowest class. Controls list order.')
+                            ->helperText('Numeric position in the academic ladder - 1 for the lowest class. Controls list order.')
                             ->numeric()
                             ->minValue(1),
                     ]),

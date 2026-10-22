@@ -57,7 +57,7 @@ return [
         'eot' => 'End of Term',
         'ca' => 'Continuous Assessment / Activity of Integration',
         'project' => 'Project work',
-        'topics' => 'Topic assessment (0–3, filled from Assess Topics)',
+        'topics' => 'Topic assessment (0-3, filled from Assess Topics)',
         'other' => 'Other test',
     ],
 
@@ -105,13 +105,13 @@ return [
         ],
 
         'primary' => [
-            // Lower primary thematic curriculum (P1–P3). Schools grade these
+            // Lower primary thematic curriculum (P1-P3). Schools grade these
             // four like the PLE subjects, for an aggregate and division.
             ['name' => 'Literacy I', 'short' => 'LIT1', 'category' => 'core', 'offered_in' => [1, 2, 3]],
             ['name' => 'Literacy II', 'short' => 'LIT2', 'category' => 'core', 'offered_in' => [1, 2, 3]],
             ['name' => 'Numeracy', 'short' => 'NUM', 'category' => 'core', 'offered_in' => [1, 2, 3]],
             ['name' => 'Oral English', 'short' => 'OENG', 'category' => 'core', 'offered_in' => [1, 2, 3]],
-            // Upper primary (P4–P7): the four PLE subjects are "core"
+            // Upper primary (P4-P7): the four PLE subjects are "core"
             ['name' => 'English', 'short' => 'ENG', 'category' => 'core', 'offered_in' => [4, 5, 6, 7]],
             ['name' => 'Mathematics', 'short' => 'MTC', 'category' => 'core', 'offered_in' => [4, 5, 6, 7]],
             ['name' => 'Integrated Science', 'short' => 'SCI', 'category' => 'core', 'offered_in' => [4, 5, 6, 7]],
@@ -124,7 +124,7 @@ return [
         ],
 
         // New lower-secondary curriculum (NCDC): 11 compulsory subjects in
-        // S1–S2; 7 compulsory in S3–S4 plus one or two electives.
+        // S1-S2; 7 compulsory in S3-S4 plus one or two electives.
         'o_level' => [
             ['name' => 'English Language', 'short' => 'ENG', 'offered_in' => [1, 2, 3, 4]],
             ['name' => 'Mathematics', 'short' => 'MTC', 'offered_in' => [1, 2, 3, 4]],
@@ -221,8 +221,8 @@ return [
                 ['Needs support', 0, 49.99, 5, 'Needs more support'],
             ],
         ],
-        // NCDC achievement levels (score out of 3 → %: A 2.5–3.0, B 2.01–
-        // 2.49, C 1.5–2.0, D 0.9–1.49, E below 0.9).
+        // NCDC achievement levels (score out of 3 → %: A 2.5-3.0, B 2.01-
+        // 2.49, C 1.5-2.0, D 0.9-1.49, E below 0.9).
         'o_level' => [
             'subject' => [
                 ['A', 83.33, 100, 3, 'Exceptional'],
@@ -232,8 +232,8 @@ return [
                 ['E', 0, 29.99, 1, 'Elementary'],
             ],
         ],
-        // UNEB's UACE paper grades. Every A-Level paper is graded D1–F9;
-        // a principal subject's grade (A–E, O, F) then follows from its
+        // UNEB's UACE paper grades. Every A-Level paper is graded D1-F9;
+        // a principal subject's grade (A-E, O, F) then follows from its
         // paper grades (App\Services\Academics\UacePrincipalGrade), and a
         // subsidiary passes with C6 or better.
         'a_level' => [

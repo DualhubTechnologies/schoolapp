@@ -59,7 +59,7 @@ class SubscriptionActions
                     ->filter(fn (User $user) => $user->hasRole('School Admin'))
                     ->each(fn (User $user) => VerifyEmail::welcome($user));
 
-                Notification::make()->title("{$record->name} approved — its free trial has started")->success()->send();
+                Notification::make()->title("{$record->name} approved - its free trial has started")->success()->send();
             });
     }
 
@@ -112,7 +112,7 @@ class SubscriptionActions
             ->label('Record payment')
             ->icon('heroicon-o-banknotes')
             ->color('success')
-            ->modalHeading(fn (School $record) => "Record payment — {$record->name}")
+            ->modalHeading(fn (School $record) => "Record payment - {$record->name}")
             ->modalDescription(function (School $record) {
                 $st = SubscriptionManager::status($record);
 
@@ -228,7 +228,7 @@ class SubscriptionActions
             ->label('Generate activation code')
             ->icon('heroicon-o-key')
             ->color('gray')
-            ->modalHeading(fn (School $record) => "Generate activation code — {$record->name}")
+            ->modalHeading(fn (School $record) => "Generate activation code - {$record->name}")
             ->modalDescription('For a school that has already paid you directly. Give them the code; entering it on their Subscription page applies this renewal immediately.')
             ->fillForm(function (School $record) {
                 $plan = SubscriptionManager::current($record)?->plan;
@@ -313,7 +313,7 @@ class SubscriptionActions
 
                 Notification::make()
                     ->title('Activation code generated')
-                    ->body("Give {$record->name} this code — it works on their Subscription page and expires {$code->expires_at->format('j M Y')}:\n\n{$code->code}")
+                    ->body("Give {$record->name} this code - it works on their Subscription page and expires {$code->expires_at->format('j M Y')}:\n\n{$code->code}")
                     ->success()
                     ->persistent()
                     ->send();

@@ -82,7 +82,7 @@
         {{-- ── Broadsheet ── --}}
         <div class="cr-card">
             <div class="cr-card-head">
-                <strong>{{ $r['class']->name }}{{ $this->sectionId ? ' ' . $this->sectionOptions()[$this->sectionId] : '' }} — {{ $r['term']->label() }}</strong>
+                <strong>{{ $r['class']->name }}{{ $this->sectionId ? ' ' . $this->sectionOptions()[$this->sectionId] : '' }} - {{ $r['term']->label() }}</strong>
                 <span class="cr-muted">Term scores (%) with grades. Positions are in the whole class; stream positions in brackets.</span>
             </div>
             <div class="cr-scroll">
@@ -105,7 +105,7 @@
                         @foreach ($r['rows'] as $row)
                             <tr>
                                 <td class="cr-c cr-pos">
-                                    {{ $row['position'] ?? '—' }}
+                                    {{ $row['position'] ?? '-' }}
                                     @if ($row['stream_position'] && $row['student']->section)<span class="cr-muted">({{ $row['stream_position'] }})</span>@endif
                                 </td>
                                 <td>
@@ -126,9 +126,9 @@
                                     </td>
                                 @endforeach
                                 <td class="cr-c">{{ $row['total'] + 0 }}</td>
-                                <td class="cr-c cr-strong">{{ $row['average'] ?? '—' }}</td>
+                                <td class="cr-c cr-strong">{{ $row['average'] ?? '-' }}</td>
                                 @foreach (array_keys($overall) as $key)
-                                    <td class="cr-c cr-strong" @if ($key === 'uce_label' && ! empty($row['uce_reasons'])) title="{{ implode('; ', $row['uce_reasons']) }}" @endif>{{ $row[$key] ?? '—' }}</td>
+                                    <td class="cr-c cr-strong" @if ($key === 'uce_label' && ! empty($row['uce_reasons'])) title="{{ implode('; ', $row['uce_reasons']) }}" @endif>{{ $row[$key] ?? '-' }}</td>
                                 @endforeach
                             </tr>
                         @endforeach

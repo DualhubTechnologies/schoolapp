@@ -58,7 +58,7 @@ class FeeBalancesTable
                     ->label('Residency')
                     ->badge()
                     ->color(fn ($record) => $record->residencyType?->badgeColor() ?? 'gray')
-                    ->placeholder('—')
+                    ->placeholder('-')
                     ->toggleable(),
 
                 LinkGuardian::column(TextColumn::make('guardian.name')
@@ -92,7 +92,7 @@ class FeeBalancesTable
 
                 TextColumn::make('percent_paid')
                     ->label('Paid')
-                    ->state(fn (Student $record) => $percent($record) === null ? '—' : $percent($record).'%')
+                    ->state(fn (Student $record) => $percent($record) === null ? '-' : $percent($record).'%')
                     ->badge()
                     ->alignEnd()
                     ->color(fn (Student $record): string => match (true) {

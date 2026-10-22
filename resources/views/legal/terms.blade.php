@@ -154,7 +154,7 @@
             <ul>
                 <li>Your school owns its data. We only use it to run SchoolHub for you, and we never sell it.</li>
                 <li>Every new school gets a free trial of {{ $trialLabel }} with every module. No payment details are needed.</li>
-                <li>After that you pay per term or per year, in UGX. If payment is late, the school keeps working for {{ $graceDays }} days, then is locked until payment — nothing is deleted.</li>
+                <li>After that you pay per term or per year, in UGX. If payment is late, the school keeps working for {{ $graceDays }} days, then is locked until payment - nothing is deleted.</li>
                 <li>You can leave at any time and ask us for a copy of your data, or to delete it.</li>
             </ul>
         </div>
@@ -170,7 +170,7 @@
         <section id="register">
             <h2><span>{{ ++$n }}</span>Registering a school</h2>
             <ul>
-                <li>You may only register a school you are authorised to act for — for example as its head teacher, director, proprietor or administrator.</li>
+                <li>You may only register a school you are authorised to act for - for example as its head teacher, director, proprietor or administrator.</li>
                 <li>The person who registers becomes the school's <b>School Admin</b> and is responsible for the school's account, including the other staff logins they create.</li>
                 <li>The details you give (school name, category, location, your name, phone and email) must be accurate and kept up to date in School Profile.</li>
                 <li>We may refuse or close a registration that is false, duplicated, or made without the school's authority.</li>
@@ -211,9 +211,9 @@
         <section id="data">
             <h2><span>{{ ++$n }}</span>Your school's data</h2>
             <ul>
-                <li><b>The school owns all the data it puts into SchoolHub</b> — learners, parents and guardians, staff, fees, marks, payroll and finance records.</li>
+                <li><b>The school owns all the data it puts into SchoolHub</b> - learners, parents and guardians, staff, fees, marks, payroll and finance records.</li>
                 <li>For the purposes of Uganda's <b>Data Protection and Privacy Act, 2019</b>, the school decides why and how this personal data is used (it is the data controller), and we handle it on the school's behalf.</li>
-                <li>The school is responsible for having a lawful reason to hold this data, for telling parents, guardians and staff how it is used, and for getting consent where the law requires it — particularly for information about children.</li>
+                <li>The school is responsible for having a lawful reason to hold this data, for telling parents, guardians and staff how it is used, and for getting consent where the law requires it - particularly for information about children.</li>
                 <li>The school is responsible for the accuracy of what it enters, such as marks, fee balances and salaries.</li>
             </ul>
         </section>
@@ -262,7 +262,7 @@
         <section id="service">
             <h2><span>{{ ++$n }}</span>Availability and support</h2>
             <ul>
-                <li>We work to keep SchoolHub available and reliable, but we cannot promise it will never be interrupted — for example during maintenance, or because of internet or power problems outside our control.</li>
+                <li>We work to keep SchoolHub available and reliable, but we cannot promise it will never be interrupted - for example during maintenance, or because of internet or power problems outside our control.</li>
                 <li>We try to carry out planned maintenance outside school hours.</li>
                 <li>We may improve or change features over time. We will not remove a core feature a school depends on without reasonable notice.</li>
                 <li>Support is available by WhatsApp, phone and email (see <a href="#contact">Contact us</a>).</li>
@@ -282,7 +282,7 @@
         <section id="liability">
             <h2><span>{{ ++$n }}</span>Our liability</h2>
             <ul>
-                <li>SchoolHub is a tool to help run a school. Decisions based on it — such as promotions, fee demands or payroll — remain the school's responsibility.</li>
+                <li>SchoolHub is a tool to help run a school. Decisions based on it - such as promotions, fee demands or payroll - remain the school's responsibility.</li>
                 <li>So far as the law allows, we are not responsible for indirect losses, such as lost income, and our total responsibility to a school in any year is limited to the fees that school paid us in that year.</li>
                 <li>Nothing in these terms limits any responsibility that cannot be limited under the laws of Uganda.</li>
             </ul>

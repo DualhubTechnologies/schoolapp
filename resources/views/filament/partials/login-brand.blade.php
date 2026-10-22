@@ -1,5 +1,5 @@
 {{--
-    SchoolHub — login brand panel
+    SchoolHub - login brand panel
     Save as: resources/views/filament/partials/login-brand.blade.php
 
     The navy left-hand half of the split login card. Injected via the
@@ -18,7 +18,7 @@
     <h2>Welcome back</h2>
 
     <p>
-        Sign in to SchoolHub — the complete school management system for
+        Sign in to SchoolHub - the complete school management system for
         students, staff, payroll and fees.
     </p>
 

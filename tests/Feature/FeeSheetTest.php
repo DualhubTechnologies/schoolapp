@@ -55,7 +55,7 @@ beforeEach(function () {
 it('prints one table for classes that pay the same, and keeps each class\'s own amounts', function () {
     $termly = (new FeeSheet($this->term))->termly();
 
-    expect(collect($termly)->pluck('classes')->all())->toBe(['S.1 – S.3', 'S.4'])
+    expect(collect($termly)->pluck('classes')->all())->toBe(['S.1 - S.3', 'S.4'])
         ->and($termly[0]['rows'][0])->toBe(['name' => 'Tuition', 'amounts' => [$this->day->id => 850000.0, $this->boarding->id => 1250000.0]])
         ->and($termly[1]['totals'])->toBe([$this->day->id => 920000.0, $this->boarding->id => 1320000.0]);
 });
@@ -63,10 +63,10 @@ it('prints one table for classes that pay the same, and keeps each class\'s own 
 it('lists the admission fees apart, with what a new learner pays in the first term', function () {
     $sheet = new FeeSheet($this->term);
 
-    expect(collect($sheet->admission())->pluck('classes')->all())->toBe(['S.1 – S.4'])
+    expect(collect($sheet->admission())->pluck('classes')->all())->toBe(['S.1 - S.4'])
         ->and(collect($sheet->termly())->flatMap(fn ($group) => collect($group['rows'])->pluck('name'))->unique()->values()->all())->toBe(['Tuition', 'Medical'])
         ->and($sheet->firstTerm())->toBe([
-            ['classes' => 'S.1 – S.3', 'totals' => [$this->day->id => 970000.0, $this->boarding->id => 1370000.0]],
+            ['classes' => 'S.1 - S.3', 'totals' => [$this->day->id => 970000.0, $this->boarding->id => 1370000.0]],
             ['classes' => 'S.4', 'totals' => [$this->day->id => 1020000.0, $this->boarding->id => 1420000.0]],
         ]);
 });
@@ -81,7 +81,7 @@ it('names groups of classes the way a school writes them', function () {
     $sheet = new FeeSheet($this->term);
     $id = fn (string ...$names) => collect($names)->map(fn ($name) => $this->classes[$name]->id)->all();
 
-    expect($sheet->classLabel($id('S.1', 'S.2', 'S.3')))->toBe('S.1 – S.3')
+    expect($sheet->classLabel($id('S.1', 'S.2', 'S.3')))->toBe('S.1 - S.3')
         ->and($sheet->classLabel($id('S.1', 'S.2')))->toBe('S.1 and S.2')
         ->and($sheet->classLabel($id('S.1', 'S.3', 'S.4')))->toBe('S.1, S.3 and S.4');
 });
@@ -98,7 +98,7 @@ it('gives a school without day and boarding a single amount column', function ()
 it('shows the term dates, how to pay and the school\'s requirements on the sheet', function () {
     Livewire::test(FeeStructureSheet::class)
         ->assertSee('Term begins Monday 2 February 2026 and ends Friday 1 May 2026')
-        ->assertSee('S.1 – S.3')
+        ->assertSee('S.1 - S.3')
         ->assertSee('On admission (new learners)')
         ->assertSee('Centenary Bank, A/C 3100012345')
         ->assertSee('4 toilet rolls')

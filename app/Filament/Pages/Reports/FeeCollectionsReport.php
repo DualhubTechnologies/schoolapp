@@ -95,7 +95,7 @@ class FeeCollectionsReport extends ReportPage
 
     public function coverage(): string
     {
-        return $this->fromDate()->format('j M Y').' – '.$this->toDate()->format('j M Y');
+        return $this->fromDate()->format('j M Y').' - '.$this->toDate()->format('j M Y');
     }
 
     /** @return Collection<int, StudentPayment> */

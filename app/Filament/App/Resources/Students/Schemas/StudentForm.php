@@ -249,7 +249,7 @@ class StudentForm
             Select::make('combination_id')
                 ->label('A-Level combination')
                 ->relationship('combination', 'name', fn (Builder $query) => static::scopeToSchool($query)->where('is_active', true))
-                ->getOptionLabelFromRecordUsing(fn ($record) => $record->name.($record->description ? ' — '.$record->description : ''))
+                ->getOptionLabelFromRecordUsing(fn ($record) => $record->name.($record->description ? ' - '.$record->description : ''))
                 ->searchable()
                 ->preload()
                 ->visible(fn (Get $get): bool => static::classCurriculum($get('school_class_id')) === 'a_level')
@@ -390,7 +390,7 @@ class StudentForm
     }
 
     /**
-     * Address and safety/medical notes — all optional.
+     * Address and safety/medical notes - all optional.
      *
      * @return array<int, Component>
      */
@@ -419,7 +419,7 @@ class StudentForm
             ->label('Registration No.')
             ->required()
             ->default(fn () => static::nextAdmissionNumber())
-            ->helperText('Auto-generated — change only if needed.')
+            ->helperText('Auto-generated - change only if needed.')
             ->rule(fn (Get $get, ?Student $record) => function ($attribute, $value, $fail) use ($get, $record) {
                 $user = auth()->user();
 
@@ -591,7 +591,7 @@ class StudentForm
     }
 
     /**
-     * "Sarah Nakato · 0772 555666 — parent of Aisha Nakato (P.4)".
+     * "Sarah Nakato · 0772 555666 - parent of Aisha Nakato (P.4)".
      */
     public static function familyLabel(?Guardian $guardian): ?string
     {
@@ -604,7 +604,7 @@ class StudentForm
             ->take(3)
             ->implode(', ');
 
-        return trim("{$guardian->name} · {$guardian->phone}".($children !== '' ? " — parent of {$children}" : ''));
+        return trim("{$guardian->name} · {$guardian->phone}".($children !== '' ? " - parent of {$children}" : ''));
     }
 
     /**

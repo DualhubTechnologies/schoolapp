@@ -31,8 +31,8 @@ class DemoRequest extends Model
 
     public const LEARNERS = [
         'under-300' => 'Under 300',
-        '300-800' => '300 – 800',
-        '800-1500' => '800 – 1,500',
+        '300-800' => '300 - 800',
+        '800-1500' => '800 - 1,500',
         'over-1500' => 'Over 1,500',
     ];
 

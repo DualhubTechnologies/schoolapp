@@ -89,7 +89,7 @@ class IncomeExpenditure extends Page
         }
 
         return app(FinanceReport::class)->build($schoolId, $from->startOfDay(), $to->endOfDay(), $terms)
-            + ['label' => $label ?? ($from->format('j M Y').' – '.$to->format('j M Y'))];
+            + ['label' => $label ?? ($from->format('j M Y').' - '.$to->format('j M Y'))];
     }
 
     protected function termRange(int $schoolId): array

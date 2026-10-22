@@ -34,7 +34,7 @@ return [
      */
     'lst' => [
         'enabled' => true,
-        'months' => [7, 8, 9, 10], // July – October
+        'months' => [7, 8, 9, 10], // July - October
         'bands' => [
             0 => 0,
             100_000 => 5_000,

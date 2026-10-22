@@ -134,7 +134,7 @@ class PromoteStudents extends Page
                 ->label('Promotion rules')
                 ->icon('heroicon-o-adjustments-horizontal')
                 ->color('gray')
-                ->modalHeading(fn () => 'Promotion rules — '.(config('academics.curricula')[$this->rulesCurriculum()] ?? 'Primary'))
+                ->modalHeading(fn () => 'Promotion rules - '.(config('academics.curricula')[$this->rulesCurriculum()] ?? 'Primary'))
                 ->modalDescription('How the system recommends each student. You always make the final decision per student.')
                 ->modalSubmitActionLabel('Save rules')
                 ->fillForm(fn () => PromotionRule::for(auth()->user()->school_id, $this->rulesCurriculum())->only([
@@ -151,7 +151,7 @@ class PromoteStudents extends Page
                         ->helperText('Matched by name. Failing one gives probation (or repeat if the average is also low).'),
                     TextInput::make('subject_pass_mark')->label('Subject pass mark')->numeric()->suffix('%')->minValue(0)->maxValue(100)->required(),
                     TextInput::make('auto_promote_upto')->label('Promote automatically up to class number')->numeric()->minValue(1)->maxValue(9)
-                        ->helperText('e.g. 3 = P1–P3 progress automatically, as in the thematic curriculum. Leave blank for none.')
+                        ->helperText('e.g. 3 = P1-P3 progress automatically, as in the thematic curriculum. Leave blank for none.')
                         ->visible(fn () => in_array($this->rulesCurriculum(), ['primary', 'nursery'], true)),
                     TextInput::make('min_points')->label('Minimum points (A-Level)')->numeric()->minValue(0)->maxValue(20)
                         ->helperText('e.g. 2 = at least one principal pass.')

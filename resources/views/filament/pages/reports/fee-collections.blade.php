@@ -56,7 +56,7 @@
                                 <td>{{ $row['label'] }}</td>
                                 <td class="rpt-num">{{ $row['receipts'] }}</td>
                                 @foreach ($methods as $key => $name)
-                                    <td class="rpt-num">{{ $row['methods'][$key] > 0 ? $n($row['methods'][$key]) : '—' }}</td>
+                                    <td class="rpt-num">{{ $row['methods'][$key] > 0 ? $n($row['methods'][$key]) : '-' }}</td>
                                 @endforeach
                                 <td class="rpt-num rpt-strong">{{ $n($row['total']) }}</td>
                             </tr>

@@ -82,7 +82,7 @@
                 <div><dt>Admission no.</dt><dd>{{ $summary['admission_no'] ?? '' }}</dd></div>
                 <div><dt>Class</dt><dd>{{ $summary['class'] ?? '' }}</dd></div>
                 @if (! empty($summary['term']))
-                    <div><dt>Term</dt><dd>{{ $summary['term'] }}{{ ! empty($summary['exam']) ? ' — '.$summary['exam'] : '' }}</dd></div>
+                    <div><dt>Term</dt><dd>{{ $summary['term'] }}{{ ! empty($summary['exam']) ? ' - '.$summary['exam'] : '' }}</dd></div>
                 @endif
             </dl>
             <div class="section">{{ $document->type === 'receipt' ? 'Payment' : 'Result' }}</div>

@@ -19,7 +19,7 @@ use Illuminate\Support\Facades\Notification;
  *
  * Each reminder is sent once per end date (subscription_reminders). If a
  * daily run is missed, the next run sends only the most urgent reminder
- * not yet sent — never a burst of stale ones.
+ * not yet sent - never a burst of stale ones.
  */
 class SubscriptionReminders
 {

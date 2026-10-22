@@ -98,7 +98,7 @@ class ActivityLogResource extends Resource
                 TextColumn::make('school')
                     ->label('School')
                     ->state(fn (Activity $record): string => self::user($record)->school->name
-                        ?? (self::user($record)?->hasRole('Super Admin') ? 'Platform' : '—')),
+                        ?? (self::user($record)?->hasRole('Super Admin') ? 'Platform' : '-')),
                 TextColumn::make('event')
                     ->label('Action')
                     ->badge()
@@ -107,18 +107,18 @@ class ActivityLogResource extends Resource
                     ->color(fn (string $state): string => self::EVENTS[$state][1] ?? 'gray'),
                 TextColumn::make('subject_type')
                     ->label('Record')
-                    ->formatStateUsing(fn (?string $state): string => $state ? class_basename($state) : '—')
+                    ->formatStateUsing(fn (?string $state): string => $state ? class_basename($state) : '-')
                     ->description(fn (Activity $record): ?string => $record->subject_id ? "#{$record->subject_id}" : null)
-                    ->placeholder('—'),
+                    ->placeholder('-'),
                 TextColumn::make('properties.ip')
                     ->label('IP')
-                    ->placeholder('—')
+                    ->placeholder('-')
                     ->toggleable(),
                 TextColumn::make('properties.device')
                     ->label('Device')
                     ->limit(40)
                     ->tooltip(fn ($state) => $state)
-                    ->placeholder('—')
+                    ->placeholder('-')
                     ->toggleable(isToggledHiddenByDefault: true),
             ])
             ->filters([

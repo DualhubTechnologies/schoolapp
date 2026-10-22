@@ -58,11 +58,11 @@
         </div>
 
         <div class="grid">
-            <div><div class="label">{{ $expense ? 'Paid to' : 'Received from' }}</div><div class="strong">{{ $entry->party ?: '—' }}</div></div>
+            <div><div class="label">{{ $expense ? 'Paid to' : 'Received from' }}</div><div class="strong">{{ $entry->party ?: '-' }}</div></div>
             <div><div class="label">Category</div><div>{{ $entry->category?->name }}</div></div>
             <div class="full"><div class="label">Being payment for</div><div>{{ $entry->description }}</div></div>
             <div><div class="label">Method</div><div>{{ \App\Models\FinanceEntry::METHODS[$entry->method] ?? $entry->method }}</div></div>
-            <div><div class="label">Cheque / transaction / invoice no.</div><div>{{ $entry->reference ?: '—' }}</div></div>
+            <div><div class="label">Cheque / transaction / invoice no.</div><div>{{ $entry->reference ?: '-' }}</div></div>
         </div>
 
         <div class="amount">
@@ -77,7 +77,7 @@
         </div>
 
         @if ($entry->isVoided())
-            <p style="margin-top:.8rem;color:#b91c1c;font-weight:600">Voided {{ $entry->voided_at->format('j M Y H:i') }} by {{ $entry->voided_by }} — {{ $entry->void_reason }}</p>
+            <p style="margin-top:.8rem;color:#b91c1c;font-weight:600">Voided {{ $entry->voided_at->format('j M Y H:i') }} by {{ $entry->voided_by }} - {{ $entry->void_reason }}</p>
         @endif
     </div>
 @endsection

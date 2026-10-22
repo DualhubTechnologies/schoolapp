@@ -12,7 +12,7 @@ class SchoolObserver
      * classes immediately instead of meeting an empty screen and guessing
      * what to type.
      *
-     * They are ordinary records — rename, reorder or delete them freely.
+     * They are ordinary records - rename, reorder or delete them freely.
      */
     public function created(School $school): void
     {

@@ -63,13 +63,13 @@ class StudentDiscount extends Model
     /**
      * Named award levels, as schools advertise them.
      *
-     * Full covers everything — all fees, in full. Half is 50%. Partial
+     * Full covers everything - all fees, in full. Half is 50%. Partial
      * means the bursar set the value themselves.
      */
     public const AWARD_LEVELS = [
         'full' => 'Full bursary (100% of all fees)',
         'half' => 'Half bursary (50%)',
-        'partial' => 'Partial — set the amount myself',
+        'partial' => 'Partial - set the amount myself',
     ];
 
     // ── Relationships ──
@@ -149,7 +149,7 @@ class StudentDiscount extends Model
 
     /**
      * The value of this discount against a given charge. Never more than
-     * the charge itself — a discount cannot turn a bill into a credit.
+     * the charge itself - a discount cannot turn a bill into a credit.
      */
     public function amountFor(float $charge): float
     {

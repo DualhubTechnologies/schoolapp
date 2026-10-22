@@ -118,7 +118,7 @@
                     </span>
 
                     <span class="text-xs text-gray-500 mt-0.5">
-                        {{ number_format($csvFile->getSize() / 1024, 1) }} KB — Click to change
+                        {{ number_format($csvFile->getSize() / 1024, 1) }} KB - Click to change
                     </span>
                 </div>
 
@@ -286,7 +286,7 @@
                     @if (! empty($planCheck['fitting']))
                         <ul class="text-xs text-gray-600 dark:text-gray-300 space-y-0.5 mb-2">
                             @foreach ($planCheck['fitting'] as $fit)
-                                <li><strong>{{ $fit['name'] }}</strong> — {{ \App\Models\Plan::limitLabel($fit['max_students']) }} students · UGX {{ number_format($fit['price_per_term']) }} / term</li>
+                                <li><strong>{{ $fit['name'] }}</strong> - {{ \App\Models\Plan::limitLabel($fit['max_students']) }} students · UGX {{ number_format($fit['price_per_term']) }} / term</li>
                             @endforeach
                         </ul>
                     @else
@@ -433,7 +433,7 @@
                         @foreach ($preview as $row)
                             <tr>
                                 @foreach ($row as $value)
-                                    <td class="py-2 px-3 text-gray-700 dark:text-gray-300 whitespace-nowrap">{{ $value !== null && $value !== '' ? $value : '—' }}</td>
+                                    <td class="py-2 px-3 text-gray-700 dark:text-gray-300 whitespace-nowrap">{{ $value !== null && $value !== '' ? $value : '-' }}</td>
                                 @endforeach
                             </tr>
                         @endforeach
@@ -527,7 +527,7 @@
                     @if ($importProgress['estimated_remaining'] !== null)
                         {{ $this->formatDuration($importProgress['estimated_remaining']) }}
                     @else
-                        —
+                        -
                     @endif
                 </div>
                 <div class="text-xs text-gray-500 mt-0.5">Remaining</div>
@@ -653,7 +653,7 @@
 
             <div class="rounded-lg ring-1 ring-gray-200 dark:ring-white/10 overflow-hidden mb-4 text-left" x-data="{ open: false }">
                 <button type="button" @click="open = !open" class="w-full flex items-center justify-between px-4 py-2.5 text-left hover:bg-gray-50 dark:hover:bg-white/5 transition-colors">
-                    <span class="text-xs font-medium text-gray-950 dark:text-white">{{ $importProgress['failed_rows'] }} skipped rows — details</span>
+                    <span class="text-xs font-medium text-gray-950 dark:text-white">{{ $importProgress['failed_rows'] }} skipped rows - details</span>
                     <svg class="h-4 w-4 text-gray-400 transition-transform" :class="{ 'rotate-180': open }" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor">
                         <path stroke-linecap="round" stroke-linejoin="round" d="M19.5 8.25l-7.5 7.5-7.5-7.5" />
                     </svg>

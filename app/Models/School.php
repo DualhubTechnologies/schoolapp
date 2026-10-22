@@ -302,7 +302,7 @@ class School extends Model
 
     public function typeLabel(): string
     {
-        return self::TYPES[$this->school_type] ?? '—';
+        return self::TYPES[$this->school_type] ?? '-';
     }
 
     /**

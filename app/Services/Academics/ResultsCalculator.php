@@ -20,8 +20,8 @@ use Illuminate\Support\Collection;
  *   primary   aggregate of the four core subjects (1 = D1 ... 9 = F9) and
  *             the PLE-style division
  *   o_level   UNEB's UCE result (Result 1, 2 or 3), plus the average
- *             score read against the A–E scale
- *   a_level   points: principal subjects A–F (6–0) + subsidiaries (1
+ *             score read against the A-E scale
+ *   a_level   points: principal subjects A-F (6-0) + subsidiaries (1
  *             each), out of 20
  *
  * and positions in the class and stream.
@@ -246,7 +246,7 @@ class ResultsCalculator
             $descriptor = $band?->descriptor;
             $paperGrades = null;
 
-            // A-Level, as UNEB grades UACE: each paper D1–F9, then the
+            // A-Level, as UNEB grades UACE: each paper D1-F9, then the
             // principal grade from the paper grades; a subsidiary passes
             // with C6 or better.
             $paperScale = $curriculum === 'a_level' && $final !== null ? $this->scale($schoolId, $curriculum, 'paper') : null;
@@ -594,10 +594,10 @@ class ResultsCalculator
             'with_results' => $ranked->count(),
             'class_average' => $ranked->isEmpty() ? null : round($ranked->avg('average'), 1),
             'distribution' => match ($curriculum) {
-                'primary' => $ranked->countBy(fn ($r) => $r['division'] ?? '—')->all(),
-                'a_level' => $ranked->countBy(fn ($r) => $r['points'] === null ? '—' : $r['points'].' pts')->sortKeysDesc()->all(),
-                'o_level' => $ranked->countBy(fn ($r) => $r['uce_label'] ?? '—')->sortKeys()->all(),
-                default => $ranked->countBy(fn ($r) => $r['overall_grade'] ?? '—')->sortKeys()->all(),
+                'primary' => $ranked->countBy(fn ($r) => $r['division'] ?? '-')->all(),
+                'a_level' => $ranked->countBy(fn ($r) => $r['points'] === null ? '-' : $r['points'].' pts')->sortKeysDesc()->all(),
+                'o_level' => $ranked->countBy(fn ($r) => $r['uce_label'] ?? '-')->sortKeys()->all(),
+                default => $ranked->countBy(fn ($r) => $r['overall_grade'] ?? '-')->sortKeys()->all(),
             },
         ];
     }

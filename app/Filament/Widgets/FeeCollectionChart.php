@@ -23,7 +23,7 @@ class FeeCollectionChart extends ChartWidget
 
     protected ?string $heading = 'Fees billed vs collected';
 
-    protected ?string $description = 'By month, UGX — hover a bar for the exact amount';
+    protected ?string $description = 'By month, UGX - hover a bar for the exact amount';
 
     protected ?string $maxHeight = '280px';
 

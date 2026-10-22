@@ -96,7 +96,7 @@ class CombinationResource extends Resource
             ->columns([
                 TextColumn::make('name')->label('Code')->weight('bold')->searchable(),
                 TextColumn::make('subjects.name')->label('Principal subjects')->listWithLineBreaks(false)->separator(', '),
-                TextColumn::make('subsidiary.name')->label('Subsidiary')->placeholder('—'),
+                TextColumn::make('subsidiary.name')->label('Subsidiary')->placeholder('-'),
                 TextColumn::make('students_count')->label('Students')->alignCenter(),
                 IconColumn::make('is_active')->label('Offered')->boolean(),
             ])

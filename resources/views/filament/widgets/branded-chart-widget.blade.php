@@ -2,7 +2,7 @@
     A copy of filament-widgets::chart-widget with one difference: the
     section header gets an icon badge, so dashboard charts read as one
     designed system with the KPI and panel cards around them (see
-    public/css/dashboard.css). Keep this in step with the vendor view —
+    public/css/dashboard.css). Keep this in step with the vendor view -
     everything below the two :icon / :icon-color lines is unchanged.
 --}}
 @php

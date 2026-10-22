@@ -46,7 +46,7 @@ class PayrollPeriodResource extends Resource
      */
     public static function getRecordTitle(?Model $record): string|Htmlable|null
     {
-        return $record ? 'Payroll — '.$record->period_label : null;
+        return $record ? 'Payroll - '.$record->period_label : null;
     }
 
     public static function form(Schema $schema): Schema
@@ -114,13 +114,13 @@ class PayrollPeriodResource extends Resource
                 ->schema([
                     Grid::make(['default' => 2, 'md' => 4])->schema([
                         TextEntry::make('approvedBy.name')->label('Approved by')->placeholder('Not yet'),
-                        TextEntry::make('approved_at')->label('Approved on')->dateTime('j M Y, H:i')->placeholder('—'),
+                        TextEntry::make('approved_at')->label('Approved on')->dateTime('j M Y, H:i')->placeholder('-'),
                         TextEntry::make('payment_date')->label('Paid on')->date('j M Y')->placeholder('Not yet'),
                         TextEntry::make('payment_method')
                             ->label('Paid by')
                             ->formatStateUsing(fn (?string $state) => PayrollPeriod::PAYMENT_METHODS[$state] ?? $state)
                             ->helperText(fn (PayrollPeriod $record) => $record->payment_reference)
-                            ->placeholder('—'),
+                            ->placeholder('-'),
                     ]),
                 ]),
         ]);

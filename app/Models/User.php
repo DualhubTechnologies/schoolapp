@@ -109,8 +109,8 @@ class User extends Authenticatable implements FilamentUser, HasAppAuthentication
     public function canAccessPanel(Panel $panel): bool
     {
         return match ($panel->getId()) {
-            'admin' => $this->hasRole('Super Admin'),   // /admin — owner only
-            'app' => true,                             // root — everyone else (super admin allowed too)
+            'admin' => $this->hasRole('Super Admin'),   // /admin - owner only
+            'app' => true,                             // root - everyone else (super admin allowed too)
             default => false,
         };
     }

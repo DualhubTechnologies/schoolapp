@@ -46,7 +46,7 @@
                                 <td class="tb-r">
                                     <input type="text" inputmode="numeric" class="tb-input" x-data x-mask:dynamic="$money($input, '.', ',', 0)" wire:model.blur="amounts.{{ $category->id }}" placeholder="0">
                                 </td>
-                                <td class="tb-r tb-muted">{{ isset($actuals[$category->id]) && $actuals[$category->id] ? $n($actuals[$category->id]) : '—' }}</td>
+                                <td class="tb-r tb-muted">{{ isset($actuals[$category->id]) && $actuals[$category->id] ? $n($actuals[$category->id]) : '-' }}</td>
                             </tr>
                         @endforeach
                     </tbody>

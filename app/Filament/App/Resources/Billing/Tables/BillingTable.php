@@ -65,7 +65,7 @@ class BillingTable
                     ->label('Residency')
                     ->badge()
                     ->color(fn ($record) => $record->student?->residencyType?->badgeColor() ?? 'gray')
-                    ->placeholder('—')
+                    ->placeholder('-')
                     ->toggleable(isToggledHiddenByDefault: true),
 
                 TextColumn::make('description')
@@ -90,7 +90,7 @@ class BillingTable
                     ->alignEnd()
                     ->color('success')
                     ->summarize(Sum::make()->label('Discounts')->numeric())
-                    ->placeholder('—')
+                    ->placeholder('-')
                     ->description(fn ($record) => $record->discount_reason)
                     ->toggleable(),
 

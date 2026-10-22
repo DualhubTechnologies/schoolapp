@@ -64,7 +64,7 @@ class FeeReminderResource extends Resource
                     ->formatStateUsing(fn (string $state) => FeeReminder::CHANNELS[$state] ?? $state)
                     ->color(fn (string $state) => $state === 'sms' ? 'info' : 'gray'),
                 TextColumn::make('phone')
-                    ->placeholder('—')
+                    ->placeholder('-')
                     ->toggleable(),
                 TextColumn::make('balance')
                     ->label('Owed then (UGX)')
@@ -86,7 +86,7 @@ class FeeReminderResource extends Resource
                     ->toggleable(isToggledHiddenByDefault: true),
                 TextColumn::make('sent_by')
                     ->label('By')
-                    ->placeholder('—')
+                    ->placeholder('-')
                     ->toggleable(),
             ])
             ->filters([

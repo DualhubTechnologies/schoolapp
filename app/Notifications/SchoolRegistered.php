@@ -27,7 +27,7 @@ class SchoolRegistered extends Notification implements ShouldQueue
         return (new MailMessage)
             ->subject("New school awaiting approval: {$s->name}")
             ->greeting('A new school wants to join')
-            ->line("**{$s->name}** — {$s->typeLabel()}, {$s->city}. It is locked until you approve it; approving starts its free trial.")
+            ->line("**{$s->name}** - {$s->typeLabel()}, {$s->city}. It is locked until you approve it; approving starts its free trial.")
             ->line("Administrator: {$s->contact_person}, {$s->phone}, {$s->email}.")
             ->action('Approve or reject', url('/admin/schools'));
     }

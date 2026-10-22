@@ -9,7 +9,7 @@ use Illuminate\Support\Carbon;
 
 /**
  * A row in Laravel's `sessions` table (the database session driver): one
- * per signed-in browser, touched on every request. Read-only here — it is
+ * per signed-in browser, touched on every request. Read-only here - it is
  * how the platform owner sees who is using SchoolHub right now.
  *
  * @property string $id
@@ -77,7 +77,7 @@ class UserSession extends Model
     }
 
     /**
-     * "Chrome on Android" from the user agent — enough to tell a phone
+     * "Chrome on Android" from the user agent - enough to tell a phone
      * from an office computer without a parsing library.
      */
     public function device(): string

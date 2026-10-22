@@ -87,14 +87,14 @@
                                             wire:model.live="levels.{{ $student->id }}.{{ $topic->id }}"
                                             @class(['at-select', 'at-l'.$value => $value !== null && $value !== ''])
                                         >
-                                            <option value="">–</option>
+                                            <option value="">-</option>
                                             @foreach ([3, 2, 1, 0] as $level)
                                                 <option value="{{ $level }}">{{ $level }}</option>
                                             @endforeach
                                         </select>
                                     </td>
                                 @endforeach
-                                <td class="at-c at-avg">{{ $chosen->isNotEmpty() ? number_format($chosen->avg(), 1) : '—' }}</td>
+                                <td class="at-c at-avg">{{ $chosen->isNotEmpty() ? number_format($chosen->avg(), 1) : '-' }}</td>
                             </tr>
                         @endforeach
                     </tbody>

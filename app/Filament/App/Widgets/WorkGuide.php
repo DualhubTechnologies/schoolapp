@@ -196,7 +196,7 @@ class WorkGuide extends Widget
                 'icon' => 'heroicon-o-pencil-square',
                 'steps' => [
                     ...($manages ? [['page' => AssessmentResource::class, 'title' => 'Set up the term\'s exams',
-                        'text' => 'Beginning of term, mid-term, end of term — and any tests (CA) for one class or subject.']] : []),
+                        'text' => 'Beginning of term, mid-term, end of term - and any tests (CA) for one class or subject.']] : []),
                     ['page' => EnterMarks::class, 'title' => $manages ? 'Enter marks' : 'Enter marks for my subjects',
                         'text' => 'Choose the exam, class and subject, type each learner\'s mark. It saves as you go.'],
                     ...($manages ? [['page' => MarksProgress::class, 'title' => 'Check which marks are missing',

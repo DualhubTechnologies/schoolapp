@@ -25,12 +25,12 @@ use Illuminate\Support\Facades\DB;
  *               newer version has replaced it (FeeStructure::termlyFor)
  *   once        paid on admission: a new learner in their first term who
  *               has never been charged it (admission, development, uniform)
- *   on_demand   never automatic — billed deliberately to a class or student
+ *   on_demand   never automatic - billed deliberately to a class or student
  *
  * And to whom:
  *
  *   applies_to        all | new_only (new learners in their first term,
- *                     Student::isNewIn — continuing learners never pay them)
+ *                     Student::isNewIn - continuing learners never pay them)
  *   residency_type_id null = everyone; set = only that residency
  *
  * HOW DISCOUNTS ARE APPLIED
@@ -55,8 +55,8 @@ use Illuminate\Support\Facades\DB;
  * not the van. A learner with no route is brought by the parent and pays
  * nothing for transport.
  *
- * Each award also carries a scope — this term, this academic year, or
- * ongoing — and is ignored outside that period, so a lapsed award stops
+ * Each award also carries a scope - this term, this academic year, or
+ * ongoing - and is ignored outside that period, so a lapsed award stops
  * discounting rather than quietly running on.
  *
  * This is why fees are resolved TOGETHER rather than one at a time: the
@@ -391,7 +391,7 @@ class BillingService
     }
 
     /**
-     * Bill one fee — or a typed-in charge — to a group of students.
+     * Bill one fee - or a typed-in charge - to a group of students.
      *
      * @param  array<int>  $studentIds
      * @return array{charged: int, skipped: int}
@@ -453,7 +453,7 @@ class BillingService
     }
 
     /**
-     * A one-off charge typed in by the bursar — lost book, replacement tie.
+     * A one-off charge typed in by the bursar - lost book, replacement tie.
      * No discount: an ad-hoc charge is a specific amount the bursar decided.
      */
     public function addCharge(

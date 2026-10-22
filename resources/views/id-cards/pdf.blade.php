@@ -28,7 +28,7 @@
 <body>
     @foreach ($pages as $page)
         <div class="break">
-            <div class="sheet-title">ID cards — fronts, sheet {{ $loop->iteration }} of {{ $pages->count() }}</div>
+            <div class="sheet-title">ID cards - fronts, sheet {{ $loop->iteration }} of {{ $pages->count() }}</div>
             <table class="grid">
                 @foreach ($rowsOf($page) as $row)
                     <tr>
@@ -43,7 +43,7 @@
 
     @foreach ($pages as $page)
         <div class="{{ $loop->last ? '' : 'break' }}">
-            <div class="sheet-title">ID cards — backs, sheet {{ $loop->iteration }} of {{ $pages->count() }} (print on the reverse of front sheet {{ $loop->iteration }}, flip on the long edge)</div>
+            <div class="sheet-title">ID cards - backs, sheet {{ $loop->iteration }} of {{ $pages->count() }} (print on the reverse of front sheet {{ $loop->iteration }}, flip on the long edge)</div>
             <table class="grid">
                 @foreach ($rowsOf($page) as $row)
                     <tr>

@@ -98,8 +98,8 @@ class ErrorReport extends Model
             'Where: '.$this->shortFile().':'.$this->line,
             'Times: '.$this->occurrences.' (first '.$this->first_seen_at->format('d M Y H:i').', last '.$this->last_seen_at->format('d M Y H:i').')',
             'Status: '.($this->isResolved() ? 'Resolved' : 'Open'),
-            'Last page: '.($this->last_url ?: '—'),
-            'Last school: '.($this->lastSchool->name ?? '—'),
+            'Last page: '.($this->last_url ?: '-'),
+            'Last school: '.($this->lastSchool->name ?? '-'),
         ];
 
         if (filled($this->trace)) {

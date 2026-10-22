@@ -64,7 +64,7 @@ class SalariesRelationManager extends RelationManager
                     ->placeholder('Current')
                     ->sortable(),
                 TextColumn::make('notes')
-                    ->placeholder('—'),
+                    ->placeholder('-'),
             ])
             ->headerActions([
                 CreateAction::make()

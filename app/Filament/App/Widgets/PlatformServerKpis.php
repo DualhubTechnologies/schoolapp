@@ -45,7 +45,7 @@ class PlatformServerKpis extends KpiCards
                 self::ICONS[$r['key']],
                 $r['label'],
                 $r['value'],
-                $r['status'] === 'ok' ? $r['detail'] : ($r['status'] === 'danger' ? 'Too high — open System health' : 'Worth watching — open System health'),
+                $r['status'] === 'ok' ? $r['detail'] : ($r['status'] === 'danger' ? 'Too high - open System health' : 'Worth watching - open System health'),
                 $url,
                 $r['percent'],
             );

@@ -13,7 +13,7 @@ use Illuminate\Database\Eloquent\Relations\HasMany;
  * primary one.
  *
  * Seeded from the school's type when the school is created, so a new
- * school can start adding classes straight away — but editable, since a
+ * school can start adding classes straight away - but editable, since a
  * school that words these differently should not be stuck with ours.
  *
  * No section heading: the school is one type or the other, so its type

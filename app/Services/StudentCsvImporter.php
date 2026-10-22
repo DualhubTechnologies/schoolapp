@@ -98,7 +98,7 @@ class StudentCsvImporter
     /**
      * When true, imported students are marked as CONFIRMED full students
      * (used for the school's existing/continuing student body). When false,
-     * students come in PROVISIONAL — the default for new admissions.
+     * students come in PROVISIONAL - the default for new admissions.
      */
     protected bool $confirmOnImport = false;
 
@@ -280,8 +280,8 @@ class StudentCsvImporter
 
         $this->import->appendLog(
             $this->confirmOnImport
-                ? 'Starting import (existing students — will be marked confirmed)...'
-                : 'Starting import (new admissions — will be marked provisional)...'
+                ? 'Starting import (existing students - will be marked confirmed)...'
+                : 'Starting import (new admissions - will be marked provisional)...'
         );
 
         $path = Storage::disk('local')->path($this->import->file_path);

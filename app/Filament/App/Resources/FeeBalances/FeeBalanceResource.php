@@ -17,7 +17,7 @@ use Illuminate\Database\Eloquent\Builder;
  * "Who has paid, who has not."
  *
  * Charged and paid are correlated subqueries so the columns can be sorted
- * and filtered in the database rather than in PHP — which matters once a
+ * and filtered in the database rather than in PHP - which matters once a
  * school has hundreds of students.
  */
 class FeeBalanceResource extends Resource

@@ -36,8 +36,8 @@ class ErrorReported extends Notification
             ->greeting($this->cameBack ? 'A resolved error has happened again' : 'A new error on SchoolHub')
             ->line('**'.class_basename($report->exception_class).'**: '.Str::limit($report->message, 300))
             ->line('Where: `'.$report->shortFile().':'.$report->line.'`')
-            ->line('Page: '.($report->last_url ?? '—'))
-            ->line('School: '.($school ?? '—').' · Reference: **'.$this->reference.'**')
+            ->line('Page: '.($report->last_url ?? '-'))
+            ->line('School: '.($school ?? '-').' · Reference: **'.$this->reference.'**')
             ->line('Repeats are counted on the report rather than emailed again.')
             ->action('Open the error report', ErrorReportResource::getUrl('view', ['record' => $report], panel: 'admin'));
     }

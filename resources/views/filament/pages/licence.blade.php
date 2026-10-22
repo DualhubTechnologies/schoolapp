@@ -5,7 +5,7 @@
     $states = [
         'trial' => ['Free trial', '#1d4ed8', '#eff6ff'],
         'active' => ['Licensed', '#15803d', '#f0fdf4'],
-        'grace' => ['Licence ended — renew now', '#b91c1c', '#fef2f2'],
+        'grace' => ['Licence ended - renew now', '#b91c1c', '#fef2f2'],
         'expired' => ['Locked: licence ended', '#b91c1c', '#fef2f2'],
         'none' => ['Enter a licence code to start', '#b91c1c', '#fef2f2'],
         'clock' => ['Locked: computer date is wrong', '#b91c1c', '#fef2f2'],
@@ -85,7 +85,7 @@
             @foreach ($this->entered() as $record)
                 <div class="lc-row">
                     <span>{{ $record->licence_no }}</span>
-                    <span>{{ $record->starts_on->format('j M Y') }} – {{ $record->ends_on->format('j M Y') }}</span>
+                    <span>{{ $record->starts_on->format('j M Y') }} - {{ $record->ends_on->format('j M Y') }}</span>
                 </div>
             @endforeach
         </div>

@@ -30,15 +30,15 @@ class UserForm
 {
     /** What each role is for, in plain words, shown in the role list. */
     public const ROLE_HINTS = [
-        'School Admin' => 'School Admin — everything, including users and settings',
-        'Director of Studies' => 'Director of Studies — runs exams: marks for every subject, approvals, report cards',
-        'Teacher' => 'Teacher — marks, class register and report cards',
-        'Bursar' => 'Bursar — fees, receipts, balances and spending',
-        'Accountant' => 'Accountant — fees, spending and staff payroll',
-        'Admissions' => 'Admissions — admit learners, parents\' details, ID cards, texting parents',
-        'Staff' => 'Other staff — you choose what they open (e.g. matron, librarian)',
-        'Parent' => 'Parent — their own children\'s fees, receipts and report cards (easiest: Parents → Give login)',
-        'Student' => 'Student — student portal (coming soon)',
+        'School Admin' => 'School Admin - everything, including users and settings',
+        'Director of Studies' => 'Director of Studies - runs exams: marks for every subject, approvals, report cards',
+        'Teacher' => 'Teacher - marks, class register and report cards',
+        'Bursar' => 'Bursar - fees, receipts, balances and spending',
+        'Accountant' => 'Accountant - fees, spending and staff payroll',
+        'Admissions' => 'Admissions - admit learners, parents\' details, ID cards, texting parents',
+        'Staff' => 'Other staff - you choose what they open (e.g. matron, librarian)',
+        'Parent' => 'Parent - their own children\'s fees, receipts and report cards (easiest: Parents → Give login)',
+        'Student' => 'Student - student portal (coming soon)',
     ];
 
     public static function configure(Schema $schema): Schema
@@ -102,7 +102,7 @@ class UserForm
                             ->required()
                             ->helperText(fn () => static::planAllowsParentStudentLogin()
                                 ? 'The role sets what a person can do by default; the modules below narrow or widen it.'
-                                : 'The role sets what a person can do by default; the modules below narrow or widen it. Parent & student portal logins are not included in your plan — upgrade to Premium or Enterprise to add them.')
+                                : 'The role sets what a person can do by default; the modules below narrow or widen it. Parent & student portal logins are not included in your plan - upgrade to Premium or Enterprise to add them.')
                             ->columnSpanFull(),
                     ]),
 
@@ -113,7 +113,7 @@ class UserForm
                             ->visible($isAdminRole),
                         Toggle::make('custom_access')
                             ->label('Choose modules for this user')
-                            ->helperText(fn (Get $get) => 'Off: the defaults for their role — '
+                            ->helperText(fn (Get $get) => 'Off: the defaults for their role - '
                                 .static::roleDefaultsText($get('roles') ?? []).'.')
                             ->live()
                             // Start from the role's defaults, so ticking one extra

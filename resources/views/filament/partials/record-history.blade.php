@@ -1,7 +1,7 @@
 {{-- "Who changed this?" on edit pages (EditRecordPage). --}}
 @php
     $show = function ($value): string {
-        if ($value === null || $value === '') return '—';
+        if ($value === null || $value === '') return '-';
         if (is_bool($value)) return $value ? 'Yes' : 'No';
         if (is_array($value)) return json_encode($value);
         return \Illuminate\Support\Str::limit((string) $value, 60);

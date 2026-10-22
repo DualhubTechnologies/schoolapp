@@ -37,7 +37,7 @@ class SubscriptionEnding extends Notification
 
         $mail = match ($d['kind']) {
             'ended' => $mail
-                ->subject("Your SchoolHub {$what} has ended — {$school}")
+                ->subject("Your SchoolHub {$what} has ended - {$school}")
                 ->line("The SchoolHub {$what} for **{$school}** ended on {$ends}.")
                 ->line("Everything keeps working for now, but the system will lock on **{$lock}** unless ".($trial ? 'you choose a plan.' : 'it is renewed.')),
             'locks-soon' => $mail
@@ -58,7 +58,7 @@ class SubscriptionEnding extends Notification
                     : 'Renew now to avoid any interruption.'),
             default => $mail
                 ->subject("Your SchoolHub {$what} ends in {$days($d['days_left'])}")
-                ->line("The {$what} for **{$school}** ends on **{$ends}** — {$days($d['days_left'])} from today.")
+                ->line("The {$what} for **{$school}** ends on **{$ends}** - {$days($d['days_left'])} from today.")
                 ->line($trial
                     ? 'To keep using SchoolHub, choose a plan before then. All your students, fees and marks stay exactly as they are.'
                     : 'Renew before then to keep everything running without interruption.'),

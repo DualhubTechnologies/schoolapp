@@ -52,7 +52,7 @@
         <p>{{ $school->phone ? 'Tel: ' . $school->phone . ' | ' : '' }}{{ $school->email }}</p>
     </div>
 
-    <div class="payslip-title">PAYSLIP — {{ $period->period_label }}</div>
+    <div class="payslip-title">PAYSLIP - {{ $period->period_label }}</div>
 
     {{-- STAFF INFO --}}
     <table class="info-grid">
@@ -66,7 +66,7 @@
             <td class="info-label">Position:</td>
             <td class="info-value">{{ $entry->staff->position }}</td>
             <td class="info-label">Department:</td>
-            <td class="info-value">{{ $entry->staff->department ?? '—' }}</td>
+            <td class="info-value">{{ $entry->staff->department ?? '-' }}</td>
         </tr>
         @if($bankDetail)
         <tr>
@@ -158,7 +158,7 @@
     {{-- EMPLOYER NSSF NOTE --}}
     <div class="employer-note">
         <strong>Employer's NSSF Contribution (10%):</strong> {{ $school->currency }} {{ number_format($entry->nssf_employer, 0) }}
-        — This amount is paid by {{ $school->name }} to NSSF on behalf of the employee and is not deducted from the employee's salary.
+        - This amount is paid by {{ $school->name }} to NSSF on behalf of the employee and is not deducted from the employee's salary.
     </div>
 
     {{-- SIGNATURES --}}

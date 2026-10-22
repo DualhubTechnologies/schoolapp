@@ -71,7 +71,7 @@ class WindowsLicenceResource extends Resource
                     ->color(fn (IssuedLicence $r) => $r->activated_at ? 'success' : 'gray'),
                 TextColumn::make('plan_name')->label('Plan'),
                 TextColumn::make('cycle')->formatStateUsing(fn (string $state) => IssuedLicence::CYCLES[$state] ?? $state),
-                TextColumn::make('ends_on')->label('Valid')->formatStateUsing(fn (IssuedLicence $r) => $r->starts_on->format('j M Y').' – '.$r->ends_on->format('j M Y'))
+                TextColumn::make('ends_on')->label('Valid')->formatStateUsing(fn (IssuedLicence $r) => $r->starts_on->format('j M Y').' - '.$r->ends_on->format('j M Y'))
                     ->color(fn (IssuedLicence $r) => $r->ends_on->isPast() ? 'danger' : null),
                 TextColumn::make('amount')->numeric()->prefix('UGX '),
                 TextColumn::make('payment_reference')->label('Payment ref.')->toggleable(),

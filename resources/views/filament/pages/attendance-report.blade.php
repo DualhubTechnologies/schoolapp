@@ -72,7 +72,7 @@
             <div class="ar-head">
                 <div>
                     <div class="ar-title">{{ $this->classOptions()[$this->classId] }}{{ $this->sectionId ? ' · '.$this->sectionOptions()[$this->sectionId] : '' }}</div>
-                    <div class="ar-muted">{{ $this->fromDate()->format('j M Y') }} – {{ $this->toDate()->format('j M Y') }} · lowest attendance first</div>
+                    <div class="ar-muted">{{ $this->fromDate()->format('j M Y') }} - {{ $this->toDate()->format('j M Y') }} · lowest attendance first</div>
                 </div>
                 <x-filament::button size="sm" color="gray" icon="heroicon-o-arrow-down-tray" wire:click="exportCsv">Export to Excel</x-filament::button>
             </div>

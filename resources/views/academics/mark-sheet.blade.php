@@ -33,7 +33,7 @@
             @endif
             <div class="who">
                 <h1>{{ $school?->name }}</h1>
-                <p>Mark sheet — {{ $assessment->name }}, {{ $assessment->term?->label() }}</p>
+                <p>Mark sheet - {{ $assessment->name }}, {{ $assessment->term?->label() }}</p>
             </div>
         </div>
 
@@ -41,7 +41,7 @@
             <div><div class="label">Subject</div><div class="v">{{ $subject->name }}</div></div>
             <div><div class="label">Class</div><div class="v">{{ $class->name }}{{ $section ? ' · '.$section->name : '' }}</div></div>
             <div><div class="label">Marked out of</div><div class="v">{{ $max + 0 }}</div></div>
-            <div><div class="label">Teacher</div><div class="v">{{ $teacher ?? '—' }}</div></div>
+            <div><div class="label">Teacher</div><div class="v">{{ $teacher ?? '-' }}</div></div>
             <div><div class="label">Learners</div><div class="v">{{ $students->count() }}</div></div>
             <div>
                 <div class="label">Status</div>

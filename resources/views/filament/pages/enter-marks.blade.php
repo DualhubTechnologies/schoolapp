@@ -147,14 +147,14 @@
               }">
             <div class="em-head">
                 <div>
-                    <div class="em-title">{{ $subject->name }} — {{ $class->name }}{{ $this->sectionId ? ' ' . $this->sectionOptions()[$this->sectionId] : '' }}</div>
+                    <div class="em-title">{{ $subject->name }} - {{ $class->name }}{{ $this->sectionId ? ' ' . $this->sectionOptions()[$this->sectionId] : '' }}</div>
                     <div class="em-muted">
                         @if ($this->allExams)
                             All exams of {{ $assessment->term?->label() }}{{ $this->paperCount() > 1 ? ' · Paper '.$this->paper : '' }} · {{ $students->count() }} {{ str('learner')->plural($students->count()) }} · type a mark, or AB for absent
                         @else
                         {{ $assessment->name }}{{ $this->paperCount() > 1 ? ' · Paper '.$this->paper : '' }} · marked out of <strong>{{ $max + 0 }}</strong> · {{ $entered }} of {{ $students->count() }} entered
                         @endif
-                        @if ($locked && ! $this->allExams) · <span class="em-locked">{{ $this->readOnlyReason() ?? 'Closed' }} — read only</span> @endif
+                        @if ($locked && ! $this->allExams) · <span class="em-locked">{{ $this->readOnlyReason() ?? 'Closed' }} - read only</span> @endif
                     </div>
                 </div>
                 <div class="em-head-tools">

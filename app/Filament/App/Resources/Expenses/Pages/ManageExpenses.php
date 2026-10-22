@@ -12,7 +12,7 @@ class ManageExpenses extends ManageRecords
 
     public function getSubheading(): ?string
     {
-        return 'Every payment the school makes, with a numbered voucher. Salaries are counted automatically from approved payroll — do not enter them here.';
+        return 'Every payment the school makes, with a numbered voucher. Salaries are counted automatically from approved payroll - do not enter them here.';
     }
 
     protected function getHeaderActions(): array

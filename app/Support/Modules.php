@@ -260,7 +260,7 @@ class Modules
     /**
      * The modules an administrator can hand out in this school.
      *
-     * @return array<string, string> key => "Label — what it covers"
+     * @return array<string, string> key => "Label - what it covers"
      */
     public static function options(): array
     {

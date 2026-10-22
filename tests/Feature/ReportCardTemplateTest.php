@@ -131,7 +131,7 @@ it('lets only those who manage exams change the template', function () {
 
 it('names the exams that have no marks yet', function () {
     expect(app(MarksCompleteness::class)->missingFor($this->term))->toBe([
-        ['class' => 'P.4', 'missing' => ['Mathematics — End of term']],
+        ['class' => 'P.4', 'missing' => ['Mathematics - End of term']],
     ]);
 
     Mark::create(['assessment_id' => $this->eot->id, 'student_id' => $this->student->id, 'subject_id' => $this->maths->id, 'is_absent' => true]);

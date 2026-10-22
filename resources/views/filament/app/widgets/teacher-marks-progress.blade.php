@@ -23,7 +23,7 @@
                 </div>
                 <div class="shd-sheet-progress shd-tone-{{ $tone }}">
                     <div class="shd-kpi-bar"><span style="width: {{ $row['percent'] ?? 0 }}%"></span></div>
-                    <span class="shd-sheet-count">{{ $row['percent'] === null ? '—' : "{$row['entered']} / {$row['learners']}" }}</span>
+                    <span class="shd-sheet-count">{{ $row['percent'] === null ? '-' : "{$row['entered']} / {$row['learners']}" }}</span>
                 </div>
                 <x-filament::button tag="a" :href="$row['url']" size="sm" :color="$row['percent'] >= 100 ? 'gray' : 'primary'" :outlined="$row['percent'] >= 100">
                     {{ $row['percent'] >= 100 ? 'Review' : 'Enter marks' }}

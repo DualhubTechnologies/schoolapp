@@ -79,7 +79,7 @@ class RegisterSchool extends Register
                     ]),
                 ]),
 
-            Section::make('Your account — you will be the school administrator')
+            Section::make('Your account - you will be the school administrator')
                 ->compact()
                 ->schema([
                     Grid::make(['default' => 1, 'sm' => 2, 'xl' => 3])->schema([
@@ -101,7 +101,7 @@ class RegisterSchool extends Register
                             ->maxLength(255)
                             ->unique(User::class, 'email')
                             ->unique(School::class, 'email')
-                            ->validationMessages(['unique' => 'This email is already registered on SchoolHub — sign in instead.'])
+                            ->validationMessages(['unique' => 'This email is already registered on SchoolHub - sign in instead.'])
                             ->columnSpan(['default' => 1, 'sm' => 2, 'xl' => 1]),
                         $this->getPasswordFormComponent(),
                         $this->getPasswordConfirmationFormComponent(),

@@ -10,7 +10,7 @@ class PayeTaxBracketSeeder extends Seeder
     public function run(): void
     {
         // ========================================
-        // UGANDA — Monthly PAYE brackets (URA)
+        // UGANDA - Monthly PAYE brackets (URA)
         // Taxable income = Gross - NSSF Employee
         // ========================================
         $ugandaBrackets = [
@@ -29,7 +29,7 @@ class PayeTaxBracketSeeder extends Seeder
         }
 
         // ========================================
-        // KENYA — Monthly PAYE brackets (KRA)
+        // KENYA - Monthly PAYE brackets (KRA)
         // ========================================
         $kenyaBrackets = [
             ['min_amount' => 0,       'max_amount' => 24000,   'rate' => 10],
@@ -47,7 +47,7 @@ class PayeTaxBracketSeeder extends Seeder
         }
 
         // ========================================
-        // TANZANIA — Monthly PAYE brackets (TRA)
+        // TANZANIA - Monthly PAYE brackets (TRA)
         // ========================================
         $tanzaniaBrackets = [
             ['min_amount' => 0,        'max_amount' => 270000,   'rate' => 0],
@@ -65,7 +65,7 @@ class PayeTaxBracketSeeder extends Seeder
         }
 
         // ========================================
-        // RWANDA — Monthly PAYE brackets (RRA)
+        // RWANDA - Monthly PAYE brackets (RRA)
         // ========================================
         $rwandaBrackets = [
             ['min_amount' => 0,       'max_amount' => 30000,    'rate' => 0],

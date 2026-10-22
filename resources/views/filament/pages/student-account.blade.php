@@ -1,5 +1,5 @@
 {{--
-    Student Account — ledger, statement, invoice for one student.
+    Student Account - ledger, statement, invoice for one student.
     All three read the same derived ledger, so they cannot disagree.
     Styled with the scoped .sa-* rules at the bottom.
 --}}
@@ -12,7 +12,7 @@
     $termSum = $this->termSummary;
     $school  = $student?->school;
     $n       = fn ($v) => number_format((float) $v, 0);
-    $date    = fn ($d) => $d ? \Illuminate\Support\Carbon::parse($d)->format('j M Y') : '—';
+    $date    = fn ($d) => $d ? \Illuminate\Support\Carbon::parse($d)->format('j M Y') : '-';
     $logo    = $school?->logo ? \Illuminate\Support\Facades\Storage::disk('public')->url($school->logo) : null;
     $photo   = $student?->photoUrl() ?? asset('images/student-avatar.svg');
 @endphp
@@ -107,8 +107,8 @@
             <dl class="sa-doc-student">
                 <div><dt>Student</dt><dd>{{ $student->name }}</dd></div>
                 <div><dt>Admission no.</dt><dd>{{ $student->admission_no }}</dd></div>
-                <div><dt>Class</dt><dd>{{ $student->schoolClass?->name ?? '—' }}{{ $student->section ? ' · ' . $student->section->name : '' }}</dd></div>
-                <div><dt>Guardian</dt><dd>{{ $student->guardian?->name ?? '—' }}</dd></div>
+                <div><dt>Class</dt><dd>{{ $student->schoolClass?->name ?? '-' }}{{ $student->section ? ' · ' . $student->section->name : '' }}</dd></div>
+                <div><dt>Guardian</dt><dd>{{ $student->guardian?->name ?? '-' }}</dd></div>
             </dl>
 
             {{-- ══ INVOICE ══ --}}
@@ -200,9 +200,9 @@
                     </thead>
                     <tbody>
                         <tr class="sa-bf">
-                            <td>—</td>
+                            <td>-</td>
                             <td>Balance brought forward</td>
-                            <td class="sa-num">{{ $termSum['opening'] != 0 ? $n($termSum['opening']) : '—' }}</td>
+                            <td class="sa-num">{{ $termSum['opening'] != 0 ? $n($termSum['opening']) : '-' }}</td>
                             <td></td>
                         </tr>
                         @forelse ($entries as $entry)
@@ -245,12 +245,12 @@
                             @forelse ($entries as $entry)
                                 <tr @class(['sa-payment' => $entry['type'] === 'payment'])>
                                     <td class="sa-nowrap">{{ $date($entry['date']) }}</td>
-                                    <td class="sa-muted">{{ $entry['term_name'] ?? '—' }}</td>
+                                    <td class="sa-muted">{{ $entry['term_name'] ?? '-' }}</td>
                                     <td>
                                         {{ $entry['description'] }}
                                         @if ($entry['discount'] > 0)<span class="sa-sub is-good">Less {{ $entry['discount_reason'] ?: 'discount' }}: {{ $n($entry['discount']) }}</span>@endif
                                     </td>
-                                    <td class="sa-muted">{{ $entry['reference'] ?: '—' }}</td>
+                                    <td class="sa-muted">{{ $entry['reference'] ?: '-' }}</td>
                                     <td class="sa-num">{{ $entry['debit'] > 0 ? $n($entry['debit']) : '' }}</td>
                                     <td class="sa-num is-good">{{ $entry['credit'] > 0 ? $n($entry['credit']) : '' }}</td>
                                     <td @class(['sa-num', 'sa-strong', 'is-bad' => $entry['balance'] > 0, 'is-good' => $entry['balance'] <= 0])>{{ $n($entry['balance']) }}</td>

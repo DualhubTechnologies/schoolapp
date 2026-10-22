@@ -40,7 +40,7 @@ class ConfirmYourEmail extends Notification
                 .'text-align:center;font-size:32px;font-weight:700;letter-spacing:10px;color:#0d1f38;font-family:Menlo,Consolas,monospace;">'
                 .e($this->code).'</div>'
             ))
-            ->line("The code works for {$this->expiresAfterMinutes} minutes. Never share it with anyone — SchoolHub staff will never ask for it.")
+            ->line("The code works for {$this->expiresAfterMinutes} minutes. Never share it with anyone - SchoolHub staff will never ask for it.")
             ->action('Open the confirmation page', route('filament.app.auth.verify-email'))
             ->line('If you did not register a school on SchoolHub, you can ignore this email.')
             ->salutation("Regards,\nThe SchoolHub team");

@@ -108,7 +108,7 @@
                     window.location.reload();
                 } else if (status === 503) {
                     preventDefault();
-                    showBanner('dark', 'SchoolHub is being updated.', 'This takes about a minute. Please try again shortly — nothing you entered has been lost.', 12000);
+                    showBanner('dark', 'SchoolHub is being updated.', 'This takes about a minute. Please try again shortly - nothing you entered has been lost.', 12000);
                 } else if (status >= 500) {
                     // A server error the SchoolHub team has already been
                     // told about (App\Support\ErrorRecorder): show the

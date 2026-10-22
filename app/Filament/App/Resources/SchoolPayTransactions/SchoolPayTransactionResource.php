@@ -135,11 +135,11 @@ class SchoolPayTransactionResource extends Resource
                 TextColumn::make('student.name')
                     ->label('Learner in SchoolHub')
                     ->description(fn (SchoolPayTransaction $record): ?string => $record->payment?->receipt_no ? "Receipt {$record->payment->receipt_no}" : null)
-                    ->placeholder('—'),
+                    ->placeholder('-'),
 
                 TextColumn::make('channel')
                     ->label('Paid through')
-                    ->placeholder('—')
+                    ->placeholder('-')
                     ->toggleable(),
 
                 TextColumn::make('receipt_number')

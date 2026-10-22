@@ -1,5 +1,5 @@
 {{--
-    SchoolHub — custom topbar
+    SchoolHub - custom topbar
     Save as: resources/views/filament/partials/topbar.blade.php
 
     This REPLACES Filament's topbar completely. Filament's own bar is

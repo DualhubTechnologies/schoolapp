@@ -70,7 +70,7 @@ class SetupChecklist extends Widget
             return [
                 [
                     'title' => 'Complete your school profile',
-                    'text' => 'Logo, motto, address and the head teacher\'s signature — they appear on receipts and report cards.',
+                    'text' => 'Logo, motto, address and the head teacher\'s signature - they appear on receipts and report cards.',
                     'url' => SchoolProfile::getUrl(),
                     'done' => filled($school?->logo) && filled($school?->address),
                 ],

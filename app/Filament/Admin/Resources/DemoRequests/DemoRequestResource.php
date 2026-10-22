@@ -87,14 +87,14 @@ class DemoRequestResource extends Resource
                 TextEntry::make('school_name')->label('School'),
                 TextEntry::make('name')->label('Contact person'),
                 TextEntry::make('phone')->copyable(),
-                TextEntry::make('email')->placeholder('—')->copyable(),
+                TextEntry::make('email')->placeholder('-')->copyable(),
                 TextEntry::make('preferred_contact')
                     ->label('Prefers')
                     ->formatStateUsing(fn (string $state): string => DemoRequest::CONTACT_METHODS[$state] ?? $state),
                 TextEntry::make('preferred_date')->label('Preferred date')->date('D j M Y')->placeholder('Any time'),
                 TextEntry::make('learners')
                     ->formatStateUsing(fn (?string $state): string => DemoRequest::LEARNERS[$state] ?? (string) $state)
-                    ->placeholder('—'),
+                    ->placeholder('-'),
                 TextEntry::make('created_at')->label('Received')->dateTime('j M Y, H:i'),
             ]),
             TextEntry::make('message')->placeholder('No message')->columnSpanFull(),
@@ -176,13 +176,13 @@ class DemoRequestResource extends Resource
                     ->description(fn (DemoRequest $record): string => $record->preferred_date ? Carbon::parse($record->preferred_date)->format('D j M') : 'Any time'),
                 TextColumn::make('learners')
                     ->formatStateUsing(fn (?string $state) => DemoRequest::LEARNERS[$state] ?? $state)
-                    ->placeholder('—'),
+                    ->placeholder('-'),
                 TextColumn::make('message')
                     ->limit(70)
                     ->wrap()
                     ->width('18rem')
                     ->tooltip(fn (DemoRequest $record) => $record->message)
-                    ->placeholder('—')
+                    ->placeholder('-')
                     ->toggleable(),
                 TextColumn::make('status')
                     ->badge()

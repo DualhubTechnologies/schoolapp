@@ -63,7 +63,7 @@ class ReportCardTemplate extends Model
         'photo' => ['Student photo', true],
         'identifiers' => ['LIN / combination', true],
         'assessment_columns' => ['Marks for each exam (BOT, MOT, EOT…)', true],
-        'topics' => ['Topic levels 0–3 (O-Level)', false],
+        'topics' => ['Topic levels 0-3 (O-Level)', false],
         'split_columns' => ['Formative and exam parts (e.g. /20 + /80 = 100%)', true],
         'projects' => ['Project work section', true],
         'term_trend' => ['Average for each term of the year', true],

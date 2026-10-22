@@ -12,7 +12,7 @@ use Illuminate\Support\Facades\DB;
  * The student's fee account.
  *
  * A running ledger: everything ever charged, minus everything ever paid.
- * Arrears are never re-charged — they are simply the part of the balance
+ * Arrears are never re-charged - they are simply the part of the balance
  * that predates the current term. That is what stops old debt being
  * counted twice.
  */
@@ -61,7 +61,7 @@ trait HasFeeAccount
      * Percentage of the TOTAL owed that has been paid, arrears included,
      * so 100% always means "owes nothing".
      *
-     * A student with no charges counts as fully paid — they owe nothing.
+     * A student with no charges counts as fully paid - they owe nothing.
      */
     public function percentagePaid(): float
     {
@@ -90,7 +90,7 @@ trait HasFeeAccount
     }
 
     /**
-     * Unpaid balance from terms before the one given — the figure shown as
+     * Unpaid balance from terms before the one given - the figure shown as
      * "brought forward" at the top of a statement.
      *
      * Every payment counts against the oldest debt first, which is what

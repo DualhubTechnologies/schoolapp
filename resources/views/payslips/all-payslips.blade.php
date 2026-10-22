@@ -62,7 +62,7 @@
         <p>{{ $school->phone ? 'Tel: ' . $school->phone . ' | ' : '' }}{{ $school->email }}</p>
     </div>
 
-    <div class="payslip-title">PAYSLIP — {{ $period->period_label }}</div>
+    <div class="payslip-title">PAYSLIP - {{ $period->period_label }}</div>
 
     <table class="info-grid">
         <tr>
@@ -75,7 +75,7 @@
             <td class="info-label">Position:</td>
             <td>{{ $entry->staff->position }}</td>
             <td class="info-label">Department:</td>
-            <td>{{ $entry->staff->department ?? '—' }}</td>
+            <td>{{ $entry->staff->department ?? '-' }}</td>
         </tr>
         @if($bankDetail)
         <tr>

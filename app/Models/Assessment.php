@@ -274,7 +274,7 @@ class Assessment extends Model
 
             $seen[$text] = ($seen[$text] ?? 0) + 1;
 
-            return $text.' — '.($assessment->held_on ? 'held '.Carbon::parse($assessment->held_on)->format('j M') : 'no. '.$seen[$text]);
+            return $text.' - '.($assessment->held_on ? 'held '.Carbon::parse($assessment->held_on)->format('j M') : 'no. '.$seen[$text]);
         }, $labels);
     }
 

@@ -17,7 +17,7 @@ class ListOnlineUsers extends ListRecords
     }
 
     /**
-     * No header actions — this is a live view, not something to edit.
+     * No header actions - this is a live view, not something to edit.
      */
     protected function getHeaderActions(): array
     {

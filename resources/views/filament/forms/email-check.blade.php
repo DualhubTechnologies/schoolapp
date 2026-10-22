@@ -47,7 +47,7 @@
     aria-live="polite"
 >
     <p x-show="focused && ! valid" class="sh-email-hint">
-        Keep typing — an email looks like <strong>name@example.com</strong>
+        Keep typing - an email looks like <strong>name@example.com</strong>
     </p>
 
     <p x-show="! focused && suggestion" class="sh-email-suggest">

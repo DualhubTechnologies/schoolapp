@@ -69,9 +69,9 @@
             <div class="idc-summary">
                 <strong>{{ $cards->count() }}</strong> {{ Str::plural('card', $cards->count()) }}
                 @if ($notReady > 0)
-                    <span class="idc-warn">— {{ $notReady }} {{ $notReady === 1 ? 'is' : 'are' }} missing details and cannot be printed yet</span>
+                    <span class="idc-warn">- {{ $notReady }} {{ $notReady === 1 ? 'is' : 'are' }} missing details and cannot be printed yet</span>
                 @else
-                    <span class="idc-ok">— all ready to print</span>
+                    <span class="idc-ok">- all ready to print</span>
                 @endif
             </div>
             <div class="idc-actions">
@@ -95,7 +95,7 @@
                     <aside class="idc-item idc-back">
                         <div class="idc-back-title">Back of every card</div>
                         <div class="idc-scale">@include('id-cards.templates.'.$orientation.'-back')</div>
-                        <p class="idc-muted">The same on every card: school contacts, rules and signature{{ $this->canEditTemplate() ? ' — change the rules under Template.' : '.' }}</p>
+                        <p class="idc-muted">The same on every card: school contacts, rules and signature{{ $this->canEditTemplate() ? ' - change the rules under Template.' : '.' }}</p>
                     </aside>
                 @endif
 

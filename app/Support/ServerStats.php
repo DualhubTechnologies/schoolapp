@@ -60,7 +60,7 @@ class ServerStats
             return ['label' => 'Server', 'status' => 'ok', 'summary' => 'CPU, memory and disk are within safe limits.', 'fix' => null];
         }
 
-        return ['label' => 'Server', 'status' => $worst['status'], 'summary' => $worst['label'].': '.$worst['value'].' — '.$worst['detail'], 'fix' => $worst['fix']];
+        return ['label' => 'Server', 'status' => $worst['status'], 'summary' => $worst['label'].': '.$worst['value'].' - '.$worst['detail'], 'fix' => $worst['fix']];
     }
 
     /**

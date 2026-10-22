@@ -422,7 +422,7 @@ class ReceivePayment extends Page
             return null;
         }
 
-        return trim(($student->name ?: 'No name')." — {$student->admission_no}".($student->schoolClass ? " ({$student->schoolClass->name})" : ''));
+        return trim(($student->name ?: 'No name')." - {$student->admission_no}".($student->schoolClass ? " ({$student->schoolClass->name})" : ''));
     }
 
     public static function canAccess(): bool

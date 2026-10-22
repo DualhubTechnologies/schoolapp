@@ -13,7 +13,7 @@ use Illuminate\Support\Collection;
 
 /**
  * How many learners the school has: per class (and stream), boys and
- * girls, each residency (Day, Boarding), and new learners — the figures a
+ * girls, each residency (Day, Boarding), and new learners - the figures a
  * head teacher gives the board, the district and EMIS.
  */
 class EnrolmentReport extends ReportPage

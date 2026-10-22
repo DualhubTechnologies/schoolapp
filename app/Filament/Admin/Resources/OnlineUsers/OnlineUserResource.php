@@ -108,12 +108,12 @@ class OnlineUserResource extends Resource
                 TextColumn::make('school')
                     ->label('School')
                     ->state(fn (UserSession $record): string => $record->user->school->name
-                        ?? ($record->user?->hasRole('Super Admin') ? 'Platform' : '—')),
+                        ?? ($record->user?->hasRole('Super Admin') ? 'Platform' : '-')),
                 TextColumn::make('role')
                     ->label('Role')
                     ->badge()
                     ->color('gray')
-                    ->state(fn (UserSession $record): string => $record->user?->roles->pluck('name')->join(', ') ?: '—'),
+                    ->state(fn (UserSession $record): string => $record->user?->roles->pluck('name')->join(', ') ?: '-'),
                 TextColumn::make('last_activity')
                     ->label('Last seen')
                     ->formatStateUsing(fn (UserSession $record): string => $record->lastSeen()->diffForHumans())
@@ -125,7 +125,7 @@ class OnlineUserResource extends Resource
                     ->tooltip(fn (UserSession $record): ?string => $record->user_agent),
                 TextColumn::make('ip_address')
                     ->label('IP')
-                    ->placeholder('—')
+                    ->placeholder('-')
                     ->toggleable(),
             ])
             ->filters([

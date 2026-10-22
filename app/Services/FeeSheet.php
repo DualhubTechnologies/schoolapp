@@ -13,7 +13,7 @@ use Illuminate\Support\Collection;
  * fee records for one term:
  *
  *   Fees per term       one table per group of classes that pay the same
- *                       (S.1 – S.3, S.4...), a column per residency (Day,
+ *                       (S.1 - S.3, S.4...), a column per residency (Day,
  *                       Boarding), a total row
  *   On admission        what a new learner pays once, in their first term
  *                       (admission, development, uniform...)
@@ -94,7 +94,7 @@ class FeeSheet
 
     /**
      * Charges billed only to the learners they concern, e.g. "UNEB
-     * registration — S.4: 164,000 · S.6: 186,000".
+     * registration - S.4: 164,000 · S.6: 186,000".
      *
      * @return array<int, array{name: string, detail: string}>
      */
@@ -210,7 +210,7 @@ class FeeSheet
     }
 
     /**
-     * "S.1 – S.3", "S.5 and S.6"... (SchoolClass::joinNames).
+     * "S.1 - S.3", "S.5 and S.6"... (SchoolClass::joinNames).
      *
      * @param  array<int, int|string|null>  $classIds
      */

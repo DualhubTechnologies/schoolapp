@@ -8,13 +8,13 @@ use App\Models\User;
  * Which dashboard a user sees. Each user group gets the figures and
  * shortcuts for its own daily work instead of one shared page:
  *
- *   platform     Super Admin with no school — schools and subscriptions
- *   leadership   School Admin / full access — the whole school at a glance
- *   bursar       Fees or finance work — collections and balances
- *   hr           HR and payroll only — staff and salaries
- *   teacher      Exams — own classes, subjects and marks still to enter
- *   parent       A parent's login — their own children's fees and reports
- *   basic        Nothing above — a welcome and where to go
+ *   platform     Super Admin with no school - schools and subscriptions
+ *   leadership   School Admin / full access - the whole school at a glance
+ *   bursar       Fees or finance work - collections and balances
+ *   hr           HR and payroll only - staff and salaries
+ *   teacher      Exams - own classes, subjects and marks still to enter
+ *   parent       A parent's login - their own children's fees and reports
+ *   basic        Nothing above - a welcome and where to go
  *
  * A user who does several jobs gets the first that applies, in the order
  * above: money work outranks marks because it is time-critical daily.

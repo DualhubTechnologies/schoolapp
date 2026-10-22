@@ -9,7 +9,7 @@
         <div class="container">
             <div class="prose">
                 <h2>What SchoolHub is</h2>
-                <p>SchoolHub brings a school's admissions, fees, exams and report cards, ID cards, staff payroll and finance into one secure system that works on any phone or computer. The calculations that used to take evenings and weekends — grades, aggregates and positions, fee balances, PAYE, NSSF and LST — are done for you.</p>
+                <p>SchoolHub brings a school's admissions, fees, exams and report cards, ID cards, staff payroll and finance into one secure system that works on any phone or computer. The calculations that used to take evenings and weekends - grades, aggregates and positions, fee balances, PAYE, NSSF and LST - are done for you.</p>
 
                 <h2>Built for the Ugandan curriculum and payroll</h2>
                 <ul class="ticks">

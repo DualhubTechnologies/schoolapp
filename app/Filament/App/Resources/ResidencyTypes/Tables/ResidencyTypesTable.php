@@ -35,7 +35,7 @@ class ResidencyTypesTable
                     ->toggleable(),
 
                 TextColumn::make('description')
-                    ->placeholder('—')
+                    ->placeholder('-')
                     ->limit(50)
                     ->toggleable(),
 

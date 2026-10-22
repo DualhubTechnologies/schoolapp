@@ -56,7 +56,7 @@
                         <path stroke-linecap="round" stroke-linejoin="round" d="M9 15l2.25 2.25L15 12M10.125 2.25h-4.5c-.621 0-1.125.504-1.125 1.125v17.25c0 .621.504 1.125 1.125 1.125h12.75c.621 0 1.125-.504 1.125-1.125V11.25a9 9 0 00-9-9z" />
                     </svg>
                     <span class="text-sm font-medium text-gray-700 dark:text-gray-300">{{ $csvFile->getClientOriginalName() }}</span>
-                    <span class="text-xs text-gray-500 mt-0.5">{{ number_format($csvFile->getSize() / 1024, 1) }} KB — Click to change</span>
+                    <span class="text-xs text-gray-500 mt-0.5">{{ number_format($csvFile->getSize() / 1024, 1) }} KB - Click to change</span>
                 </div>
             @else
                 <div class="flex flex-col items-center">
@@ -199,7 +199,7 @@
                         @foreach ($preview as $row)
                             <tr>
                                 @foreach ($row as $value)
-                                    <td class="py-2 px-3 text-gray-700 dark:text-gray-300 whitespace-nowrap">{{ $value !== '' ? $value : '—' }}</td>
+                                    <td class="py-2 px-3 text-gray-700 dark:text-gray-300 whitespace-nowrap">{{ $value !== '' ? $value : '-' }}</td>
                                 @endforeach
                             </tr>
                         @endforeach

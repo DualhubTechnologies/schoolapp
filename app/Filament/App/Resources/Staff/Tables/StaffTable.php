@@ -48,7 +48,7 @@ class StaffTable
                     ->formatStateUsing(fn (?string $state) => $state === 'teaching' ? 'Teaching' : 'Non-teaching')
                     ->color(fn (?string $state) => $state === 'teaching' ? 'primary' : 'gray'),
                 TextColumn::make('department')
-                    ->placeholder('—')
+                    ->placeholder('-')
                     ->searchable()
                     ->toggleable(),
                 TextColumn::make('employment_type')
@@ -74,7 +74,7 @@ class StaffTable
                     ->badge()
                     ->color(fn (string $state) => $state === 'Complete' ? 'success' : 'warning'),
                 TextColumn::make('phone')
-                    ->placeholder('—')
+                    ->placeholder('-')
                     ->searchable()
                     ->toggleable(),
                 IconColumn::make('user_id')

@@ -69,7 +69,7 @@ class MarksCompleteness
                     }
 
                     if (! $have->has("{$subjectId}:{$assessment->getKey()}")) {
-                        $missing[] = ($subjects[$subjectId] ?? 'Subject').' — '.$assessment->name;
+                        $missing[] = ($subjects[$subjectId] ?? 'Subject').' - '.$assessment->name;
                     }
                 }
             }

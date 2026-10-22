@@ -43,7 +43,7 @@
     @elseif (! $this->classId)
         <div class="at-empty">Choose a class to take its register.</div>
     @elseif ($students->isEmpty())
-        <div class="at-empty">No active learners here{{ $this->mustPickStream() ? ' — choose your stream' : '' }}.</div>
+        <div class="at-empty">No active learners here{{ $this->mustPickStream() ? ' - choose your stream' : '' }}.</div>
     @else
         <form wire:submit="save" class="at-card">
             <div class="at-head">
@@ -54,7 +54,7 @@
                         <strong>{{ ($counts['present'] ?? 0) + ($counts['late'] ?? 0) }}</strong> present ·
                         <strong>{{ $counts['absent'] ?? 0 }}</strong> absent
                         @if ($counts['excused'] ?? 0) · <strong>{{ $counts['excused'] }}</strong> excused @endif
-                        · {{ $this->alreadyTaken ? 'Register saved — you can still correct it' : 'Not saved yet' }}
+                        · {{ $this->alreadyTaken ? 'Register saved - you can still correct it' : 'Not saved yet' }}
                     </div>
                 </div>
                 <div class="at-head-actions">

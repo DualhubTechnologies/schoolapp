@@ -34,7 +34,7 @@ class ClassLevelsTable
                     ->sortable(),
 
                 TextColumn::make('description')
-                    ->placeholder('—')
+                    ->placeholder('-')
                     ->limit(50)
                     ->toggleable(),
 

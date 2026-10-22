@@ -310,7 +310,7 @@ class ReportCardController extends Controller
     protected function verifications(Collection $rows, SchoolClass $class, Term $term, array $results, array $examResults): array
     {
         $exam = $results['exam'] instanceof Assessment ? $results['exam'] : null;
-        $n = fn ($value): string => $value === null ? '—' : rtrim(rtrim(number_format((float) $value, 1), '0'), '.');
+        $n = fn ($value): string => $value === null ? '-' : rtrim(rtrim(number_format((float) $value, 1), '0'), '.');
         $schoolName = (string) $class->school()->value('name');
         $out = [];
 
@@ -331,16 +331,16 @@ class ReportCardController extends Controller
                 'primary' => array_filter([
                     'Result from' => $resultFrom,
                     'Aggregate' => (string) ($overall['aggregate'] ?? 'X'),
-                    'Division' => ($overall['division'] ?? null) === 'X' ? 'Incomplete' : (string) ($overall['division'] ?? '—'),
+                    'Division' => ($overall['division'] ?? null) === 'X' ? 'Incomplete' : (string) ($overall['division'] ?? '-'),
                     'Average' => $n($overall['average']).'%',
                 ]),
                 'a_level' => [
-                    'Total points' => ($row['points'] ?? '—').' out of 20',
-                    'Principal grades' => (string) (($row['principal_grades'] ?? '') ?: '—'),
+                    'Total points' => ($row['points'] ?? '-').' out of 20',
+                    'Principal grades' => (string) (($row['principal_grades'] ?? '') ?: '-'),
                     'Average' => $n($row['average']).'%',
                 ],
                 'nursery' => [
-                    'Overall' => (string) ($row['overall_grade'] ?? '—'),
+                    'Overall' => (string) ($row['overall_grade'] ?? '-'),
                     'Average' => $n($row['average']).'%',
                 ],
                 default => [

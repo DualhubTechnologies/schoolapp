@@ -33,7 +33,7 @@ class FeeStructureResource extends Resource
     protected static ?string $modelLabel = 'Fee Structure';
 
     /**
-     * "Tuition — S1 (Boarding)", for page headings and breadcrumbs.
+     * "Tuition - S1 (Boarding)", for page headings and breadcrumbs.
      */
     public static function getRecordTitle(?Model $record): string|Htmlable|null
     {
@@ -41,7 +41,7 @@ class FeeStructureResource extends Resource
             return null;
         }
 
-        $title = collect([$record->name, $record->schoolClass?->name])->filter()->implode(' — ');
+        $title = collect([$record->name, $record->schoolClass?->name])->filter()->implode(' - ');
 
         return $record->residencyType ? "{$title} ({$record->residencyType->name})" : $title;
     }

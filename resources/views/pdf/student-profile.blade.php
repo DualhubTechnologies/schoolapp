@@ -82,7 +82,7 @@
         default => 'b-amber',
     };
     $initials = collect(preg_split('/\s+/', trim($student->name)))->filter()->map(fn ($w) => mb_substr($w, 0, 1))->take(2)->implode('');
-    $dash = '—';
+    $dash = '-';
     $guardian = $student->guardian;
     $subjects = $student->electives->pluck('name')->implode(', ');
 @endphp
@@ -206,7 +206,7 @@
 
     {{-- Fees --}}
     <div class="card" style="margin-bottom: 10px">
-        <h2>Fees position{{ $term ? ' — '.$term->label() : '' }}</h2>
+        <h2>Fees position{{ $term ? ' - '.$term->label() : '' }}</h2>
         <table class="fees">
             <tr>
                 <td><span class="label">Total paid</span><span class="amount">UGX {{ number_format($totalPaid) }}</span></td>

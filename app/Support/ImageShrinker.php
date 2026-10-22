@@ -14,8 +14,8 @@ use Throwable;
  * background: LogoBackground).
  *
  * Resizing used to happen in the browser, before upload. On iPhones that
- * silently hangs for large pictures — the upload spins forever with no
- * message — so the phone now sends the original and it is shrunk here.
+ * silently hangs for large pictures - the upload spins forever with no
+ * message - so the phone now sends the original and it is shrunk here.
  * Anything that cannot be read (an unusual format, a picture too large to
  * open safely) is kept as uploaded rather than failing the save.
  */

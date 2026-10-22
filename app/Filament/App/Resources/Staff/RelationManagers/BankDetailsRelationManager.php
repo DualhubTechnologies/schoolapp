@@ -83,15 +83,15 @@ class BankDetailsRelationManager extends RelationManager
                         'cash' => 'gray',
                     }),
                 TextColumn::make('bank_name')
-                    ->placeholder('—'),
+                    ->placeholder('-'),
                 TextColumn::make('account_number')
-                    ->placeholder('—'),
+                    ->placeholder('-'),
                 TextColumn::make('mobile_money_provider')
                     ->label('Provider')
-                    ->placeholder('—'),
+                    ->placeholder('-'),
                 TextColumn::make('mobile_money_number')
                     ->label('Mobile number')
-                    ->placeholder('—'),
+                    ->placeholder('-'),
                 IconColumn::make('is_primary')
                     ->label('Primary')
                     ->boolean(),

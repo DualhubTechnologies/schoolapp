@@ -50,7 +50,7 @@ class ListBilling extends ListRecords
 
     /**
      * The routine term bill: charge every applicable fee to every student.
-     * Safe to run repeatedly — it only adds what is missing, so it is also
+     * Safe to run repeatedly - it only adds what is missing, so it is also
      * how you apply a fee created after the first run.
      */
     protected function billTermAction(): Action
@@ -104,7 +104,7 @@ class ListBilling extends ListRecords
     }
 
     /**
-     * A group charge — trip, transport, exam levy. Whole class by default,
+     * A group charge - trip, transport, exam levy. Whole class by default,
      * with individual students selectable when the charge is optional.
      */
     protected function billClassAction(): Action
@@ -140,7 +140,7 @@ class ListBilling extends ListRecords
                         ->orderBy('name')
                         ->get()
                         ->mapWithKeys(fn (FeeStructure $f) => [
-                            $f->id => $f->name.' — '.$f->formattedAmount()
+                            $f->id => $f->name.' - '.$f->formattedAmount()
                                 .($f->schoolClass?->name ? " ({$f->schoolClass->name}" : '')
                                 .($f->residencyType?->name ? ", {$f->residencyType->name})" : ($f->schoolClass?->name ? ')' : '')),
                         ])
@@ -231,7 +231,7 @@ class ListBilling extends ListRecords
                 Notification::make()
                     ->title("{$result['charged']} student(s) charged")
                     ->body($result['skipped'] > 0
-                        ? "{$result['skipped']} skipped — they already carry this charge."
+                        ? "{$result['skipped']} skipped - they already carry this charge."
                         : 'Added to every selected student.')
                     ->success()
                     ->send();
@@ -239,7 +239,7 @@ class ListBilling extends ListRecords
     }
 
     /**
-     * One charge, one student — lost book, replacement tie.
+     * One charge, one student - lost book, replacement tie.
      */
     protected function billStudentAction(): Action
     {

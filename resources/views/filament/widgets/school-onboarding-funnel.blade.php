@@ -28,11 +28,11 @@
                                     <td><strong>{{ $row['school']->name }}</strong><div class="sh-fn-muted">{{ $row['school']->city }}</div></td>
                                     <td><span class="sh-fn-step">{{ $row['step'] }}</span></td>
                                     <td>{{ $row['days'] === 0 ? 'Today' : $row['days'] . ' ' . str('day')->plural($row['days']) . ' ago' }}</td>
-                                    <td>{{ $row['admin']?->name ?? '—' }}<div class="sh-fn-muted">{{ $row['school']->phone }}{{ $row['admin'] ? ' · ' . $row['admin']->email : '' }}</div></td>
+                                    <td>{{ $row['admin']?->name ?? '-' }}<div class="sh-fn-muted">{{ $row['school']->phone }}{{ $row['admin'] ? ' · ' . $row['admin']->email : '' }}</div></td>
                                     <td>
                                         @if ($phone)
                                             <a class="sh-fn-wa" target="_blank" rel="noopener"
-                                               href="https://wa.me/{{ ltrim($phone, '+') }}?text={{ rawurlencode('Hello ' . ($row['admin']?->name ?? '') . ', this is the SchoolHub team. We noticed ' . $row['school']->name . ' has registered — can we help you get set up?') }}">WhatsApp</a>
+                                               href="https://wa.me/{{ ltrim($phone, '+') }}?text={{ rawurlencode('Hello ' . ($row['admin']?->name ?? '') . ', this is the SchoolHub team. We noticed ' . $row['school']->name . ' has registered - can we help you get set up?') }}">WhatsApp</a>
                                         @endif
                                     </td>
                                 </tr>

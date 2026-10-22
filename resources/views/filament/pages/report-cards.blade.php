@@ -3,10 +3,10 @@
     $shown = $this->visibleRows();
     $isHead = \App\Support\AcademicAccess::manages();
     $overall = fn ($row) => match ($r['curriculum'] ?? null) {
-        'primary' => $row['division'] ? ($row['aggregate'] !== null ? "Agg. {$row['aggregate']} · {$row['division']}" : 'Incomplete') : '—',
-        'a_level' => $row['points'] !== null ? "{$row['points']} points · {$row['result_code']}" : '—',
-        'o_level' => $row['uce_label'] ?? '—',
-        default => ($row['overall_grade'] ?? null) ? "{$row['overall_grade']} · {$row['overall_descriptor']}" : '—',
+        'primary' => $row['division'] ? ($row['aggregate'] !== null ? "Agg. {$row['aggregate']} · {$row['division']}" : 'Incomplete') : '-',
+        'a_level' => $row['points'] !== null ? "{$row['points']} points · {$row['result_code']}" : '-',
+        'o_level' => $row['uce_label'] ?? '-',
+        default => ($row['overall_grade'] ?? null) ? "{$row['overall_grade']} · {$row['overall_descriptor']}" : '-',
     };
 @endphp
 
@@ -122,7 +122,7 @@
     </div>
 
     @if (! $isHead && ! \App\Support\AcademicAccess::classTeacherClassIds())
-        <div class="rc-empty">Report cards are written by class teachers. You are not class teacher of any stream — ask the administrator.</div>
+        <div class="rc-empty">Report cards are written by class teachers. You are not class teacher of any stream - ask the administrator.</div>
     @elseif (! $r)
         <div class="rc-empty">Choose a term and class.</div>
     @elseif (! $r['summary']['with_results'])
@@ -131,7 +131,7 @@
         <div class="rc-card">
             <div class="rc-head">
                 <div>
-                    <strong>{{ $r['class']->name }} — {{ $r['term']->label() }}</strong>
+                    <strong>{{ $r['class']->name }} - {{ $r['term']->label() }}</strong>
                     <div class="rc-muted">
                         {{ $r['summary']['with_results'] }} {{ str('student')->plural($r['summary']['with_results']) }} with results. Write or suggest comments, save, then print.
                         @if ($this->hasFilters())
@@ -148,7 +148,7 @@
             </div>
 
             <div class="rc-headnote">
-                <label class="rc-label" for="rc-head-comment">Head teacher's comment <span class="rc-muted">— one comment, printed on every report card in {{ $r['class']->name }}{{ $this->sectionId ? ' ' . ($this->sectionOptions()[$this->sectionId] ?? '') : '' }}</span></label>
+                <label class="rc-label" for="rc-head-comment">Head teacher's comment <span class="rc-muted">- one comment, printed on every report card in {{ $r['class']->name }}{{ $this->sectionId ? ' ' . ($this->sectionOptions()[$this->sectionId] ?? '') : '' }}</span></label>
                 @if ($isHead)
                     <textarea id="rc-head-comment" rows="2" class="rc-input" wire:model.live.blur="headComment" placeholder="e.g. A good term. Let us all work harder next term."></textarea>
                 @else
@@ -173,17 +173,17 @@
                         @forelse ($shown as $row)
                             @php($id = $row['student']->id)
                             <tr wire:key="rc-{{ $id }}">
-                                <td class="rc-c rc-pos">{{ $row['position'] ?? '—' }}</td>
+                                <td class="rc-c rc-pos">{{ $row['position'] ?? '-' }}</td>
                                 <td>
                                     <div class="rc-name">{{ $row['student']->name ?: 'No name' }}</div>
                                     <div class="rc-muted">{{ $row['student']->admission_no }}{{ $row['student']->section ? ' · ' . $row['student']->section->name : '' }}</div>
                                 </td>
-                                <td class="rc-c rc-strong">{{ $row['average'] ?? '—' }}</td>
+                                <td class="rc-c rc-strong">{{ $row['average'] ?? '-' }}</td>
                                 <td class="rc-nowrap">{{ $overall($row) }}</td>
                                 <td><textarea rows="2" class="rc-input" wire:model.live.blur="comments.{{ $id }}.class_teacher_comment" placeholder="Class teacher's comment"></textarea></td>
                                 <td>
                                     <select class="rc-input" wire:model.live="comments.{{ $id }}.conduct">
-                                        <option value="">—</option>
+                                        <option value="">-</option>
                                         @foreach (\App\Filament\Pages\ReportCards::CONDUCT as $c)
                                             <option value="{{ $c }}">{{ $c }}</option>
                                         @endforeach

@@ -37,7 +37,7 @@ class ReportExport implements FromArray, ShouldAutoSize, WithHeadings, WithStyle
     {
         return [
             [$this->school],
-            [$this->report.($this->subtitle !== '' ? ' — '.$this->subtitle : '')],
+            [$this->report.($this->subtitle !== '' ? ' - '.$this->subtitle : '')],
             [''],
             $this->headings,
         ];

@@ -122,7 +122,7 @@ class AppPanelProvider extends PanelProvider
 
             // The compiled Tailwind theme. This was MISSING before, which
             // is why modals (e.g. the student import wizard) rendered with
-            // no styling on this panel — the classes those views use only
+            // no styling on this panel - the classes those views use only
             // exist in this compiled stylesheet.
             ->viteTheme('resources/css/filament/admin/theme.css')
 
@@ -257,7 +257,7 @@ class AppPanelProvider extends PanelProvider
             // --- Plugins ---
             // Supplies the icon-only logo shown in the collapsed sidebar
             // rail. Without this the collapsed rail shows an empty block.
-            // No darkModeIconLogo() here on purpose — darkMode is off.
+            // No darkModeIconLogo() here on purpose - darkMode is off.
             ->plugin(
                 LogoToolsPlugin::make()
                     ->iconLogo(asset('images/schoolhub-icon.svg'))

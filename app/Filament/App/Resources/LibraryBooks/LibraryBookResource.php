@@ -70,7 +70,7 @@ class LibraryBookResource extends Resource
             TextInput::make('author')->maxLength(255)->placeholder('Author or publisher\'s series'),
             Select::make('category')->options(LibraryBook::CATEGORIES)->default('textbook')->required()->native(false),
             TextInput::make('subject')->maxLength(100)->placeholder('e.g. Biology'),
-            TextInput::make('class_level')->label('For class')->maxLength(50)->placeholder('e.g. S.2 or P.5 – P.7'),
+            TextInput::make('class_level')->label('For class')->maxLength(50)->placeholder('e.g. S.2 or P.5 - P.7'),
             MoneyInput::make('price')
                 ->label('Replacement price (UGX)')
                 ->numeric()
@@ -110,8 +110,8 @@ class LibraryBookResource extends Resource
                 TextColumn::make('copies_count')->label('Copies')->numeric()->sortable()->alignCenter(),
                 TextColumn::make('available_count')->label('On the shelf')->badge()->color(fn (int $state): string => $state > 0 ? 'success' : 'danger')->alignCenter(),
                 TextColumn::make('out_count')->label('Issued out')->badge()->color(fn (int $state): string => $state > 0 ? 'warning' : 'gray')->alignCenter(),
-                TextColumn::make('price')->label('Price (UGX)')->numeric()->placeholder('—')->toggleable(),
-                TextColumn::make('shelf')->placeholder('—')->toggleable(isToggledHiddenByDefault: true),
+                TextColumn::make('price')->label('Price (UGX)')->numeric()->placeholder('-')->toggleable(),
+                TextColumn::make('shelf')->placeholder('-')->toggleable(isToggledHiddenByDefault: true),
             ])
             ->filters([
                 SelectFilter::make('category')->options(LibraryBook::CATEGORIES),

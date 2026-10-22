@@ -24,7 +24,7 @@ it('lets the platform owner confirm a school administrator\'s email from the Sch
         ->assertTableActionVisible('confirmAdminEmail', $school)
         ->callTableAction('confirmAdminEmail', $school)
         ->assertHasNoTableActionErrors()
-        ->assertNotified('Email confirmed — they can sign in now');
+        ->assertNotified('Email confirmed - they can sign in now');
 
     expect(EmailVerificationCode::isPending($admin->refresh()))->toBeFalse();
 });

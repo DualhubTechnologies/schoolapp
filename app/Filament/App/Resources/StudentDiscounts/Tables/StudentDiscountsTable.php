@@ -38,7 +38,7 @@ class StudentDiscountsTable
                         'full' => 'Full bursary',
                         'half' => 'Half bursary',
                         'partial' => 'Partial',
-                        default => '—',
+                        default => '-',
                     })
                     ->color(fn (?string $state): string => match ($state) {
                         'full' => 'success',
@@ -74,7 +74,7 @@ class StudentDiscountsTable
                     // stopped applying, and nobody was told.
                     ->color(fn (StudentDiscount $record): string => $record->hasLapsed() ? 'danger' : 'gray')
                     ->description(fn (StudentDiscount $record): ?string => $record->hasLapsed()
-                        ? 'Lapsed — renew if it should continue'
+                        ? 'Lapsed - renew if it should continue'
                         : null),
 
                 IconColumn::make('is_active')

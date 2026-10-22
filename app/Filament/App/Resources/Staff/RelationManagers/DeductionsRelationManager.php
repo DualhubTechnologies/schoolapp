@@ -128,11 +128,11 @@ class DeductionsRelationManager extends RelationManager
                     ->sortable(),
                 TextColumn::make('amount')
                     ->money('UGX')
-                    ->placeholder('—')
+                    ->placeholder('-')
                     ->sortable(),
                 TextColumn::make('rate')
                     ->suffix('%')
-                    ->placeholder('—')
+                    ->placeholder('-')
                     ->sortable(),
                 IconColumn::make('is_recurring')
                     ->label('Recurring')
@@ -149,11 +149,11 @@ class DeductionsRelationManager extends RelationManager
                 TextColumn::make('total_amount')
                     ->label('Loan balance')
                     ->money('UGX')
-                    ->placeholder('—'),
+                    ->placeholder('-'),
                 TextColumn::make('amount_recovered')
                     ->label('Recovered')
                     ->money('UGX')
-                    ->placeholder('—'),
+                    ->placeholder('-'),
                 IconColumn::make('is_active')
                     ->label('Active')
                     ->boolean(),

@@ -85,7 +85,7 @@ class AttentionItems
                 if ($done < $steps->count()) {
                     $next = $steps->firstWhere('done', false);
                     $items[] = static::item('setup', 'info', 'heroicon-o-rocket-launch',
-                        "Finish setting up — {$done} of {$steps->count()} done",
+                        "Finish setting up - {$done} of {$steps->count()} done",
                         "Next: {$next['title']}", $next['url']);
                 }
             }

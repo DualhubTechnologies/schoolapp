@@ -87,7 +87,7 @@ class StudentDiscountForm
                                 }
                             })
                             ->helperText(fn (Get $get) => $get('award_level') === 'full'
-                                ? 'Covers every fee in full — tuition, boarding, admission, everything.'
+                                ? 'Covers every fee in full - tuition, boarding, admission, everything.'
                                 : null),
 
                         Select::make('type')
@@ -135,7 +135,7 @@ class StudentDiscountForm
                             // blank quietly discounts boarding and lunch too.
                             ->helperText(fn (Get $get) => $get('award_level') === 'full'
                                 ? 'A full bursary covers every fee.'
-                                : 'Most scholarships cover tuition only — choose the fee. Leave blank to discount the whole bill.'),
+                                : 'Most scholarships cover tuition only - choose the fee. Leave blank to discount the whole bill.'),
                     ]),
 
                 Section::make('How long it runs')

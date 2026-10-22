@@ -91,7 +91,7 @@ class TransportLearnerResource extends Resource
                     ->sortable(),
                 TextColumn::make('transport_trip')
                     ->label('Uses the van')
-                    ->formatStateUsing(fn (?string $state): string => TransportRoute::TRIPS[$state] ?? '—'),
+                    ->formatStateUsing(fn (?string $state): string => TransportRoute::TRIPS[$state] ?? '-'),
                 TextColumn::make('fare')
                     ->label('Fare per term (UGX)')
                     ->state(fn (Student $record): ?float => $record->transportRoute?->fareFor($record->transport_trip))
@@ -182,11 +182,11 @@ class TransportLearnerResource extends Resource
     }
 
     /**
-     * "Aisha Nakato — P.4 (ADM-001)", for picking learners.
+     * "Aisha Nakato - P.4 (ADM-001)", for picking learners.
      */
     public static function learnerLabel(Student $student): string
     {
-        return $student->name.' — '.($student->schoolClass->name ?? 'no class').' ('.$student->admission_no.')';
+        return $student->name.' - '.($student->schoolClass->name ?? 'no class').' ('.$student->admission_no.')';
     }
 
     /**
@@ -200,7 +200,7 @@ class TransportLearnerResource extends Resource
             ->where('is_active', true)
             ->orderBy('name')
             ->get()
-            ->mapWithKeys(fn (TransportRoute $route): array => [$route->id => $route->name.' — UGX '.number_format((float) $route->fare)])
+            ->mapWithKeys(fn (TransportRoute $route): array => [$route->id => $route->name.' - UGX '.number_format((float) $route->fare)])
             ->all();
     }
 

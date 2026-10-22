@@ -81,7 +81,7 @@ class StudentsTable
                     ->label('Residency')
                     ->badge()
                     ->color(fn (Student $record) => $record->residencyType?->badgeColor() ?? 'gray')
-                    ->placeholder('—')
+                    ->placeholder('-')
                     ->toggleable(),
 
                 // Guardian, with their phone underneath. Search matches either.
@@ -123,17 +123,17 @@ class StudentsTable
                 TextColumn::make('house.name')
                     ->label('House')
                     ->badge()
-                    ->placeholder('—')
+                    ->placeholder('-')
                     ->toggleable(isToggledHiddenByDefault: true),
                 TextColumn::make('schoolpay_code')
                     ->label('SchoolPay code')
-                    ->placeholder('—')
+                    ->placeholder('-')
                     ->searchable()
                     ->copyable()
                     ->toggleable(isToggledHiddenByDefault: true),
                 TextColumn::make('lin')
                     ->label('LIN')
-                    ->placeholder('—')
+                    ->placeholder('-')
                     ->searchable()
                     ->toggleable(isToggledHiddenByDefault: true),
                 TextColumn::make('date_of_birth')
@@ -228,7 +228,7 @@ class StudentsTable
                         ->visible(fn (): bool => Modules::allows('fees'))
                         ->url(fn ($record) => StudentAccount::getUrl(['student' => $record->getKey()])),
 
-                    // ── Manual confirm (registrar) — hidden once confirmed ──
+                    // ── Manual confirm (registrar) - hidden once confirmed ──
                     Action::make('confirmEnrolment')
                         ->label('Confirm as full student')
                         ->icon('heroicon-o-check-badge')

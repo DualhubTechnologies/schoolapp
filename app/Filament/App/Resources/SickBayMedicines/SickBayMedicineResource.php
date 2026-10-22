@@ -100,7 +100,7 @@ class SickBayMedicineResource extends Resource
                     ->badge()
                     ->color(fn (SickBayMedicine $record): string => $record->stock <= 0 ? 'danger' : ($record->isLow() ? 'warning' : 'success'))
                     ->sortable(),
-                TextColumn::make('reorder_level')->label('Warn at')->placeholder('—'),
+                TextColumn::make('reorder_level')->label('Warn at')->placeholder('-'),
                 IconColumn::make('is_active')->label('In use')->boolean(),
             ])
             ->recordActions([

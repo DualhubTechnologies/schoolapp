@@ -22,9 +22,9 @@ use Illuminate\Support\Collection;
 /**
  * One student's money, three ways.
  *
- *   Ledger     every charge and payment, running balance — the record
- *   Statement  one term, summarised — what a parent receives
- *   Invoice    what is owed right now — printed on demand, never stored
+ *   Ledger     every charge and payment, running balance - the record
+ *   Statement  one term, summarised - what a parent receives
+ *   Invoice    what is owed right now - printed on demand, never stored
  *
  * All three read the same derived ledger, so they can never disagree with
  * each other. Reached from Student Accounts (not listed in the menu).
@@ -103,7 +103,7 @@ class StudentAccount extends Page
     protected static function label(?Student $student): ?string
     {
         return $student
-            ? trim(($student->name ?: 'No name')." — {$student->admission_no}".($student->schoolClass ? " ({$student->schoolClass->name})" : ''))
+            ? trim(($student->name ?: 'No name')." - {$student->admission_no}".($student->schoolClass ? " ({$student->schoolClass->name})" : ''))
             : null;
     }
 

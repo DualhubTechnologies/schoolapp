@@ -49,7 +49,7 @@
             </strong>
             <div>
                 {{ $isManager ? 'Pay using the details below; the system opens again as soon as your payment is recorded.' : 'Please ask the head teacher or school administrator to renew it.' }}
-                All your records are safe — nothing has been deleted.
+                All your records are safe - nothing has been deleted.
             </div>
         </div>
     @elseif ($st['state'] === 'grace')
@@ -71,7 +71,7 @@
             </svg>
             <div>
                 <div class="sub-label">Have a code from SchoolHub?</div>
-                <div class="sub-muted">After you pay, we send you a code by phone or WhatsApp. Choose the plan it's for below, then enter the code to activate straight away — no need to wait for us.</div>
+                <div class="sub-muted">After you pay, we send you a code by phone or WhatsApp. Choose the plan it's for below, then enter the code to activate straight away - no need to wait for us.</div>
             </div>
         </div>
     @endif
@@ -80,7 +80,7 @@
     <div class="sub-grid">
         <div class="sub-card">
             <div class="sub-label">Current plan</div>
-            <div class="sub-plan">{{ $plan?->name ?? '—' }} <span class="sub-badge {{ $stateInfo[1] }}">{{ $stateInfo[0] }}</span></div>
+            <div class="sub-plan">{{ $plan?->name ?? '-' }} <span class="sub-badge {{ $stateInfo[1] }}">{{ $stateInfo[0] }}</span></div>
             @if ($st['ends_on'])
                 <div class="sub-muted">
                     {{ $locked || $st['state'] === 'grace' ? 'Ended' : 'Paid up to' }} <strong>{{ $st['ends_on']->format('j M Y') }}</strong>

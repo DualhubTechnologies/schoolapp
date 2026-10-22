@@ -94,7 +94,7 @@ class LibraryLoanResource extends Resource
                         ->whereHas('student', fn (Builder $s) => $s->where('name', 'like', "%{$search}%")->orWhere('admission_no', 'like', "%{$search}%"))
                         ->orWhereHas('staff', fn (Builder $s) => $s->where('name', 'like', "%{$search}%")))),
                 TextColumn::make('issued_on')->label('Date issued')->date('j M Y')->sortable(),
-                TextColumn::make('due_on')->label('Return date')->date('j M Y')->sortable()->placeholder('—')
+                TextColumn::make('due_on')->label('Return date')->date('j M Y')->sortable()->placeholder('-')
                     ->color(fn (LibraryLoan $record): ?string => $record->state() === 'overdue' ? 'danger' : null),
                 TextColumn::make('state')
                     ->label('Status')

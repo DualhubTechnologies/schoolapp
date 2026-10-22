@@ -36,7 +36,7 @@ class FinanceSnapshot extends StatsOverviewWidget
         $term = Term::current(auth()->user()->school_id);
 
         if (! $term?->start_date || ! $term?->end_date) {
-            return [Stat::make('Finance', '—')->description('Set the current term\'s dates to see income and spending.')];
+            return [Stat::make('Finance', '-')->description('Set the current term\'s dates to see income and spending.')];
         }
 
         $r = app(FinanceReport::class)->build(auth()->user()->school_id, $term->start_date->copy(), $term->end_date->copy(), collect([$term]));

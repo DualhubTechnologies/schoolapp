@@ -63,7 +63,7 @@ class SalaryArrearsTable
 
                         return ($months[$record->appliedInPeriod->month] ?? '').' '.$record->appliedInPeriod->year;
                     })
-                    ->placeholder('—'),
+                    ->placeholder('-'),
                 TextColumn::make('created_at')
                     ->label('Detected on')
                     ->date()

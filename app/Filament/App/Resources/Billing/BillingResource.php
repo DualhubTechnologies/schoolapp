@@ -14,7 +14,7 @@ use Filament\Tables\Table;
 use Illuminate\Database\Eloquent\Builder;
 
 /**
- * Bill Students — where charges are put onto accounts.
+ * Bill Students - where charges are put onto accounts.
  *
  * The rows are individual charges. The printable invoice is rendered live
  * from the ledger on the Student Account page, so it always shows the

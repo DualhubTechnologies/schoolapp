@@ -10,7 +10,7 @@
     <div class="ps-intro">
         <div>
             <strong>{{ $this->year?->name ?? 'No current academic year' }}</strong>
-            <span class="ps-muted">— promote each class at the end of the year. Work from any class; nobody is moved twice in a year. Fee balances carry forward automatically.</span>
+            <span class="ps-muted">- promote each class at the end of the year. Work from any class; nobody is moved twice in a year. Fee balances carry forward automatically.</span>
         </div>
     </div>
 
@@ -27,7 +27,7 @@
                             <td class="ps-strong">{{ $row['class']->name }} <span class="ps-muted">{{ config('academics.curricula')[$row['class']->curriculum()] ?? '' }}</span></td>
                             <td>{{ $row['default'] }}</td>
                             <td class="ps-c">{{ $row['pending'] }}</td>
-                            <td class="ps-c">{{ $row['done'] ?: '—' }}</td>
+                            <td class="ps-c">{{ $row['done'] ?: '-' }}</td>
                             <td class="ps-r">
                                 @if ($row['pending'])
                                     <x-filament::button size="sm" wire:click="review({{ $row['class']->id }})">Review &amp; promote</x-filament::button>
@@ -46,7 +46,7 @@
             <div class="ps-head">
                 <div>
                     <div class="ps-title">{{ $class->name }} → {{ $this->targetClass?->name ?? 'choose a class' }}</div>
-                    <div class="ps-muted">{{ count($this->decisions) }} students. Each starts with the rules' recommendation — change anyone, then run.</div>
+                    <div class="ps-muted">{{ count($this->decisions) }} students. Each starts with the rules' recommendation - change anyone, then run.</div>
                     @if ($this->rule)
                         <div class="ps-rule">Rules: {{ $this->rule->summary() }}</div>
                     @endif
@@ -72,7 +72,7 @@
                         <label class="ps-label">Promote into</label>
                         <x-filament::input.wrapper>
                             <x-filament::input.select wire:model.live="targetClassId">
-                                <option value="">—</option>
+                                <option value="">-</option>
                                 @foreach ($this->targetOptions() as $id => $name)
                                     <option value="{{ $id }}">{{ $name }}</option>
                                 @endforeach
@@ -103,8 +103,8 @@
                             @php $s = $row['student']; @endphp
                             <tr wire:key="p-{{ $s->id }}" @class(['ps-flag' => ($this->decisions[$s->id] ?? '') !== 'promote'])>
                                 <td><div class="ps-strong">{{ $s->name ?: 'No name' }}</div><div class="ps-muted">{{ $s->admission_no }}</div></td>
-                                <td>{{ $s->section?->name ?? '—' }}@if ($row['to_section'] && ($this->decisions[$s->id] ?? '') === 'promote') <span class="ps-muted">→ {{ $row['to_section'] }}</span>@endif</td>
-                                <td class="ps-c ps-strong">{{ $row['advice']['average'] ?? '—' }}{{ isset($row['advice']['average']) ? '%' : '' }}</td>
+                                <td>{{ $s->section?->name ?? '-' }}@if ($row['to_section'] && ($this->decisions[$s->id] ?? '') === 'promote') <span class="ps-muted">→ {{ $row['to_section'] }}</span>@endif</td>
+                                <td class="ps-c ps-strong">{{ $row['advice']['average'] ?? '-' }}{{ isset($row['advice']['average']) ? '%' : '' }}</td>
                                 <td>
                                     @if ($row['advice'])
                                         <span class="ps-rec ps-rec-{{ $row['advice']['recommendation'] }}">{{ $adviceLabels[$row['advice']['recommendation']] ?? '' }}</span>

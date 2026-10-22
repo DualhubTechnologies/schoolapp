@@ -201,7 +201,7 @@ class SickBayVisitResource extends Resource
                     ->label('Temp.')
                     ->formatStateUsing(fn ($state): string => $state.' °C')
                     ->color(fn (SickBayVisit $record): ?string => $record->hasFever() ? 'danger' : null)
-                    ->placeholder('—'),
+                    ->placeholder('-'),
                 // Medicines from stock one per line, the nurse's note in
                 // short underneath; the full note on hover.
                 TextColumn::make('treatment')
@@ -214,7 +214,7 @@ class SickBayVisitResource extends Resource
                         ? Str::limit((string) $record->treatment, 40)
                         : null)
                     ->tooltip(fn (SickBayVisit $record): ?string => strlen((string) $record->treatment) > 40 ? $record->treatment : null)
-                    ->placeholder('—')
+                    ->placeholder('-')
                     ->extraCellAttributes(['style' => 'min-width: 12rem'])
                     ->wrap()
                     ->toggleable(),

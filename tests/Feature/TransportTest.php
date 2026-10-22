@@ -61,9 +61,9 @@ it('bills the route fare to learners on the van', function () {
     app(BillingService::class)->billTerm($this->term);
 
     expect(transportCharges($both)->sole()->only(['description', 'amount']))
-        ->toBe(['description' => 'Transport — Kakiri', 'amount' => '15000.00'])
+        ->toBe(['description' => 'Transport - Kakiri', 'amount' => '15000.00'])
         ->and((float) transportCharges($oneWay)->sole()->amount)->toBe(8000.0)
-        ->and(transportCharges($oneWay)->sole()->description)->toBe('Transport — Kakiri (one way)')
+        ->and(transportCharges($oneWay)->sole()->description)->toBe('Transport - Kakiri (one way)')
         // No one-way price on Kamba: one way pays the full fare.
         ->and((float) transportCharges($kamba)->sole()->amount)->toBe(13000.0);
 });

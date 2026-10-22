@@ -116,7 +116,7 @@ class PayrollPeriod extends Model
     {
         $previousPeriod = $this->getPreviousPeriod();
 
-        // No previous payroll period exists — this is the first month, nothing to compare against
+        // No previous payroll period exists - this is the first month, nothing to compare against
         if (! $previousPeriod) {
             return 0;
         }
@@ -176,7 +176,7 @@ class PayrollPeriod extends Model
                 'school_id' => $this->school_id,
                 'staff_id' => $staff->id,
                 'amount' => $grossAmount,
-                'reason' => "Unpaid salary — {$previousMonthName}",
+                'reason' => "Unpaid salary - {$previousMonthName}",
                 'month' => $previousPeriod->month,
                 'year' => $previousPeriod->year,
                 'status' => 'pending',

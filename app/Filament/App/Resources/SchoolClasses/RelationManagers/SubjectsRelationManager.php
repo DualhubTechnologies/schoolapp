@@ -62,7 +62,7 @@ class SubjectsRelationManager extends RelationManager
                 TextColumn::make('category')
                     ->badge()
                     ->formatStateUsing(fn (string $state) => match ($state) {
-                        'core' => 'Core', 'principal' => 'Principal', 'subsidiary' => 'Subsidiary', default => '—',
+                        'core' => 'Core', 'principal' => 'Principal', 'subsidiary' => 'Subsidiary', default => '-',
                     })
                     ->color(fn (string $state) => $state === 'standard' ? 'gray' : 'primary'),
                 IconColumn::make('pivot.is_compulsory')
@@ -70,7 +70,7 @@ class SubjectsRelationManager extends RelationManager
                     ->boolean(),
                 TextColumn::make('pivot.teacher_id')
                     ->label('Teacher')
-                    ->formatStateUsing(fn ($state) => $teachers[$state] ?? '—')
+                    ->formatStateUsing(fn ($state) => $teachers[$state] ?? '-')
                     ->placeholder('Not assigned')
                     ->color(fn ($state) => $state ? null : 'warning'),
             ])

@@ -81,10 +81,10 @@ class SubjectResource extends Resource
                 ->default('standard')
                 ->required()
                 ->native(false)
-                ->helperText('Primary: the four core subjects make the aggregate. A-Level: principal subjects earn 6–0 points, subsidiaries 1.'),
+                ->helperText('Primary: the four core subjects make the aggregate. A-Level: principal subjects earn 6-0 points, subsidiaries 1.'),
             Select::make('papers')
                 ->label('Papers')
-                ->options([1 => 'One paper', 2 => 'Paper 1 and 2', 3 => 'Papers 1–3', 4 => 'Papers 1–4'])
+                ->options([1 => 'One paper', 2 => 'Paper 1 and 2', 3 => 'Papers 1-3', 4 => 'Papers 1-4'])
                 ->default(1)
                 ->required()
                 ->native(false)
@@ -110,7 +110,7 @@ class SubjectResource extends Resource
                 TextColumn::make('category')
                     ->badge()
                     ->formatStateUsing(fn (string $state) => match ($state) {
-                        'core' => 'Core', 'principal' => 'Principal', 'subsidiary' => 'Subsidiary', default => '—',
+                        'core' => 'Core', 'principal' => 'Principal', 'subsidiary' => 'Subsidiary', default => '-',
                     })
                     ->color(fn (string $state) => match ($state) {
                         'core', 'principal' => 'primary', 'subsidiary' => 'info', default => 'gray',

@@ -18,7 +18,7 @@ class ResidencyTypeForm
         return $schema
             ->components([
                 Section::make('Residency type')
-                    ->description('How a student attends — used to charge boarding and day students differently.')
+                    ->description('How a student attends - used to charge boarding and day students differently.')
                     ->columns(2)
                     ->schema([
                         TextInput::make('name')

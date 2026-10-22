@@ -33,7 +33,7 @@
 
                         @if ($plan->contact_sales)
                             <div class="plan-price"><b>Custom pricing</b></div>
-                            <p class="plan-sub">Sized to your school — talk to us for a quote.</p>
+                            <p class="plan-sub">Sized to your school - talk to us for a quote.</p>
                             <a href="{{ $demoUrl }}" class="btn btn-block btn-secondary">Contact sales</a>
                         @else
                             <div class="plan-price price-term"><small>UGX</small><b>{{ number_format($termPrice) }}</b><span>per term</span></div>

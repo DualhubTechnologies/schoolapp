@@ -16,7 +16,7 @@ class StudentDocumentService
      * Generate the admission letter PDF for a student and return the
      * Dompdf instance (caller decides stream/download). Fees shown are
      * whatever applies to this student for the school's current term
-     * (BillingService — the same rules a real billing run would use), so
+     * (BillingService - the same rules a real billing run would use), so
      * there is nothing to type in before printing.
      */
     public function admissionLetter(Student $student, BillingService $billing)

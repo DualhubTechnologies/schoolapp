@@ -48,11 +48,11 @@ class CollectionsSummary extends StatsOverviewWidget
                 ->description($todayCount.' '.str('receipt')->plural($todayCount))
                 ->icon('heroicon-o-banknotes')
                 ->color('success'),
-            Stat::make('Today by method', $byMethod ?: '—')
+            Stat::make('Today by method', $byMethod ?: '-')
                 ->description('Match against cash in hand and statements')
                 ->icon('heroicon-o-scale'),
             Stat::make('This week', 'UGX '.number_format($week))
-                ->description(now()->startOfWeek()->format('j M').' – '.now()->endOfWeek()->format('j M'))
+                ->description(now()->startOfWeek()->format('j M').' - '.now()->endOfWeek()->format('j M'))
                 ->icon('heroicon-o-calendar-days'),
             Stat::make('This term', 'UGX '.number_format($termTotal))
                 ->description($term?->label() ?? 'No current term')

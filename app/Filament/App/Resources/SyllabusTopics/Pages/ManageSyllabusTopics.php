@@ -18,7 +18,7 @@ class ManageSyllabusTopics extends ManageRecords
 
     public function getSubheading(): ?string
     {
-        return 'Topics from each O-Level subject\'s NCDC syllabus. Teachers record learners\' levels (0–3) for them under Assess Topics.';
+        return 'Topics from each O-Level subject\'s NCDC syllabus. Teachers record learners\' levels (0-3) for them under Assess Topics.';
     }
 
     protected function getHeaderActions(): array

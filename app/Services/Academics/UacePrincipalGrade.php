@@ -3,7 +3,7 @@
 namespace App\Services\Academics;
 
 /**
- * UNEB's UACE award rules: a principal subject's grade (A–E principal
+ * UNEB's UACE award rules: a principal subject's grade (A-E principal
  * pass, O subsidiary pass, F fail) from the grades of its papers, each
  * 1 (D1) to 9 (F9). A subject sat as one paper is graded as if both of
  * two papers had that grade.

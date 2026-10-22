@@ -230,7 +230,7 @@ it('works out results from one exam alone for a mid-term report', function () {
     $this->get(route('filament.app.academics.report-cards', ['term' => $this->term->id, 'class' => $this->class->id, 'exam' => $this->mot->id]))
         ->assertOk()
         ->assertSee('Term 3')
-        ->assertSee('— Mid-Term', false);
+        ->assertSee('- Mid-Term', false);
 });
 
 it('warns when a term\'s exam weights do not add up to 100%', function () {

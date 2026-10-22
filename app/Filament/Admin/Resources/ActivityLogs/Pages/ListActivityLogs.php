@@ -12,7 +12,7 @@ class ListActivityLogs extends ListRecords
     protected ?string $subheading = 'Sign-ins, failed sign-ins and record changes from every school, newest first.';
 
     /**
-     * No header actions — the log is read-only.
+     * No header actions - the log is read-only.
      */
     protected function getHeaderActions(): array
     {

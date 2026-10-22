@@ -72,7 +72,7 @@ class FeeStructureTable
 
                 TextColumn::make('term.academicYear.name')
                     ->label('Year')
-                    ->placeholder('—')
+                    ->placeholder('-')
                     ->toggleable(),
 
                 IconColumn::make('is_active')

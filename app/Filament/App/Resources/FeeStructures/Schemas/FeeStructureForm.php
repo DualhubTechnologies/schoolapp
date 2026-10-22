@@ -28,7 +28,7 @@ use Illuminate\Support\HtmlString;
 /**
  * Adding a fee goes in the order a bursar thinks: which fee (a tap on a
  * common one fills in sensible settings), which classes, when it is
- * charged, and the amount — the same for everyone, different for Day and
+ * charged, and the amount - the same for everyone, different for Day and
  * Boarding, or for one residency only. Beside it, a live preview of the
  * fees that will be added, and any already set that will be skipped.
  *
@@ -430,8 +430,8 @@ class FeeStructureForm
     }
 
     /**
-     * Editing one fee: "Tuition — UGX 850,000, charged every term from
-     * Term 1 — 2026 to all day learners in S.1."
+     * Editing one fee: "Tuition - UGX 850,000, charged every term from
+     * Term 1 - 2026 to all day learners in S.1."
      */
     protected static function summary(Get $get): HtmlString
     {
@@ -457,11 +457,11 @@ class FeeStructureForm
         };
 
         $html = '<p class="text-sm leading-6 text-gray-700 dark:text-gray-300">'
-            .'<strong>'.$e($name).'</strong> — <strong>'.$e($amount).'</strong>, charged '
+            .'<strong>'.$e($name).'</strong> - <strong>'.$e($amount).'</strong>, charged '
             .$when.' to '.$e($who).' in <strong>'.$e($class).'</strong>.</p>';
 
         if (! $get('is_active')) {
-            $html .= '<p class="mt-2 text-sm text-amber-700 dark:text-amber-400">Inactive — it won\'t be billed until switched on.</p>';
+            $html .= '<p class="mt-2 text-sm text-amber-700 dark:text-amber-400">Inactive - it won\'t be billed until switched on.</p>';
         }
 
         return new HtmlString($html);

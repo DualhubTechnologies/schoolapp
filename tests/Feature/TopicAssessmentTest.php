@@ -101,7 +101,7 @@ it('prints topic levels and what needs support on the report card', function () 
 
     $this->get(route('filament.app.academics.report-cards', ['term' => $this->term->id, 'class' => $this->class->id]))
         ->assertOk()
-        ->assertSee('Topics (0–3)')
+        ->assertSee('Topics (0-3)')
         ->assertSee('Topics achieved (level 2 or 3)')
         ->assertSee('1 of 2')
         ->assertSee('Chemistry T5');

@@ -19,7 +19,7 @@ class ClassLevelForm
         return $schema
             ->components([
                 Section::make('Class level')
-                    ->description('Groups classes for fee structures and printed documents. Your school starts with the levels its type implies — edit them to match how your school words them.')
+                    ->description('Groups classes for fee structures and printed documents. Your school starts with the levels its type implies - edit them to match how your school words them.')
                     ->columns(2)
                     ->schema([
                         TextInput::make('name')
@@ -31,7 +31,7 @@ class ClassLevelForm
                             ->maxLength(60),
 
                         // Decides how the level's classes are graded:
-                        // aggregates & divisions, A–E levels, or A-Level points.
+                        // aggregates & divisions, A-E levels, or A-Level points.
                         Select::make('curriculum')
                             ->label('Curriculum')
                             ->options(fn () => SchoolType::curricula())
@@ -44,7 +44,7 @@ class ClassLevelForm
                             ->minValue(1)
                             ->default(1)
                             ->required()
-                            ->helperText('Lowest first — 1 for the youngest level. Controls the order on printed fee structures.'),
+                            ->helperText('Lowest first - 1 for the youngest level. Controls the order on printed fee structures.'),
 
                         Select::make('school_id')
                             ->label('School')

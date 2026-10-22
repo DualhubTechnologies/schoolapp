@@ -194,7 +194,7 @@ class VerifyEmail extends SimplePage
 
                 Notification::make()
                     ->title('New code sent')
-                    ->body("Check {$this->maskedEmail}. Codes can take a minute to arrive — look in Spam or Promotions too.")
+                    ->body("Check {$this->maskedEmail}. Codes can take a minute to arrive - look in Spam or Promotions too.")
                     ->success()
                     ->send();
             });

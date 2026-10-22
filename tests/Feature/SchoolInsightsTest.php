@@ -79,7 +79,7 @@ it('names learners in the system who are not billed this term, and a term not bi
 
     // A new term nobody has been billed for: the whole term to start.
     expect(findings()['not-billed'])->toMatchArray([
-        'title' => 'Term 3 — 2026 has not been billed yet',
+        'title' => 'Term 3 - 2026 has not been billed yet',
         'url' => StartTermBilling::getUrl(),
     ])->and(findings()['not-billed']['detail'])->toStartWith('3 learners have no fees for this term');
 

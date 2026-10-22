@@ -44,7 +44,7 @@
 
     <p class="tc-note tc-no-print">Payments pay for the van first; whatever is left goes to school fees.</p>
 
-    <div class="tc-print-title">{{ auth()->user()->school?->name }} — Transport collections — {{ $termLabel }}</div>
+    <div class="tc-print-title">{{ auth()->user()->school?->name }} - Transport collections - {{ $termLabel }}</div>
 
     <div class="tc-tiles">
         <div class="tc-tile"><span>Learners on the van</span><strong>{{ $n($s['total']['learners']) }}</strong></div>
@@ -91,7 +91,7 @@
                             <td><span class="tc-strong">{{ $row['student']->name }}</span><br><span class="tc-muted">{{ $row['student']->admission_no }}</span></td>
                             <td>{{ $row['student']->schoolClass?->name }}</td>
                             <td>{{ $row['route'] }}</td>
-                            <td>{{ $row['student']->guardian?->name ?? '—' }}<br><span class="tc-muted">{{ $row['student']->guardian?->phone }}</span></td>
+                            <td>{{ $row['student']->guardian?->name ?? '-' }}<br><span class="tc-muted">{{ $row['student']->guardian?->phone }}</span></td>
                             <td class="tc-r">{{ $n($row['charged']) }}</td>
                             <td class="tc-r">{{ $n($row['paid']) }}</td>
                             <td class="tc-r">

@@ -125,6 +125,7 @@ class FeeReminderService
             ->filter(fn (array $row) => $row['balance'] > 0)
             ->map(function (array $row) use ($term, $deadline) {
                 $row['deadline'] = $this->deadlineText($deadline);
+                $row['due_on'] = $deadline ? Carbon::parse($deadline)->format('j M Y') : null;
                 $row['term'] = $term;
 
                 FeeReminder::create([

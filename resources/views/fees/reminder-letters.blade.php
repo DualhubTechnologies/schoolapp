@@ -15,13 +15,16 @@
     .owed { margin: 1rem 0 1.25rem; width: 100%; border-collapse: collapse; }
     .owed td { padding: .5rem .75rem; border: 1px solid #cbd5e1; }
     .owed td:last-child { text-align: right; font-weight: 700; }
-    .sign { margin-top: 3rem; }
+    .pay { margin: .25rem 0 1.25rem; width: 100%; border-collapse: collapse; background: #f8fafc; }
+    .pay td { padding: .4rem .75rem; border-bottom: 1px solid #e2e8f0; vertical-align: top; }
+    .pay td.k { width: 8.5rem; font-weight: 700; color: #1e3a5f; white-space: nowrap; }
+    .sign { margin-top: 2.5rem; }
     .sign .line { width: 14rem; border-top: 1px solid #111827; margin-top: 2.5rem; padding-top: .3rem; }
 @endsection
 
 @section('content')
     @forelse ($letters as $letter)
-        @php($student = $letter['student'])
+        @php $student = $letter['student']; @endphp
         <div class="sheet">
             <div class="letterhead">
                 @if ($logo)
@@ -61,15 +64,28 @@
                 </table>
 
                 <p>
-                    You are kindly requested to clear this balance by <strong>{{ $letter['deadline'] }}</strong>.
-                    @if ($student->schoolpay_code)
-                        Payment can be made through <strong>SchoolPay using code {{ $student->schoolpay_code }}</strong>,
-                        or at the bursar's office, quoting the student's admission number <strong>{{ $student->admission_no }}</strong>.
-                    @else
-                        Payment can be made at the bursar's office, by bank deposit or through SchoolPay / mobile money,
-                        quoting the student's admission number <strong>{{ $student->admission_no }}</strong>.
-                    @endif
+                    You are kindly requested to clear this balance
+                    @if ($letter['due_on'] ?? null) by <strong>{{ $letter['due_on'] }}</strong>, @else as soon as possible, @endif
+                    quoting the student's admission number <strong>{{ $student->admission_no }}</strong> on every payment.
                 </p>
+
+                {{-- Where to pay: the learner's SchoolPay code and the school's own accounts (School Profile). --}}
+                @php
+                    $howToPay = collect([
+                        'SchoolPay' => $student->schoolpay_code ? "Pay with code {$student->schoolpay_code} (mobile money or bank)" : null,
+                        'Bank' => $school?->fee_payment_bank,
+                        'Mobile money' => $school?->fee_payment_mobile_money,
+                        'Note' => $school?->fee_payment_instructions,
+                    ])->filter();
+                @endphp
+                <table class="pay">
+                    @foreach ($howToPay as $way => $details)
+                        <tr><td class="k">{{ $way }}</td><td>{{ $details }}</td></tr>
+                    @endforeach
+                    @if ($howToPay->isEmpty())
+                        <tr><td class="k">At school</td><td>The bursar's office.</td></tr>
+                    @endif
+                </table>
 
                 <p>If you have already paid, please bring the receipt or bank slip to the bursar's office so that the account can be updated. Thank you for your continued support.</p>
             </div>

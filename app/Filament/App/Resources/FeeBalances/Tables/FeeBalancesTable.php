@@ -167,7 +167,7 @@ class FeeBalancesTable
                     ->query(fn (Builder $query, array $data): Builder => $query
                         ->when(
                             $data['amount'] ?? null,
-                            fn (Builder $q, $amount) => $q->whereRaw("{$paid} >= ?", [(float) $amount]),
+                            fn (Builder $q, $amount) => $q->whereRaw("{$paid} >= ? + 0", [(float) $amount]),
                         )),
 
                 Filter::make('percentage')
@@ -199,10 +199,12 @@ class FeeBalancesTable
                         $fraction = (float) $percent / 100;
                         $operator = ($data['operator'] ?? 'gte') === 'lt' ? '<' : '>=';
 
-                        // Students with no charges are excluded — a
-                        // percentage of nothing is not a meaningful answer.
+                        // Students with no charges are excluded: a percentage
+                        // of nothing is not a meaningful answer. "* 1.0" and
+                        // "? + 0" keep SQLite (the Windows app) from dividing
+                        // whole numbers and from comparing the number as text.
                         return $query->whereRaw("{$charged} > 0")
-                            ->whereRaw("({$paid} / {$charged}) {$operator} ?", [$fraction]);
+                            ->whereRaw("({$paid} * 1.0 / {$charged}) {$operator} ? + 0", [$fraction]);
                     }),
             ])
             ->paginationPageOptions([10, 25, 50, 100])

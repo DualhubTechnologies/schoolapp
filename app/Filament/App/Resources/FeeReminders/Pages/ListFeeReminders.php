@@ -12,6 +12,7 @@ use Filament\Actions\Action;
 use Filament\Forms\Components\DatePicker;
 use Filament\Forms\Components\Select;
 use Filament\Forms\Components\Textarea;
+use Filament\Forms\Components\TextInput;
 use Filament\Forms\Components\Toggle;
 use Filament\Forms\Components\ToggleButtons;
 use Filament\Notifications\Notification;
@@ -57,6 +58,16 @@ class ListFeeReminders extends ListRecords
                         ->minValue(1)
                         ->live(onBlur: true),
 
+                    TextInput::make('paid_below')
+                        ->label('Paid less than')
+                        ->helperText('Optional. E.g. 50 for learners who have paid under half of their fees.')
+                        ->numeric()
+                        ->suffix('% of their fees')
+                        ->minValue(1)
+                        ->maxValue(100)
+                        ->placeholder('Any')
+                        ->live(onBlur: true),
+
                     ToggleButtons::make('channel')
                         ->label('Send as')
                         ->options(['sms' => 'SMS to guardian', 'letter' => 'Printed letters'])
@@ -66,7 +77,7 @@ class ListFeeReminders extends ListRecords
                         ->live()
                         ->required(),
 
-                    Text::make(fn (Get $get) => $this->audienceSummary($get('class_ids'), $get('min_balance'))),
+                    Text::make(fn (Get $get) => $this->audienceSummary($get('class_ids'), $get('min_balance'), $get('paid_below'))),
 
                     Textarea::make('template')
                         ->label('Message')
@@ -90,10 +101,10 @@ class ListFeeReminders extends ListRecords
                         ->visible(fn (Get $get) => $get('channel') === 'sms'),
                 ])
                 ->action(function (array $data) {
-                    $students = $this->debtors($data['class_ids'] ?? [], (float) ($data['min_balance'] ?? 1));
+                    $students = $this->debtors($data['class_ids'] ?? [], (float) ($data['min_balance'] ?? 1), $this->percent($data['paid_below'] ?? null));
 
                     if ($students->isEmpty()) {
-                        Notification::make()->title('No one to remind')->body('No student in those classes owes that much.')->info()->send();
+                        Notification::make()->title('No one to remind')->body('No student in those classes matches what you chose.')->info()->send();
 
                         return;
                     }
@@ -138,26 +149,42 @@ class ListFeeReminders extends ListRecords
     }
 
     /**
-     * Active students in the chosen classes who owe at least $minBalance.
+     * Active students in the chosen classes who owe at least $minBalance,
+     * and, if a percentage is given, have paid less than that share of
+     * what they were charged.
      *
      * @return Collection<int, Student>
      */
-    protected function debtors(?array $classIds, float $minBalance): Collection
+    protected function debtors(?array $classIds, float $minBalance, ?float $paidBelowPercent = null): Collection
     {
+        $charged = FeeBalanceResource::chargedSql();
+        $paid = FeeBalanceResource::paidSql();
+
         return Student::query()
             ->where('school_id', auth()->user()?->school_id)
             ->where('status', 'active')
             ->when($classIds, fn (Builder $q) => $q->whereIn('school_class_id', $classIds))
             ->select('students.*')
             ->selectRaw('('.FeeBalanceResource::chargedSql().' - '.FeeBalanceResource::paidSql().') as balance_owing')
-            ->whereRaw('('.FeeBalanceResource::chargedSql().' - '.FeeBalanceResource::paidSql().') >= ?', [max($minBalance, 1)])
+            // "? + 0": SQLite (the Windows app) compares a bound number as
+            // text, and every number is "less" than text there.
+            ->whereRaw('('.FeeBalanceResource::chargedSql().' - '.FeeBalanceResource::paidSql().') >= ? + 0', [max($minBalance, 1)])
+            ->when($paidBelowPercent !== null, fn (Builder $q) => $q
+                ->whereRaw("{$charged} > 0")
+                ->whereRaw("{$paid} < {$charged} * (? + 0)", [$paidBelowPercent / 100]))
             ->with(['guardian', 'schoolClass', 'school'])
             ->get();
     }
 
-    protected function audienceSummary(?array $classIds, $minBalance): HtmlString
+    /** The "paid less than" box: a percentage from 1 to 100, or none. */
+    protected function percent(mixed $value): ?float
     {
-        $students = $this->debtors($classIds, (float) ($minBalance ?: 1));
+        return is_numeric($value) && (float) $value > 0 ? min((float) $value, 100.0) : null;
+    }
+
+    protected function audienceSummary(?array $classIds, $minBalance, mixed $paidBelow = null): HtmlString
+    {
+        $students = $this->debtors($classIds, (float) ($minBalance ?: 1), $this->percent($paidBelow));
         $service = app(FeeReminderService::class);
         $withPhone = $students->filter(fn (Student $s) => $service->phoneFor($s) !== null)->count();
         $owed = (float) $students->sum('balance_owing');

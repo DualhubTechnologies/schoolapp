@@ -1,15 +1,21 @@
 <?php
 
+use App\Filament\App\Resources\FeeBalances\Pages\ListFeeBalances;
+use App\Filament\App\Resources\FeeReminders\Pages\ListFeeReminders;
 use App\Models\AcademicYear;
+use App\Models\FeeReminder;
+use App\Models\Guardian;
 use App\Models\School;
 use App\Models\SchoolClass;
 use App\Models\Student;
 use App\Models\StudentCharge;
+use App\Models\StudentPayment;
 use App\Models\Term;
 use App\Models\User;
 use App\Services\Subscriptions\SubscriptionManager;
 use Database\Seeders\RoleSeeder;
 use Filament\Facades\Filament;
+use Livewire\Livewire;
 
 beforeEach(function () {
     $this->seed(RoleSeeder::class);
@@ -52,4 +58,53 @@ it('does not mention ways of paying the school has not set up', function () {
         ->assertSee("The bursar's office.", false)
         ->assertDontSee('SchoolPay')
         ->assertDontSee('Mobile money');
+});
+
+it('reminds only learners who have paid less than the chosen share of their fees', function () {
+    $class = $this->student->schoolClass;
+    $term = Term::current();
+    $learner = function (string $name, string $phone, float $paid) use ($class, $term): Student {
+        $guardian = Guardian::create(['school_id' => $this->school->id, 'name' => "Parent of {$name}", 'phone' => $phone]);
+        $student = Student::create(['school_id' => $this->school->id, 'school_class_id' => $class->id, 'guardian_id' => $guardian->id, 'name' => $name, 'admission_no' => 'P-'.$phone, 'status' => 'active']);
+        StudentCharge::create(['school_id' => $this->school->id, 'student_id' => $student->id, 'term_id' => $term->id, 'description' => 'Tuition', 'amount' => 500000, 'charged_on' => '2026-09-14']);
+        StudentPayment::create(['school_id' => $this->school->id, 'student_id' => $student->id, 'amount' => $paid, 'paid_on' => '2026-09-20', 'method' => 'cash']);
+
+        return $student;
+    };
+    $behind = $learner('Brian Okello', '0772111222', 100000);  // 20% paid
+    $ahead = $learner('Grace Namuli', '0772333444', 400000);   // 80% paid
+
+    Livewire::test(ListFeeReminders::class)
+        ->mountAction('send')
+        ->setActionData(['paid_below' => 50, 'skip_recent' => false])
+        ->callMountedAction()
+        ->assertHasNoActionErrors();
+
+    expect(FeeReminder::where('channel', 'sms')->pluck('student_id')->all())
+        ->toContain($behind->id)
+        ->not->toContain($ahead->id);
+});
+
+it('filters Student Accounts by percentage paid and by amount paid', function () {
+    $class = $this->student->schoolClass;
+    $term = Term::current();
+    $paidSoFar = function (string $name, float $paid) use ($class, $term): Student {
+        $student = Student::create(['school_id' => $this->school->id, 'school_class_id' => $class->id, 'name' => $name, 'admission_no' => 'A-'.$name, 'status' => 'active']);
+        StudentCharge::create(['school_id' => $this->school->id, 'student_id' => $student->id, 'term_id' => $term->id, 'description' => 'Tuition', 'amount' => 500000, 'charged_on' => '2026-09-14']);
+        StudentPayment::create(['school_id' => $this->school->id, 'student_id' => $student->id, 'amount' => $paid, 'paid_on' => '2026-09-20', 'method' => 'cash']);
+
+        return $student;
+    };
+    $behind = $paidSoFar('Brian', 100000);
+    $ahead = $paidSoFar('Grace', 400000);
+
+    Livewire::test(ListFeeBalances::class)
+        ->filterTable('percentage', ['operator' => 'lt', 'percent' => 50])
+        ->assertCanSeeTableRecords([$behind, $this->student])
+        ->assertCanNotSeeTableRecords([$ahead]);
+
+    Livewire::test(ListFeeBalances::class)
+        ->filterTable('paid_at_least', ['amount' => 200000])
+        ->assertCanSeeTableRecords([$ahead])
+        ->assertCanNotSeeTableRecords([$behind, $this->student]);
 });

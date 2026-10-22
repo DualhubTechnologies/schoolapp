@@ -179,7 +179,7 @@ class LibraryBookResource extends Resource
                         ->schema([
                             Repeater::make('copies')
                                 ->hiddenLabel()
-                                ->relationship(modifyQueryUsing: fn (Builder $q) => $q->orderBy('accession_no'))
+                                ->relationship(modifyQueryUsing: fn (Builder $query) => $query->orderBy('accession_no'))
                                 ->table([
                                     Repeater\TableColumn::make('Number'),
                                     Repeater\TableColumn::make('Condition'),

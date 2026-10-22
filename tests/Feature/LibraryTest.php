@@ -155,3 +155,22 @@ it('opens the library to the librarian and not to a teacher', function () {
     $teacher = User::factory()->create(['school_id' => $this->school->id])->assignRole('Teacher');
     $this->actingAs($teacher)->get(LibraryLoanResource::getUrl())->assertForbidden();
 });
+
+it('lists a book\'s copies in number order, and saves changes to them', function () {
+    $book = LibraryBook::create(['school_id' => $this->school->id, 'title' => 'Oxford Atlas']);
+    [$first, $second] = $book->addCopies(2);
+
+    $page = Livewire::test(ManageLibraryBooks::class)
+        ->mountAction(TestAction::make('copies')->table($book))
+        ->assertHasNoErrors();
+
+    $copies = array_values($page->instance()->mountedActions[0]['data']['copies']);
+    expect(array_column($copies, 'accession_no'))->toBe(['LIB-0001', 'LIB-0002']);
+
+    $page->set('mountedActions.0.data.copies.'.array_keys($page->instance()->mountedActions[0]['data']['copies'])[1].'.condition', 'poor')
+        ->callMountedAction()
+        ->assertHasNoActionErrors();
+
+    expect($second->fresh()->condition)->toBe('poor')
+        ->and($first->fresh()->condition)->toBe('good');
+});

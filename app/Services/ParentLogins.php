@@ -72,6 +72,7 @@ class ParentLogins
 
         $user = DB::transaction(function () use ($guardian, $phone, $pin): User {
             $user = new User;
+            $user->isFreeLogin = true;
             $user->forceFill([
                 'name' => $guardian->name,
                 'email' => $this->emailFor($guardian),

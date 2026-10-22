@@ -69,12 +69,18 @@ class User extends Authenticatable implements FilamentUser, HasAppAuthentication
     }
 
     /**
+     * Set before saving a parent or student login: those are free and do
+     * not count against the plan (its role is only given after saving).
+     */
+    public bool $isFreeLogin = false;
+
+    /**
      * The school's plan caps how many staff logins it may have.
      */
     protected static function booted(): void
     {
         static::creating(function (User $user): void {
-            if ($user->school_id) {
+            if ($user->school_id && ! $user->isFreeLogin) {
                 SubscriptionManager::ensureRoomForUsers((int) $user->school_id);
             }
         });

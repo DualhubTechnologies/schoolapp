@@ -1,13 +1,16 @@
 <?php
 
+use App\Exceptions\PlanLimitReached;
 use App\Filament\App\Resources\Students\Pages\ListStudents;
 use App\Filament\Pages\SchoolSubscription;
+use App\Models\Guardian;
 use App\Models\Plan;
 use App\Models\School;
 use App\Models\SchoolClass;
 use App\Models\Student;
 use App\Models\StudentImport;
 use App\Models\User;
+use App\Services\ParentLogins;
 use App\Services\StudentCsvImporter;
 use App\Services\Subscriptions\SubscriptionManager;
 use Database\Seeders\RoleSeeder;
@@ -102,4 +105,34 @@ it('lets a school on the free trial have any number of learners', function () {
 
     expect(SubscriptionManager::current($school)->plan->max_students)->toBeNull()
         ->and(SubscriptionManager::roomForStudents($school))->toBeNull();
+});
+
+it('gives a parent a login even when the plan\'s staff logins are all used', function () {
+    $this->tiny->update(['max_users' => 1]);
+    expect(SubscriptionManager::roomForUsers($this->school))->toBe(0);
+
+    $guardian = Guardian::create(['school_id' => $this->school->id, 'name' => 'Akello Rose', 'phone' => '0772555101', 'relationship' => 'mother']);
+    $login = app(ParentLogins::class)->createFor($guardian, text: false);
+
+    expect($login['user']->hasRole('Parent'))->toBeTrue()
+        ->and(SubscriptionManager::userCount($this->school))->toBe(1);
+
+    expect(fn () => User::factory()->create(['school_id' => $this->school->id]))
+        ->toThrow(PlanLimitReached::class);
+});
+
+it('keeps existing learners workable when the plan is full, but not new or returning ones', function () {
+    $third = Student::create(['school_id' => $this->school->id, 'school_class_id' => $this->class->id, 'first_name' => 'Third', 'last_name' => 'Learner', 'admission_no' => 'ADM-9', 'status' => 'active']);
+    expect(SubscriptionManager::roomForStudents($this->school))->toBe(0);
+
+    $p2 = SchoolClass::create(['school_id' => $this->school->id, 'name' => 'P.2']);
+    $third->update(['first_name' => 'Renamed', 'school_class_id' => $p2->id]);
+    expect($third->fresh()->name)->toBe('Renamed Learner');
+
+    $third->update(['status' => 'withdrawn']);
+    expect(SubscriptionManager::roomForStudents($this->school))->toBe(1);
+
+    Student::create(['school_id' => $this->school->id, 'school_class_id' => $this->class->id, 'first_name' => 'New', 'last_name' => 'Learner', 'admission_no' => 'ADM-10', 'status' => 'active']);
+    expect(fn () => $third->update(['status' => 'active']))->toThrow(PlanLimitReached::class)
+        ->and(fn () => Student::create(['school_id' => $this->school->id, 'school_class_id' => $this->class->id, 'first_name' => 'One', 'last_name' => 'More', 'admission_no' => 'ADM-11', 'status' => 'active']))->toThrow(PlanLimitReached::class);
 });

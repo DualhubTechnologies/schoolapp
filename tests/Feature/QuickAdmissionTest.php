@@ -139,3 +139,15 @@ it('prints a formal admission letter addressed to the parent', function () {
         ->assertOk()
         ->assertHeader('content-type', 'application/pdf');
 });
+
+it('prints the admission letter and profile of a learner whose number has slashes', function () {
+    $student = Student::create(['school_id' => $this->school->id, 'school_class_id' => $this->class->id, 'residency_type_id' => $this->day->id, 'first_name' => 'Brian', 'last_name' => 'Okello', 'admission_no' => 'DHS/2026/0014', 'status' => 'active']);
+
+    $this->get(route('filament.app.students.admission-letter', $student))
+        ->assertOk()
+        ->assertHeader('content-disposition', 'inline; filename=admission-letter-DHS-2026-0014.pdf');
+
+    $this->get(route('filament.app.students.profile', $student))
+        ->assertOk()
+        ->assertHeader('content-disposition', 'inline; filename=profile-DHS-2026-0014.pdf');
+});

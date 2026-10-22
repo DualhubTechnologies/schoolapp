@@ -4,6 +4,7 @@ namespace App\Http\Controllers;
 
 use App\Exports\NssfScheduleExport;
 use App\Models\PayrollPeriod;
+use App\Support\DownloadName;
 use App\Support\PayrollAccess;
 use Barryvdh\DomPDF\Facade\Pdf;
 use Maatwebsite\Excel\Facades\Excel;
@@ -25,7 +26,7 @@ class NssfScheduleController extends Controller
         $pdf = Pdf::loadView('payslips.nssf-schedule', compact('period', 'school', 'entries'))
             ->setPaper('a4', 'landscape');
 
-        $filename = "NSSF-Schedule-{$period->period_label}.pdf";
+        $filename = DownloadName::make("NSSF-Schedule-{$period->period_label}.pdf");
 
         return $pdf->download($filename);
     }
@@ -34,7 +35,7 @@ class NssfScheduleController extends Controller
     {
         PayrollAccess::authorize($period->school_id);
 
-        $filename = "NSSF-Schedule-{$period->period_label}.xlsx";
+        $filename = DownloadName::make("NSSF-Schedule-{$period->period_label}.xlsx");
 
         return Excel::download(new NssfScheduleExport($period), $filename);
     }

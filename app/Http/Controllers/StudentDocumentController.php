@@ -5,6 +5,7 @@ namespace App\Http\Controllers;
 use App\Models\Student;
 use App\Services\BillingService;
 use App\Services\StudentDocumentService;
+use App\Support\DownloadName;
 use Symfony\Component\HttpFoundation\Response;
 
 /**
@@ -19,7 +20,7 @@ class StudentDocumentController extends Controller
 
         $pdf = $documents->admissionLetter($student, $billing);
 
-        return $pdf->stream('admission-letter-'.$student->admission_no.'.pdf');
+        return $pdf->stream(DownloadName::make('admission-letter-'.$student->admission_no.'.pdf'));
     }
 
     public function profile(Student $student, StudentDocumentService $documents): Response
@@ -28,7 +29,7 @@ class StudentDocumentController extends Controller
 
         $pdf = $documents->profile($student);
 
-        return $pdf->stream('profile-'.$student->admission_no.'.pdf');
+        return $pdf->stream(DownloadName::make('profile-'.$student->admission_no.'.pdf'));
     }
 
     protected function authorizeSchool(int $schoolId): void

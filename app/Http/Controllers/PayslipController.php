@@ -4,6 +4,7 @@ namespace App\Http\Controllers;
 
 use App\Models\PayrollEntry;
 use App\Models\PayrollPeriod;
+use App\Support\DownloadName;
 use App\Support\PayrollAccess;
 use Barryvdh\DomPDF\Facade\Pdf;
 
@@ -29,7 +30,7 @@ class PayslipController extends Controller
             'allowanceItems', 'statutoryItems', 'deductionItems', 'arrearItems'
         ));
 
-        $filename = "Payslip-{$entry->staff->staff_no}-{$period->period_label}.pdf";
+        $filename = DownloadName::make("Payslip-{$entry->staff->staff_no}-{$period->period_label}.pdf");
 
         return $pdf->download($filename);
     }
@@ -49,7 +50,7 @@ class PayslipController extends Controller
         $pdf = Pdf::loadView('payslips.all-payslips', compact('period', 'school', 'entries'))
             ->setPaper('a4', 'portrait');
 
-        $filename = "All-Payslips-{$period->period_label}.pdf";
+        $filename = DownloadName::make("All-Payslips-{$period->period_label}.pdf");
 
         return $pdf->download($filename);
     }

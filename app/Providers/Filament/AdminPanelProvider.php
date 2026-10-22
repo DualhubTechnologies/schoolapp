@@ -14,6 +14,7 @@ use App\Filament\Pages\Auth\ResetPassword;
 use App\Filament\Support\ErrorNotices;
 use App\Filament\Support\Pages\RecordFormScope;
 use App\Filament\Widgets\StatsOverview;
+use App\Http\Controllers\GiftVoucherController;
 use App\Http\Middleware\RecordLastSeen;
 use App\Http\Middleware\ServerEditionOnly;
 use Filafly\LogoTools\LogoToolsPlugin;
@@ -33,6 +34,7 @@ use Illuminate\Cookie\Middleware\EncryptCookies;
 use Illuminate\Foundation\Http\Middleware\PreventRequestForgery;
 use Illuminate\Routing\Middleware\SubstituteBindings;
 use Illuminate\Session\Middleware\StartSession;
+use Illuminate\Support\Facades\Route;
 use Illuminate\View\Middleware\ShareErrorsFromSession;
 
 class AdminPanelProvider extends PanelProvider
@@ -123,6 +125,11 @@ class AdminPanelProvider extends PanelProvider
                 PanelsRenderHook::SIMPLE_PAGE_START,
                 fn () => view('filament.partials.login-brand')
             )
+
+            // Gift vouchers to print (Activation codes → Make gift vouchers).
+            ->authenticatedRoutes(function (): void {
+                Route::get('/gift-vouchers', GiftVoucherController::class)->name('gift-vouchers');
+            })
 
             // --- Resources, pages, widgets ---
             // Schools lives here (platform-owner only). UserResource is

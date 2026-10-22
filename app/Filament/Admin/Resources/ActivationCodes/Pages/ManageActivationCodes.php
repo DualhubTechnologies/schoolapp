@@ -14,6 +14,7 @@ class ManageActivationCodes extends ManageRecords
     protected function getHeaderActions(): array
     {
         return [
+            ActivationCodeResource::giftAction(),
             ActivationCodeResource::generateAction(),
         ];
     }

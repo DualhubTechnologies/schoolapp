@@ -25,6 +25,7 @@ class SubscriptionActivationCode extends Model
         'payment_notes',
         'custom_ends_on',
         'notes',
+        'is_gift',
         'expires_at',
         'used_at',
         'used_by',
@@ -41,6 +42,7 @@ class SubscriptionActivationCode extends Model
             'expires_at' => 'date',
             'used_at' => 'datetime',
             'revoked_at' => 'datetime',
+            'is_gift' => 'boolean',
         ];
     }
 

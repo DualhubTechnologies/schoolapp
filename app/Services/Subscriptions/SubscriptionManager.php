@@ -282,11 +282,14 @@ class SubscriptionManager
      * immediately -- the school gets the new plan's limits today rather
      * than waiting out whatever is left of the old one.
      *
+     * A gift ($afterTrial) is different: it starts the day after the
+     * school's free trial ends, so the trial is never cut short.
+     *
      * @param  array{amount?: float, method?: string, reference?: ?string, paid_on?: mixed, notes?: ?string}|null  $payment
      */
-    public static function renew(School $school, Plan $plan, string $cycle, float $amount, ?array $payment = null, mixed $customEndsOn = null, ?string $notes = null): Subscription
+    public static function renew(School $school, Plan $plan, string $cycle, float $amount, ?array $payment = null, mixed $customEndsOn = null, ?string $notes = null, bool $afterTrial = false): Subscription
     {
-        return DB::transaction(function () use ($school, $plan, $cycle, $amount, $payment, $customEndsOn, $notes) {
+        return DB::transaction(function () use ($school, $plan, $cycle, $amount, $payment, $customEndsOn, $notes, $afterTrial) {
             $current = static::current($school);
             $carryDays = 0;
             $switchingPlan = false;
@@ -320,6 +323,10 @@ class SubscriptionManager
             // above would otherwise say -- that is the whole point of it.
             if (! $switchingPlan && $lastEnd && CarbonImmutable::parse($lastEnd)->gte($start)) {
                 $start = CarbonImmutable::parse($lastEnd)->addDay();
+            }
+
+            if ($afterTrial && $current?->isTrial() && CarbonImmutable::parse($current->ends_on)->gte($start)) {
+                $start = CarbonImmutable::parse($current->ends_on)->addDay();
             }
 
             $end = $cycle === 'custom' && $customEndsOn
@@ -445,6 +452,23 @@ class SubscriptionManager
     }
 
     /**
+     * Gift vouchers: codes SchoolHub gives away, e.g. at a visit or a head
+     * teachers' meeting. Nothing is paid or recorded as paid; the period
+     * starts after the school's free term (renew()'s $afterTrial).
+     *
+     * @return Collection<int, SubscriptionActivationCode>
+     */
+    public static function issueGiftVouchers(Plan $plan, string $cycle, int $count, int $validDays, ?string $notes = null): Collection
+    {
+        return collect(range(1, $count))->map(function () use ($plan, $cycle, $validDays, $notes): SubscriptionActivationCode {
+            $code = static::issueActivationCode(null, $plan, $cycle, 0, null, null, $notes, $validDays);
+            $code->update(['is_gift' => true]);
+
+            return $code;
+        });
+    }
+
+    /**
      * A school types its code in on its own Subscription page. Applies the
      * exact renewal the code was issued for and marks it spent. If the
      * code was unassigned stock, this school claims it.
@@ -484,6 +508,7 @@ class SubscriptionManager
                 ] : null,
                 $record->custom_ends_on,
                 $record->notes,
+                afterTrial: $record->is_gift,
             );
 
             $record->update([

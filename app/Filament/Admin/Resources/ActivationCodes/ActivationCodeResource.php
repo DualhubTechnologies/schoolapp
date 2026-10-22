@@ -10,6 +10,7 @@ use App\Models\SubscriptionPayment;
 use App\Services\Subscriptions\SubscriptionManager;
 use BackedEnum;
 use Filament\Actions\Action;
+use Filament\Actions\BulkAction;
 use Filament\Forms\Components\Select;
 use Filament\Forms\Components\TextInput;
 use Filament\Notifications\Notification;
@@ -24,6 +25,7 @@ use Filament\Tables\Filters\Filter;
 use Filament\Tables\Filters\SelectFilter;
 use Filament\Tables\Table;
 use Illuminate\Database\Eloquent\Builder;
+use Illuminate\Database\Eloquent\Collection;
 
 /**
  * Every activation code the platform owner has ever made, whether it is
@@ -59,7 +61,8 @@ class ActivationCodeResource extends Resource
         return $table
             ->defaultSort('created_at', 'desc')
             ->columns([
-                TextColumn::make('code')->fontFamily('mono')->copyable()->weight('bold'),
+                TextColumn::make('code')->fontFamily('mono')->copyable()->weight('bold')
+                    ->description(fn (SubscriptionActivationCode $record): ?string => $record->is_gift ? 'Gift voucher' : null),
                 TextColumn::make('plan.name')->label('Plan'),
                 TextColumn::make('amount')->label('Price')->numeric()->prefix('UGX '),
                 TextColumn::make('school.name')->label('School')->placeholder('— not yet assigned —')->searchable(),
@@ -98,6 +101,27 @@ class ActivationCodeResource extends Resource
                 Filter::make('unassigned')
                     ->label('Not yet assigned to a school')
                     ->query(fn (Builder $query) => $query->whereNull('school_id')),
+                Filter::make('gift')
+                    ->label('Gift vouchers only')
+                    ->query(fn (Builder $query) => $query->where('is_gift', true)),
+            ])
+            ->toolbarActions([
+                BulkAction::make('print')
+                    ->label('Print as vouchers')
+                    ->icon('heroicon-o-printer')
+                    ->deselectRecordsAfterCompletion()
+                    ->action(function (Collection $records, $livewire): void {
+                        $usable = SubscriptionActivationCode::whereKey($records->pluck('id')->all())->get()
+                            ->filter(fn (SubscriptionActivationCode $code): bool => $code->status() === 'active');
+
+                        if ($usable->isEmpty()) {
+                            Notification::make()->title('Nothing to print')->body('Only codes not yet used, revoked or expired can be printed.')->warning()->send();
+
+                            return;
+                        }
+
+                        $livewire->js('window.open('.json_encode(static::voucherUrl($usable->pluck('id')->all())).', "_blank")');
+                    }),
             ])
             ->recordActions([
                 Action::make('revoke')
@@ -111,6 +135,55 @@ class ActivationCodeResource extends Resource
                         Notification::make()->title('Code revoked')->success()->send();
                     }),
             ]);
+    }
+
+    /** @param  array<int, int>  $ids */
+    public static function voucherUrl(array $ids): string
+    {
+        return route('filament.admin.gift-vouchers', ['codes' => implode(',', $ids)]);
+    }
+
+    /**
+     * Gift vouchers to hand out (visits, head teachers' meetings): free
+     * codes that start after the school's free term, printed four to a
+     * page straight away.
+     */
+    public static function giftAction(): Action
+    {
+        return Action::make('gift')
+            ->label('Make gift vouchers')
+            ->icon('heroicon-o-gift')
+            ->color('warning')
+            ->modalHeading('Make gift vouchers')
+            ->modalDescription('Free codes to hand out. A school that types one in gets the period free, starting when its free term ends. Nothing is recorded as paid.')
+            ->fillForm(fn (): array => [
+                'plan_id' => Plan::where('is_active', true)->where('is_trial', false)->orderBy('sort_order')->value('id'),
+                'cycle' => 'term',
+                'count' => 8,
+                'valid_days' => 120,
+            ])
+            ->schema([
+                Grid::make(2)->schema([
+                    Select::make('plan_id')->label('Plan')->options(fn () => Plan::options())->required()->selectablePlaceholder(false),
+                    Select::make('cycle')->label('Free for')->options(['term' => 'One term', 'year' => 'One year'])->required()->selectablePlaceholder(false),
+                    TextInput::make('count')->label('How many vouchers')->numeric()->minValue(1)->maxValue(100)->required()->helperText('Printed four to an A4 page.'),
+                    TextInput::make('valid_days')->label('Usable for (days)')->numeric()->minValue(7)->maxValue(365)->required()->helperText('Printed on the voucher as "Use before".'),
+                    TextInput::make('notes')->label('Given out at')->placeholder('e.g. Wakiso head teachers\' meeting')->maxLength(150)->columnSpanFull()->helperText('So you know which event or visit brought each school in.'),
+                ]),
+            ])
+            ->action(function (array $data, $livewire): void {
+                $codes = SubscriptionManager::issueGiftVouchers(
+                    Plan::whereKey($data['plan_id'])->firstOrFail(),
+                    $data['cycle'],
+                    (int) $data['count'],
+                    (int) $data['valid_days'],
+                    $data['notes'] ?? null,
+                );
+
+                Notification::make()->title($codes->count().' gift '.str('voucher')->plural($codes->count()).' made')->body('Opening them to print.')->success()->send();
+
+                $livewire->js('window.open('.json_encode(static::voucherUrl($codes->pluck('id')->all())).', "_blank")');
+            });
     }
 
     /** Mint a batch of unassigned codes for the same plan/cycle -- spare stock to keep on hand. */

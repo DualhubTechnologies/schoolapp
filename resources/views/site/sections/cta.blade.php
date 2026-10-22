@@ -2,7 +2,7 @@
     <section class="container">
         <div class="cta" data-reveal>
             <h2>Ready to run your school the modern way?</h2>
-            <p>Register in about a minute and try every module free for {{ $trialDays }} days. No payment details needed.</p>
+            <p>Register in about a minute and try every module free for {{ $trialLabel }}. No payment details needed.</p>
             <div class="hero-actions">
                 @if ($signedIn)
                     <a href="{{ $dashboardUrl }}" class="btn btn-white btn-lg">Open your dashboard {!! $arrow !!}</a>

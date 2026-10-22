@@ -10,7 +10,7 @@
         [$rejected ? 'Not approved' : 'SchoolHub checks your school', $rejected ? 'See the reason above' : 'Usually the same day', false],
     ];
     if (! $rejected) {
-        $steps[] = ['Free trial starts', config('subscriptions.trial_days', 30).' days, from the day of approval', false];
+        $steps[] = ['Free trial starts', ucfirst(\App\Services\Subscriptions\SubscriptionManager::trialLabel()).', from the day of approval', false];
     }
     $current = $rejected ? 2 : collect($steps)->search(fn ($s) => ! $s[2]);
 
@@ -45,7 +45,7 @@
                     <p>If you think this is a mistake, or you can give us what was missing, talk to us and we will look again.</p>
                 @else
                     <h2>Thank you, {{ $school->name }} is registered</h2>
-                    <p>SchoolHub checks every new school before opening it, usually the same day. We will email <strong>{{ $user->email }}</strong> as soon as it is approved, and your {{ config('subscriptions.trial_days', 30) }}-day free trial starts then.</p>
+                    <p>SchoolHub checks every new school before opening it, usually the same day. We will email <strong>{{ $user->email }}</strong> as soon as it is approved, and your free trial, {{ \App\Services\Subscriptions\SubscriptionManager::trialLabel() }}, starts then.</p>
                     <p class="aw-muted">You do not need to do anything else. You can close this page and sign in again later.</p>
                 @endif
             </div>

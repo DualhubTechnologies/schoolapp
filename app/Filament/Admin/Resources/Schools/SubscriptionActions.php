@@ -49,7 +49,7 @@ class SubscriptionActions
             ->requiresConfirmation()
             ->modalHeading(fn (School $record) => "Approve {$record->name}?")
             ->modalDescription(fn (School $record) => "Registered by {$record->contact_person}, {$record->phone}, {$record->email}. "
-                .'Approving opens SchoolHub to the school and starts its '.config('subscriptions.trial_days', 30).'-day free trial today.')
+                .'Approving opens SchoolHub to the school and starts its free trial, '.SubscriptionManager::trialLabel().', today.')
             ->action(function (School $record): void {
                 SubscriptionManager::approve($record);
 

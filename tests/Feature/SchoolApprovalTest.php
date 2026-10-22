@@ -86,7 +86,7 @@ it('lets the platform owner approve a school, starting its trial today and welco
         ->and($school->approved_at)->not->toBeNull()
         ->and($school->approved_by)->toBe($this->owner->name)
         ->and($trial->starts_on->isToday())->toBeTrue()
-        ->and($trial->ends_on->toDateString())->toBe(today()->addDays(config('subscriptions.trial_days', 30) - 1)->toDateString())
+        ->and($trial->ends_on->toDateString())->toBe(today()->addMonthsNoOverflow(4)->subDay()->toDateString())
         ->and(SubscriptionManager::status($school)['state'])->toBe('trial');
 
     Notification::assertSentTo($admin, WelcomeToSchoolHub::class);

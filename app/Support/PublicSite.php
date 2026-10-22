@@ -4,6 +4,7 @@ namespace App\Support;
 
 use App\Models\DemoRequest;
 use App\Models\Plan;
+use App\Services\Subscriptions\SubscriptionManager;
 
 /**
  * What every public page (home, About, Features, Pricing, Contact, Help)
@@ -36,7 +37,7 @@ class PublicSite
 
         return [
             'plans' => $plans,
-            'trialDays' => (int) config('subscriptions.trial_days', 30),
+            'trialLabel' => SubscriptionManager::trialLabel(),
             'graceDays' => (int) config('subscriptions.grace_days', 14),
             'contact' => $contact,
             'learnerRanges' => DemoRequest::LEARNERS,

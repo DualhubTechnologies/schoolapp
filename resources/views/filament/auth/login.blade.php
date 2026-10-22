@@ -21,7 +21,7 @@
 
     @if (filament()->hasRegistration())
         <p class="sha-alt-register">
-            New to SchoolHub? <a href="{{ filament()->getRegistrationUrl() }}">Register your school</a>, the first {{ config('subscriptions.trial_days') }} days are free.
+            New to SchoolHub? <a href="{{ filament()->getRegistrationUrl() }}">Register your school</a>, and the first term ({{ \App\Services\Subscriptions\SubscriptionManager::trialMonths() }} months) is free.
         </p>
     @endif
 </x-auth-shell>

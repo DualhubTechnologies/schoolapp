@@ -14,10 +14,10 @@
     <meta charset="utf-8">
     <meta name="viewport" content="width=device-width, initial-scale=1">
     <title>SchoolHub - School management software for Ugandan schools</title>
-    <meta name="description" content="Run your school smarter: fees, income and spending, learners and marks in one place, with new-curriculum O-Level and A-Level report cards generated in seconds. For Ugandan primary and secondary schools. Free for {{ $trialDays }} days.">
+    <meta name="description" content="Run your school smarter: fees, income and spending, learners and marks in one place, with new-curriculum O-Level and A-Level report cards generated in seconds. For Ugandan primary and secondary schools. First term free.">
     <meta name="theme-color" content="#ffffff">
     <meta property="og:title" content="SchoolHub - School management software for Ugandan schools">
-    <meta property="og:description" content="Income against expenditure, fees, payroll and new-curriculum O-Level and A-Level report cards in one system. Free {{ $trialDays }}-day trial.">
+    <meta property="og:description" content="Income against expenditure, fees, payroll and new-curriculum O-Level and A-Level report cards in one system. Your first term free.">
     <meta property="og:type" content="website">
     <meta property="og:url" content="{{ rtrim((string) config('app.url'), '/') }}/">
     @include('partials.site-head', ['path' => '/'])
@@ -78,7 +78,7 @@
                     @if ($signedIn)
                         <a href="{{ $dashboardUrl }}" class="btn btn-primary btn-lg">Open your dashboard {!! $arrow !!}</a>
                     @else
-                        <a href="{{ $registerUrl }}" class="btn btn-primary btn-lg">Start your {{ $trialDays }}-day free trial {!! $arrow !!}</a>
+                        <a href="{{ $registerUrl }}" class="btn btn-primary btn-lg">Start your free term {!! $arrow !!}</a>
                         <a href="#demo" class="btn btn-secondary btn-lg btn-demo"><span class="btn-demo-icon">{!! $ico('calendar') !!}</span> Book a free demo</a>
                     @endif
                 </div>
@@ -174,7 +174,7 @@
     <section class="glance" aria-label="SchoolHub at a glance">
         <div class="container glance-grid">
             <div class="glance-card" data-reveal><span class="gi gi-green">{!! $ico('puzzle') !!}</span><div><b>9 integrated modules</b><span>Everything in one platform</span></div></div>
-            <div class="glance-card" data-reveal><span class="gi gi-blue">{!! $ico('calendar') !!}</span><div><b>{{ $trialDays }}-day free trial</b><span>Explore every feature</span></div></div>
+            <div class="glance-card" data-reveal><span class="gi gi-blue">{!! $ico('calendar') !!}</span><div><b>First term free</b><span>Every feature, {{ \App\Services\Subscriptions\SubscriptionManager::trialMonths() }} months</span></div></div>
             <div class="glance-card" data-reveal><span class="gi gi-purple">{!! $ico('cap') !!}</span><div><b>Nursery to S.6</b><span>Built for Ugandan schools</span></div></div>
             <div class="glance-card" data-reveal><span class="gi gi-amber">{!! $ico('card') !!}</span><div><b>Flexible UGX pricing</b><span>Simple per-term plans</span></div></div>
         </div>

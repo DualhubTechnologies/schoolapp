@@ -6,8 +6,10 @@
  */
 return [
 
-    // A new school starts on the trial plan for this many days.
-    'trial_days' => (int) env('SUBSCRIPTION_TRIAL_DAYS', 30),
+    // A new school starts on the trial plan for this many months: a full
+    // term, the same length as a paid term, so it sees billing, fee
+    // collection and report cards through before deciding.
+    'trial_months' => (int) env('SUBSCRIPTION_TRIAL_MONTHS', 4),
 
     /*
      * Percentage added to plan prices where the public landing page shows

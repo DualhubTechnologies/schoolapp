@@ -41,7 +41,7 @@
                             <p class="plan-sub price-term">Billed at the start of each term</p>
                             <p class="plan-sub price-year">{{ $yearSaving > 0 ? "Save {$yearSaving}% compared with paying per term" : 'Billed once a year' }}</p>
 
-                            <a href="{{ $startUrl }}" @class(['btn', 'btn-block', 'btn-primary' => $plan->id === $popular, 'btn-secondary' => $plan->id !== $popular])>Start free trial</a>
+                            <a href="{{ $startUrl }}" @class(['btn', 'btn-block', 'btn-primary' => $plan->id === $popular, 'btn-secondary' => $plan->id !== $popular])>Start your free term</a>
                         @endif
 
                         <ul>
@@ -55,7 +55,7 @@
                     </div>
                 @endforeach
             </div>
-            <p class="pricing-note">All schools start with a free {{ $trialDays }}-day trial. Pay by mobile money or bank transfer when you're ready.</p>
+            <p class="pricing-note">Every school starts free for {{ $trialLabel }}. Pay by mobile money or bank transfer when you're ready.</p>
         </div>
     </section>
     @endif

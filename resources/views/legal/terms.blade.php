@@ -7,7 +7,7 @@
 @php
     $contact = config('contact');
     $company = $contact['company'];
-    $trialDays = (int) config('subscriptions.trial_days', 30);
+    $trialLabel = \App\Services\Subscriptions\SubscriptionManager::trialLabel();
     $graceDays = (int) config('subscriptions.grace_days', 14);
     $retention = (int) config('legal.locked_retention_months', 12);
     $deletionDays = (int) config('legal.deletion_days', 30);
@@ -153,7 +153,7 @@
             <strong>The short version</strong>
             <ul>
                 <li>Your school owns its data. We only use it to run SchoolHub for you, and we never sell it.</li>
-                <li>Every new school gets a free {{ $trialDays }}-day trial with every module. No payment details are needed.</li>
+                <li>Every new school gets a free trial of {{ $trialLabel }} with every module. No payment details are needed.</li>
                 <li>After that you pay per term or per year, in UGX. If payment is late, the school keeps working for {{ $graceDays }} days, then is locked until payment — nothing is deleted.</li>
                 <li>You can leave at any time and ask us for a copy of your data, or to delete it.</li>
             </ul>
@@ -180,7 +180,7 @@
         <section id="trial">
             <h2><span>{{ ++$n }}</span>Free trial</h2>
             <ul>
-                <li>Each new school gets a free trial of <b>{{ $trialDays }} days</b> with every module included.</li>
+                <li>Each new school gets a free trial of <b>{{ $trialLabel }}</b> with every module included.</li>
                 <li>No payment or card details are needed to start the trial.</li>
                 <li>We remind the school's administrators before the trial ends. To keep using SchoolHub after the trial, choose a plan and pay for it.</li>
                 <li>One free trial is available per school.</li>

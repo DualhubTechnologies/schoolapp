@@ -13,7 +13,7 @@ class SchoolApproved extends Notification implements ShouldQueue
 {
     use Queueable;
 
-    public function __construct(public School $school, public int $trialDays) {}
+    public function __construct(public School $school, public string $trialLabel) {}
 
     public function via(object $notifiable): array
     {
@@ -26,7 +26,7 @@ class SchoolApproved extends Notification implements ShouldQueue
             ->subject("{$this->school->name} is ready on SchoolHub")
             ->greeting("Welcome, {$notifiable->name}!")
             ->line("Your registration for **{$this->school->name}** has been approved.")
-            ->line("Your {$this->trialDays}-day free trial has started, with every module included.")
+            ->line("Your free trial has started: {$this->trialLabel}, with every module included.")
             ->line('Start by adding your classes, then import your learners and set up fees.')
             ->action('Sign in to SchoolHub', url('/login'));
     }

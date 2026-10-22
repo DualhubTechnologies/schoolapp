@@ -2,7 +2,7 @@
 
 @section('eyebrow', 'Pricing')
 @section('heading', 'Simple pricing, paid per term')
-@section('lead', 'Pay in Uganda shillings by mobile money or bank transfer. Every plan includes every module, and every school starts with a free '.$trialDays.'-day trial.')
+@section('lead', 'Pay in Uganda shillings by mobile money or bank transfer. Every plan includes every module, and every school starts free for '.$trialLabel.'.')
 
 @section('content')
     @include('site.sections.pricing')

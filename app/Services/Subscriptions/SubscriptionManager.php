@@ -241,17 +241,34 @@ class SubscriptionManager
         $school->update(['status' => 'rejected', 'rejection_reason' => $reason]);
     }
 
+    /** The free trial: a full term, the same length as a paid term. */
+    public static function trialMonths(): int
+    {
+        return max(1, (int) config('subscriptions.trial_months', 4));
+    }
+
+    /** "a full term (4 months)": how the trial is described everywhere. */
+    public static function trialLabel(): string
+    {
+        return 'a full term ('.static::trialMonths().' months)';
+    }
+
+    /** The last day of a trial that starts on $start. */
+    public static function trialEndsOn(CarbonImmutable $start): CarbonImmutable
+    {
+        return $start->addMonthsNoOverflow(static::trialMonths())->subDay();
+    }
+
     public static function startTrial(School $school, ?Plan $plan = null): Subscription
     {
         $plan ??= Plan::where('is_trial', true)->where('is_active', true)->orderBy('sort_order')->firstOrFail();
-        $days = (int) config('subscriptions.trial_days', 30);
 
         return Subscription::create([
             'school_id' => $school->getKey(),
             'plan_id' => $plan->getKey(),
             'cycle' => 'trial',
             'starts_on' => today(),
-            'ends_on' => today()->addDays($days - 1),
+            'ends_on' => static::trialEndsOn(CarbonImmutable::today()),
             'amount' => 0,
             'created_by' => auth()->user()?->name,
         ]);

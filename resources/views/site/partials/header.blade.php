@@ -45,7 +45,7 @@
             @else
                 <a href="{{ $loginUrl }}" class="link-signin">Sign in</a>
                 <a href="{{ $demoUrl }}" class="btn btn-secondary btn-sm">Book a demo</a>
-                <a href="{{ $registerUrl }}" class="btn btn-primary btn-sm">Start free trial {!! $arrow !!}</a>
+                <a href="{{ $registerUrl }}" class="btn btn-primary btn-sm">Start your free term {!! $arrow !!}</a>
             @endif
             <button type="button" class="menu-btn" id="menu-btn" aria-expanded="false" aria-controls="mobile-nav" aria-label="Open menu">
                 <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true"><path stroke-linecap="round" d="M4 7h16M4 12h16M4 17h16"/></svg>
@@ -62,7 +62,7 @@
         @if ($signedIn)
             <a href="{{ $dashboardUrl }}" class="btn btn-primary btn-block">Go to dashboard</a>
         @else
-            <a href="{{ $registerUrl }}" class="btn btn-primary btn-block">Start free trial</a>
+            <a href="{{ $registerUrl }}" class="btn btn-primary btn-block">Start your free term</a>
             <a href="{{ $loginUrl }}" class="btn btn-secondary btn-block">Sign in</a>
         @endif
     </div>

@@ -5,6 +5,7 @@ namespace App\Support\Licensing;
 use App\Models\IssuedLicence;
 use App\Models\Plan;
 use App\Models\User;
+use App\Services\Subscriptions\SubscriptionManager;
 use Carbon\CarbonImmutable;
 use Illuminate\Support\Facades\DB;
 use RuntimeException;
@@ -26,11 +27,11 @@ class LicenceIssuer
 {
     public const CYCLES = ['trial' => 'Free trial', 'term' => 'One term', 'year' => 'One year'];
 
-    /** A trial runs the trial days; a term four months; a year twelve. */
+    /** A trial runs a full term, like a term four months; a year twelve. */
     public static function defaultEnd(CarbonImmutable $starts, string $cycle): CarbonImmutable
     {
         return match ($cycle) {
-            'trial' => $starts->addDays(max(1, (int) config('subscriptions.trial_days', 30)) - 1),
+            'trial' => SubscriptionManager::trialEndsOn($starts),
             'year' => $starts->addMonthsNoOverflow(12)->subDay(),
             default => $starts->addMonthsNoOverflow(4)->subDay(),
         };

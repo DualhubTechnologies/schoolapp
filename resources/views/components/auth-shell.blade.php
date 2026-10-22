@@ -235,7 +235,7 @@
                         ['images/site/poster-report-cards.jpg', 'Report cards for the whole class, in seconds: PLE aggregates, the new O-Level curriculum, A-Level points and a QR code on every card.'],
                         ['images/site/poster-fees.jpg', 'Every shilling accounted for: a numbered receipt with a QR code for each payment, and SMS reminders to parents who still owe.'],
                         ['images/site/poster-payroll.jpg', 'PAYE, NSSF and LST worked out for you: the month\'s payroll, payslips and the NSSF schedule.'],
-                        ['images/site/poster-free-trial.jpg', '30 days free, every module included: register your school, add your learners and start working.'],
+                        ['images/site/poster-free-trial.jpg', 'Your first term free, every module included: register your school, add your learners and start working.'],
                     ];
                 @endphp
                 <figure class="sha-posters"

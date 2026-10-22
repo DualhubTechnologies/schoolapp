@@ -9,7 +9,7 @@
                     <p>The same SchoolHub — fees, exams and report cards, ID cards, payroll — installed on one Windows computer and working without internet. Your records stay on the computer, with backups to a flash disk.</p>
                     <ul class="ticks">
                         <li>{!! $check !!} Works fully offline: no data bundles needed</li>
-                        <li>{!! $check !!} Free {{ $trialDays }}-day trial, then a licence per term or per year</li>
+                        <li>{!! $check !!} Free for {{ $trialLabel }}, then a licence per term or per year</li>
                         <li>{!! $check !!} Windows 10 or 11 (64-bit) · 134 MB download</li>
                     </ul>
                     <div class="hero-actions" style="margin-top: 1.5rem">

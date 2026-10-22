@@ -11,7 +11,7 @@
                 <header class="shi-pop-head">
                     <span class="shi-pop-badge"><x-filament::icon icon="heroicon-o-sparkles" /></span>
                     <div>
-                        <h3 id="shi-pop-title">AI Insights</h3>
+                        <h3 id="shi-pop-title">Insights</h3>
                         <p>What your school's records point out today</p>
                     </div>
                     <button type="button" class="shi-pop-x" @click="open = false" aria-label="Close">
@@ -24,11 +24,11 @@
                 </div>
 
                 <footer class="shi-pop-foot">
-                    <span>Shown once a day. Find them any time under <b>AI Insights</b> in the menu.</span>
+                    <span>Shown once a day. Find them any time under <b>Insights</b> in the menu.</span>
                     <div class="shi-pop-actions">
                         <x-filament::button color="gray" @click="open = false">Close</x-filament::button>
                         <x-filament::button tag="a" :href="\App\Filament\App\Pages\AiInsights::getUrl()">
-                            {{ $more > 0 ? "See all ".count($findings) : 'Open AI Insights' }}
+                            {{ $more > 0 ? "See all ".count($findings) : 'Open Insights' }}
                         </x-filament::button>
                     </div>
                 </footer>

@@ -1,4 +1,4 @@
-{{-- The findings as a list (AI Insights page and pop-up). $findings: SchoolInsights findings. --}}
+{{-- The findings as a list (Insights page and pop-up). $findings: SchoolInsights findings. --}}
 <ul class="shi-list">
     @foreach ($findings as $finding)
         <li @class(['shi-item', "is-{$finding['tone']}"])>

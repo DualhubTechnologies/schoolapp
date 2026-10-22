@@ -1,4 +1,4 @@
-    {{-- ── AI Insights: what SchoolHub points out each day (App\Services\SchoolInsights).
+    {{-- ── Insights: what SchoolHub points out each day (App\Services\SchoolInsights).
          Every item listed is a real check the system runs; the card shows sample figures. ── --}}
     @php
         $checks = [
@@ -15,11 +15,11 @@
             ['is-info', '6 families that always pay have not paid yet', 'A reminder usually does it: Nakato S. (S.2), Mugisha D. (P.5) and 4 more.'],
         ];
     @endphp
-    <section class="section" id="ai-insights">
+    <section class="section" id="insights">
         <div class="container">
             <div class="ai" data-reveal>
                 <div class="ai-copy">
-                    <div class="eyebrow">AI Insights · available now</div>
+                    <div class="eyebrow">Insights · available now</div>
                     <h2>SchoolHub tells you what needs your attention today</h2>
                     <p>Every morning SchoolHub reads the school's own records and points out what a director or bursar would want to know, with the learners named and a button to deal with it. No reports to dig through.</p>
                     <ul class="ticks">
@@ -27,14 +27,14 @@
                             <li>{!! $check !!} {{ $item }}</li>
                         @endforeach
                     </ul>
-                    <p class="ai-note">It pops up once a day on the dashboard, and is always under AI Insights in the menu. Each person sees only the areas they are allowed to open.</p>
+                    <p class="ai-note">It pops up once a day on the dashboard, and is always under Insights in the menu. Each person sees only the areas they are allowed to open.</p>
                 </div>
 
                 <div class="ai-media" aria-hidden="true">
                     <div class="ai-pop">
                         <div class="ai-pop-head">
                             <span class="ai-badge"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6"><path stroke-linecap="round" stroke-linejoin="round" d="M9.813 15.904 9 18.75l-.813-2.846a4.5 4.5 0 0 0-3.09-3.09L2.25 12l2.846-.813a4.5 4.5 0 0 0 3.09-3.09L9 5.25l.813 2.846a4.5 4.5 0 0 0 3.09 3.09L15.75 12l-2.846.813a4.5 4.5 0 0 0-3.09 3.09ZM18.259 8.715 18 9.75l-.259-1.035a3.375 3.375 0 0 0-2.455-2.456L14.25 6l1.036-.259a3.375 3.375 0 0 0 2.455-2.456L18 2.25l.259 1.035a3.375 3.375 0 0 0 2.456 2.456L21.75 6l-1.035.259a3.375 3.375 0 0 0-2.456 2.456Z"/></svg></span>
-                            <div><strong>AI Insights</strong><small>What your school's records point out today</small></div>
+                            <div><strong>Insights</strong><small>What your school's records point out today</small></div>
                         </div>
                         @foreach ($samples as [$tone, $title, $detail])
                             <div class="ai-item {{ $tone }}">

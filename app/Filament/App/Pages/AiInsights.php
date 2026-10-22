@@ -9,7 +9,7 @@ use Filament\Pages\Page;
 use Filament\Support\Icons\Heroicon;
 
 /**
- * "AI Insights" in the menu, under Dashboard: everything the school's own
+ * "Insights" in the menu, under Dashboard: everything the school's own
  * records point out today (SchoolInsights), open at any time. The same
  * findings pop up on the dashboard once a day (Widgets\Insights).
  */
@@ -17,13 +17,13 @@ class AiInsights extends Page
 {
     protected static string|BackedEnum|null $navigationIcon = Heroicon::OutlinedSparkles;
 
-    protected static ?string $navigationLabel = 'AI Insights';
+    protected static ?string $navigationLabel = 'Insights';
 
     protected static ?int $navigationSort = -1;
 
-    protected static ?string $title = 'AI Insights';
+    protected static ?string $title = 'Insights';
 
-    protected static ?string $slug = 'ai-insights';
+    protected static ?string $slug = 'insights';
 
     protected string $view = 'filament.app.pages.ai-insights';
 

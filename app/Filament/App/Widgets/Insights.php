@@ -7,10 +7,10 @@ use App\Services\SchoolInsights;
 use Filament\Widgets\Widget;
 
 /**
- * The AI Insights pop-up on the dashboard: what the school's own records
+ * The Insights pop-up on the dashboard: what the school's own records
  * point out (SchoolInsights). It shows once a day at most, the first time
  * the dashboard opens with something to say, and closes with a click; the
- * full list is always under "AI Insights" in the menu.
+ * full list is always under "Insights" in the menu.
  */
 class Insights extends Widget
 {

@@ -169,7 +169,7 @@ class StudentsTable
                     ->label('New learners')
                     ->trueLabel('New learners (pay admission fees)')
                     ->falseLabel('Continuing learners'),
-                // "No parent or phone": what AI Insights links to (Student::withoutParentContact).
+                // "No parent or phone": what Insights links to (Student::withoutParentContact).
                 TernaryFilter::make('parent_contact')
                     ->label('Parent contact')
                     ->trueLabel('Parent and phone on record')

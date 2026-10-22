@@ -188,7 +188,8 @@ it('pops the findings up on the dashboard once a day, and not when there is noth
 
     $this->get(Dashboard::getUrl())->assertOk()
         ->assertSee('aria-labelledby="shi-pop-title"', false)
-        ->assertSee('AI Insights')
+        ->assertSee('<h3 id="shi-pop-title">Insights</h3>', false)
+        ->assertDontSee('AI Insights')
         ->assertSee('UGX 150,000 received today');
 
     // Signing in again or reopening the dashboard the same day: no pop-up.
@@ -201,7 +202,7 @@ it('pops the findings up on the dashboard once a day, and not when there is noth
     $this->get(Dashboard::getUrl())->assertOk()->assertSee('aria-labelledby="shi-pop-title"', false);
 });
 
-it('lists every finding under AI Insights in the menu, at any time', function () {
+it('lists every finding under Insights in the menu, at any time', function () {
     ($this->pay)(($this->learner)('Joan Nakimera'), $this->t3, 150000, '2026-10-15');
     $this->user->forceFill(['insights_seen_on' => '2026-10-15'])->save(); // pop-up already seen
 
@@ -209,14 +210,17 @@ it('lists every finding under AI Insights in the menu, at any time', function ()
         ->assertDontSee('aria-labelledby="shi-pop-title"', false)
         ->assertSee(AiInsights::getUrl());
 
-    $this->get(AiInsights::getUrl())->assertOk()->assertSee('UGX 150,000 received today');
+    $this->get(AiInsights::getUrl())->assertOk()->assertSee('UGX 150,000 received today')->assertDontSee('AI Insights');
+
+    // Links saved under the old name still arrive.
+    $this->get('/ai-insights')->assertRedirect('/insights');
 });
 
-it('says all is clear on AI Insights when there is nothing to point out', function () {
+it('says all is clear on Insights when there is nothing to point out', function () {
     $this->get(AiInsights::getUrl())->assertOk()->assertSee('Nothing needs your attention right now');
 });
 
-it('keeps AI Insights to the head and the bursar', function () {
+it('keeps Insights to the head and the bursar', function () {
     $teacher = User::factory()->create(['school_id' => $this->school->id])->assignRole('Teacher');
 
     $this->actingAs($teacher)->get(AiInsights::getUrl())->assertForbidden();

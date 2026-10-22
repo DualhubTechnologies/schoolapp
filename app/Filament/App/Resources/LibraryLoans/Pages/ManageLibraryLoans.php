@@ -24,7 +24,7 @@ class ManageLibraryLoans extends ManageRecords
 
     public function getSubheading(): ?string
     {
-        return 'Books issued to learners and staff. Overdue ones show in red; at the end of term, AI Insights names the learners who have not returned their books.';
+        return 'Books issued to learners and staff. Overdue ones show in red; at the end of term, Insights names the learners who have not returned their books.';
     }
 
     protected function getHeaderActions(): array

@@ -223,11 +223,12 @@ it('shows that each school designs its own report card, with the real choices', 
     $this->get('/features')->assertOk()->assertSee('id="report-card-designer"', false);
 });
 
-it('speaks to each person\'s problems, and shows AI Insights as available now', function () {
+it('speaks to each person\'s problems, and shows Insights as available now', function () {
     $this->get('/')->assertOk()
         ->assertSee('Every school knows these problems')
         ->assertSeeInOrder(['Directors and owners', 'Bursars', 'Teachers and directors of studies', 'Parents'])
-        ->assertSee('AI Insights · available now')
+        ->assertSee('Insights · available now')
+        ->assertDontSee('AI Insights')
         ->assertSee('SchoolHub tells you what needs your attention today')
         ->assertSee('Learners with no parent or phone number on record');
 });

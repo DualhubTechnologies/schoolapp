@@ -55,6 +55,9 @@ Route::match(['put', 'post'], '/webhooks/momo/{reference}', MomoCallbackControll
     ->middleware(['throttle:60,1', ServerEditionOnly::class])
     ->name('momo.callback');
 
+// "AI Insights" is now "Insights": old links and bookmarks still arrive.
+Route::redirect('/ai-insights', '/insights', 301);
+
 // For search engines: the public pages to list.
 Route::get('/sitemap.xml', function () {
     $site = rtrim((string) config('app.url'), '/');

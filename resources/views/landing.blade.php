@@ -72,7 +72,7 @@
             <div class="hero-copy">
                 <span class="badge"><b>New curriculum</b> O-Level and A-Level report cards, worked out for you</span>
                 <h1><span class="h1-line h1-wrap">Fees, marks and payroll.</span> <span>One system.</span></h1>
-                <p class="hero-lead">Receive fees with instant receipts, turn marks into curriculum-aligned report cards in seconds, and run payroll with PAYE and NSSF worked out. Built for Ugandan primary and secondary schools.</p>
+                <p class="hero-lead">Receive fees with instant receipts, turn marks into curriculum-aligned report cards in seconds, and run payroll with PAYE and NSSF worked out. Simple to use, secure, and built for Ugandan primary and secondary schools.</p>
 
                 <div class="hero-actions">
                     @if ($signedIn)
@@ -88,10 +88,10 @@
                 @endif
 
                 <ul class="hero-ticks">
-                    <li>{!! $tick !!} No payment details needed</li>
-                    <li>{!! $tick !!} Set up in minutes</li>
+                    <li>{!! $tick !!} Simple to use</li>
+                    <li>{!! $tick !!} Private and secure</li>
                     <li>{!! $tick !!} Works on any device</li>
-                    <li>{!! $tick !!} Full access to all features</li>
+                    <li>{!! $tick !!} No payment details needed</li>
                 </ul>
             </div>
 

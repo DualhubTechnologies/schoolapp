@@ -199,10 +199,7 @@ it('leads the home page with the school\'s money and its report cards', function
         ->assertSee('Fees, marks and payroll.')
         ->assertSee('turn marks into curriculum-aligned report cards in seconds')
         ->assertSee('Made for schools across Uganda')
-        ->assertDontSee('Print every report card');
-
-    // Every module in detail is on the Features page, keeping the home page short.
-    $this->get('/features')->assertOk()
+        ->assertDontSee('Print every report card')
         ->assertSee('Income vs expenditure')
         ->assertSee('School fees and salaries fill in by themselves')
         ->assertSee('New-curriculum report cards, generated automatically in seconds')
@@ -212,7 +209,7 @@ it('leads the home page with the school\'s money and its report cards', function
 });
 
 it('shows that each school designs its own report card, with the real choices', function () {
-    $this->get('/features')->assertOk()
+    $this->get('/')->assertOk()
         ->assertSee('id="report-card-designer"', false)
         ->assertSee("Not a fixed format. Your school's own report card.", false)
         ->assertSeeInOrder(['Classic', 'Modern', 'Compact'])
@@ -222,6 +219,8 @@ it('shows that each school designs its own report card, with the real choices', 
     expect(count(ReportCardTemplate::SECTIONS))->toBe(20)
         ->and(count(ReportCardTemplate::DESIGNS))->toBe(3)
         ->and(count(ReportCardTemplate::BORDERS))->toBe(4);
+
+    $this->get('/features')->assertOk()->assertSee('id="report-card-designer"', false);
 });
 
 it('shows how the school\'s records are kept safe, and where to verify a report card', function () {

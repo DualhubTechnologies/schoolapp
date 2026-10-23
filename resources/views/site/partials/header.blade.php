@@ -22,7 +22,7 @@
                             <a href="{{ route('filament.app.site.page', 'features') }}" class="nav-menu-all">All features &rarr;</a>
                         </div>
                     </div>
-                    <a href="{{ route('filament.app.site.page', 'features') }}#how">How it works</a>
+                    <a href="{{ route('filament.app.landing') }}#how">How it works</a>
                 @elseif ($slug === 'about')
                     {{-- About us, with the team beneath it. --}}
                     <div class="nav-drop">
@@ -57,7 +57,7 @@
     <div class="mobile-nav" id="mobile-nav">
         @foreach (\App\Support\PublicSite::PAGES as $slug => [$label])
             <a href="{{ route('filament.app.site.page', $slug) }}" @if (($page ?? null) === $slug) aria-current="page" @endif>{{ $label }}</a>
-            @if ($slug === 'features')<a href="{{ route('filament.app.site.page', 'features') }}#how">How it works</a>@endif
+            @if ($slug === 'features')<a href="{{ route('filament.app.landing') }}#how">How it works</a>@endif
         @endforeach
         <a href="{{ route('verify.form') }}">Verify a report card</a>
         <a href="{{ $demoUrl }}">Book a demo</a>

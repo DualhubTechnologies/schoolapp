@@ -170,6 +170,9 @@
             .sha-card::before { height: 3px; background: var(--sha-navy); }
             .sha-card-head { text-align: left; margin-bottom: 1.5rem; }
             .sha-h { font-size: 1.85rem; }
+            .sha-secure { display: flex; align-items: center; justify-content: center; gap: .4rem; margin-top: 1rem; color: #0f5f86; font-size: .92rem; font-weight: 700; text-decoration: none; }
+            .sha-secure svg { width: 1.25rem; height: 1.25rem; flex: none; }
+            .sha-secure:hover span { text-decoration: underline; text-underline-offset: 3px; }
             .sha-alt-register { margin-top: 1.5rem; padding-top: 1.25rem; border-top: 1px solid var(--sha-soft); font-size: .9rem; color: var(--sha-muted); }
             .sha-alt-register a { color: var(--primary-600); font-weight: 600; text-decoration: underline; text-decoration-color: var(--sha-gold-line); text-underline-offset: 3px; }
             .sha-alt-register a:hover { text-decoration-color: var(--primary-600); }

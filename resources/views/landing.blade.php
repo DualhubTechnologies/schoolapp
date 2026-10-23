@@ -72,7 +72,7 @@
             <div class="hero-copy">
                 <span class="badge"><b>New curriculum</b> O-Level and A-Level report cards, worked out for you</span>
                 <h1><span class="h1-line h1-wrap">Fees, marks and payroll.</span> <span>One secure system.</span></h1>
-                <p class="hero-lead">Receive fees with instant receipts, turn marks into curriculum-aligned report cards in seconds, and run payroll with PAYE and NSSF worked out. Simple to use and built for Ugandan primary and secondary schools.</p>
+                <p class="hero-lead">Plus attendance, SMS to parents, library, sick bay, transport and ID cards: your whole school in one place, simple to use and built for Ugandan schools.</p>
 
                 <div class="hero-actions">
                     @if ($signedIn)

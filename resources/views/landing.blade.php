@@ -105,6 +105,9 @@
                     <span class="dot amber">{!! $ico('receipt') !!}</span>
                     <span><b>Receipt printed</b>Balance updated instantly</span>
                 </div>
+                {{-- The dashboard on a desktop computer: screen, stand and base. --}}
+                <div class="monitor">
+                <div class="monitor-screen">
                 <div class="window">
                     <div class="window-bar">
                         <div class="dots"><i></i><i></i><i></i></div>
@@ -165,6 +168,10 @@
                             </div>
                         </div>
                     </div>
+                </div>
+                </div>
+                <div class="monitor-neck"></div>
+                <div class="monitor-base"></div>
                 </div>
             </div>
         </div>

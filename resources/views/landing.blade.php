@@ -110,7 +110,7 @@
                      dashboard below instead, which stacks to fit. --}}
                 <picture class="monitor-photo">
                     <source srcset="{{ asset('images/site/dashboard-desk.webp') }}" type="image/webp">
-                    <img src="{{ asset('images/site/dashboard-desk.jpg') }}" width="1600" height="978" alt="" fetchpriority="high">
+                    <img src="{{ asset('images/site/dashboard-desk.jpg') }}" width="1600" height="947" alt="" fetchpriority="high">
                 </picture>
                 <div class="window window-phone">
                     <div class="window-bar">

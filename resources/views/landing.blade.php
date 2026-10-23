@@ -204,8 +204,6 @@
 
     @include('site.sections.automation')
 
-    @include('site.sections.trust')
-
     @include('site.sections.insights')
 
     @include('site.sections.modules')

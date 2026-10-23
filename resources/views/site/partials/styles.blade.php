@@ -207,8 +207,6 @@
         .plan li { display: flex; gap: .625rem; }
         .plan li svg { flex: none; width: 1.25rem; height: 1.25rem; color: var(--blue-600); }
         .pricing-note { margin-top: 2rem; text-align: center; font-size: .9375rem; color: var(--slate-500); }
-        .pricing-note.pricing-talk { margin-top: .6rem; color: var(--slate-600); }
-        .pricing-talk a { color: var(--primary); font-weight: 600; }
         [data-cycle="year"] .price-term, [data-cycle="term"] .price-year { display: none; }
 
         /* FAQ */

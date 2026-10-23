@@ -13,7 +13,6 @@
                     <li><a href="{{ route('filament.app.site.page', 'pricing') }}">Pricing</a></li>
                     <li><a href="{{ route('filament.app.site.page', 'about') }}">About SchoolHub</a></li>
                     <li><a href="{{ route('filament.app.site.page', 'help') }}">Support</a></li>
-                    <li><a href="{{ route('verify.form') }}">Verify a report card</a></li>
                 </ul>
             </div>
             <div>

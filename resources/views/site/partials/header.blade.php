@@ -18,7 +18,6 @@
                             <a href="{{ route('filament.app.site.page', 'features') }}#o-level"><b>Report cards</b><span>O-Level and A-Level, generated in seconds</span></a>
                             <a href="{{ route('filament.app.site.page', 'features') }}#fees"><b>Fees &amp; receipts</b><span>Balances, receipts and reminders</span></a>
                             <a href="{{ route('filament.app.site.page', 'features') }}#payroll"><b>Payroll</b><span>PAYE, NSSF and LST worked out</span></a>
-                            <a href="{{ route('verify.form') }}"><b>Verify a report card</b><span>Check a report card or receipt is genuine</span></a>
                             <a href="{{ route('filament.app.site.page', 'features') }}" class="nav-menu-all">All features &rarr;</a>
                         </div>
                     </div>
@@ -59,7 +58,6 @@
             <a href="{{ route('filament.app.site.page', $slug) }}" @if (($page ?? null) === $slug) aria-current="page" @endif>{{ $label }}</a>
             @if ($slug === 'features')<a href="{{ route('filament.app.landing') }}#how">How it works</a>@endif
         @endforeach
-        <a href="{{ route('verify.form') }}">Verify a report card</a>
         <a href="{{ $demoUrl }}">Book a demo</a>
         @if ($signedIn)
             <a href="{{ $dashboardUrl }}" class="btn btn-primary btn-block">Go to dashboard</a>

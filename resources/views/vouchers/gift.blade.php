@@ -78,7 +78,7 @@
                         <div class="v-top">
                             <div class="brand"><img src="{{ asset('images/schoolhub-icon.svg') }}" alt=""><span class="name">School<em>Hub</em></span></div>
                             <div class="ribbon">GIFT VOUCHER</div>
-                            <div class="gift"><b>{{ $amount }} {{ $word }}</b><small>{{ $code->plan?->name }} plan · after your free term</small></div>
+                            <div class="gift"><b>{{ $amount }} {{ $word }}</b><small>{{ $code->plan?->name }} plan · after your free first term</small></div>
                         </div>
                         <div class="v-body">
                             <p class="incl">
@@ -92,7 +92,7 @@
                                 <li>Open <b>Subscription</b>, choose <b>{{ $code->plan?->name }}</b> and tap <b>Activate with a code</b>.</li>
                                 <li>Type the code above.</li>
                             </ol>
-                            <p class="note">It starts when your free term ends, so you lose nothing by using it early. One school per code.</p>
+                            <p class="note">It starts when your free first term ends, so you lose nothing by using it early. One school per code.</p>
                             <div class="v-foot">
                                 <div>Call or WhatsApp<b>{{ $contact['phone'] ?? '' }}</b></div>
                                 <div class="valid">Use before<b>{{ $code->expires_at?->format('j M Y') }}</b></div>

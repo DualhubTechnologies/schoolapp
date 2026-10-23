@@ -26,7 +26,7 @@ class SchoolApproved extends Notification implements ShouldQueue
             ->subject("{$this->school->name} is ready on SchoolHub")
             ->greeting("Welcome, {$notifiable->name}!")
             ->line("Your registration for **{$this->school->name}** has been approved.")
-            ->line("Your free trial has started: {$this->trialLabel}, with every module included.")
+            ->line("Your free trial has started: {$this->trialLabel} is free, with every module included.")
             ->line('Start by adding your classes, then import your learners and set up fees.')
             ->action('Sign in to SchoolHub', url('/login'));
     }

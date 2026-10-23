@@ -25,7 +25,7 @@ it('gives a new school a full term free', function () {
     $trial = SubscriptionManager::startTrial($school);
 
     expect($trial->ends_on->toDateString())->toBe('2027-02-21')
-        ->and(SubscriptionManager::trialLabel())->toBe('a full term (4 months)');
+        ->and(SubscriptionManager::trialLabel())->toBe('the first term');
 });
 
 it('makes gift vouchers in the admin panel, free and nothing recorded as paid', function () {

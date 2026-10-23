@@ -5,7 +5,7 @@
 
 <x-auth-shell heading="Register your school" subheading="Takes about a minute. Your logo, address and other details can be added later." :wide="true">
     <x-slot:side>
-        <span class="shr-pill">Free for a full term</span>
+        <span class="shr-pill">First term free</span>
         <h1>Start running your school on SchoolHub today.</h1>
         <p class="sha-lead">Every module is included during the trial. No payment details needed.</p>
 

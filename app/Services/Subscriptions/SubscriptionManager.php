@@ -288,10 +288,10 @@ class SubscriptionManager
         return max(1, (int) config('subscriptions.trial_months', 4));
     }
 
-    /** "a full term (4 months)": how the trial is described everywhere. */
+    /** "the first term": how the free trial is described everywhere. */
     public static function trialLabel(): string
     {
-        return 'a full term ('.static::trialMonths().' months)';
+        return 'the first term';
     }
 
     /** The last day of a trial that starts on $start. */

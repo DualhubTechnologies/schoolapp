@@ -27,7 +27,7 @@ class LicenceIssuer
 {
     public const CYCLES = ['trial' => 'Free trial', 'term' => 'One term', 'year' => 'One year'];
 
-    /** A trial runs a full term (4 months); a term to the next school term; a year three terms. */
+    /** A trial runs the first term; a term to the next school term; a year three terms. */
     public static function defaultEnd(CarbonImmutable $starts, string $cycle): CarbonImmutable
     {
         return $cycle === 'trial'

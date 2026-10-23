@@ -174,7 +174,7 @@
     <section class="glance" aria-label="SchoolHub at a glance">
         <div class="container glance-grid">
             <div class="glance-card" data-reveal><span class="gi gi-green">{!! $ico('puzzle') !!}</span><div><b>9 integrated modules</b><span>Everything in one platform</span></div></div>
-            <div class="glance-card" data-reveal><span class="gi gi-blue">{!! $ico('calendar') !!}</span><div><b>First term free</b><span>Every feature, {{ \App\Services\Subscriptions\SubscriptionManager::trialMonths() }} months</span></div></div>
+            <div class="glance-card" data-reveal><span class="gi gi-blue">{!! $ico('calendar') !!}</span><div><b>First term free</b><span>Every feature included</span></div></div>
             <div class="glance-card" data-reveal><span class="gi gi-purple">{!! $ico('cap') !!}</span><div><b>Nursery to S.6</b><span>Built for Ugandan schools</span></div></div>
             <div class="glance-card" data-reveal><span class="gi gi-amber">{!! $ico('card') !!}</span><div><b>Flexible UGX pricing</b><span>Simple per-term plans</span></div></div>
         </div>

@@ -903,16 +903,11 @@
         .page-hero + #pricing { padding-bottom: 3rem; }
         .page-hero + #pricing ~ #faq { padding-top: 3.5rem; }
 
-        /* Hero: the dashboard shown on a desktop computer. */
-        .monitor { position: relative; }
-        .monitor-screen { position: relative; padding: .7rem .7rem 1.6rem; border-radius: 1.1rem; background: linear-gradient(180deg, #1f2937, #0f172a); box-shadow: 0 30px 60px -28px rgba(15, 23, 42, .65), inset 0 0 0 1px rgba(255, 255, 255, .06); }
-        .monitor-screen::after { content: ""; position: absolute; left: 50%; bottom: .55rem; width: .45rem; height: .45rem; margin-left: -.225rem; border-radius: 50%; background: #475569; }
-        .monitor-screen .window { border: 0; border-radius: .45rem; box-shadow: none; animation: none; }
-        .monitor-neck { width: 18%; height: 3.2rem; margin: 0 auto; background: linear-gradient(90deg, #cbd5e1, #e2e8f0 45%, #94a3b8); clip-path: polygon(14% 0, 86% 0, 100% 100%, 0 100%); }
-        .monitor-base { width: 38%; height: .8rem; margin: 0 auto; border-radius: .5rem .5rem .9rem .9rem; background: linear-gradient(180deg, #e2e8f0, #94a3b8); box-shadow: 0 14px 24px -12px rgba(15, 23, 42, .5); }
-        /* Phones stack the dashboard into one column: shown without the computer, as before. */
+        /* Hero: the real dashboard on a desktop computer; phones get the stacked dashboard instead. */
+        .monitor-photo { display: block; }
+        .monitor-photo img { display: block; width: 100%; height: auto; }
+        .window.window-phone { display: none; }
         @media (max-width: 640px) {
-            .monitor-screen { padding: 0; border-radius: 0; background: none; box-shadow: none; }
-            .monitor-screen::after, .monitor-neck, .monitor-base { display: none; }
-            .monitor-screen .window { border: 1px solid rgba(15, 23, 42, .08); border-radius: var(--r-lg); box-shadow: var(--shadow-xl); }
+            .monitor-photo { display: none; }
+            .window.window-phone { display: block; }
         }

@@ -105,10 +105,13 @@
                     <span class="dot amber">{!! $ico('receipt') !!}</span>
                     <span><b>Receipt printed</b>Balance updated instantly</span>
                 </div>
-                {{-- The dashboard on a desktop computer: screen, stand and base. --}}
-                <div class="monitor">
-                <div class="monitor-screen">
-                <div class="window">
+                {{-- The real dashboard on a desktop computer (images/site/dashboard-monitor.*).
+                     Phones show the dashboard below instead, which stacks to fit. --}}
+                <picture class="monitor-photo">
+                    <source srcset="{{ asset('images/site/dashboard-monitor.webp') }}" type="image/webp">
+                    <img src="{{ asset('images/site/dashboard-monitor.png') }}" width="1600" height="1154" alt="" fetchpriority="high">
+                </picture>
+                <div class="window window-phone">
                     <div class="window-bar">
                         <div class="dots"><i></i><i></i><i></i></div>
                     </div>
@@ -168,10 +171,6 @@
                             </div>
                         </div>
                     </div>
-                </div>
-                </div>
-                <div class="monitor-neck"></div>
-                <div class="monitor-base"></div>
                 </div>
             </div>
         </div>

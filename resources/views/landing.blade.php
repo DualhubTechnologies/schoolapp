@@ -105,11 +105,12 @@
                     <span class="dot amber">{!! $ico('receipt') !!}</span>
                     <span><b>Receipt printed</b>Balance updated instantly</span>
                 </div>
-                {{-- The real dashboard on a desktop computer (images/site/dashboard-monitor.*).
-                     Phones show the dashboard below instead, which stacks to fit. --}}
+                {{-- The real SchoolHub dashboard on a computer on a desk (images/site/dashboard-desk.*):
+                     desk photo by Humberto Arellano on Unsplash (Unsplash License). Phones show the
+                     dashboard below instead, which stacks to fit. --}}
                 <picture class="monitor-photo">
-                    <source srcset="{{ asset('images/site/dashboard-monitor.webp') }}" type="image/webp">
-                    <img src="{{ asset('images/site/dashboard-monitor.png') }}" width="1600" height="1154" alt="" fetchpriority="high">
+                    <source srcset="{{ asset('images/site/dashboard-desk.webp') }}" type="image/webp">
+                    <img src="{{ asset('images/site/dashboard-desk.jpg') }}" width="1600" height="978" alt="" fetchpriority="high">
                 </picture>
                 <div class="window window-phone">
                     <div class="window-bar">

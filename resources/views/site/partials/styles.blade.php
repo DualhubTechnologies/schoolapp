@@ -905,7 +905,7 @@
 
         /* Hero: the real dashboard on a desktop computer; phones get the stacked dashboard instead. */
         .monitor-photo { display: block; }
-        .monitor-photo img { display: block; width: 100%; height: auto; }
+        .monitor-photo img { display: block; width: 100%; height: auto; border-radius: 1.25rem; box-shadow: 0 30px 60px -30px rgba(15, 23, 42, .45), 0 0 0 1px rgba(15, 23, 42, .06); }
         .window.window-phone { display: none; }
         @media (max-width: 640px) {
             .monitor-photo { display: none; }

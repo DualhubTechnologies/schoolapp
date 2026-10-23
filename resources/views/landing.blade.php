@@ -200,15 +200,11 @@
 
     @include('site.sections.features')
 
-    @include('site.sections.how')
-
-    @include('site.sections.automation')
+    @include('site.sections.trust')
 
     @include('site.sections.insights')
 
-    @include('site.sections.modules')
-
-    @include('site.sections.designer')
+    {{-- How it works, every module, automation and the report card designer are on the Features page. --}}
 
     @include('site.sections.windows')
 

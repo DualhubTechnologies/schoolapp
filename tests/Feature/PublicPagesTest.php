@@ -199,7 +199,10 @@ it('leads the home page with the school\'s money and its report cards', function
         ->assertSee('Fees, marks and payroll.')
         ->assertSee('turn marks into curriculum-aligned report cards in seconds')
         ->assertSee('Made for schools across Uganda')
-        ->assertDontSee('Print every report card')
+        ->assertDontSee('Print every report card');
+
+    // Every module in detail is on the Features page, keeping the home page short.
+    $this->get('/features')->assertOk()
         ->assertSee('Income vs expenditure')
         ->assertSee('School fees and salaries fill in by themselves')
         ->assertSee('New-curriculum report cards, generated automatically in seconds')
@@ -209,7 +212,7 @@ it('leads the home page with the school\'s money and its report cards', function
 });
 
 it('shows that each school designs its own report card, with the real choices', function () {
-    $this->get('/')->assertOk()
+    $this->get('/features')->assertOk()
         ->assertSee('id="report-card-designer"', false)
         ->assertSee("Not a fixed format. Your school's own report card.", false)
         ->assertSeeInOrder(['Classic', 'Modern', 'Compact'])
@@ -219,8 +222,14 @@ it('shows that each school designs its own report card, with the real choices', 
     expect(count(ReportCardTemplate::SECTIONS))->toBe(20)
         ->and(count(ReportCardTemplate::DESIGNS))->toBe(3)
         ->and(count(ReportCardTemplate::BORDERS))->toBe(4);
+});
 
-    $this->get('/features')->assertOk()->assertSee('id="report-card-designer"', false);
+it('shows how the school\'s records are kept safe, and where to verify a report card', function () {
+    $this->get('/')->assertOk()
+        ->assertSee('Safe, and the school stays in control')
+        ->assertSeeInOrder(['Each person sees only their own work', 'Receipts cannot be deleted', 'Report cards and receipts can be checked', 'Backed up every night'])
+        ->assertSee(route('verify.form'))
+        ->assertSee('Large school, or several campuses?');
 });
 
 it('speaks to each person\'s problems, and shows Insights as available now', function () {

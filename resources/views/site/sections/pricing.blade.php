@@ -56,6 +56,7 @@
                 @endforeach
             </div>
             <p class="pricing-note">Every school starts free for {{ $trialLabel }}. Pay by mobile money or bank transfer when you're ready.</p>
+            <p class="pricing-note pricing-talk">Large school, or several campuses? <a href="{{ $demoUrl }}">Talk to us</a> or WhatsApp <a href="{{ $waUrl }}" target="_blank" rel="noopener">{{ $contact['phone'] }}</a> for a price that fits.</p>
         </div>
     </section>
     @endif

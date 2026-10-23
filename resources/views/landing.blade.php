@@ -83,13 +83,18 @@
                     @endif
                 </div>
 
+                <p class="hero-secure">
+                    <svg viewBox="0 0 24 24" fill="currentColor" aria-hidden="true"><path d="M9 11.5a4.25 4.25 0 1 0 0-8.5 4.25 4.25 0 0 0 0 8.5ZM9 13c-3.9 0-7 2.2-7 5v1.25c0 .41.34.75.75.75h9.35a3.4 3.4 0 0 1-.1-.8v-4.4c0-.62.25-1.18.65-1.6A11 11 0 0 0 9 13Zm11 1.2v-1.45a2.75 2.75 0 1 0-5.5 0v1.45c-.56.1-1 .6-1 1.2v4.4c0 .66.54 1.2 1.2 1.2h5.1c.66 0 1.2-.54 1.2-1.2v-4.4c0-.6-.44-1.1-1-1.2Zm-1.5 0h-2.5v-1.45a1.25 1.25 0 1 1 2.5 0v1.45Z"/></svg>
+                    <span><b>Private and secure.</b> Each school sees only its own records, backed up every night.</span>
+                </p>
+
                 @if ($contact['windows_download_enabled'] ?? false)
                     <p class="hero-signin">No internet? <a href="#windows">Get SchoolHub for Windows</a></p>
                 @endif
 
                 <ul class="hero-ticks">
                     <li>{!! $tick !!} Simple to use</li>
-                    <li>{!! $tick !!} Private and secure</li>
+                    <li>{!! $tick !!} Set up in minutes</li>
                     <li>{!! $tick !!} Works on any device</li>
                     <li>{!! $tick !!} No payment details needed</li>
                 </ul>

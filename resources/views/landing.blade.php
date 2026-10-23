@@ -71,8 +71,8 @@
         <div class="container hero-grid">
             <div class="hero-copy">
                 <span class="badge"><b>New curriculum</b> O-Level and A-Level report cards, worked out for you</span>
-                <h1><span class="h1-line h1-wrap">Fees, marks and payroll.</span> <span>One system.</span></h1>
-                <p class="hero-lead">Receive fees with instant receipts, turn marks into curriculum-aligned report cards in seconds, and run payroll with PAYE and NSSF worked out. Simple to use, secure, and built for Ugandan primary and secondary schools.</p>
+                <h1><span class="h1-line h1-wrap">Fees, marks and payroll.</span> <span>One secure system.</span></h1>
+                <p class="hero-lead">Receive fees with instant receipts, turn marks into curriculum-aligned report cards in seconds, and run payroll with PAYE and NSSF worked out. Simple to use and built for Ugandan primary and secondary schools.</p>
 
                 <div class="hero-actions">
                     @if ($signedIn)
@@ -82,11 +82,6 @@
                         <a href="#demo" class="btn btn-secondary btn-lg btn-demo"><span class="btn-demo-icon">{!! $ico('calendar') !!}</span> Book a free demo</a>
                     @endif
                 </div>
-
-                <p class="hero-secure">
-                    <svg viewBox="0 0 24 24" fill="currentColor" aria-hidden="true"><path d="M9 11.5a4.25 4.25 0 1 0 0-8.5 4.25 4.25 0 0 0 0 8.5ZM9 13c-3.9 0-7 2.2-7 5v1.25c0 .41.34.75.75.75h9.35a3.4 3.4 0 0 1-.1-.8v-4.4c0-.62.25-1.18.65-1.6A11 11 0 0 0 9 13Zm11 1.2v-1.45a2.75 2.75 0 1 0-5.5 0v1.45c-.56.1-1 .6-1 1.2v4.4c0 .66.54 1.2 1.2 1.2h5.1c.66 0 1.2-.54 1.2-1.2v-4.4c0-.6-.44-1.1-1-1.2Zm-1.5 0h-2.5v-1.45a1.25 1.25 0 1 1 2.5 0v1.45Z"/></svg>
-                    <span><b>Private and secure.</b> Each school sees only its own records, backed up every night.</span>
-                </p>
 
                 @if ($contact['windows_download_enabled'] ?? false)
                     <p class="hero-signin">No internet? <a href="#windows">Get SchoolHub for Windows</a></p>

@@ -912,8 +912,3 @@
             .window.window-phone { display: block; }
         }
 
-        /* Hero: "Private and secure." under the buttons, as on the sign-in page. */
-        .hero-secure { display: flex; align-items: center; gap: .55rem; margin-top: 1.4rem; font-size: .95rem; color: var(--slate-600); }
-        .hero-secure b { color: #0f5f86; font-weight: 700; }
-        .hero-secure svg { flex: none; width: 1.5rem; height: 1.5rem; color: #0f5f86; }
-        @media (max-width: 1023px) { .hero-secure { justify-content: center; text-align: left; } }

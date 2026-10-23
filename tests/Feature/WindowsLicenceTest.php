@@ -214,7 +214,7 @@ it('issues numbered licences on the server and refuses without a signing key', f
     expect($first->licence_no)->toBe('L-'.now()->format('Y').'-0001')
         ->and($second->licence_no)->toBe('L-'.now()->format('Y').'-0002')
         ->and(LicenceKey::verify($first->key, config('licence.public_key'))?->details['code'])->toBe('SH48213')
-        ->and(LicenceIssuer::defaultEnd(CarbonImmutable::parse('2026-10-01'), 'year')->toDateString())->toBe('2027-09-30');
+        ->and(LicenceIssuer::defaultEnd(CarbonImmutable::parse('2026-10-01'), 'year')->toDateString())->toBe('2027-09-12'); // the day before Term 3, 2027 opens
 
     config(['licence.private_key' => null]);
     expect(fn () => issueFor($school, '2026-10-01', '2027-01-31'))->toThrow(RuntimeException::class, 'licence:keygen');

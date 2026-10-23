@@ -241,6 +241,47 @@ class SubscriptionManager
         $school->update(['status' => 'rejected', 'rejection_reason' => $reason]);
     }
 
+    /**
+     * The last day of a paid period starting on $start: a term runs to the
+     * day before the next school term opens (TermCalendar), a year three
+     * terms. Without calendar dates that far ahead: 4 or 12 months.
+     */
+    public static function periodEnd(CarbonImmutable $start, string $cycle): CarbonImmutable
+    {
+        return TermCalendar::periodEnd($start, $cycle)
+            ?? $start->addMonthsNoOverflow((int) config("subscriptions.cycle_months.{$cycle}", 4))->subDay();
+    }
+
+    /**
+     * What paying for $plan now would cover, as renew() works it out:
+     * from the day after a period already paid for, or from today when
+     * switching plan (with the days left on the old plan added on).
+     *
+     * @return array{0: CarbonImmutable, 1: CarbonImmutable}
+     */
+    public static function nextPeriod(School $school, Plan $plan, string $cycle): array
+    {
+        $current = static::current($school);
+        $today = CarbonImmutable::today();
+        $start = $today;
+        $carryDays = 0;
+
+        if ($current && ! $current->isTrial() && $current->plan_id !== $plan->getKey()) {
+            $carryDays = max(0, (int) $today->diffInDays(CarbonImmutable::parse($current->ends_on), false));
+        } else {
+            $paidTo = Subscription::where('school_id', $school->getKey())
+                ->where('is_cancelled', false)
+                ->where('cycle', '!=', 'trial')
+                ->max('ends_on');
+
+            if ($paidTo && CarbonImmutable::parse($paidTo)->gte($today)) {
+                $start = CarbonImmutable::parse($paidTo)->addDay();
+            }
+        }
+
+        return [$start, static::periodEnd($start, $cycle)->addDays($carryDays)];
+    }
+
     /** The free trial: a full term, the same length as a paid term. */
     public static function trialMonths(): int
     {
@@ -331,7 +372,7 @@ class SubscriptionManager
 
             $end = $cycle === 'custom' && $customEndsOn
                 ? CarbonImmutable::parse($customEndsOn)
-                : $start->addMonths((int) config("subscriptions.cycle_months.{$cycle}", 4))->subDay()->addDays($carryDays);
+                : static::periodEnd($start, $cycle)->addDays($carryDays);
 
             // A trial stops the day before the paid period starts.
             if ($current?->isTrial() && $current->ends_on->gte($start)) {

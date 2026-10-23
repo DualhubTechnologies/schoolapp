@@ -154,7 +154,7 @@
             <ul>
                 <li>Your school owns its data. We only use it to run SchoolHub for you, and we never sell it.</li>
                 <li>Every new school gets a free trial of {{ $trialLabel }} with every module. No payment details are needed.</li>
-                <li>After that you pay per term or per year, in UGX. If payment is late, the school keeps working for {{ $graceDays }} days, then is locked until payment - nothing is deleted.</li>
+                <li>After that you pay per term or per year, in UGX. A paid term follows Uganda's school calendar: it runs until the next school term opens, so the holidays are included, and a payment made in the last four weeks of a term covers the next term. A year covers three terms. If payment is late, the school keeps working for {{ $graceDays }} days, then is locked until payment - nothing is deleted.</li>
                 <li>You can leave at any time and ask us for a copy of your data, or to delete it.</li>
             </ul>
         </div>

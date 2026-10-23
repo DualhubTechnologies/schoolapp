@@ -147,6 +147,7 @@ it('lets the school pay on the Subscription page and shows when it has gone thro
         ->assertSee('Pay now with MTN MoMo')
         ->call('openPay', $this->plan->id)
         ->assertSet('payPhone', '0772 123456')
+        ->assertSee('Covers')
         ->set('payCycle', 'year')
         ->call('payNow')
         ->assertSee('Check the phone')

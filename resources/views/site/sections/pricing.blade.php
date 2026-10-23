@@ -5,7 +5,7 @@
             <div class="section-head" data-reveal>
                 <div class="eyebrow">Pricing</div>
                 <h2>Simple pricing, paid per term</h2>
-                <p>Every plan includes every module. Plans differ by the number of learners, staff logins, and parent portal access.</p>
+                <p>Every plan includes every module. Plans differ by the number of learners, staff logins, and parent portal access. A term follows the school calendar and runs until the next term opens, holidays included.</p>
             </div>
 
             @if ($hasYearly)

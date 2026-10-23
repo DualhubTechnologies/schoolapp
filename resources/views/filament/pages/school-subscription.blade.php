@@ -118,7 +118,7 @@
     @if ($isManager)
         <div class="sub-section">
             <h3>Plans</h3>
-            <div class="sub-muted" style="margin-bottom:.8rem">Choose by the number of active students and staff logins. Paying for a year saves about 10%.</div>
+            <div class="sub-muted" style="margin-bottom:.8rem">Choose by the number of active students and staff logins. Paying for a year saves about 10%. A term follows the school calendar: it runs until the next term opens, holidays included, and paying in the last four weeks of a term covers the next one.</div>
             @if ($this->adding > 0)
                 <div class="sub-alert sub-alert-amber" style="margin-bottom:.9rem">
                     <strong>You are adding {{ number_format($this->adding) }} {{ \Illuminate\Support\Str::plural('student', $this->adding) }}.</strong>
@@ -253,6 +253,13 @@
                                         </label>
                                     @endforeach
                                 </div>
+                                @php
+                                    [$coverFrom, $coverTo] = \App\Services\Subscriptions\SubscriptionManager::nextPeriod($this->school, $payPlan, $payCycle);
+                                    $coverTerm = \App\Services\Subscriptions\TermCalendar::periodEnd($coverFrom, $payCycle) ? \App\Services\Subscriptions\TermCalendar::coveredTerm($coverFrom) : null;
+                                @endphp
+                                <p class="sub-cover">
+                                    Covers <strong>{{ $coverFrom->format('j M Y') }}</strong> to <strong>{{ $coverTo->format('j M Y') }}</strong>{{ $coverTerm ? ' ('.$coverTerm->label().($payCycle === 'year' ? ' and the next two terms' : '').', holidays included)' : '' }}.
+                                </p>
                                 <label class="sub-label" for="sub-pay-phone">MTN Mobile Money number</label>
                                 <input id="sub-pay-phone" type="tel" wire:model="payPhone" placeholder="0772 123456" class="sub-code-input sub-phone-input" autocomplete="tel" required>
                                 <div class="sub-modal-actions">
@@ -357,6 +364,7 @@
         .sub-tier-pay:hover { background: #f2c200; }
         .sub-tier-pay + .sub-tier-activate { margin-top: .1rem; }
         .sub-test { margin: .7rem 0 0; padding: .5rem .75rem; font-size: .8rem; }
+        .sub-cover { margin: -.35rem 0 .9rem; font-size: .8rem; color: #475569; line-height: 1.45; }
         .sub-cycles { display: grid; grid-template-columns: 1fr 1fr; gap: .5rem; margin: .35rem 0 .9rem; }
         .sub-cycle { display: flex; flex-direction: column; gap: .1rem; padding: .6rem .75rem; border: 1px solid #cbd5e1; border-radius: 10px; cursor: pointer; font-size: .82rem; color: #475569; }
         .sub-cycle input { position: absolute; opacity: 0; pointer-events: none; }

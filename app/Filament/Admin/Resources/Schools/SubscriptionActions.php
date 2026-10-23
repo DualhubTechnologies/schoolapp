@@ -144,7 +144,7 @@ class SubscriptionActions
                         ->afterStateUpdated($price),
                     Select::make('cycle')
                         ->label('Paying for')
-                        ->options(['term' => 'One term ('.config('subscriptions.cycle_months.term').' months)', 'year' => 'One year', 'custom' => 'Custom period'])
+                        ->options(['term' => 'One school term', 'year' => 'One year', 'custom' => 'Custom period'])
                         ->required()
                         ->selectablePlaceholder(false)
                         ->live()
@@ -254,7 +254,7 @@ class SubscriptionActions
                         ->afterStateUpdated($price),
                     Select::make('cycle')
                         ->label('Paying for')
-                        ->options(['term' => 'One term ('.config('subscriptions.cycle_months.term').' months)', 'year' => 'One year', 'custom' => 'Custom period'])
+                        ->options(['term' => 'One school term', 'year' => 'One year', 'custom' => 'Custom period'])
                         ->required()
                         ->selectablePlaceholder(false)
                         ->live()

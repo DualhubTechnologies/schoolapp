@@ -27,14 +27,12 @@ class LicenceIssuer
 {
     public const CYCLES = ['trial' => 'Free trial', 'term' => 'One term', 'year' => 'One year'];
 
-    /** A trial runs a full term, like a term four months; a year twelve. */
+    /** A trial runs a full term (4 months); a term to the next school term; a year three terms. */
     public static function defaultEnd(CarbonImmutable $starts, string $cycle): CarbonImmutable
     {
-        return match ($cycle) {
-            'trial' => SubscriptionManager::trialEndsOn($starts),
-            'year' => $starts->addMonthsNoOverflow(12)->subDay(),
-            default => $starts->addMonthsNoOverflow(4)->subDay(),
-        };
+        return $cycle === 'trial'
+            ? SubscriptionManager::trialEndsOn($starts)
+            : SubscriptionManager::periodEnd($starts, $cycle === 'year' ? 'year' : 'term');
     }
 
     /**

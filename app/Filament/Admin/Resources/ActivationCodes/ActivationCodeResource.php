@@ -226,7 +226,7 @@ class ActivationCodeResource extends Resource
                         ->afterStateUpdated($price),
                     Select::make('cycle')
                         ->label('Paying for')
-                        ->options(['term' => 'One term ('.config('subscriptions.cycle_months.term').' months)', 'year' => 'One year'])
+                        ->options(['term' => 'One school term', 'year' => 'One year'])
                         ->required()
                         ->selectablePlaceholder(false)
                         ->live()

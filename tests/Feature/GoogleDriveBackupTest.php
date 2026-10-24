@@ -147,6 +147,7 @@ it('shows the off-site copy on System health, and lets the owner disconnect', fu
 
     $this->actingAs($this->owner);
     Livewire::test(SystemHealthPage::class)
+        ->assertSeeHtml('Backups are copied to Google Drive: <strong>owner@gmail.com</strong>')
         ->assertActionVisible('disconnectGoogleDrive')
         ->callAction('disconnectGoogleDrive');
 

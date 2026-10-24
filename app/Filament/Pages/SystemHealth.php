@@ -10,8 +10,10 @@ use Filament\Actions\Action;
 use Filament\Notifications\Notification;
 use Filament\Pages\Page;
 use Filament\Support\Icons\Heroicon;
+use Illuminate\Contracts\Support\Htmlable;
 use Illuminate\Support\Facades\Artisan;
 use Illuminate\Support\Facades\Cache;
+use Illuminate\Support\HtmlString;
 
 /**
  * The platform owner's check that the server is set up properly: email,
@@ -47,6 +49,18 @@ class SystemHealth extends Page
     public static function getNavigationBadgeColor(): ?string
     {
         return 'danger';
+    }
+
+    /** Which Google account the backups go to, under the title. */
+    public function getSubheading(): string|Htmlable|null
+    {
+        if (! GoogleDrive::isConfigured()) {
+            return null;
+        }
+
+        return GoogleDrive::isConnected()
+            ? new HtmlString('Backups are copied to Google Drive: <strong>'.e((string) GoogleDrive::account()).'</strong>')
+            : 'Google Drive is not connected: backups stay only on this server.';
     }
 
     /**

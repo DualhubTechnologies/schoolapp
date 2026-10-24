@@ -106,6 +106,14 @@ class GoogleDrive
             throw new RuntimeException('Google did not connect the Drive ('.($response->json('error_description') ?: $response->json('error') ?: 'HTTP '.$response->status()).'). Please try again.');
         }
 
+        // Google lets the owner untick Drive on its consent page; without it
+        // every upload is refused (HTTP 403), so say so now.
+        $granted = explode(' ', (string) $response->json('scope'));
+
+        if (! in_array('https://www.googleapis.com/auth/drive.file', $granted, true)) {
+            throw new RuntimeException('Google Drive was not allowed. Click Connect Google Drive again and, on Google\'s page, tick the box "See, edit, create and delete only the specific Google Drive files you use with this app" before Continue.');
+        }
+
         $account = $this->emailFromIdToken((string) $response->json('id_token')) ?? 'your Google account';
 
         PlatformSetting::put(self::REFRESH_TOKEN, $refresh);
@@ -212,7 +220,7 @@ class GoogleDrive
         $id = (string) $created->json('id');
 
         if (! $created->successful() || $id === '') {
-            throw new RuntimeException('Could not make the backups folder in Google Drive (HTTP '.$created->status().').');
+            throw new RuntimeException('Could not make the backups folder in Google Drive: '.$this->reason($created));
         }
 
         PlatformSetting::put(self::FOLDER_ID, $id);
@@ -235,7 +243,7 @@ class GoogleDrive
         $location = $session->header('Location');
 
         if (! $session->successful() || $location === '') {
-            throw new RuntimeException('Google Drive did not accept '.basename($path).' (HTTP '.$session->status().').');
+            throw new RuntimeException('Google Drive did not accept '.basename($path).': '.$this->reason($session));
         }
 
         $handle = fopen($path, 'rb');
@@ -263,7 +271,7 @@ class GoogleDrive
                 }
 
                 if ($response->status() !== 308) {
-                    throw new RuntimeException('Uploading '.basename($path).' to Google Drive failed (HTTP '.$response->status().').');
+                    throw new RuntimeException('Uploading '.basename($path).' to Google Drive failed: '.$this->reason($response));
                 }
 
                 $offset = $end + 1;
@@ -318,6 +326,23 @@ class GoogleDrive
         Cache::put($this->tokenCacheKey(), $token, max(60, (int) $response->json('expires_in', 3600) - 120));
 
         return $token;
+    }
+
+    /**
+     * Google's own explanation of a refusal, with what to do for the
+     * common ones (Drive not allowed, Drive API switched off).
+     */
+    protected function reason(Response $response): string
+    {
+        $message = (string) ($response->json('error.message') ?: $response->json('error_description') ?: '');
+        $reason = (string) ($response->json('error.errors.0.reason') ?: $response->json('error.details.0.reason') ?: '');
+        $text = 'HTTP '.$response->status().($message !== '' ? ', '.$message : '');
+
+        return match (true) {
+            in_array($reason, ['insufficientPermissions', 'ACCESS_TOKEN_SCOPE_INSUFFICIENT'], true) || str_contains($message, 'insufficient') => $text.'. Drive was not allowed when connecting: click Connect Google Drive again and tick the Google Drive box on Google\'s page.',
+            in_array($reason, ['accessNotConfigured', 'SERVICE_DISABLED'], true) || str_contains($message, 'has not been used') || str_contains($message, 'disabled') => $text.'. Enable the Google Drive API in the Google Cloud project (APIs & Services), wait a few minutes and try again.',
+            default => $text.'.',
+        };
     }
 
     protected function api(): PendingRequest

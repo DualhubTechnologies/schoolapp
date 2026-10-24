@@ -47,6 +47,7 @@ function fakeGoogleDrive(): void
                 'access_token' => 'access-1',
                 'expires_in' => 3600,
                 'refresh_token' => 'refresh-1',
+                'scope' => $GLOBALS['driveGranted'] ?? 'openid https://www.googleapis.com/auth/userinfo.email https://www.googleapis.com/auth/drive.file',
                 'id_token' => 'x.'.rtrim(strtr(base64_encode(json_encode(['email' => 'owner@gmail.com'])), '+/', '-_'), '=').'.y',
             ]),
             str_starts_with($url, 'https://www.googleapis.com/upload/drive/v3/files') => Http::response([], 200, ['Location' => 'https://upload.test/session-'.count($GLOBALS['driveUploads'])]),
@@ -151,4 +152,32 @@ it('shows the off-site copy on System health, and lets the owner disconnect', fu
 
     expect(GoogleDrive::isConnected())->toBeFalse();
     Http::assertSent(fn (Request $request): bool => str_starts_with($request->url(), 'https://oauth2.googleapis.com/revoke'));
+});
+
+it('refuses to connect when the Drive box was left unticked on Google\'s page', function () {
+    $GLOBALS['driveGranted'] = 'openid https://www.googleapis.com/auth/userinfo.email';
+    fakeGoogleDrive();
+    $this->actingAs($this->owner);
+
+    $this->get(route('filament.admin.google-drive.connect'));
+    $this->get(route('filament.admin.google-drive.callback', ['state' => session('google-drive.state'), 'code' => 'abc']));
+
+    expect(GoogleDrive::isConnected())->toBeFalse();
+    unset($GLOBALS['driveGranted']);
+});
+
+it('explains a refused upload with what to do', function () {
+    Http::fake([
+        'oauth2.googleapis.com/*' => Http::response(['access_token' => 'access-1', 'expires_in' => 3600]),
+        'www.googleapis.com/*' => Http::response(['error' => [
+            'code' => 403,
+            'message' => 'Request had insufficient authentication scopes.',
+            'errors' => [['reason' => 'insufficientPermissions']],
+        ]], 403),
+    ]);
+    PlatformSetting::put(GoogleDrive::REFRESH_TOKEN, 'refresh-1');
+    File::put($this->dir.'/schoolhub-db.sql.gz', 'data');
+
+    expect(fn () => app(GoogleDrive::class)->copy([$this->dir.'/schoolhub-db.sql.gz']))
+        ->toThrow(RuntimeException::class, 'tick the Google Drive box');
 });

@@ -2,6 +2,7 @@
 
 namespace App\Console\Commands;
 
+use App\Services\Backups\GoogleDrive;
 use Illuminate\Console\Command;
 use Illuminate\Support\Facades\Cache;
 use Illuminate\Support\Facades\DB;
@@ -22,9 +23,10 @@ use ZipArchive;
  * consistent even while the app is in use, and the files are a .zip,
  * since Windows has no mysqldump or tar to rely on.
  *
- * These copies are on the same server as the data. Copy the folder off
- * the server as well (see docs/operations.md): a backup that dies with
- * the server is not a backup.
+ * These copies are on the same server as the data, so once Google Drive
+ * is connected (System health) each night's files are also encrypted and
+ * copied there (GoogleDrive): a backup that dies with the server is not
+ * a backup. A failed copy is reported; the backup on the server stands.
  *
  * A failure is reported like any other error, so the platform owner is
  * emailed and sees it under Error reports.
@@ -36,7 +38,8 @@ class BackupRun extends Command
 
     protected $signature = 'backup:run
         {--keep=14 : Days of backups to keep}
-        {--no-files : Back up the database only}';
+        {--no-files : Back up the database only}
+        {--no-offsite : Do not copy this backup to Google Drive}';
 
     protected $description = 'Back up the database and uploaded files to storage/app/backups';
 
@@ -63,6 +66,16 @@ class BackupRun extends Command
         $this->info('Database: '.basename($database));
         $this->info($files ? 'Files: '.basename($files) : 'Files: skipped');
         $this->info("Removed {$removed} old backup file(s).");
+
+        if (! $this->option('no-offsite') && GoogleDrive::isConnected()) {
+            try {
+                $copied = app(GoogleDrive::class)->copy(array_values(array_filter([$database, $files])));
+                $this->info('Copied to Google Drive: '.implode(', ', $copied));
+            } catch (RuntimeException $e) {
+                report($e);
+                $this->error('Google Drive copy failed: '.$e->getMessage());
+            }
+        }
 
         return self::SUCCESS;
     }

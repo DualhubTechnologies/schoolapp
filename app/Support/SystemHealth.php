@@ -5,6 +5,7 @@ namespace App\Support;
 use App\Console\Commands\BackupRun;
 use App\Models\ErrorReport;
 use App\Models\User;
+use App\Services\Backups\GoogleDrive;
 use Illuminate\Support\Carbon;
 use Illuminate\Support\Facades\Cache;
 use Illuminate\Support\Facades\DB;
@@ -34,6 +35,7 @@ class SystemHealth
             $this->queue(),
             $this->scheduler(),
             $this->backups(),
+            $this->offsiteBackups(),
             $this->debugMode(),
             $this->https(),
             $this->logs(),
@@ -146,7 +148,41 @@ class SystemHealth
 
         return $at->lt(now()->subHours(36))
             ? $this->row('Backups', 'danger', 'Last successful backup '.$at->diffForHumans().'.', 'Check Error reports for a backup failure, and that the scheduler is running.')
-            : $this->row('Backups', 'ok', 'Last successful backup '.$at->diffForHumans().' (kept in storage/app/backups). Copy them off the server too.');
+            : $this->row('Backups', 'ok', 'Last successful backup '.$at->diffForHumans().' (kept in storage/app/backups).');
+    }
+
+    /**
+     * The encrypted copy of each night's backup in Google Drive.
+     *
+     * @return array{label: string, status: 'ok'|'warning'|'danger', summary: string, fix: string|null}
+     */
+    protected function offsiteBackups(): array
+    {
+        $label = 'Off-site copy (Google Drive)';
+
+        if (! GoogleDrive::isConfigured()) {
+            return $this->row($label, 'warning', 'Backups stay only on this server; if it is lost, so are they.', 'Create a Google Cloud OAuth client (Web application) with redirect URI '.GoogleDrive::redirectUri().', put GOOGLE_DRIVE_CLIENT_ID, GOOGLE_DRIVE_CLIENT_SECRET and BACKUP_PASSPHRASE in .env, then click Connect Google Drive above.');
+        }
+
+        if (! GoogleDrive::hasPassphrase()) {
+            return $this->row($label, 'warning', 'Not copying: the copies are encrypted first and there is no passphrase.', 'Add BACKUP_PASSPHRASE (at least 12 characters) to .env and keep it safe somewhere off the server.');
+        }
+
+        if (! GoogleDrive::isConnected()) {
+            return $this->row($label, 'warning', 'Google Drive is set up but not connected yet.', 'Click Connect Google Drive above and allow SchoolHub in Google.');
+        }
+
+        $last = Cache::get(GoogleDrive::LAST_COPY);
+
+        if (! is_array($last) || ! isset($last['at'])) {
+            return $this->row($label, 'warning', 'Connected to '.GoogleDrive::account().'; the first copy goes with tonight\'s backup.', 'Or click Back up now above to copy one straight away.');
+        }
+
+        $at = Carbon::parse((string) $last['at']);
+
+        return $at->lt(now()->subHours(36))
+            ? $this->row($label, 'danger', 'Last copied to Google Drive '.$at->diffForHumans().'.', 'Check Error reports for a Google Drive failure; you may need to connect Google Drive again.')
+            : $this->row($label, 'ok', 'Encrypted copy sent to '.GoogleDrive::account().' '.$at->diffForHumans().' (kept '.(int) config('services.google_drive.keep_days', 30).' days).');
     }
 
     /**

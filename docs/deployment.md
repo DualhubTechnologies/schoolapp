@@ -139,8 +139,8 @@ reports. The server needs `mysqldump`, `gzip` and `tar`.
 
 Still needed on the server:
 
-- copy `storage/app/backups` **off the server** every day (e.g. rclone or
-  rsync to another machine or cloud storage), keeping 30 days or more
+- connect Google Drive on System health so each backup is encrypted and
+  copied **off the server** every night ([Configuration](configuration.md))
 - test a restore on a spare server at least once a term
 
 See [Operations](operations.md).

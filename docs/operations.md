@@ -89,9 +89,20 @@ A backup runs every night at 01:30 (`php artisan backup:run`) into
 - `schoolhub-db-YYYY-MM-DD-HHMMSS.sql.gz`: the whole database
 - `schoolhub-files-YYYY-MM-DD-HHMMSS.tar.gz`: photos, signatures, logos
 
-Run one by hand at any time with `php artisan backup:run`. A failed backup
-appears in Error reports and on System health. Copy the folder off the
-server every day; a backup on the same disk is lost with the server.
+Run one by hand at any time with `php artisan backup:run` (or *Back up
+now* on System health). A failed backup appears in Error reports and on
+System health.
+
+Once Google Drive is connected ([Configuration](configuration.md)), each
+backup is also encrypted and copied to the owner's Drive, keeping 30 days;
+System health shows *Off-site copy (Google Drive)*. A failed copy is
+reported, and the backup on the server still stands. To open a copy:
+
+```bash
+openssl enc -d -aes-256-cbc -pbkdf2 -iter 200000 -in schoolhub-db-YYYY-MM-DD-HHMMSS.sql.gz.enc -out schoolhub-db-YYYY-MM-DD-HHMMSS.sql.gz
+```
+
+It asks for `BACKUP_PASSPHRASE`.
 
 Restore on a spare server:
 

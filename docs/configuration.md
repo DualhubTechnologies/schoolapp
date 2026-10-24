@@ -108,6 +108,32 @@ offline. Even the free trial needs a code. *Show code* shows it again
 (and the long key, for a school that can never get online); *Renew*
 issues the next period.
 
+## Off-site backups to Google Drive (`config/services.php` → `google_drive`)
+
+Each night's backup (`backup:run`) is encrypted on the server (AES-256,
+`openssl`) and copied into a *SchoolHub backups* folder in the platform
+owner's Google Drive. Copies older than the days kept are deleted.
+
+| Setting | Notes |
+|---|---|
+| `GOOGLE_DRIVE_CLIENT_ID`, `GOOGLE_DRIVE_CLIENT_SECRET` | From a Google Cloud OAuth client of type *Web application*, with redirect URI `https://<site>/admin/google-drive/callback`. Secret. |
+| `BACKUP_PASSPHRASE` | At least 12 characters. Encrypts the copies. Keep it somewhere safe **off the server**: without it no copy can be opened. |
+| `GOOGLE_DRIVE_KEEP_DAYS` | Optional; default 30. |
+| `GOOGLE_DRIVE_FOLDER` | Optional; default `SchoolHub backups`. |
+
+Setting it up once:
+
+1. In Google Cloud Console, create a project, enable the **Google Drive
+   API**, set up the OAuth consent screen (External, then *Publish app* so
+   access does not expire after 7 days), and add the scope
+   `.../auth/drive.file`.
+2. Create the OAuth client (Web application) with the redirect URI above;
+   put its ID and secret and `BACKUP_PASSPHRASE` in `.env`, then
+   `php artisan config:cache`.
+3. On **System health**, click *Connect Google Drive* and allow SchoolHub.
+   It can only see the files it creates, nothing else in the Drive.
+4. Click *Back up now* to check the first copy arrives.
+
 ## Website visitor locations (`config/services.php` → `maxmind`)
 
 The Website visitors page (platform owner) shows each visitor's country

@@ -15,6 +15,7 @@ use App\Filament\Support\ErrorNotices;
 use App\Filament\Support\Pages\RecordFormScope;
 use App\Filament\Widgets\StatsOverview;
 use App\Http\Controllers\GiftVoucherController;
+use App\Http\Controllers\GoogleDriveController;
 use App\Http\Middleware\RecordLastSeen;
 use App\Http\Middleware\ServerEditionOnly;
 use Filafly\LogoTools\LogoToolsPlugin;
@@ -129,6 +130,8 @@ class AdminPanelProvider extends PanelProvider
             // Gift vouchers to print (Activation codes → Make gift vouchers).
             ->authenticatedRoutes(function (): void {
                 Route::get('/gift-vouchers', GiftVoucherController::class)->name('gift-vouchers');
+                Route::get('/google-drive/connect', [GoogleDriveController::class, 'connect'])->name('google-drive.connect');
+                Route::get('/google-drive/callback', [GoogleDriveController::class, 'callback'])->name('google-drive.callback');
             })
 
             // --- Resources, pages, widgets ---

@@ -81,7 +81,7 @@ the link can see that one child's page, so it is treated like a password.
 |---|---|---|
 | An earlier version of `SuperAdminSeeder` had the owner's starting password in the code, and it remains in the Git history. | Anyone with access to the code knows that old password. | **Fixed in code** (the password now comes from `.env` or is generated). **Still to do:** change the live owner password if it was never changed. |
 | Scoping by school is done by hand in each query. | A missed filter could show one school's data to another. | Keep the tests; consider a shared scope or policy for new models; review every new query. |
-| Backups stay on the same server. | A nightly backup now runs (`backup:run`), but it dies with the server. | Copy `storage/app/backups` off the server daily and test restores ([Operations](operations.md)). |
+| Backups stay on the same server. | Each nightly backup is encrypted and copied to Google Drive once it is connected on System health. | Connect Google Drive, keep `BACKUP_PASSPHRASE` off the server, and test restores ([Operations](operations.md)). |
 | ~~The queue worker was not restarted on deploy.~~ | | **Fixed:** the deploy runs `php artisan queue:restart`. |
 
 ## Reporting a security problem

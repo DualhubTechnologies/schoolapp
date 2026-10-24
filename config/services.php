@@ -60,4 +60,19 @@ return [
         'currency' => env('MOMO_CURRENCY', 'EUR'),
     ],
 
+    // Off-site backups: each night's backup (BackupRun) is encrypted with
+    // BACKUP_PASSPHRASE and copied to Google Drive, into a "SchoolHub
+    // backups" folder. The client ID and secret come from a Google Cloud
+    // OAuth client (Web application) whose redirect URI is
+    // https://<site>/admin/google-drive/callback; the Drive itself is
+    // connected from System health. Keep BACKUP_PASSPHRASE somewhere safe
+    // off the server: without it the copies cannot be opened.
+    'google_drive' => [
+        'client_id' => env('GOOGLE_DRIVE_CLIENT_ID'),
+        'client_secret' => env('GOOGLE_DRIVE_CLIENT_SECRET'),
+        'folder' => env('GOOGLE_DRIVE_FOLDER', 'SchoolHub backups'),
+        'keep_days' => (int) env('GOOGLE_DRIVE_KEEP_DAYS', 30),
+        'passphrase' => env('BACKUP_PASSPHRASE'),
+    ],
+
 ];

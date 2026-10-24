@@ -67,14 +67,17 @@ class TransportLedger
         $feesCharged = 0.0;
 
         foreach ($charges->sortBy(fn (StudentCharge $charge): string => $charge->term?->sortKey() ?? '') as $charge) {
-            $net = max(0.0, (float) $charge->amount - (float) $charge->discount_amount);
+            $net = (float) $charge->amount - (float) $charge->discount_amount;
 
             if ($charge->transport_route_id === null) {
+                // Below zero is an opening credit: it lowers what school fees
+                // need, so it clears transport like money paid ahead.
                 $feesCharged += $net;
 
                 continue;
             }
 
+            $net = max(0.0, $net);
             $terms[$charge->term_id] = ['charged' => ($terms[$charge->term_id]['charged'] ?? 0.0) + $net, 'paid' => 0.0];
             $open[] = ['term_id' => (int) $charge->term_id, 'key' => $charge->term?->sortKey() ?? '', 'left' => $net];
         }

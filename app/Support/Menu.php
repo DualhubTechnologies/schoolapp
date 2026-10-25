@@ -6,6 +6,7 @@ use App\Filament\App\Pages\TransportCollections;
 use App\Filament\App\Resources\AcademicYears\AcademicYearResource;
 use App\Filament\App\Resources\AllowanceTypes\AllowanceTypeResource;
 use App\Filament\App\Resources\Assessments\AssessmentResource;
+use App\Filament\App\Resources\Assets\AssetResource;
 use App\Filament\App\Resources\AuditTrail\AuditTrailResource;
 use App\Filament\App\Resources\BankAccounts\BankAccountResource;
 use App\Filament\App\Resources\BankStatementLines\BankStatementLineResource;
@@ -34,6 +35,8 @@ use App\Filament\App\Resources\Sections\SectionResource;
 use App\Filament\App\Resources\SickBayMedicines\SickBayMedicineResource;
 use App\Filament\App\Resources\SickBayVisits\SickBayVisitResource;
 use App\Filament\App\Resources\Staff\StaffResource;
+use App\Filament\App\Resources\StoreItems\StoreItemResource;
+use App\Filament\App\Resources\StoreMovements\StoreMovementResource;
 use App\Filament\App\Resources\StudentDiscounts\StudentDiscountResource;
 use App\Filament\App\Resources\Students\StudentResource;
 use App\Filament\App\Resources\Subjects\SubjectResource;
@@ -86,6 +89,7 @@ class Menu
         'Staff & Payroll' => false,
         'Library' => false,
         'Sick Bay' => false,
+        'Stores' => false,
         'Transport' => false,
         'Reports' => false,
         'School Setup' => true,
@@ -137,6 +141,10 @@ class Menu
 
         SickBayVisitResource::class => ['Sick Bay', 1, 'Sick Bay Register'],
         SickBayMedicineResource::class => ['Sick Bay', 2, 'Medicines'],
+
+        StoreItemResource::class => ['Stores', 1, 'Store Items'],
+        StoreMovementResource::class => ['Stores', 2, 'Stock Movements'],
+        AssetResource::class => ['Stores', 3, 'Asset Register'],
 
         TransportRouteResource::class => ['Transport', 1, 'Routes'],
         TransportLearnerResource::class => ['Transport', 2, 'Learners on the Van'],

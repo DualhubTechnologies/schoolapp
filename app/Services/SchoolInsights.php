@@ -7,6 +7,7 @@ use App\Filament\App\Resources\FeeReminders\FeeReminderResource;
 use App\Filament\App\Resources\LibraryLoans\LibraryLoanResource;
 use App\Filament\App\Resources\Payments\PaymentResource;
 use App\Filament\App\Resources\SickBayVisits\SickBayVisitResource;
+use App\Filament\App\Resources\StoreItems\StoreItemResource;
 use App\Filament\App\Resources\Students\StudentResource;
 use App\Filament\Pages\ClassResults;
 use App\Filament\Pages\Reports\FeeCollectionsReport;
@@ -15,6 +16,7 @@ use App\Filament\Pages\StartTermBilling;
 use App\Models\LibraryLoan;
 use App\Models\Mark;
 use App\Models\SickBayVisit;
+use App\Models\StoreItem;
 use App\Models\Student;
 use App\Models\StudentCharge;
 use App\Models\StudentPayment;
@@ -100,6 +102,10 @@ class SchoolInsights
 
         if (Modules::allows('sickbay')) {
             $items = [...$items, ...$this->restingInSickBay()];
+        }
+
+        if (Modules::allows('stores')) {
+            $items = [...$items, ...$this->storesRunningLow()];
         }
 
         if (Modules::allows('exams') || Modules::allows('exams_all')) {
@@ -346,6 +352,36 @@ class SchoolInsights
             $visits->count().' '.($visits->count() === 1 ? 'learner is' : 'learners are').' resting in the sick bay',
             $this->names($visits->pluck('student_id')->unique()).'.',
             SickBayVisitResource::getUrl())];
+    }
+
+    // ── Stores ──
+
+    /**
+     * Store items at or below their warning level, or finished.
+     *
+     * @return list<Finding>
+     */
+    protected function storesRunningLow(): array
+    {
+        $low = StoreItem::where('school_id', $this->schoolId)
+            ->where('is_active', true)
+            ->where(fn ($q) => $q->where('quantity', '<=', 0)->orWhere(fn ($q) => $q->whereNotNull('reorder_level')->whereColumn('quantity', '<=', 'reorder_level')))
+            ->orderBy('quantity')
+            ->get();
+
+        if ($low->isEmpty()) {
+            return [];
+        }
+
+        $out = $low->filter(fn (StoreItem $item): bool => (float) $item->quantity <= 0);
+        $names = $low->take(4)->map(fn (StoreItem $item): string => $item->name.' ('.$item->amount().')')->implode(', ').($low->count() > 4 ? ' and '.($low->count() - 4).' more' : '');
+
+        return [$this->item('stores-low', $out->isNotEmpty() ? 'danger' : 'warning', 'heroicon-o-archive-box',
+            $out->isNotEmpty()
+                ? $out->count().' store '.str('item')->plural($out->count()).' finished, '.$low->count().' running low in all'
+                : $low->count().' store '.str('item')->plural($low->count()).' running low',
+            $names.'. Order more before they run out.',
+            StoreItemResource::getUrl(parameters: ['filters' => ['low' => ['value' => true]]]))];
     }
 
     // ── Marks ──

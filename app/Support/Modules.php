@@ -33,6 +33,7 @@ class Modules
         'hr' => ['HR & payroll', 'Staff records, salaries, payroll, payslips'],
         'library' => ['Library', 'Books, lending to learners and staff, books not returned, billing lost books'],
         'sickbay' => ['Sick bay', 'Sick bay visits, treatment, medicine stock, texting parents'],
+        'stores' => ['Stores & assets', 'Store items, receiving and issuing stock, stock counts, the asset register'],
         'academics' => ['Academics set-up', 'Years, terms, classes, streams, subjects, grading'],
         'settings' => ['Settings', 'School profile, users & access, audit trail'],
     ];
@@ -41,11 +42,12 @@ class Modules
     public const ROLE_DEFAULTS = [
         'Teacher' => ['exams', 'students', 'attendance'],
         'Director of Studies' => ['exams_all', 'exams', 'students', 'attendance'],
-        'Accountant' => ['fees', 'transport', 'finance', 'hr'],
-        'Bursar' => ['fees', 'transport', 'finance'],
+        'Accountant' => ['fees', 'transport', 'finance', 'hr', 'stores'],
+        'Bursar' => ['fees', 'transport', 'finance', 'stores'],
         'Admissions' => ['admissions', 'students', 'id_cards', 'messages'],
         'Librarian' => ['library', 'students'],
         'Nurse' => ['sickbay', 'students'],
+        'Storekeeper' => ['stores'],
         'Staff' => [],
         'Parent' => [],
         'Student' => [],
@@ -55,7 +57,7 @@ class Modules
      * The order roles are offered in: the head, then the money roles a
      * school sets up first, then teachers and other staff.
      */
-    public const ROLE_ORDER = ['School Admin', 'Bursar', 'Accountant', 'Admissions', 'Director of Studies', 'Teacher', 'Librarian', 'Nurse', 'Staff', 'Parent', 'Student', 'Super Admin'];
+    public const ROLE_ORDER = ['School Admin', 'Bursar', 'Accountant', 'Admissions', 'Director of Studies', 'Teacher', 'Librarian', 'Nurse', 'Storekeeper', 'Staff', 'Parent', 'Student', 'Super Admin'];
 
     /** Modules only primary schools have: the school van is a primary thing. */
     public const PRIMARY_ONLY = ['transport'];
@@ -127,6 +129,10 @@ class Modules
         // Sick bay
         'SickBayVisitResource' => 'sickbay',
         'SickBayMedicineResource' => 'sickbay',
+        // Stores & assets
+        'StoreItemResource' => 'stores',
+        'StoreMovementResource' => 'stores',
+        'AssetResource' => 'stores',
         // Academics set-up
         'AcademicYearResource' => 'academics',
         'TermResource' => 'academics',

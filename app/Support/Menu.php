@@ -57,9 +57,11 @@ use App\Filament\Pages\PromoteStudents;
 use App\Filament\Pages\ReceivePayment;
 use App\Filament\Pages\ReportCards;
 use App\Filament\Pages\Reports\AllReports;
+use App\Filament\Pages\Reports\AssetRegisterReport;
 use App\Filament\Pages\Reports\EnrolmentReport;
 use App\Filament\Pages\Reports\FeeCollectionsReport;
 use App\Filament\Pages\Reports\FeesByClassReport;
+use App\Filament\Pages\Reports\StockReport;
 use App\Filament\Pages\SchoolPaySettings;
 use App\Filament\Pages\SchoolProfile;
 use App\Filament\Pages\SchoolSubscription;
@@ -155,6 +157,8 @@ class Menu
         FeeCollectionsReport::class => ['Reports', 3, 'Fee Collections'],
         FeesByClassReport::class => ['Reports', 4, 'Fees by Class'],
         AttendanceReport::class => ['Reports', 5, 'Attendance Report'],
+        StockReport::class => ['Reports', 6, 'Stock Report'],
+        AssetRegisterReport::class => ['Reports', 7, 'Asset Register Report'],
 
         AcademicYearResource::class => ['School Setup', 1, 'Academic Years'],
         TermResource::class => ['School Setup', 2, 'Terms'],

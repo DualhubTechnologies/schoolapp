@@ -74,7 +74,7 @@ it('arranges the menu in groups, daily work first and the set-up folded at the e
 it('lists every report a school administrator can open, by area', function () {
     $areas = AllReports::available();
 
-    expect(array_keys($areas))->toBe(['Students', 'Fees', 'Finance', 'Exams & Results', 'Staff & Payroll'])
+    expect(array_keys($areas))->toBe(['Students', 'Fees', 'Finance', 'Exams & Results', 'Stores', 'Staff & Payroll'])
         ->and(collect($areas['Fees'])->pluck('title')->all())->toContain('Fee collections', 'Fees by class');
 
     Livewire::test(AllReports::class)->assertSee('Enrolment')->assertSee('Income vs expenditure');

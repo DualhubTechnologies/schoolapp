@@ -133,6 +133,8 @@ class Modules
         'StoreItemResource' => 'stores',
         'StoreMovementResource' => 'stores',
         'AssetResource' => 'stores',
+        'StockReport' => 'stores',
+        'AssetRegisterReport' => 'stores',
         // Academics set-up
         'AcademicYearResource' => 'academics',
         'TermResource' => 'academics',

@@ -59,6 +59,10 @@ class AllReports extends Page
             ClassResults::class => ['Results and broadsheet', 'A class\'s marks, totals, grades and positions for an exam or the term.', Heroicon::OutlinedTableCells],
             MarksProgress::class => ['Marks progress', 'Which subjects and classes still have marks to enter.', Heroicon::OutlinedClipboardDocumentCheck],
         ],
+        'Stores' => [
+            StockReport::class => ['Stock report', 'For a period: each item\'s opening stock, received, issued, counted and closing stock with its value, and where it went.', Heroicon::OutlinedArchiveBox],
+            AssetRegisterReport::class => ['Asset register', 'Everything the school owns, with tag numbers, where it is, condition and cost.', Heroicon::OutlinedTag],
+        ],
         'Staff & Payroll' => [
             PayrollPeriodResource::class => ['Payroll', 'Each month\'s payroll, payslips, and the PAYE and NSSF schedules.', Heroicon::OutlinedWallet],
         ],

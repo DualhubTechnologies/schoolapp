@@ -5,6 +5,8 @@ use App\Filament\App\Resources\Assets\Pages\ManageAssets;
 use App\Filament\App\Resources\StoreItems\Pages\ManageStoreItems;
 use App\Filament\App\Resources\StoreItems\StoreItemResource;
 use App\Filament\App\Resources\StoreMovements\Pages\ListStoreMovements;
+use App\Filament\Pages\Reports\AssetRegisterReport;
+use App\Filament\Pages\Reports\StockReport;
 use App\Models\AcademicYear;
 use App\Models\Asset;
 use App\Models\FinanceCategory;
@@ -144,4 +146,48 @@ it('only offers expense categories the school types in, never fees or salaries',
         ->toThrow(ModelNotFoundException::class);
 
     expect((float) $this->posho->fresh()->quantity)->toBe(0.0);
+});
+
+it('prints a stock report for a period: opening, received, issued, counted, closing and where it went', function () {
+    $ledger = app(StoreLedger::class);
+    $ledger->receive($this->posho, 400, 2800, '2026-08-20');
+    $ledger->issue($this->posho, 100, 'Kitchen', '2026-08-25');
+    $ledger->receive($this->posho, 500, 3000, '2026-10-01');
+    $ledger->issue($this->posho, 350, 'Kitchen', '2026-10-10');
+    $ledger->issue($this->posho, 20, 'Staff room', '2026-10-12');
+    $ledger->count($this->posho, 420, '2026-10-20', 'Spilt');
+
+    $page = Livewire::test(StockReport::class)
+        ->set('from', '2026-09-14')
+        ->set('to', '2026-10-25')
+        ->assertSee('Maize flour (posho)')
+        ->assertSee('Where the stock went')
+        ->assertSee('Staff room');
+
+    $row = collect($page->instance()->rows())->firstWhere('label', 'Maize flour (posho)');
+
+    expect([$row['opening'], $row['received'], $row['issued'], $row['counted'], $row['closing']])->toBe([300.0, 500.0, 370.0, -10.0, 420.0])
+        ->and($row['value'])->toBe(420.0 * 3000)
+        ->and($page->instance()->issuedTo()[0]['to'])->toBe('Kitchen');
+
+    $page->call('downloadExcel')->assertFileDownloaded();
+});
+
+it('prints the asset register by category or by place, with totals', function () {
+    Asset::create(['school_id' => $this->school->id, 'name' => 'Student desk', 'category' => 'furniture', 'quantity' => 40, 'location' => 'S.1 East', 'cost' => 4000000]);
+    Asset::create(['school_id' => $this->school->id, 'name' => 'Projector', 'category' => 'ict', 'quantity' => 1, 'location' => 'Staff room', 'condition' => 'broken', 'cost' => 1500000]);
+    Asset::create(['school_id' => $this->school->id, 'name' => 'Old laptop', 'category' => 'ict', 'quantity' => 1, 'condition' => 'disposed', 'cost' => 900000]);
+
+    $page = Livewire::test(AssetRegisterReport::class)
+        ->assertSee('Student desk')
+        ->assertSee('Projector')
+        ->assertDontSee('Old laptop')
+        ->assertSee('5,500,000');
+
+    expect(collect($page->instance()->groups())->pluck('name')->all())->toBe(['Computers & electronics', 'Furniture']);
+
+    $page->set('groupBy', 'location')->set('show', 'repair');
+    expect(collect($page->instance()->groups())->pluck('name')->all())->toBe(['Staff room']);
+
+    $page->set('show', 'all')->call('downloadExcel')->assertFileDownloaded();
 });

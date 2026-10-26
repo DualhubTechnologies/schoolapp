@@ -71,7 +71,9 @@
         <div class="container hero-grid">
             <div class="hero-copy">
                 <span class="badge"><b>New curriculum</b> O-Level and A-Level report cards, worked out for you</span>
-                <h1><span class="h1-line h1-wrap">Fees, marks and payroll.</span> <span>One secure system.</span></h1>
+                {{-- The blue line types itself, deletes and types the next phrase (script at the end of the page).
+                     The first phrase is in the page itself, for search engines and when motion is reduced. --}}
+                <h1><span class="h1-line h1-wrap">Fees, marks and payroll.</span> <span class="typer" id="typer" data-phrases='["One secure system.","Built for Uganda.","Simple to use.","First term free."]'>One secure system.</span></h1>
                 <p class="hero-lead">Plus attendance, SMS to parents, library, sick bay, transport and ID cards: your whole school in one place, simple to use and built for Ugandan schools.</p>
 
                 <div class="hero-actions">
@@ -229,5 +231,46 @@
 </main>
 
 @include('site.partials.footer')
+
+<script>
+    // The hero's blue line: type a phrase, wait, delete it, type the next, for ever.
+    (function () {
+        var el = document.getElementById('typer');
+        if (! el || window.matchMedia('(prefers-reduced-motion: reduce)').matches) {
+            return;
+        }
+
+        var phrases = JSON.parse(el.dataset.phrases || '[]');
+        var h1 = el.closest('h1');
+        h1.setAttribute('aria-label', h1.textContent.replace(/\s+/g, ' ').trim());
+        el.setAttribute('aria-hidden', 'true');
+        h1.classList.add('is-typing');
+
+        var i = 0, n = phrases[0].length, deleting = false;
+
+        function tick() {
+            var phrase = phrases[i];
+            n += deleting ? -1 : 1;
+            el.textContent = phrase.slice(0, n);
+
+            if (! deleting && n === phrase.length) {
+                deleting = true;
+                return setTimeout(tick, 2200);
+            }
+
+            if (deleting && n === 0) {
+                deleting = false;
+                i = (i + 1) % phrases.length;
+                return setTimeout(tick, 350);
+            }
+
+            setTimeout(tick, deleting ? 45 : 85);
+        }
+
+        // Start by deleting the phrase already on the page.
+        deleting = true;
+        setTimeout(tick, 2600);
+    })();
+</script>
 </body>
 </html>

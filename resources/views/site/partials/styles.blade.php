@@ -912,3 +912,8 @@
             .window.window-phone { display: block; }
         }
 
+
+        /* Hero: the blue line typing itself, with a blinking cursor; room for two lines so nothing jumps. */
+        .hero h1 .typer { display: block; min-height: 2.16em; }
+        .hero h1.is-typing .typer::after { content: ""; display: inline-block; width: .07em; height: .85em; margin-left: .08em; vertical-align: -.06em; background: var(--blue-600, #2563eb); border-radius: 2px; animation: type-blink 1s steps(1) infinite; }
+        @keyframes type-blink { 50% { opacity: 0; } }

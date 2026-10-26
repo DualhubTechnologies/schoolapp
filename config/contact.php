@@ -48,7 +48,7 @@ return [
             'linkedin' => null,
             'facebook' => null,
             'x' => null,
-            'email' => null,
+            'email' => 'info@schoolhubug.com',
         ],
     ],
 

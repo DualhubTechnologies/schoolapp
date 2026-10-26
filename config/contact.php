@@ -43,7 +43,7 @@ return [
         ],
         [
             'name' => 'Komugisha Brenda',
-            'role' => 'UNEB examiner. Curriculum adviser on the new lower-secondary curriculum and its report cards.',
+            'role' => 'UNEB Examiner · New Curriculum Adviser',
             'photo' => null,
             'linkedin' => null,
             'facebook' => null,

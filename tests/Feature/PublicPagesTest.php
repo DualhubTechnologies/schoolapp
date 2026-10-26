@@ -97,13 +97,13 @@ it('returns a demo request from the Contact page to the Contact page', function 
         ->post(route('filament.app.demo-request'), [
             'name' => 'Sarah Nakato', 'school_name' => 'Hope Primary', 'phone' => '0772123456', 'preferred_contact' => 'whatsapp',
         ])
-        ->assertRedirect(route('filament.app.site.page', 'contact').'#demo');
+        ->assertRedirect(route('filament.app.site.page', 'contact').'#demo-form');
 
     expect(DemoRequest::where('name', 'Sarah Nakato')->exists())->toBeTrue();
 
     $this->from('/')
         ->post(route('filament.app.demo-request'), ['name' => '', 'school_name' => '', 'phone' => '', 'preferred_contact' => 'whatsapp'])
-        ->assertRedirect(url('/').'#demo');
+        ->assertRedirect(url('/').'#demo-form');
 });
 
 it('files a sales pitch sent through the demo form as spam, without emailing the team', function () {

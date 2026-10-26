@@ -27,7 +27,7 @@ class LandingController extends Controller
         $visits->recordLater($request, '/');
 
         // On the home page "Book a demo" scrolls to its own form.
-        return view('landing', [...PublicSite::viewData(), 'demoUrl' => '#demo']);
+        return view('landing', [...PublicSite::viewData(), 'demoUrl' => '#demo-form']);
     }
 
     public function page(Request $request, SiteVisits $visits, string $page): View

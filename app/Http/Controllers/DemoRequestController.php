@@ -19,7 +19,7 @@ class DemoRequestController extends Controller
     {
         // Honeypot: people never see this field, bots fill it in.
         if (filled($request->input('website'))) {
-            return redirect()->to($this->formPage().'#demo')->with('demo_sent', true);
+            return redirect()->to($this->formPage().'#demo-form')->with('demo_sent', true);
         }
 
         $validator = Validator::make($request->all(), [
@@ -41,7 +41,7 @@ class DemoRequestController extends Controller
 
         // Back to the form itself, not the top of the page.
         if ($validator->fails()) {
-            return redirect()->to($this->formPage().'#demo')->withErrors($validator, 'demo')->withInput();
+            return redirect()->to($this->formPage().'#demo-form')->withErrors($validator, 'demo')->withInput();
         }
 
         $data = $validator->validated();
@@ -55,7 +55,7 @@ class DemoRequestController extends Controller
 
         // A sales pitch is kept (under Spam) but not emailed to the team.
         if ($spam) {
-            return redirect()->to($this->formPage().'#demo')->with('demo_sent', $demo->name);
+            return redirect()->to($this->formPage().'#demo-form')->with('demo_sent', $demo->name);
         }
 
         try {
@@ -64,7 +64,7 @@ class DemoRequestController extends Controller
             report($e);   // saved already; it shows in Platform Management → Demo requests
         }
 
-        return redirect()->to($this->formPage().'#demo')->with('demo_sent', $demo->name);
+        return redirect()->to($this->formPage().'#demo-form')->with('demo_sent', $demo->name);
     }
 
     /**

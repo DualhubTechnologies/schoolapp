@@ -52,7 +52,7 @@ class PublicSite
             'mailUrl' => 'mailto:'.$contact['email'].'?subject='.rawurlencode('SchoolHub demo request'),
             // Where "Book a demo" goes: the form on the Contact page (the
             // home page points it at its own form instead).
-            'demoUrl' => route('filament.app.site.page', 'contact').'#demo',
+            'demoUrl' => route('filament.app.site.page', 'contact').'#demo-form',
             // Prices as advertised: the plan price plus the public-site
             // markup (config/subscriptions.php), to the nearest UGX 1,000.
             'shown' => fn ($amount): float => (float) $amount > 0 ? round((float) $amount * $markup / 1000) * 1000 : (float) $amount,

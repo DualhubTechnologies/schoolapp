@@ -79,7 +79,7 @@
                         <a href="{{ $dashboardUrl }}" class="btn btn-primary btn-lg">Open your dashboard {!! $arrow !!}</a>
                     @else
                         <a href="{{ $registerUrl }}" class="btn btn-primary btn-lg">Start your free term {!! $arrow !!}</a>
-                        <a href="#demo" class="btn btn-secondary btn-lg btn-demo"><span class="btn-demo-icon">{!! $ico('calendar') !!}</span> Book a free demo</a>
+                        <a href="#demo-form" class="btn btn-secondary btn-lg btn-demo"><span class="btn-demo-icon">{!! $ico('calendar') !!}</span> Book a free demo</a>
                     @endif
                 </div>
 

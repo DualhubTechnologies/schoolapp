@@ -3,7 +3,7 @@
     the icon in every size Google and phones ask for (Google shows a plain
     globe in results without a favicon it can use, at least 48px), the one
     address to list the page under (the site answers on both
-    schoolhubug.com and www.schoolhubug.com), a share image, and who
+    schoolhubug.com and www.schoolhubug.com), a wide share banner, and who
     publishes the site with its logo.
 
     $path: this page's path, e.g. '/' or '/terms-and-conditions'.
@@ -20,8 +20,15 @@
 <link rel="icon" type="image/svg+xml" href="{{ $site }}/images/schoolhub-icon.svg">
 <link rel="apple-touch-icon" href="{{ $site }}/apple-touch-icon.png">
 <meta property="og:site_name" content="SchoolHub">
-<meta property="og:image" content="{{ $logo }}">
-<meta name="twitter:card" content="summary">
+{{-- The wide banner WhatsApp, Facebook and X show when a page is shared (1200 x 630). --}}
+<meta property="og:image" content="{{ $site }}/images/site/share-banner.jpg">
+<meta property="og:image:secure_url" content="{{ $site }}/images/site/share-banner.jpg">
+<meta property="og:image:type" content="image/jpeg">
+<meta property="og:image:width" content="1200">
+<meta property="og:image:height" content="630">
+<meta property="og:image:alt" content="SchoolHub school management system: the dashboard on a computer, first term free">
+<meta name="twitter:card" content="summary_large_image">
+<meta name="twitter:image" content="{{ $site }}/images/site/share-banner.jpg">
 @php
     // Phone in international form, as Google prefers: 0782 863209 -> +256782863209.
     $phone = '+256'.ltrim((string) preg_replace('/\D/', '', (string) config('contact.phone')), '0');

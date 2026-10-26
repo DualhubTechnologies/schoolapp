@@ -13,7 +13,11 @@ it('gives the home page a favicon Google can use, a canonical address and the pu
         ->assertSee('sizes="48x48" href="https://www.schoolhubug.com/images/schoolhub-icon-48.png"', false)
         ->assertSee('<link rel="apple-touch-icon"', false)
         ->assertSee('"@type": "Organization"', false)
-        ->assertSee('"logo": "https://www.schoolhubug.com/images/schoolhub-icon-512.png"', false);
+        ->assertSee('"logo": "https://www.schoolhubug.com/images/schoolhub-icon-512.png"', false)
+        ->assertSee('<meta property="og:image" content="https://www.schoolhubug.com/images/site/share-banner.jpg">', false)
+        ->assertSee('<meta name="twitter:card" content="summary_large_image">', false);
+
+    expect(getimagesize(public_path('images/site/share-banner.jpg')))->toMatchArray([0 => 1200, 1 => 630]);
 });
 
 it('serves a real favicon.ico and a 48px icon', function () {

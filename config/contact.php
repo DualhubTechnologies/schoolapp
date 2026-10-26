@@ -43,7 +43,7 @@ return [
         ],
         [
             'name' => 'Komugisha Brenda',
-            'role' => 'UNEB Examiner · New Curriculum Adviser',
+            'role' => 'UNEB Examiner · New Curriculum Adviser, SchoolHub',
             'photo' => null,
             'linkedin' => null,
             'facebook' => null,

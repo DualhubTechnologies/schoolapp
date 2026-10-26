@@ -41,6 +41,15 @@ return [
             'x' => null,
             'email' => env('CONTACT_FOUNDER_EMAIL', 'adrian.mugizi@schoolhubug.com'),
         ],
+        [
+            'name' => 'Komugisha Brenda',
+            'role' => 'UNEB examiner. Curriculum adviser on the new lower-secondary curriculum and its report cards.',
+            'photo' => null,
+            'linkedin' => null,
+            'facebook' => null,
+            'x' => null,
+            'email' => null,
+        ],
     ],
 
     // Where the team is and when it answers: on the Contact page and in the

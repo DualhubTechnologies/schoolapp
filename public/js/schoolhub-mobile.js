@@ -92,11 +92,17 @@
     const OFFLINE_TITLE = 'You are offline';
     const OFFLINE_TEXT = 'Check your data or Wi-Fi. Anything you save now will not go through until the connection is back.';
 
-    window.addEventListener('offline', () => showBanner('warn', OFFLINE_TITLE, OFFLINE_TEXT, 0));
-    window.addEventListener('online', () => showBanner('good', 'Back online', 'You can carry on where you left off.', 4000));
-    document.addEventListener('DOMContentLoaded', () => {
-        if (navigator.onLine === false) showBanner('warn', OFFLINE_TITLE, OFFLINE_TEXT, 0);
-    });
+    // The Windows app saves on the computer itself, so being offline does
+    // not matter there (it syncs once the internet is back): no warning.
+    const DESKTOP = document.documentElement.dataset.edition === 'desktop';
+
+    if (!DESKTOP) {
+        window.addEventListener('offline', () => showBanner('warn', OFFLINE_TITLE, OFFLINE_TEXT, 0));
+        window.addEventListener('online', () => showBanner('good', 'Back online', 'You can carry on where you left off.', 4000));
+        document.addEventListener('DOMContentLoaded', () => {
+            if (navigator.onLine === false) showBanner('warn', OFFLINE_TITLE, OFFLINE_TEXT, 0);
+        });
+    }
 
     document.addEventListener('livewire:init', () => {
         window.Livewire.interceptRequest(({ onError, onFailure }) => {
@@ -135,7 +141,7 @@
                 window.filamentErrorNotifications = undefined;
                 setTimeout(() => { window.filamentErrorNotifications = notifications; }, 0);
 
-                if (navigator.onLine === false) {
+                if (navigator.onLine === false && !DESKTOP) {
                     showBanner('warn', OFFLINE_TITLE, OFFLINE_TEXT, 0);
                 } else {
                     showBanner('warn', 'Connection problem', 'That did not reach SchoolHub, so it was not saved. Please try again.', 10000);

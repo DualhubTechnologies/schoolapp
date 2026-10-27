@@ -191,3 +191,12 @@ it('tells the online setup tab straight away whether online SchoolHub can be rea
 
     $this->get(route('desktop.setup.connect'))->assertOk()->assertSee('Checking the internet connection');
 });
+
+it('does not warn "You are offline" in the Windows app, which works offline', function () {
+    setUpSchool();
+
+    $this->followingRedirects()->get('/')->assertOk()->assertSee('dataset.edition = "desktop"', false);
+
+    config(['app.edition' => 'server']);
+    $this->followingRedirects()->get('/login')->assertDontSee('dataset.edition = "desktop"', false);
+});

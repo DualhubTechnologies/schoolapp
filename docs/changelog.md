@@ -6,6 +6,9 @@ folded into the change they belong to. Add an entry with every release.
 
 ## 27 October 2026
 
+- **Windows app: no more "You are offline" warning.** It saves on the
+  computer and syncs later, so being offline does not matter there; the
+  website keeps the warning.
 - **Windows app licence protections.**
   - A licence is tied to the computer it is first used on (Windows'
     MachineGuid, `Machine`): copying SchoolHub's data folder to another

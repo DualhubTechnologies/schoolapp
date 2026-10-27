@@ -283,6 +283,8 @@ class AppPanelProvider extends PanelProvider
                     .'<meta name="apple-mobile-web-app-capable" content="yes">'
                     .'<meta name="apple-mobile-web-app-title" content="'.e(auth()->user()->school->name ?? 'SchoolHub').'">'
                     .'<link rel="apple-touch-icon" href="'.route('filament.app.app.icon', ['size' => 180]).'">'
+                    // The Windows app works offline: schoolhub-mobile.js skips its "You are offline" warning there.
+                    .(Edition::isDesktop() ? '<script>document.documentElement.dataset.edition = "desktop";</script>' : '')
                     .'<script src="'.asset('js/schoolhub-mobile.js').'?v='.filemtime(public_path('js/schoolhub-mobile.js')).'"></script>'
             )
             ->renderHook(

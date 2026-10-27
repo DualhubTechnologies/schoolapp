@@ -37,6 +37,12 @@
         .info { background: #eff6ff; border: 1px solid #bfdbfe; color: #1e3a8a; border-radius: 8px; padding: .6rem .8rem; margin-bottom: .9rem; font-size: .85rem; line-height: 1.45; }
         button { width: 100%; padding: .7rem 1rem; border: 0; border-radius: 10px; background: #2563eb; color: #fff; font: inherit; font-weight: 700; font-size: .95rem; cursor: pointer; margin-top: .2rem; }
         button:hover { background: #1d4ed8; }
+        button[disabled] { background: #60a5fa; cursor: wait; }
+        .spin { display: inline-block; width: 1em; height: 1em; margin-right: .5em; vertical-align: -.15em; border: 2px solid rgba(255, 255, 255, .45); border-top-color: #fff; border-radius: 50%; animation: spin .8s linear infinite; }
+        @keyframes spin { to { transform: rotate(360deg); } }
+        @media (prefers-reduced-motion: reduce) { .spin { animation-duration: 2.4s; } }
+        .busy { display: none; margin-top: .6rem; text-align: center; color: #1e3a8a; font-size: .85rem; }
+        form.is-busy .busy { display: block; }
         .note { margin: .7rem 0 0; text-align: center; color: #64748b; font-size: .78rem; }
         .code { font-family: ui-monospace, Consolas, monospace; letter-spacing: .1em; text-transform: uppercase; }
         @media (max-width: 720px) { .grid { grid-template-columns: 1fr 1fr; } .span2 { grid-column: 1 / -1; } }
@@ -63,7 +69,7 @@
         @if ($mode === 'online')
             <div class="info">Sign in with <b>your SchoolHub online email and password</b> and the <b>link code</b> from SchoolHub (or from Settings → Windows app online). Everything comes to this computer and stays in sync, staff sign in here with their online passwords, and your online subscription covers it. Needs internet for this step.</div>
 
-            <form method="POST" action="{{ route('desktop.setup.connect.store') }}" novalidate>
+            <form method="POST" action="{{ route('desktop.setup.connect.store') }}" novalidate data-busy="Connecting… bringing your school here">
                 @csrf
                 <div class="grid">
                     <div @class(['has-error' => $errors->has('code')])>
@@ -83,10 +89,11 @@
                 </div>
                 @error('code')<div class="alert" role="alert" style="margin: .7rem 0 0">{{ $message }}</div>@enderror
                 <button type="submit" style="margin-top: .9rem">Connect and bring my school here</button>
+                <p class="busy" role="status">Please wait: checking your account, then copying your school's records to this computer. For a big school this can take a few minutes. Do not close SchoolHub.</p>
             </form>
             <p class="note">The first sync can take a few minutes for a big school. Everyone signs in on this computer with the same email and password as online.</p>
         @else
-            <form method="POST" action="{{ route('desktop.setup.store') }}" novalidate>
+            <form method="POST" action="{{ route('desktop.setup.store') }}" novalidate data-busy="Setting up your school…">
                 @csrf
 
                 <fieldset>
@@ -151,5 +158,16 @@
         @endif
     </div>
 </div>
+<script>
+    // While the form is being sent: a spinner on the button, which cannot be pressed twice.
+    document.querySelectorAll('form[data-busy]').forEach(function (form) {
+        form.addEventListener('submit', function () {
+            var button = form.querySelector('button[type=submit]');
+            form.classList.add('is-busy');
+            button.disabled = true;
+            button.innerHTML = '<span class="spin" aria-hidden="true"></span>' + form.dataset.busy;
+        });
+    });
+</script>
 </body>
 </html>

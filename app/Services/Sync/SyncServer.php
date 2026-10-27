@@ -80,10 +80,19 @@ class SyncServer
     {
         $device = $this->waitingDevice($code);
 
-        $user = User::on($this->connection)->where('email', trim($email))->where('school_id', $device->school_id)->first();
+        $user = User::on($this->connection)->where('email', trim($email))->first();
+        $schoolName = (string) $device->getConnection()->table('schools')->where('id', $device->school_id)->value('name');
 
-        if (! $user || ! Hash::check($password, (string) $user->password)) {
-            throw new RuntimeException('That email and password do not match an account of this school online.');
+        if (! $user) {
+            throw new RuntimeException('There is no SchoolHub online account with that email. Check it, or use the email you sign in with online.');
+        }
+
+        if ((int) $user->school_id !== $device->school_id) {
+            throw new RuntimeException("This link code is for {$schoolName}, but that account belongs to another school. Use an account of {$schoolName}, or get a code for your own school.");
+        }
+
+        if (! Hash::check($password, (string) $user->password)) {
+            throw new RuntimeException('Wrong password for that account. Use the password you sign in with online (Forgot password? on schoolhubug.com if needed).');
         }
 
         $accounts = $this->staffAccounts($device);

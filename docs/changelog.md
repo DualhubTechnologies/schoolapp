@@ -6,6 +6,10 @@ folded into the change they belong to. Add an entry with every release.
 
 ## 27 October 2026
 
+- **Windows app setup:** pressing Connect or Set up shows a spinner and a
+  "please wait" note (and cannot be pressed twice); a refused connect
+  says why: no account with that email, an account of another school
+  than the code's, or a wrong password.
 - **Any staff member can set up the Windows app from online**, with their
   online email and password and the link code (not only the
   administrator; parents and learners cannot). The school's staff

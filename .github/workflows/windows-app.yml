@@ -99,7 +99,7 @@ jobs:
           PUBLISH: ${{ inputs.publish }}
         run: |
           $notes = "SchoolHub for Windows $env:VERSION. Windows 10 or 11 (64-bit). Works without internet; a licence code from SchoolHub is needed, including for the free trial."
-          $flags = if ($env:PUBLISH -eq 'latest') { @('--latest') } else { @('--prerelease', '--latest=false') }
+          $flags = if ($env:PUBLISH -eq 'latest') { @('--latest=true') } else { @('--prerelease', '--latest=false') }
           gh release create "v$env:VERSION" out\SchoolHub-Setup.exe --repo $env:GITHUB_REPOSITORY --target $env:GITHUB_SHA --title "SchoolHub for Windows $env:VERSION" --notes $notes @flags
           if ($LASTEXITCODE -ne 0) { throw 'Could not publish the release (does this version exist already?).' }
 

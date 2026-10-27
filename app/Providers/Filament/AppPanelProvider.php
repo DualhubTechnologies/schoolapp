@@ -94,7 +94,9 @@ class AppPanelProvider extends PanelProvider
             // School Admin. Not in the Windows app: its one school is set up
             // on first run (DesktopSetupController).
             ->registration(Edition::isDesktop() ? null : RegisterSchool::class)
-            ->passwordReset(RequestPasswordReset::class, ResetPassword::class)
+            // Reset links go by email: not in the Windows app, where the
+            // administrator sets a new password for staff (login page note).
+            ->passwordReset(Edition::isDesktop() ? null : RequestPasswordReset::class, Edition::isDesktop() ? null : ResetPassword::class)
 
             // Public landing page at the site root. Registered here (not in
             // routes/web.php) so Filament sees "/" is taken and sends

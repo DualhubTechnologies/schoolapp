@@ -240,6 +240,11 @@
                         ['images/site/poster-payroll.jpg', 'PAYE, NSSF and LST worked out for you: the month\'s payroll, payslips and the NSSF schedule.'],
                         ['images/site/poster-free-trial.jpg', 'Your first term free, every module included: register your school, add your learners and start working.'],
                     ];
+
+                    // The Windows app has no registration at schoolhubug.com to advertise.
+                    if (\App\Support\Edition::isDesktop()) {
+                        array_pop($posters);
+                    }
                 @endphp
                 <figure class="sha-posters"
                     x-data="{
@@ -277,10 +282,12 @@
     <main class="sha-main">
         <div class="sha-topline">
             <a href="{{ url('/') }}" class="sha-logo-mobile"><img src="{{ asset('images/schoolhub-logo-sidebar.svg') }}" alt="SchoolHub"></a>
-            <a href="{{ url('/') }}" class="sha-back">
-                <svg viewBox="0 0 20 20" fill="currentColor" aria-hidden="true"><path fill-rule="evenodd" d="M17 10a.75.75 0 0 1-.75.75H5.612l4.158 3.96a.75.75 0 1 1-1.04 1.08l-5.5-5.25a.75.75 0 0 1 0-1.08l5.5-5.25a.75.75 0 1 1 1.04 1.08L5.612 9.25H16.25A.75.75 0 0 1 17 10Z" clip-rule="evenodd"/></svg>
-                Back to home
-            </a>
+            @unless (\App\Support\Edition::isDesktop())
+                <a href="{{ url('/') }}" class="sha-back">
+                    <svg viewBox="0 0 20 20" fill="currentColor" aria-hidden="true"><path fill-rule="evenodd" d="M17 10a.75.75 0 0 1-.75.75H5.612l4.158 3.96a.75.75 0 1 1-1.04 1.08l-5.5-5.25a.75.75 0 0 1 0-1.08l5.5-5.25a.75.75 0 1 1 1.04 1.08L5.612 9.25H16.25A.75.75 0 0 1 17 10Z" clip-rule="evenodd"/></svg>
+                    Back to home
+                </a>
+            @endunless
         </div>
 
         <div @class(['sha-card', 'sha-card-wide' => $wide])>

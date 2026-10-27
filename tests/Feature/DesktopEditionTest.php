@@ -87,6 +87,19 @@ it('has no school registration', function () {
     expect((new AppPanelProvider(app()))->panel(Panel::make())->hasRegistration())->toBeTrue();
 });
 
+it('shows a sign-in page without the website\'s links or email password resets', function () {
+    setUpSchool();
+    $this->post('/logout');
+
+    expect((new AppPanelProvider(app()))->panel(Panel::make())->hasPasswordReset())->toBeFalse();
+
+    $this->get('/login')->assertOk()
+        ->assertSee('Ask the school administrator to set a new one')
+        ->assertDontSee('Back to home')
+        ->assertDontSee('poster-free-trial.jpg')
+        ->assertDontSee('Parents:');
+});
+
 it('keeps the setup page out of the online edition', function () {
     config(['app.edition' => 'server']);
 

@@ -6,6 +6,11 @@ folded into the change they belong to. Add an entry with every release.
 
 ## 27 October 2026
 
+- **Sign-in page:** the free-trial poster says "First term free" (it
+  still said 30 days). In the Windows app the page leaves out what only
+  works online (Back to home, the free-trial poster, emailed password
+  resets, the note for parents) and says to ask the administrator for a
+  new password.
 - **The Windows download is back on the website**, offering SchoolHub
   for Windows 1.2.0 (short licence codes, sync with the online account).
 - **The Windows app syncs with the school's online account, both ways.**

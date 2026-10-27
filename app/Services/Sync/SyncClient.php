@@ -3,6 +3,7 @@
 namespace App\Services\Sync;
 
 use App\Models\School;
+use App\Models\User;
 use App\Support\Edition;
 use App\Support\Licensing\DesktopLicence;
 use Illuminate\Database\QueryException;
@@ -11,6 +12,7 @@ use Illuminate\Support\Facades\Cache;
 use Illuminate\Support\Facades\Crypt;
 use Illuminate\Support\Facades\DB;
 use RuntimeException;
+use Spatie\Permission\Models\Role;
 use stdClass;
 
 /**
@@ -98,7 +100,7 @@ class SyncClient
      * (DesktopSetupController::connect): links it and returns the school's
      * details and the administrator's name and email.
      *
-     * @return array{school: array<string, mixed>, user: array{name: string, email: string}}
+     * @return array{school: array<string, mixed>, user: array{name: string, email: string}, accounts: list<array<string, mixed>>}
      */
     public function connect(string $code, string $email, string $password): array
     {
@@ -112,7 +114,51 @@ class SyncClient
         $this->put(self::SCHOOL, (string) ($answer['school']['name'] ?? ''));
         $this->put(self::CURSOR, '0');
 
-        return ['school' => $answer['school'], 'user' => ['name' => (string) ($answer['user']['name'] ?? 'Administrator'), 'email' => (string) ($answer['user']['email'] ?? $email)]];
+        return [
+            'school' => $answer['school'],
+            'user' => ['name' => (string) ($answer['user']['name'] ?? 'Administrator'), 'email' => (string) ($answer['user']['email'] ?? $email)],
+            'accounts' => array_values((array) ($answer['accounts'] ?? [])),
+        ];
+    }
+
+    /**
+     * The school's staff accounts from online: each staff member signs in
+     * here with their online email and password, with the same roles.
+     * Accounts made only on this computer are left as they are.
+     *
+     * @param  array<int, mixed>  $accounts
+     */
+    public function keepAccounts(array $accounts): void
+    {
+        $schoolId = (int) DB::connection($this->connection)->table('schools')->orderBy('id')->value('id');
+        $roles = Role::on($this->connection)->pluck('name')->all();
+
+        foreach ($accounts as $account) {
+            $email = trim((string) ($account['email'] ?? ''));
+
+            if ($email === '' || blank($account['password'] ?? null)) {
+                continue;
+            }
+
+            $user = User::on($this->connection)->where('email', $email)->first() ?? new User;
+
+            if ($user->exists && (int) $user->school_id !== $schoolId) {
+                continue;
+            }
+
+            $user->setConnection($this->connection ?? config('database.default'));
+            $user->forceFill([
+                'name' => (string) ($account['name'] ?? $email),
+                'email' => $email,
+                'phone' => $account['phone'] ?? null,
+                'password' => (string) $account['password'],
+                'modules' => $account['modules'] ?? null,
+                'school_id' => $schoolId,
+                'email_verified_at' => $user->email_verified_at ?? now(),
+            ]);
+            $user->saveQuietly();
+            $user->syncRoles(array_values(array_intersect((array) ($account['roles'] ?? []), array_diff($roles, SyncServer::NOT_STAFF))));
+        }
     }
 
     /** Unlinks this computer. Its records stay; the sync records go. */
@@ -171,6 +217,10 @@ class SyncClient
 
         do {
             $page = $this->transport->post('pull', ['cursor' => $cursor, 'scan' => $scan, 'fetch' => $fetch, 'school' => $computer], $this->token());
+
+            if ($scan && is_array($page['accounts'] ?? null)) {
+                $this->keepAccounts($page['accounts']);
+            }
 
             // Paid online: the licence for this computer comes with the first page.
             if ($scan && $school !== null && is_string($page['licence'] ?? null)) {

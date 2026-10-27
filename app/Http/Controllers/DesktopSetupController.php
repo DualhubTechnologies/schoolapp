@@ -50,12 +50,12 @@ class DesktopSetupController extends Controller
     }
 
     /**
-     * Sets the school up from its online account: the administrator's
-     * online email and password and a link code (from Settings → Windows
-     * app online, or from SchoolHub). The school gets the same details and
-     * licence code as online, the administrator the same sign-in, and the
-     * first sync brings everything else (SyncClient), with the licence
-     * from the online subscription.
+     * Sets the school up from its online account: a staff member's online
+     * email and password and a link code (from Settings → Windows app
+     * online, or from SchoolHub). The school gets the same details and
+     * licence code as online, every staff account its online sign-in and
+     * roles, and the first sync brings everything else (SyncClient), with
+     * the licence from the online subscription.
      */
     public function connect(Request $request, SyncClient $client): RedirectResponse
     {
@@ -77,7 +77,7 @@ class DesktopSetupController extends Controller
             return back()->withInput($request->except('password'))->withErrors(['code' => $e->getMessage()]);
         }
 
-        $user = DB::transaction(function () use ($online, $data): User {
+        $user = DB::transaction(function () use ($online, $client): User {
             (new RoleSeeder)->run();
 
             $details = Arr::only((array) $online['school'], SyncServer::SCHOOL_DETAILS);
@@ -92,14 +92,10 @@ class DesktopSetupController extends Controller
             ]);
             SubscriptionManager::startTrial($school);
 
-            $user = User::create([
-                'name' => $online['user']['name'],
-                'email' => $online['user']['email'],
-                'password' => $data['password'],
-                'school_id' => $school->getKey(),
-            ]);
-            $user->forceFill(['email_verified_at' => now()])->save();
-            $user->assignRole('School Admin');
+            // Every staff member's online account, with their roles; the
+            // one who connected signs in now.
+            $client->keepAccounts($online['accounts']);
+            $user = User::where('email', $online['user']['email'])->firstOrFail();
 
             return $user;
         });

@@ -6,6 +6,11 @@ folded into the change they belong to. Add an entry with every release.
 
 ## 27 October 2026
 
+- **Any staff member can set up the Windows app from online**, with their
+  online email and password and the link code (not only the
+  administrator; parents and learners cannot). The school's staff
+  accounts come to the computer with their online passwords and roles,
+  and stay updated at each sync, so everyone signs in there as online.
 - **Windows app first run: "Already on SchoolHub online".** Besides
   setting up a new school, the first-run page takes the school
   administrator's online email and password and a link code (from

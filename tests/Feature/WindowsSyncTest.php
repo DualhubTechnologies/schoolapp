@@ -427,30 +427,48 @@ it('sets up a new Windows app from the school\'s online account, on first run', 
     $online = onlineBasics();
     $this->online->table('schools')->where('id', $this->onlineSchool)->update(['unique_code' => 'SH55501', 'motto' => 'Hope and light', 'school_type' => 'secondary']);
     $admin = add($this->online, 'users', ['name' => 'Kato Head', 'email' => 'head@hope.ac.ug', 'password' => Hash::make('Online-Pass-2026')]);
-    $role = $this->online->table('roles')->insertGetId(['name' => 'School Admin', 'guard_name' => 'web', 'created_at' => now(), 'updated_at' => now()]);
+    $role = $this->online->table('roles')->where('name', 'School Admin')->value('id') ?? $this->online->table('roles')->insertGetId(['name' => 'School Admin', 'guard_name' => 'web', 'created_at' => now(), 'updated_at' => now()]);
     $this->online->table('model_has_roles')->insert(['role_id' => $role, 'model_type' => (new User)->getMorphClass(), 'model_id' => $admin]);
-    $bursar = add($this->online, 'users', ['name' => 'Bursar', 'email' => 'bursar@hope.ac.ug', 'password' => Hash::make('Online-Pass-2026')]);
+    $bursar = add($this->online, 'users', ['name' => 'Akiiki Bursar', 'email' => 'bursar@hope.ac.ug', 'password' => Hash::make('Bursar-Pass-2026'), 'modules' => json_encode(['fees'])]);
+    $bursarRole = $this->online->table('roles')->where('name', 'Bursar')->value('id') ?? $this->online->table('roles')->insertGetId(['name' => 'Bursar', 'guard_name' => 'web', 'created_at' => now(), 'updated_at' => now()]);
+    $this->online->table('model_has_roles')->insert(['role_id' => $bursarRole, 'model_type' => (new User)->getMorphClass(), 'model_id' => $bursar]);
+    $parent = add($this->online, 'users', ['name' => 'A Parent', 'email' => 'parent@hope.ac.ug', 'password' => Hash::make('Parent-Pass-2026')]);
+    $parentRole = $this->online->table('roles')->where('name', 'Parent')->value('id') ?? $this->online->table('roles')->insertGetId(['name' => 'Parent', 'guard_name' => 'web', 'created_at' => now(), 'updated_at' => now()]);
+    $this->online->table('model_has_roles')->insert(['role_id' => $parentRole, 'model_type' => (new User)->getMorphClass(), 'model_id' => $parent]);
 
     $this->get(route('desktop.setup'))->assertOk()->assertSee('Already on SchoolHub online');
     $this->get(route('desktop.setup.connect'))->assertOk()->assertSee('Link code');
 
     $code = $this->server->makeLinkCode(School::on('server')->findOrFail($this->onlineSchool), hours: 168);
 
-    // Wrong password, or not the administrator: refused, nothing set up.
+    // Wrong password, or a parent's account: refused, nothing set up.
     $this->post(route('desktop.setup.connect.store'), ['code' => $code, 'email' => 'head@hope.ac.ug', 'password' => 'wrong'])->assertSessionHasErrors('code');
-    $this->post(route('desktop.setup.connect.store'), ['code' => $code, 'email' => 'bursar@hope.ac.ug', 'password' => 'Online-Pass-2026'])->assertSessionHasErrors('code');
+    $this->post(route('desktop.setup.connect.store'), ['code' => $code, 'email' => 'parent@hope.ac.ug', 'password' => 'Parent-Pass-2026'])->assertSessionHasErrors('code');
     expect($this->here->table('schools')->count())->toBe(0);
 
-    $this->post(route('desktop.setup.connect.store'), ['code' => strtolower($code), 'email' => 'head@hope.ac.ug', 'password' => 'Online-Pass-2026'])
+    // Any staff member with the code: here the bursar.
+    $this->post(route('desktop.setup.connect.store'), ['code' => strtolower($code), 'email' => 'bursar@hope.ac.ug', 'password' => 'Bursar-Pass-2026'])
         ->assertRedirect(OnlineSync::getUrl(panel: 'app'));
+
+    expect(auth()->user()->email)->toBe('bursar@hope.ac.ug')
+        ->and(auth()->user()->hasRole('Bursar'))->toBeTrue()
+        ->and(auth()->user()->modules)->toBe(['fees']);
+
+    // Every staff account came too, with its online password and role; parents' did not.
+    $head = User::where('email', 'head@hope.ac.ug')->sole();
+    expect($head->hasRole('School Admin'))->toBeTrue()
+        ->and(Hash::check('Online-Pass-2026', $head->password))->toBeTrue()
+        ->and(User::where('email', 'parent@hope.ac.ug')->exists())->toBeFalse();
+
+    // A password changed online works here after the next sync.
+    $this->online->table('users')->where('id', $admin)->update(['password' => Hash::make('New-Online-2026')]);
+    $this->client->run();
+    expect(Hash::check('New-Online-2026', $head->fresh()->password))->toBeTrue();
 
     $school = School::sole();
     expect($school->name)->toBe('Hope Secondary')
         ->and($school->unique_code)->toBe('SH55501')
         ->and($school->motto)->toBe('Hope and light')
-        ->and(auth()->user()->email)->toBe('head@hope.ac.ug')
-        ->and(auth()->user()->hasRole('School Admin'))->toBeTrue()
-        ->and(Hash::check('Online-Pass-2026', auth()->user()->password))->toBeTrue()
         ->and($this->client->isLinked())->toBeTrue()
         // The first sync brought the school's records.
         ->and($this->here->table('students')->value('name'))->toBe('Nakato Sarah')

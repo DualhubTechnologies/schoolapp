@@ -70,11 +70,11 @@ class SyncServer
 
     /**
      * A new Windows app joining an existing online school on its first run:
-     * the school administrator's online email and password, and a link
-     * code. Gives the token, the school's details (to set the school up the
-     * same, licence code included) and the administrator's name.
+     * a staff member's online email and password, and a link code. Gives
+     * the token, the school's details (to set the school up the same,
+     * licence code included), who signed in, and the staff accounts.
      *
-     * @return array{token: string, school: array<string, mixed>, user: array{name: string, email: string}}
+     * @return array{token: string, school: array<string, mixed>, user: array{name: string, email: string}, accounts: list<array<string, mixed>>}
      */
     public function connect(string $code, string $email, string $password, ?string $name): array
     {
@@ -86,15 +86,10 @@ class SyncServer
             throw new RuntimeException('That email and password do not match an account of this school online.');
         }
 
-        $roles = $device->getConnection()->table('model_has_roles')
-            ->join('roles', 'roles.id', '=', 'model_has_roles.role_id')
-            ->where('model_has_roles.model_type', $user->getMorphClass())
-            ->where('model_has_roles.model_id', $user->getKey())
-            ->pluck('roles.name')
-            ->all();
+        $accounts = $this->staffAccounts($device);
 
-        if (array_intersect($roles, Modules::FULL_ACCESS_ROLES) === []) {
-            throw new RuntimeException('Only the school administrator can set up the Windows app with the online account.');
+        if (! in_array(mb_strtolower((string) $user->email), array_map(fn (array $account): string => mb_strtolower($account['email']), $accounts), true)) {
+            throw new RuntimeException('This account cannot set up the Windows app. Use a staff account of the school (parents and learners cannot).');
         }
 
         $school = (array) $device->getConnection()->table('schools')->where('id', $device->school_id)->first();
@@ -103,7 +98,49 @@ class SyncServer
             'token' => $this->issueToken($device, $name),
             'school' => Arr::only($school, self::SCHOOL_DETAILS),
             'user' => ['name' => (string) $user->name, 'email' => (string) $user->email],
+            'accounts' => $accounts,
         ];
+    }
+
+    /** Roles that are not school staff: their accounts stay online only. */
+    public const NOT_STAFF = ['Super Admin', 'Student', 'Parent'];
+
+    /**
+     * The school's staff accounts, sent to a linked Windows app so every
+     * staff member signs in there with their online email, password and
+     * role (SyncClient::keepAccounts). Parents' and learners' are not.
+     *
+     * @return list<array{name: string, email: string, phone: string|null, password: string, modules: mixed, roles: list<string>}>
+     */
+    public function staffAccounts(SyncDevice $device): array
+    {
+        $db = $device->getConnection();
+        $users = $db->table('users')->where('school_id', $device->school_id)->get(['id', 'name', 'email', 'phone', 'password', 'modules']);
+        $roles = $db->table('model_has_roles')
+            ->join('roles', 'roles.id', '=', 'model_has_roles.role_id')
+            ->where('model_has_roles.model_type', (new User)->getMorphClass())
+            ->whereIn('model_has_roles.model_id', $users->pluck('id'))
+            ->get(['model_has_roles.model_id', 'roles.name'])
+            ->groupBy('model_id');
+
+        $accounts = [];
+
+        foreach ($users as $user) {
+            $names = array_values(array_diff($roles->get($user->id)?->pluck('name')->all() ?? [], self::NOT_STAFF));
+
+            if ($names !== []) {
+                $accounts[] = [
+                    'name' => (string) $user->name,
+                    'email' => (string) $user->email,
+                    'phone' => $user->phone,
+                    'password' => (string) $user->password,
+                    'modules' => $user->modules !== null ? json_decode((string) $user->modules, true) : null,
+                    'roles' => $names,
+                ];
+            }
+        }
+
+        return $accounts;
     }
 
     /** The school's details a new Windows app copies (no online-only settings or secrets). */
@@ -156,7 +193,7 @@ class SyncServer
      *
      * @param  list<string>  $fetch
      * @param  array{name?: string, code?: string}  $computer
-     * @return array{cursor: int, more: bool, changes: list<array<string, mixed>>, licence?: string|null}
+     * @return array{cursor: int, more: bool, changes: list<array<string, mixed>>, licence?: string|null, accounts?: list<array<string, mixed>>}
      */
     public function pull(SyncDevice $device, int $cursor, bool $scan = true, array $fetch = [], array $computer = []): array
     {
@@ -189,6 +226,10 @@ class SyncServer
             $device->update(['last_synced_at' => now()]);
 
             $page = ['cursor' => max($cursor, $next), 'more' => $more, 'changes' => $this->describe($db, $entries->all())];
+
+            if ($scan) {
+                $page['accounts'] = $this->staffAccounts($device);
+            }
 
             if ($scan && filled($computer['name'] ?? null) && filled($computer['code'] ?? null) && ($school = $device->school) !== null) {
                 $page['licence'] = app(LicenceIssuer::class)->forOnlineAccount($school, (string) $computer['name'], (string) $computer['code']);

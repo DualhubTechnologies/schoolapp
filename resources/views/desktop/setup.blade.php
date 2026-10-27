@@ -61,7 +61,7 @@
         @endif
 
         @if ($mode === 'online')
-            <div class="info">Sign in with the <b>school administrator's online email and password</b>, and the <b>link code</b> from SchoolHub (or from Settings → Windows app online). Everything comes to this computer and stays in sync; your online subscription covers it. Needs internet for this step.</div>
+            <div class="info">Sign in with <b>your SchoolHub online email and password</b> and the <b>link code</b> from SchoolHub (or from Settings → Windows app online). Everything comes to this computer and stays in sync, staff sign in here with their online passwords, and your online subscription covers it. Needs internet for this step.</div>
 
             <form method="POST" action="{{ route('desktop.setup.connect.store') }}" novalidate>
                 @csrf
@@ -84,7 +84,7 @@
                 @error('code')<div class="alert" role="alert" style="margin: .7rem 0 0">{{ $message }}</div>@enderror
                 <button type="submit" style="margin-top: .9rem">Connect and bring my school here</button>
             </form>
-            <p class="note">The first sync can take a few minutes for a big school. You sign in on this computer with the same email and password.</p>
+            <p class="note">The first sync can take a few minutes for a big school. Everyone signs in on this computer with the same email and password as online.</p>
         @else
             <form method="POST" action="{{ route('desktop.setup.store') }}" novalidate>
                 @csrf

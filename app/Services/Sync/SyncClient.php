@@ -6,6 +6,7 @@ use App\Models\School;
 use App\Models\User;
 use App\Support\Edition;
 use App\Support\Licensing\DesktopLicence;
+use App\Support\Licensing\Machine;
 use Illuminate\Database\QueryException;
 use Illuminate\Database\UniqueConstraintViolationException;
 use Illuminate\Support\Facades\Cache;
@@ -85,7 +86,7 @@ class SyncClient
     /** Links this computer with a code made online. */
     public function link(string $code): string
     {
-        $answer = $this->transport->post('link', ['code' => $code, 'name' => gethostname() ?: 'Windows computer']);
+        $answer = $this->transport->post('link', ['code' => $code, 'name' => gethostname() ?: 'Windows computer', 'machine' => Machine::id()]);
 
         if (blank($answer['token'] ?? null)) {
             throw new RuntimeException('Online SchoolHub did not accept the link code.');
@@ -107,7 +108,7 @@ class SyncClient
      */
     public function connect(string $code, string $email, string $password): array
     {
-        $answer = $this->transport->post('connect', ['code' => $code, 'email' => $email, 'password' => $password, 'name' => gethostname() ?: 'Windows computer']);
+        $answer = $this->transport->post('connect', ['code' => $code, 'email' => $email, 'password' => $password, 'name' => gethostname() ?: 'Windows computer', 'machine' => Machine::id()]);
 
         if (blank($answer['token'] ?? null) || ! is_array($answer['school'] ?? null)) {
             throw new RuntimeException('Online SchoolHub did not accept these details.');
@@ -227,7 +228,7 @@ class SyncClient
         $computer = ['name' => (string) $school?->name, 'code' => (string) $school?->unique_code];
 
         do {
-            $page = $this->transport->post('pull', ['cursor' => $cursor, 'scan' => $scan, 'fetch' => $fetch, 'school' => $computer], $this->token());
+            $page = $this->transport->post('pull', ['cursor' => $cursor, 'scan' => $scan, 'fetch' => $fetch, 'school' => $computer, 'machine' => Machine::id()], $this->token());
 
             if ($scan && is_array($page['accounts'] ?? null)) {
                 $this->keepAccounts($page['accounts']);
@@ -494,7 +495,7 @@ class SyncClient
         $cursor = (int) $this->state(self::CURSOR, '0');
 
         foreach (array_chunk([...$upserts, ...array_reverse($deletes)], self::BATCH) as $batch) {
-            $results = (array) ($this->transport->post('push', ['cursor' => $cursor, 'changes' => $batch], $this->token())['results'] ?? []);
+            $results = (array) ($this->transport->post('push', ['cursor' => $cursor, 'changes' => $batch, 'machine' => Machine::id()], $this->token())['results'] ?? []);
 
             foreach ($batch as $change) {
                 $result = $results[$change['u']] ?? null;

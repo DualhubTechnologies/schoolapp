@@ -61,11 +61,11 @@ class SyncServer
      *
      * @return array{token: string, school: string}
      */
-    public function link(string $code, ?string $name): array
+    public function link(string $code, ?string $name, ?string $machine = null): array
     {
         $device = $this->waitingDevice($code);
 
-        return ['token' => $this->issueToken($device, $name), 'school' => (string) $device->getConnection()->table('schools')->where('id', $device->school_id)->value('name')];
+        return ['token' => $this->issueToken($device, $name, $machine), 'school' => (string) $device->getConnection()->table('schools')->where('id', $device->school_id)->value('name')];
     }
 
     /**
@@ -76,7 +76,7 @@ class SyncServer
      *
      * @return array{token: string, school: array<string, mixed>, user: array{name: string, email: string}, accounts: list<array<string, mixed>>, licence: string|null}
      */
-    public function connect(string $code, string $email, string $password, ?string $name): array
+    public function connect(string $code, string $email, string $password, ?string $name, ?string $machine = null): array
     {
         $device = $this->waitingDevice($code);
 
@@ -104,13 +104,13 @@ class SyncServer
         $school = (array) $device->getConnection()->table('schools')->where('id', $device->school_id)->first();
 
         return [
-            'token' => $this->issueToken($device, $name),
+            'token' => $this->issueToken($device, $name, $machine),
             'school' => Arr::only($school, self::SCHOOL_DETAILS),
             'user' => ['name' => (string) $user->name, 'email' => (string) $user->email],
             'accounts' => $accounts,
             // The licence straight away, so the computer opens unlocked.
             'licence' => ($online = $device->school) !== null && filled($school['unique_code'] ?? null)
-                ? app(LicenceIssuer::class)->forOnlineAccount($online, (string) $school['name'], (string) $school['unique_code'])
+                ? app(LicenceIssuer::class)->forOnlineAccount($online, (string) $school['name'], (string) $school['unique_code'], $machine)
                 : null,
         ];
     }
@@ -178,12 +178,13 @@ class SyncServer
         return $device;
     }
 
-    protected function issueToken(SyncDevice $device, ?string $name): string
+    protected function issueToken(SyncDevice $device, ?string $name, ?string $machine = null): string
     {
         $token = Str::random(48);
         $device->update([
             'name' => $name ? Str::limit($name, 100, '') : 'Windows computer',
             'token' => hash('sha256', $token),
+            'machine' => $machine,
             'link_code' => null,
             'link_expires_at' => null,
             'linked_at' => now(),
@@ -195,6 +196,27 @@ class SyncServer
     public function device(?string $token): ?SyncDevice
     {
         return $token ? SyncDevice::on($this->connection)->where('token', hash('sha256', $token))->first() : null;
+    }
+
+    /**
+     * Whether this link may be used from this computer: a link belongs to
+     * the computer it was made on, so SchoolHub's data folder copied to
+     * another computer does not sync (or get a licence) there. A link made
+     * before computers were recorded takes the first one that syncs.
+     */
+    public function onRightComputer(SyncDevice $device, ?string $machine): bool
+    {
+        if (blank($machine) || $device->machine === $machine) {
+            return true;
+        }
+
+        if ($device->machine === null) {
+            $device->update(['machine' => $machine]);
+
+            return true;
+        }
+
+        return false;
     }
 
     /**
@@ -245,7 +267,7 @@ class SyncServer
             }
 
             if ($scan && filled($computer['name'] ?? null) && filled($computer['code'] ?? null) && ($school = $device->school) !== null) {
-                $page['licence'] = app(LicenceIssuer::class)->forOnlineAccount($school, (string) $computer['name'], (string) $computer['code']);
+                $page['licence'] = app(LicenceIssuer::class)->forOnlineAccount($school, (string) $computer['name'], (string) $computer['code'], $device->machine);
             }
 
             return $page;

@@ -21,6 +21,12 @@
             $messages[] = ['amber', "Your {$what} ends in {$st['days_left']} " . str('day')->plural($st['days_left']) . " ({$st['ends_on']->format('j M Y')})."];
         }
 
+        // A computer paid through the online account must sync now and then.
+        $checkInBy = $desktop ? \App\Support\Licensing\DesktopLicence::checkInBy(\App\Models\School::find($user->school_id)) : null;
+        if ($checkInBy && in_array($st['state'], ['trial', 'active', 'grace'], true) && now()->diffInDays($checkInBy, false) <= 7) {
+            $messages[] = ['amber', "Connect this computer to the internet by {$checkInBy->format('j M Y')} so it can sync with SchoolHub online, or it will lock until it does."];
+        }
+
         foreach (\App\Services\Subscriptions\SubscriptionManager::usage($user->school_id) as $key => $u) {
             if ($u['limit'] && $u['used'] >= $u['limit'] * config('subscriptions.usage_warning', 0.9)) {
                 $label = $key === 'students' ? 'active students' : 'staff logins';

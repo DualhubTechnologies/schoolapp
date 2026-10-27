@@ -89,6 +89,18 @@ class WindowsLicenceResource extends Resource
                     ))
                     ->modalSubmitAction(false)
                     ->modalCancelActionLabel('Close'),
+                Action::make('release')
+                    ->label('Move to another computer')
+                    ->icon('heroicon-o-computer-desktop')
+                    ->color('gray')
+                    ->visible(fn (IssuedLicence $r): bool => filled($r->machine))
+                    ->requiresConfirmation()
+                    ->modalHeading(fn (IssuedLicence $r): string => "Move {$r->licence_no} to another computer?")
+                    ->modalDescription('For a school whose computer broke or was replaced. The code can then be entered once on the new computer; the old computer keeps working until this licence ends, so only do this when it is no longer used.')
+                    ->action(function (IssuedLicence $r): void {
+                        $r->update(['machine' => null, 'key' => null]);
+                        Notification::make()->title('The code can now be entered on the new computer')->success()->send();
+                    }),
                 static::issueAction('renew')
                     ->label('Renew')
                     ->icon('heroicon-o-arrow-path')

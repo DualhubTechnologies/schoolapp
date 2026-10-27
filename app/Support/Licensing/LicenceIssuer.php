@@ -18,11 +18,13 @@ use RuntimeException;
  *             (FGDH-FWFH-2342-WETR) for the school to type. Named for a
  *             school, it is signed at once; left open, it is signed for
  *             whichever school enters it first.
- * activate()  what the app calls, once, with the code and its school's
- *             name and code: the signed licence key comes back (LicenceKey),
- *             and from then on the code belongs to that school. Entering it
- *             again at the same school (after reinstalling) gives the same
- *             licence; at another school it is refused.
+ * activate()  what the app calls, once, with the code, its school's
+ *             name and code and its computer (Machine): the signed licence
+ *             key comes back (LicenceKey), for that computer only, and from
+ *             then on the code belongs to that school and computer. Entering
+ *             it again there (after reinstalling) gives the same licence; at
+ *             another school or computer it is refused (the platform owner
+ *             can move it: Windows licences → Move to another computer).
  */
 class LicenceIssuer
 {
@@ -86,7 +88,7 @@ class LicenceIssuer
      *
      * @throws RuntimeException with a message for the school
      */
-    public function activate(string $code, string $schoolName, string $schoolCode): string
+    public function activate(string $code, string $schoolName, string $schoolCode, ?string $machine = null): string
     {
         $short = ShortCode::normalise($code);
         $schoolName = trim($schoolName);
@@ -97,7 +99,7 @@ class LicenceIssuer
             throw new RuntimeException('That licence code is not valid. Check it and try again.');
         }
 
-        return DB::transaction(function () use ($short, $schoolName, $schoolCode, $same): string {
+        return DB::transaction(function () use ($short, $schoolName, $schoolCode, $same, $machine): string {
             $licence = IssuedLicence::where('short_code', $short)->lockForUpdate()->first();
 
             if (! $licence) {
@@ -124,6 +126,15 @@ class LicenceIssuer
                 $licence->update($changes);
             }
 
+            // One computer per code: the first one it is entered on.
+            if ($machine !== null && $licence->machine !== null && $licence->machine !== $machine) {
+                throw new RuntimeException('This licence code is already in use on another computer. To move it to this computer, ask SchoolHub on '.config('contact.phone').'.');
+            }
+
+            if ($machine !== null && $licence->machine === null) {
+                $licence->update(['machine' => $machine, 'key' => null]);
+            }
+
             if (! $licence->key) {
                 $licence->update(['key' => $this->sign($licence->fresh() ?? $licence)]);
             }
@@ -143,7 +154,7 @@ class LicenceIssuer
      * the computer's own school name and code. Null when nothing is in
      * force online, or licences cannot be signed on this server.
      */
-    public function forOnlineAccount(School $school, string $schoolName, string $schoolCode): ?string
+    public function forOnlineAccount(School $school, string $schoolName, string $schoolCode, ?string $machine = null): ?string
     {
         $status = SubscriptionManager::status($school);
         $subscription = $status['subscription'];
@@ -166,6 +177,7 @@ class LicenceIssuer
             'starts' => $subscription->starts_on->toDateString(),
             'ends' => $ends,
             'issued' => now()->toIso8601String(),
+            'machine' => $machine,
         ], $this->privateKey());
     }
 
@@ -182,6 +194,7 @@ class LicenceIssuer
             'starts' => $licence->starts_on->toDateString(),
             'ends' => $licence->ends_on->toDateString(),
             'issued' => now()->toIso8601String(),
+            'machine' => $licence->machine,
         ], $this->privateKey());
     }
 

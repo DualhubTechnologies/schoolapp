@@ -25,4 +25,13 @@ return [
     // it is corrected.
     'clock_tolerance_hours' => 24,
 
+    // Where the Windows app keeps its second, signed note of the latest
+    // time it has seen (outside its database). Blank: in the Windows user's
+    // local app data; "off": none (tests, where time is moved about).
+    'clock_file' => env('LICENCE_CLOCK_FILE'),
+
+    // This computer's id for tying licences to it (Machine); blank: read
+    // from Windows. Tests set it.
+    'machine_id' => env('LICENCE_MACHINE_ID'),
+
 ];

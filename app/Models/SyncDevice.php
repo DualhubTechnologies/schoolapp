@@ -17,13 +17,14 @@ use Illuminate\Support\Carbon;
  * @property string|null $link_code
  * @property Carbon|null $link_expires_at
  * @property string|null $token
+ * @property string|null $machine the computer it is linked on (Machine)
  * @property string|null $created_by
  * @property Carbon|null $linked_at
  * @property Carbon|null $last_synced_at
  */
 class SyncDevice extends Model
 {
-    protected $fillable = ['school_id', 'name', 'link_code', 'link_expires_at', 'token', 'created_by', 'linked_at', 'last_synced_at'];
+    protected $fillable = ['school_id', 'name', 'link_code', 'link_expires_at', 'token', 'machine', 'created_by', 'linked_at', 'last_synced_at'];
 
     protected $hidden = ['token', 'link_code'];
 

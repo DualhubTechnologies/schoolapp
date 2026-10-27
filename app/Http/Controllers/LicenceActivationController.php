@@ -20,10 +20,11 @@ class LicenceActivationController extends Controller
             'code' => ['required', 'string', 'max:40'],
             'school_name' => ['required', 'string', 'max:150'],
             'school_code' => ['required', 'string', 'max:20'],
+            'machine' => ['nullable', 'string', 'max:40'],
         ]);
 
         try {
-            $key = $issuer->activate($data['code'], $data['school_name'], $data['school_code']);
+            $key = $issuer->activate($data['code'], $data['school_name'], $data['school_code'], $data['machine'] ?? null);
         } catch (RuntimeException $e) {
             return response()->json(['message' => $e->getMessage()], 422);
         }

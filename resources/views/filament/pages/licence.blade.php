@@ -9,6 +9,7 @@
         'expired' => ['Locked: licence ended', '#b91c1c', '#fef2f2'],
         'none' => ['Enter a licence code to start', '#b91c1c', '#fef2f2'],
         'clock' => ['Locked: computer date is wrong', '#b91c1c', '#fef2f2'],
+        'checkin' => ['Locked: connect to the internet to sync', '#b91c1c', '#fef2f2'],
     ];
     [$label, $color, $bg] = $states[$st['state']] ?? [ucfirst($st['state']), '#334155', '#f8fafc'];
     $limit = fn (?int $n): string => $n === null ? 'Unlimited' : number_format($n);
@@ -20,6 +21,8 @@
             <div class="lc-label" style="color: {{ $color }}">{{ $label }}</div>
             @if ($st['state'] === 'clock')
                 <p>This computer's date is earlier than SchoolHub has already seen. Correct it as shown, then press Check again.</p>
+            @elseif ($st['state'] === 'checkin')
+                <p>This computer is paid through the online account, so it must sync with SchoolHub online at least every {{ \App\Support\Licensing\DesktopLicence::CHECK_IN_DAYS }} days. It has not since {{ \App\Support\Licensing\DesktopLicence::checkInBy($school)?->subDays(\App\Support\Licensing\DesktopLicence::CHECK_IN_DAYS)->format('j F Y') }}. Connect it to the internet (phone data is enough) and <a href="{{ \App\Filament\Pages\OnlineSync::getUrl() }}" style="font-weight: 700; text-decoration: underline">press Sync now</a>; it unlocks straight away. Nothing has been lost.</p>
             @elseif ($st['state'] === 'none')
                 <p>Every school needs a licence code, even for the free trial. Ask SchoolHub for one, then type it below.</p>
             @elseif ($st['ends_on'])

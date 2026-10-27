@@ -41,7 +41,7 @@ use Illuminate\Support\Facades\DB;
  */
 class SubscriptionManager
 {
-    public const LOCKED = ['expired', 'none', 'suspended', 'pending', 'rejected', 'clock'];
+    public const LOCKED = ['expired', 'none', 'suspended', 'pending', 'rejected', 'clock', 'checkin'];
 
     /** The period in force today (or the last one, once it has ended). */
     public static function current(School|int $school): ?Subscription

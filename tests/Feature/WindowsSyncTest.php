@@ -63,8 +63,8 @@ beforeEach(function () {
             $device = fn () => $this->server->device($token) ?? throw new RuntimeException('not linked');
 
             $result = match ($action) {
-                'link' => $this->server->link($payload['code'], $payload['name'] ?? null),
-                'connect' => $this->server->connect($payload['code'], $payload['email'], $payload['password'], $payload['name'] ?? null),
+                'link' => $this->server->link($payload['code'], $payload['name'] ?? null, $payload['machine'] ?? null),
+                'connect' => $this->server->connect($payload['code'], $payload['email'], $payload['password'], $payload['name'] ?? null, $payload['machine'] ?? null),
                 'pull' => $this->server->pull($device(), (int) $payload['cursor'], (bool) $payload['scan'], $payload['fetch'] ?? []),
                 'push' => ['results' => $this->server->push($device(), (int) $payload['cursor'], $payload['changes'])],
             };

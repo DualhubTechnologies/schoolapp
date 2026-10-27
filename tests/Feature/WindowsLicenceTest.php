@@ -11,6 +11,7 @@ use App\Models\SchoolClass;
 use App\Models\Student;
 use App\Models\User;
 use App\Services\Subscriptions\SubscriptionManager;
+use App\Services\Sync\SyncServer;
 use App\Support\Licensing\DesktopLicence;
 use App\Support\Licensing\LicenceIssuer;
 use App\Support\Licensing\LicenceKey;
@@ -73,7 +74,7 @@ it('signs a key that only checks out unchanged, and with the right public key', 
     $key = LicenceKey::sign($details, config('licence.private_key'));
 
     expect($key)->toStartWith('SHL1.')
-        ->and(LicenceKey::verify($key, config('licence.public_key'))?->details)->toBe($details)
+        ->and(LicenceKey::verify($key, config('licence.public_key'))?->details)->toBe([...$details, 'machine' => null])
         // Spaces and line breaks from WhatsApp do not matter.
         ->and(LicenceKey::verify(chunk_split($key, 40, "\n "), config('licence.public_key')))->not->toBeNull();
 
@@ -432,4 +433,94 @@ it('lets a locked Windows app open the page to link with the online account', fu
 
     $this->get(OnlineSync::getUrl())->assertOk()->assertSee('Link this computer');
     $this->get(Licence::getUrl())->assertOk()->assertSee('Already using SchoolHub online?');
+});
+
+it('ties a licence code to the computer it is first entered on', function () {
+    $school = desktopSchool();
+    config(['app.edition' => 'server']);
+    $issued = app(LicenceIssuer::class)->issue(['plan_id' => $this->standard->id, 'max_students' => 800, 'max_users' => 25, 'cycle' => 'term', 'starts_on' => today()->toDateString(), 'ends_on' => today()->addMonths(3)->toDateString()]);
+
+    $key = app(LicenceIssuer::class)->activate($issued->short_code, $school->name, $school->unique_code, 'computer-a');
+    expect(LicenceKey::verify($key, config('licence.public_key'))->details['machine'])->toBe('computer-a')
+        // Again on the same computer (after reinstalling): fine.
+        ->and(app(LicenceIssuer::class)->activate($issued->short_code, $school->name, $school->unique_code, 'computer-a'))->toBe($key)
+        ->and(fn () => app(LicenceIssuer::class)->activate($issued->short_code, $school->name, $school->unique_code, 'computer-b'))->toThrow(RuntimeException::class, 'another computer');
+
+    // The data folder copied to another computer: the licence does not work there.
+    config(['app.edition' => 'desktop', 'licence.machine_id' => 'computer-a']);
+    DesktopLicence::activate($school, $key);
+    expect(SubscriptionManager::isLocked($school))->toBeFalse();
+    config(['licence.machine_id' => 'computer-b']);
+    expect(SubscriptionManager::isLocked($school))->toBeTrue();
+
+    // The platform owner moves it to the new computer.
+    config(['app.edition' => 'server']);
+    Filament::setCurrentPanel('admin');
+    $this->actingAs(User::factory()->create()->assignRole('Super Admin'));
+    Livewire::test(ManageWindowsLicences::class)->callTableAction('release', $issued->fresh());
+    $moved = app(LicenceIssuer::class)->activate($issued->short_code, $school->name, $school->unique_code, 'computer-b');
+    expect(LicenceKey::verify($moved, config('licence.public_key'))->details['machine'])->toBe('computer-b');
+});
+
+it('locks a computer paid online that has not synced for 30 days, until it syncs', function () {
+    config(['app.edition' => 'server']);
+    $online = School::create(['name' => 'Light Secondary School', 'slug' => 'light-online', 'unique_code' => 'SH70001', 'email' => 'light-online@example.com', 'school_type' => 'secondary', 'status' => 'active']);
+    SubscriptionManager::renew($online, $this->standard, 'year', 990000);
+    $sync = fn () => app(LicenceIssuer::class)->forOnlineAccount($online, 'Light Secondary School', 'SH48213', 'test-computer');
+    $key = $sync();
+
+    $desk = desktopSchool();
+    DesktopLicence::keepFromOnline($desk, $key);
+    expect(SubscriptionManager::status($desk)['state'])->toBe('active');
+
+    $this->travel(25)->days();
+    Filament::setCurrentPanel('app');
+    $this->actingAs(User::factory()->create(['school_id' => $desk->id])->assignRole('School Admin'));
+    $this->followingRedirects()->get(filament()->getPanel('app')->getUrl())->assertSee('Connect this computer to the internet by');
+
+    $this->travel(6)->days();
+    expect(SubscriptionManager::status($desk)['state'])->toBe('checkin')
+        ->and(SubscriptionManager::isLocked($desk))->toBeTrue();
+    $this->get(Licence::getUrl())->assertSee('connect to the internet to sync')->assertSee('press Sync now');
+
+    // One sync brings a fresh licence: unlocked.
+    config(['app.edition' => 'server']);
+    $fresh = $sync();
+    config(['app.edition' => 'desktop']);
+    DesktopLicence::keepFromOnline($desk, $fresh);
+    expect(SubscriptionManager::status($desk)['state'])->toBe('active');
+});
+
+it('remembers the latest date seen outside the database too, and from the server', function () {
+    $school = desktopSchool();
+    DesktopLicence::activate($school, issueFor($school, today()->subMonth()->toDateString(), today()->addMonths(3)->toDateString())->key);
+    $file = storage_path('framework/testing/ls-'.uniqid().'.dat');
+    config(['licence.clock_file' => $file]);
+
+    expect(SubscriptionManager::status($school)['state'])->toBe('active')
+        ->and(File::exists($file))->toBeTrue();
+
+    // Both notes inside the database wiped, clock set back: the file still knows.
+    DB::table('app_state')->delete();
+    DB::table('activity_log')->delete();
+    $this->travel(-3)->days();
+    expect(SubscriptionManager::status($school)['state'])->toBe('clock');
+
+    // An edited file is ignored (the server-signed licence time still counts).
+    File::put($file, '2020-01-01T00:00:00+00:00|not-signed');
+    expect(SubscriptionManager::status($school)['state'])->toBe('clock');
+
+    $this->travelBack();
+    File::delete($file);
+    expect(SubscriptionManager::status($school)['state'])->toBe('active');
+});
+
+it('refuses a sync link copied to another computer', function () {
+    config(['app.edition' => 'server']);
+    $online = School::create(['name' => 'Light Secondary School', 'slug' => 'light-online', 'unique_code' => 'SH70001', 'email' => 'light-online@example.com', 'school_type' => 'secondary', 'status' => 'active']);
+    $server = app(SyncServer::class);
+    $token = $server->link($server->makeLinkCode($online), 'PC', 'computer-a')['token'];
+
+    $this->withToken($token)->postJson('/sync/pull', ['cursor' => 0, 'machine' => 'computer-a'])->assertOk();
+    $this->withToken($token)->postJson('/sync/pull', ['cursor' => 0, 'machine' => 'computer-b'])->assertUnauthorized()->assertJson(['message' => 'This link belongs to another computer. Link this computer with its own code from Settings → Windows app online.']);
 });

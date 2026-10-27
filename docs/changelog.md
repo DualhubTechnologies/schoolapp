@@ -6,6 +6,18 @@ folded into the change they belong to. Add an entry with every release.
 
 ## 27 October 2026
 
+- **Windows app licence protections.**
+  - A licence is tied to the computer it is first used on (Windows'
+    MachineGuid, `Machine`): copying SchoolHub's data folder to another
+    computer does not copy the licence, a short code entered on a second
+    computer is refused, and a sync link copied to another computer is
+    refused. The platform owner moves a licence with Windows licences ->
+    Move to another computer.
+  - The latest date seen is also kept in a signed file outside the
+    database (local app data), and the server's own time comes with every
+    licence a sync brings; the clock check uses all of them.
+  - A computer paid through the online account must sync at least every
+    30 days: a warning a week before, then it locks until it syncs.
 - **Windows app locked by a wrong computer date:** a pop-up over the faded
   page shows the computer's date beside the latest SchoolHub has seen,
   step-by-step how to correct the clock in Windows, and Check again.

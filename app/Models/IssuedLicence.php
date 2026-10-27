@@ -30,6 +30,7 @@ use Illuminate\Support\Carbon;
  * @property string|null $key
  * @property Carbon|null $activated_at
  * @property int|null $issued_by
+ * @property string|null $machine the computer it was activated on (Machine)
  */
 class IssuedLicence extends Model
 {
@@ -39,7 +40,7 @@ class IssuedLicence extends Model
 
     protected $fillable = [
         'licence_no', 'short_code', 'school_name', 'school_code', 'activated_at', 'plan_id', 'plan_name', 'max_students', 'max_users',
-        'cycle', 'starts_on', 'ends_on', 'amount', 'payment_reference', 'notes', 'key', 'issued_by',
+        'cycle', 'starts_on', 'ends_on', 'amount', 'payment_reference', 'notes', 'key', 'issued_by', 'machine',
     ];
 
     protected function casts(): array

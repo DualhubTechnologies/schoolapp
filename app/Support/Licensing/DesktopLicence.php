@@ -29,6 +29,8 @@ use RuntimeException;
  *   keys paid ahead     the end date is the latest key's
  *   ended               grace days, then locked until a new key is entered
  *   clock set back      locked until the computer's date is right again
+ *   paid online, not    locked until it syncs again (CHECK_IN_DAYS)
+ *   synced for long
  */
 class DesktopLicence
 {
@@ -48,7 +50,7 @@ class DesktopLicence
         foreach (LicenceKeyRecord::query()->orderBy('id')->pluck('key') as $text) {
             $licence = LicenceKey::verify((string) $text, $public);
 
-            if ($licence && $licence->isFor((string) $school->name, (string) $school->unique_code)) {
+            if ($licence && $licence->isFor((string) $school->name, (string) $school->unique_code) && $licence->isForMachine(Machine::id())) {
                 $keys[] = $licence;
             }
         }
@@ -77,6 +79,7 @@ class DesktopLicence
                 'code' => $typed,
                 'school_name' => (string) $school->name,
                 'school_code' => (string) $school->unique_code,
+                'machine' => Machine::id(),
             ]);
         } catch (ConnectionException) {
             throw new RuntimeException('Entering a licence code needs the internet for a moment. Connect this computer (phone data is enough), then try again. After that SchoolHub works offline.');
@@ -111,6 +114,10 @@ class DesktopLicence
             throw new RuntimeException("This licence is for \"{$licence->details['school']}\" ({$licence->details['code']}), not this school. Ask SchoolHub for this school's key.");
         }
 
+        if (! $licence->isForMachine(Machine::id())) {
+            throw new RuntimeException('This licence was made for another computer. Ask SchoolHub for this computer\'s licence.');
+        }
+
         if (LicenceKeyRecord::where('licence_no', $licence->details['id'])->exists()) {
             throw new RuntimeException('This licence has already been entered.');
         }
@@ -135,7 +142,7 @@ class DesktopLicence
     {
         $licence = LicenceKey::verify($key, (string) config('licence.public_key'));
 
-        if (! $licence || ! $licence->isFor((string) $school->name, (string) $school->unique_code)) {
+        if (! $licence || ! $licence->isFor((string) $school->name, (string) $school->unique_code) || ! $licence->isForMachine(Machine::id())) {
             return null;
         }
 
@@ -173,9 +180,12 @@ class DesktopLicence
         $graceEnds = $endsOn?->addDays((int) config('subscriptions.grace_days', 14));
         $daysLeft = $endsOn ? (int) $today->diffInDays($endsOn, false) : null;
 
+        $checkInBy = static::checkInBy($school);
+
         $state = match (true) {
             static::clockSetBack() => 'clock',
             ! $subscription || ! $endsOn => 'none',
+            $checkInBy !== null && CarbonImmutable::now()->gt($checkInBy) => 'checkin',
             $today->lte($endsOn) => $subscription->isTrial() ? 'trial' : 'active',
             $today->lte($graceEnds) => 'grace',
             default => 'expired',
@@ -237,9 +247,12 @@ class DesktopLicence
 
     /**
      * Whether the computer's clock has been set back: today is well before
-     * the latest time the app has seen. That time comes from the app's own
-     * note and from the newest entry in the activity log, so wiping one
-     * does not hide it. Otherwise the note is moved forward to now.
+     * the latest time the app has seen. That time comes from three places
+     * (the app's note, the newest entry in the activity log, and a signed
+     * note in a file outside the database, tied to this computer) and from
+     * the licences SchoolHub's server signed (a linked computer gets one at
+     * every sync, with the server's time), so changing one does not hide
+     * it. Otherwise the notes are moved forward to now.
      */
     public static function clockSetBack(): bool
     {
@@ -251,8 +264,17 @@ class DesktopLicence
             return true;
         }
 
-        if (! $seen || $now->gt($seen->addHour())) {
+        // Each note moves forward at most once an hour.
+        $noted = DB::table('app_state')->where('key', self::LAST_SEEN)->value('value');
+
+        if (! $noted || $now->gt(CarbonImmutable::parse((string) $noted)->addHour())) {
             DB::table('app_state')->updateOrInsert(['key' => self::LAST_SEEN], ['value' => $now->toIso8601String(), 'updated_at' => $now]);
+        }
+
+        $filed = static::readClockFile();
+
+        if (! $filed || $now->gt($filed->addHour())) {
+            static::writeClockFile($now);
         }
 
         return false;
@@ -266,8 +288,113 @@ class DesktopLicence
         $times = array_filter([
             $noted ? CarbonImmutable::parse((string) $noted) : null,
             $logged ? CarbonImmutable::parse((string) $logged) : null,
+            static::readClockFile(),
+            static::latestSigned(),
         ]);
 
         return $times === [] ? null : max($times);
+    }
+
+    /** The latest time SchoolHub's server signed a licence this computer holds. */
+    protected static function latestSigned(): ?CarbonImmutable
+    {
+        if (! Schema::hasTable('licence_keys')) {
+            return null;
+        }
+
+        $public = (string) config('licence.public_key');
+        $times = [];
+
+        foreach (LicenceKeyRecord::query()->pluck('key') as $text) {
+            $licence = LicenceKey::verify((string) $text, $public);
+
+            if ($licence && $licence->isForMachine(Machine::id())) {
+                $times[] = $licence->issuedAt();
+            }
+        }
+
+        return $times === [] ? null : max($times);
+    }
+
+    /**
+     * The note outside the database: a small file in the Windows user's
+     * local app data (not SchoolHub's data folder), signed for this
+     * computer, so it cannot be edited or copied from another computer.
+     */
+    public static function clockFile(): string
+    {
+        $configured = (string) config('licence.clock_file');
+
+        if ($configured !== '') {
+            return $configured;
+        }
+
+        $base = getenv('LOCALAPPDATA') ?: (getenv('HOME') ?: sys_get_temp_dir());
+
+        return rtrim((string) $base, '/\\').DIRECTORY_SEPARATOR.'SchoolHubCache'.DIRECTORY_SEPARATOR.'ls.dat';
+    }
+
+    protected static function readClockFile(): ?CarbonImmutable
+    {
+        if (static::clockFile() === 'off') {
+            return null;
+        }
+
+        $text = @file_get_contents(static::clockFile());
+
+        if (! is_string($text) || ! str_contains($text, '|')) {
+            return null;
+        }
+
+        [$time, $signature] = explode('|', trim($text), 2);
+
+        if (! hash_equals(static::clockSignature($time), $signature)) {
+            return null;
+        }
+
+        try {
+            return CarbonImmutable::parse($time);
+        } catch (\Throwable) {
+            return null;
+        }
+    }
+
+    protected static function writeClockFile(CarbonImmutable $now): void
+    {
+        $previous = static::readClockFile();
+
+        if (static::clockFile() === 'off' || ($previous && $previous->gte($now))) {
+            return;
+        }
+
+        $file = static::clockFile();
+        @mkdir(dirname($file), 0755, true);
+        @file_put_contents($file, $now->toIso8601String().'|'.static::clockSignature($now->toIso8601String()));
+    }
+
+    protected static function clockSignature(string $time): string
+    {
+        return hash_hmac('sha256', $time, 'schoolhub-clock|'.config('app.key').'|'.Machine::id());
+    }
+
+    /** Days a linked computer may go without syncing before it locks. */
+    public const CHECK_IN_DAYS = 30;
+
+    /**
+     * When a computer paid through the online account must sync by: its
+     * licence comes with every sync, so a computer kept offline for long
+     * (or with its clock held back) cannot run on forever. Null for a
+     * licence from a code (schools without internet).
+     */
+    public static function checkInBy(School $school): ?CarbonImmutable
+    {
+        if (! static::paidOnline($school)) {
+            return null;
+        }
+
+        $online = array_filter(static::keys($school), fn (LicenceKey $k): bool => str_starts_with($k->details['id'], 'ONLINE-'));
+        $last = $online === [] ? null : max(array_map(fn (LicenceKey $k): CarbonImmutable => $k->issuedAt(), $online));
+
+        return $last?->addDays(self::CHECK_IN_DAYS);
     }
 }

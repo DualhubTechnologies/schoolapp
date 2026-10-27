@@ -26,7 +26,7 @@ class SyncController extends Controller
         ]);
 
         try {
-            return response()->json($this->server->link($data['code'], $data['name'] ?? null));
+            return response()->json($this->server->link($data['code'], $data['name'] ?? null, $request->input('machine')));
         } catch (RuntimeException $e) {
             return response()->json(['message' => $e->getMessage()], 422);
         }
@@ -42,7 +42,7 @@ class SyncController extends Controller
         ]);
 
         try {
-            return response()->json($this->server->connect($data['code'], $data['email'], $data['password'], $data['name'] ?? null));
+            return response()->json($this->server->connect($data['code'], $data['email'], $data['password'], $data['name'] ?? null, $request->input('machine')));
         } catch (RuntimeException $e) {
             return response()->json(['message' => $e->getMessage()], 422);
         }
@@ -80,6 +80,7 @@ class SyncController extends Controller
         $device = $this->server->device($request->bearerToken());
 
         abort_if($device === null, 401, 'This computer is no longer linked. Link it again with a new code from Settings → Windows app online.');
+        abort_unless($this->server->onRightComputer($device, is_string($request->input('machine')) ? $request->input('machine') : null), 401, 'This link belongs to another computer. Link this computer with its own code from Settings → Windows app online.');
 
         return $device;
     }

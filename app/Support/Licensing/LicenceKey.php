@@ -21,7 +21,7 @@ final class LicenceKey
     public const PREFIX = 'SHL1';
 
     /**
-     * @param  array{id: string, school: string, code: string, plan: string, students: ?int, users: ?int, cycle: string, starts: string, ends: string, issued: string}  $details
+     * @param  array{id: string, school: string, code: string, plan: string, students: ?int, users: ?int, cycle: string, starts: string, ends: string, issued: string, machine?: ?string}  $details
      */
     public function __construct(public readonly array $details) {}
 
@@ -29,7 +29,7 @@ final class LicenceKey
      * Sign the details with the server's private key (base64 of the
      * 64-byte Ed25519 secret key).
      *
-     * @param  array{id: string, school: string, code: string, plan: string, students: ?int, users: ?int, cycle: string, starts: string, ends: string, issued: string}  $details
+     * @param  array{id: string, school: string, code: string, plan: string, students: ?int, users: ?int, cycle: string, starts: string, ends: string, issued: string, machine?: ?string}  $details
      */
     public static function sign(array $details, string $privateKey): string
     {
@@ -92,7 +92,24 @@ final class LicenceKey
             'starts' => $details['starts'],
             'ends' => $details['ends'],
             'issued' => $details['issued'],
+            'machine' => isset($details['machine']) && is_string($details['machine']) ? $details['machine'] : null,
         ]);
+    }
+
+    /**
+     * Whether it works on this computer: a key made for one computer
+     * (activated with a short code, or sent at a sync) works only there;
+     * a long key typed by a school that can never get online, anywhere.
+     */
+    public function isForMachine(string $machine): bool
+    {
+        return ($this->details['machine'] ?? null) === null || hash_equals((string) $this->details['machine'], $machine);
+    }
+
+    /** When SchoolHub's server signed it: a time the computer has at least reached. */
+    public function issuedAt(): CarbonImmutable
+    {
+        return CarbonImmutable::parse($this->details['issued']);
     }
 
     /** Whether this licence was made for this school (name and code, ignoring case and spacing). */

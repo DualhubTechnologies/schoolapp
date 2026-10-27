@@ -12,6 +12,7 @@ use Illuminate\Database\Eloquent\Relations\BelongsTo;
 use Illuminate\Database\Eloquent\Relations\BelongsToMany;
 use Illuminate\Database\Eloquent\Relations\HasMany;
 use Illuminate\Support\Str;
+use RuntimeException;
 use Spatie\Activitylog\Models\Concerns\LogsActivity;
 use Spatie\Activitylog\Support\LogOptions;
 
@@ -71,6 +72,14 @@ class Student extends Model
      */
     protected static function booted(): void
     {
+        // Fees records are never lost with a learner: one who has them is
+        // marked Withdrawn, Transferred or Completed instead.
+        static::deleting(function (Student $student): void {
+            if ($student->hasFeesRecords()) {
+                throw new RuntimeException("{$student->name} has fees records (receipts or bills), so cannot be deleted. Change their status to Withdrawn, Transferred or Completed instead.");
+            }
+        });
+
         // In a boarding-only school every learner is a boarder (and in a
         // day-only school a day scholar), however they were added.
         static::saving(function (Student $student): void {
@@ -135,6 +144,13 @@ class Student extends Model
             ])
             ->logOnlyDirty()
             ->dontLogIfAttributesChangedOnly([]);
+    }
+
+    /** Receipts (voided ones too) or bills: such a learner is never deleted. */
+    public function hasFeesRecords(): bool
+    {
+        return StudentPayment::withoutGlobalScopes()->where('student_id', $this->getKey())->exists()
+            || StudentCharge::query()->where('student_id', $this->getKey())->exists();
     }
 
     public const STATUSES = [

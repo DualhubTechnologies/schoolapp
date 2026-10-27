@@ -6,6 +6,17 @@ folded into the change they belong to. Add an entry with every release.
 
 ## 27 October 2026
 
+- **A learner with fees records is never deleted.** Receipts (voided ones
+  too) or bills: the learner's Delete button is greyed out with the
+  reason, deleting several from the list keeps them and says who, and the
+  model refuses it anywhere else; mark them Withdrawn, Transferred or
+  Completed instead. In sync, such a learner deleted on the other side is
+  kept and sent back.
+- **Sync review list: what exactly was deleted.** A payment or expense
+  deleted on one side is titled with its receipt or voucher, amount,
+  learner and class, and date, and shows term, method, who paid,
+  reference, who recorded it and whether it was voided. The online copy
+  of one deleted on the computer is fetched in the same sync.
 - **Windows app set up from online opens at once.** Once the online
   account is confirmed, the person is signed in and on the dashboard,
   unlocked (the licence comes with the answer); the first sync then runs

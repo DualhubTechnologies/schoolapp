@@ -375,6 +375,17 @@ class SyncDatabase
         }
     }
 
+    /**
+     * Whether a record must stay even when deleted on the other side: a
+     * learner with fees records (receipts, voided ones too, or bills).
+     */
+    public function mustKeep(string $table, int $id): bool
+    {
+        return $table === 'students'
+            && ($this->db()->table('student_payments')->where('student_id', $id)->exists()
+                || $this->db()->table('student_charges')->where('student_id', $id)->exists());
+    }
+
     /** Deletes the record with this uuid here, if there is one. */
     public function delete(string $table, string $uuid): void
     {

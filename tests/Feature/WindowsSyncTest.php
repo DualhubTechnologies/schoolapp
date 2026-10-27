@@ -499,3 +499,20 @@ it('sets up a new Windows app from the school\'s online account, on first run', 
         ->and($this->here->table('students')->value('name'))->toBe('Nakato Sarah')
         ->and($this->here->table('school_classes')->where('name', 'S.1')->count())->toBe(1);
 });
+
+it('keeps a learner with fees records when the learner is deleted on the other side', function () {
+    $online = onlineBasics();
+    $this->client->run();
+
+    // Paid here, offline; deleted online before the payment got there.
+    add($this->here, 'student_payments', ['student_id' => $this->here->table('students')->value('id'), 'amount' => 90000, 'paid_on' => '2026-10-27', 'receipt_seq' => 1, 'receipt_no' => 'RCT-W000001']);
+    $this->online->table('students')->where('id', $online['learner'])->delete();
+
+    $this->client->run();
+    $this->client->run();
+
+    expect($this->here->table('students')->where('name', 'Nakato Sarah')->exists())->toBeTrue()
+        // ...and it went back online, with its payment.
+        ->and($this->online->table('students')->where('name', 'Nakato Sarah')->exists())->toBeTrue()
+        ->and((float) $this->online->table('student_payments')->value('amount'))->toBe(90000.0);
+});

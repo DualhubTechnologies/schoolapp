@@ -55,9 +55,29 @@ class SyncReviews
             'number' => "Two {$label}s with the same number",
             'payment' => 'A similar payment was recorded on both sides',
             'entry' => 'A similar income or expense was recorded on both sides',
-            'deleted_there' => ucfirst($label).' deleted online',
-            'deleted_here' => ucfirst($label).' deleted on this computer',
+            'deleted_there' => ucfirst($label).' deleted online'.$this->summary($review),
+            'deleted_here' => ucfirst($label).' deleted on this computer'.$this->summary($review),
             default => "This {$label} could not be synced: another one has the same name or number. Change it on one side, then try again.",
+        };
+    }
+
+    /**
+     * ": RCT-000123, UGX 300,000 for Nakato Sarah (S.2), 20 Oct 2026", so a
+     * deleted payment or expense is recognised at a glance.
+     */
+    protected function summary(stdClass $review): string
+    {
+        $compare = $this->compare($review);
+        $details = $compare['here'] ?? $compare['online'];
+
+        if ($details === null) {
+            return '';
+        }
+
+        return match ((string) $review->table) {
+            'student_payments' => ": {$details['Receipt']}, {$details['Amount']} for {$details['Learner']}".($details['Class'] !== '-' ? " ({$details['Class']})" : '').", {$details['Paid on']}",
+            'finance_entries' => ": {$details['Voucher']}, {$details['Amount']}, {$details['Category']}, {$details['Date']}",
+            default => '',
         };
     }
 
@@ -318,10 +338,17 @@ class SyncReviews
             'student_payments' => [
                 'Receipt' => (string) ($row['receipt_no'] ?? '-'),
                 'Learner' => $name('students', $row['student_id'] ?? null),
+                'Class' => ($row['student_id'] ?? null) ? $name('school_classes', $db->db()->table('students')->where('id', $row['student_id'])->value('school_class_id')) : '-',
+                'Admission no.' => ($row['student_id'] ?? null) ? (string) $db->db()->table('students')->where('id', $row['student_id'])->value('admission_no') : '-',
+                'Term' => $name('terms', $row['term_id'] ?? null),
                 'Amount' => $money($row['amount'] ?? 0),
                 'Paid on' => $date($row['paid_on'] ?? null),
                 'Method' => ucfirst(str_replace('_', ' ', (string) ($row['method'] ?? '-'))),
+                'Paid by' => trim((string) ($row['paid_by'] ?? '').' '.(string) ($row['payer_phone'] ?? '')) ?: '-',
+                'Reference' => (string) ($row['reference'] ?? '-'),
                 'Recorded by' => (string) ($row['recorded_by'] ?? '-'),
+                'Recorded on' => $date($row['created_at'] ?? null),
+                'Status' => ($row['voided_at'] ?? null) ? 'Voided'.(($row['void_reason'] ?? null) ? ': '.$row['void_reason'] : '') : 'Valid',
             ],
             'finance_entries' => [
                 'Voucher' => (string) ($row['voucher_no'] ?? '-'),
@@ -331,6 +358,10 @@ class SyncReviews
                 'Date' => $date($row['entry_date'] ?? null),
                 'Paid to / by' => (string) ($row['party'] ?? '-'),
                 'Details' => (string) ($row['description'] ?? '-'),
+                'Method' => ucfirst(str_replace('_', ' ', (string) ($row['method'] ?? '-'))),
+                'Reference' => (string) ($row['reference'] ?? '-'),
+                'Recorded by' => (string) ($row['recorded_by'] ?? '-'),
+                'Status' => ($row['voided_at'] ?? null) ? 'Voided'.(($row['void_reason'] ?? null) ? ': '.$row['void_reason'] : '') : 'Valid',
             ],
             default => array_filter([
                 'Name' => isset($row['name']) ? (string) $row['name'] : null,

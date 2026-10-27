@@ -281,7 +281,19 @@ class StudentsTable
                         ->modalDescription('They were already at the school, so they do not pay admission fees. Fees already billed are not changed.')
                         ->action(fn (Collection $records) => static::markNewLearners($records, false))
                         ->deselectRecordsAfterCompletion(),
-                    ConfirmWithPassword::on(DeleteBulkAction::make()),
+                    ConfirmWithPassword::on(DeleteBulkAction::make())
+                        ->modalDescription('Learners with fees records (receipts or bills) are kept: change their status to Withdrawn, Transferred or Completed instead.')
+                        ->action(function (Collection $records): void {
+                            [$kept, $deleted] = $records->partition(fn (Student $student): bool => $student->hasFeesRecords());
+                            $deleted->each(fn (Student $student) => $student->delete());
+
+                            Notification::make()
+                                ->title($deleted->count().' '.str('learner')->plural($deleted->count()).' deleted')
+                                ->body($kept->isEmpty() ? null : $kept->count().' kept because they have fees records: '.$kept->pluck('name')->take(5)->implode(', ').($kept->count() > 5 ? '…' : '').'. Change their status instead.')
+                                ->status($kept->isEmpty() ? 'success' : 'warning')
+                                ->send();
+                        })
+                        ->deselectRecordsAfterCompletion(),
                 ]),
             ])
             ->paginationPageOptions([10, 25, 50, 100])

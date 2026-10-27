@@ -193,6 +193,12 @@ class SyncClient
             $this->applyInbox($db);
             $sent = $this->send($db);
 
+            // A payment or expense deleted here: fetch its online copy now,
+            // so the review list shows exactly what was deleted.
+            if ($db->db()->table('sync_reviews')->where('status', 'open')->where('kind', 'deleted_here')->whereNull('remote_data')->exists()) {
+                $this->fetch($db);
+            }
+
             $result = [
                 'received' => $received,
                 'sent' => $sent,
@@ -386,6 +392,14 @@ class SyncClient
 
         if ($this->changedHere($db, $uuid, $local)) {
             // Edited here after it was deleted online: the edit wins and goes back online.
+            $this->done($db, $item);
+
+            return;
+        }
+
+        if ($db->mustKeep($table, (int) $localId)) {
+            // A learner with fees records here is never deleted: it goes back online.
+            $db->db()->table('sync_rows')->where('uuid', $uuid)->update(['hash' => null]);
             $this->done($db, $item);
 
             return;

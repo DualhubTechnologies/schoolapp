@@ -288,6 +288,14 @@ class SyncServer
 
                 try {
                     if (! empty($change['d'])) {
+                        if ($entry && ! $entry->deleted && $db->mustKeep($table, (int) $entry->row_id)) {
+                            // A learner with fees records online is never deleted: it goes back to the computer.
+                            $db->db()->table('sync_rows')->where('uuid', $uuid)->update(['version' => ++$version, 'source_device_id' => null, 'changed_at' => now()]);
+                            $results[$uuid] = 'kept_online';
+
+                            continue;
+                        }
+
                         if ($entry && ! $entry->deleted) {
                             $db->db()->table($table)->where('id', $entry->row_id)->delete();
                             $db->db()->table('sync_rows')->where('uuid', $uuid)->update(['deleted' => true, 'version' => ++$version, 'source_device_id' => $device->id, 'changed_at' => now()]);

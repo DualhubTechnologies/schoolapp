@@ -5,6 +5,7 @@ namespace App\Filament\App\Resources\Students\Pages;
 use App\Filament\App\Resources\Students\StudentResource;
 use App\Filament\Support\ConfirmWithPassword;
 use App\Filament\Support\Pages\EditRecordPage;
+use App\Models\Student;
 use Filament\Actions\Action;
 use Filament\Actions\DeleteAction;
 use Illuminate\Contracts\Support\Htmlable;
@@ -28,7 +29,9 @@ class EditStudent extends EditRecordPage
                 ->color('gray')
                 ->url(fn () => route('filament.app.students.admission-letter', $this->record))
                 ->openUrlInNewTab(),
-            ConfirmWithPassword::on(DeleteAction::make()),
+            ConfirmWithPassword::on(DeleteAction::make())
+                ->disabled(fn (Student $record): bool => $record->hasFeesRecords())
+                ->tooltip(fn (Student $record): ?string => $record->hasFeesRecords() ? 'Has fees records, so cannot be deleted: change the status to Withdrawn, Transferred or Completed instead.' : null),
         ];
     }
 }

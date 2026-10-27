@@ -339,9 +339,11 @@ class ReportCards extends Page
         $this->loadComments();
     }
 
+    /** Report cards are the class teacher's (and the head's / DOS's): not every subject teacher's. */
     public static function canAccess(): bool
     {
-        return AcademicAccess::teaches();
+        return AcademicAccess::teaches()
+            && (AcademicAccess::manages() || ! AcademicAccess::seesOnlyOwnLearners() || AcademicAccess::classTeacherClassIds() !== []);
     }
 
     public function updatedTermId(): void

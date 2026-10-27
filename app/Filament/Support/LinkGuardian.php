@@ -19,10 +19,11 @@ class LinkGuardian
     public static function column(TextColumn $column): TextColumn
     {
         return $column
-            ->default('Add parent')
-            ->icon(fn (Student $record): ?string => $record->guardian_id ? null : 'heroicon-o-plus-circle')
-            ->color(fn (Student $record): ?string => $record->guardian_id ? null : 'primary')
-            ->tooltip(fn (Student $record): ?string => $record->guardian_id ? null : 'No parent linked yet. Click to add one.')
+            // Only those who may edit learners can add one; others just see that none is linked.
+            ->default(fn (Student $record): string => StudentResource::canEdit($record) ? 'Add parent' : 'No parent linked')
+            ->icon(fn (Student $record): ?string => $record->guardian_id || ! StudentResource::canEdit($record) ? null : 'heroicon-o-plus-circle')
+            ->color(fn (Student $record): ?string => $record->guardian_id ? null : (StudentResource::canEdit($record) ? 'primary' : 'gray'))
+            ->tooltip(fn (Student $record): ?string => $record->guardian_id || ! StudentResource::canEdit($record) ? null : 'No parent linked yet. Click to add one.')
             ->disabledClick(fn (Student $record): bool => $record->guardian_id !== null || ! StudentResource::canEdit($record))
             ->action(static::action());
     }

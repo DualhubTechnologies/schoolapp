@@ -72,7 +72,7 @@ class ClassResults extends Page
     /** @return Collection<int, string> */
     public function classOptions(): Collection
     {
-        return SchoolClass::where('school_id', auth()->user()?->school_id)->orderBy('level')->orderBy('name')->pluck('name', 'id');
+        return AcademicAccess::limitToOwnClasses(SchoolClass::where('school_id', auth()->user()?->school_id))->orderBy('level')->orderBy('name')->pluck('name', 'id');
     }
 
     /** @return Collection<int, string> */
@@ -84,7 +84,8 @@ class ClassResults extends Page
     #[Computed]
     public function results(): ?array
     {
-        $class = $this->classId ? SchoolClass::where('school_id', auth()->user()?->school_id)->find($this->classId) : null;
+        // Only a class the user may see (a teacher: their own classes).
+        $class = $this->classId && $this->classOptions()->has($this->classId) ? SchoolClass::where('school_id', auth()->user()?->school_id)->find($this->classId) : null;
         $term = $this->termId ? Term::where('school_id', auth()->user()?->school_id)->find($this->termId) : null;
 
         return $class && $term ? app(ResultsCalculator::class)->forClass($class, $term, $this->sectionId, $this->chosenExamId()) : null;

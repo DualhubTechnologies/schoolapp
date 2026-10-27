@@ -12,6 +12,7 @@ use App\Filament\Concerns\PlacedInMenu;
 use App\Filament\Pages\ReceivePayment;
 use App\Filament\Pages\StudentAccount;
 use App\Models\Student;
+use App\Support\AcademicAccess;
 use App\Support\Modules;
 use BackedEnum;
 use Filament\Actions\Action;
@@ -105,7 +106,8 @@ class StudentResource extends Resource
             $query->where('school_id', $user->school_id);
         }
 
-        return $query;
+        // A teacher sees only the learners they teach.
+        return AcademicAccess::limitToOwnLearners($query);
     }
 
     /** Admitting, changing and removing learners is the admissions office's job; teachers only see them. */

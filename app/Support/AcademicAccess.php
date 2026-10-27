@@ -97,6 +97,112 @@ class AcademicAccess
         return array_values(array_unique([...array_values(static::classTeacherStreams()), ...static::classTeacherWholeClasses()]));
     }
 
+    /**
+     * A teacher sees only their own learners: those in the classes they
+     * teach a subject in, or are class teacher of (whole class or
+     * stream). Anyone whose work covers the whole school (admin,
+     * admissions, fees, Director of Studies, library, sick bay...) sees
+     * every learner.
+     */
+    public static function seesOnlyOwnLearners(): bool
+    {
+        $user = auth()->user();
+
+        if (! $user || $user->hasRole('Super Admin') || Modules::hasFullAccess($user)) {
+            return false;
+        }
+
+        foreach (['admissions', 'fees', 'exams_all', 'library', 'sickbay', 'transport', 'id_cards', 'messages', 'promotion'] as $module) {
+            if (Modules::allows($module)) {
+                return false;
+            }
+        }
+
+        return true;
+    }
+
+    /**
+     * Classes the user teaches a subject in, or is whole-class teacher of.
+     *
+     * @return list<int>
+     */
+    public static function taughtClassIds(): array
+    {
+        $staffId = static::staffId();
+
+        if ($staffId === null) {
+            return [];
+        }
+
+        return once(fn () => array_values(array_unique([
+            ...DB::table('class_subject')->where('teacher_id', $staffId)->pluck('school_class_id')->map(fn ($id) => (int) $id)->all(),
+            ...static::classTeacherWholeClasses(),
+        ])));
+    }
+
+    /**
+     * Narrows a query of learners (or rows with a learner's class and
+     * stream) to the user's own learners, when seesOnlyOwnLearners().
+     *
+     * @template TQuery of \Illuminate\Database\Eloquent\Builder<*>|\Illuminate\Database\Query\Builder
+     *
+     * @param  TQuery  $query
+     * @return TQuery
+     */
+    public static function limitToOwnLearners($query, string $table = 'students')
+    {
+        if (! static::seesOnlyOwnLearners()) {
+            return $query;
+        }
+
+        $classes = static::taughtClassIds();
+        $streams = array_keys(static::classTeacherStreams());
+
+        return $query->where(function ($q) use ($table, $classes, $streams): void {
+            $q->whereIn("{$table}.school_class_id", $classes === [] ? [0] : $classes);
+
+            if ($streams !== []) {
+                $q->orWhereIn("{$table}.section_id", $streams);
+            }
+        });
+    }
+
+    /**
+     * Narrows a query of classes to the user's own (taught, or class
+     * teacher of, whole or by stream), when seesOnlyOwnLearners().
+     *
+     * @template TQuery of \Illuminate\Database\Eloquent\Builder<*>|\Illuminate\Database\Query\Builder
+     *
+     * @param  TQuery  $query
+     * @return TQuery
+     */
+    public static function limitToOwnClasses($query, string $column = 'id')
+    {
+        if (! static::seesOnlyOwnLearners()) {
+            return $query;
+        }
+
+        $own = array_values(array_unique([...static::taughtClassIds(), ...static::classTeacherClassIds()]));
+
+        $query->whereIn($column, $own === [] ? [0] : $own);
+
+        return $query;
+    }
+
+    /**
+     * Subjects the user teaches in any class.
+     *
+     * @return list<int>
+     */
+    public static function taughtSubjectIds(): array
+    {
+        $staffId = static::staffId();
+
+        return $staffId === null ? [] : once(fn () => array_values(array_unique(
+            DB::table('class_subject')->where('teacher_id', $staffId)->pluck('subject_id')->map(fn ($id) => (int) $id)->all()
+        )));
+    }
+
     /** Is the user class teacher of the whole class? */
     public static function isWholeClassTeacherOf(?int $classId): bool
     {

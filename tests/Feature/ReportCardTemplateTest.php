@@ -7,6 +7,8 @@ use App\Models\Mark;
 use App\Models\ReportCardTemplate;
 use App\Models\School;
 use App\Models\SchoolClass;
+use App\Models\Section;
+use App\Models\Staff;
 use App\Models\Student;
 use App\Models\StudentCharge;
 use App\Models\Subject;
@@ -124,7 +126,10 @@ it('leaves the exam columns out when the school hides them', function () {
 });
 
 it('lets only those who manage exams change the template', function () {
-    $this->actingAs(User::factory()->create(['school_id' => $this->school->id])->assignRole('Teacher'));
+    $teacher = User::factory()->create(['school_id' => $this->school->id])->assignRole('Teacher');
+    $staff = Staff::create(['school_id' => $this->school->id, 'user_id' => $teacher->id, 'name' => $teacher->name, 'staff_no' => 'ST-1', 'position' => 'Teacher', 'employment_date' => '2024-01-01']);
+    Section::create(['school_id' => $this->school->id, 'school_class_id' => $this->class->id, 'name' => 'East', 'class_teacher_id' => $staff->id]);
+    $this->actingAs($teacher);
 
     Livewire::test(ReportCards::class)->assertActionHidden('template');
 });

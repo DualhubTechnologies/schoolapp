@@ -7,6 +7,7 @@ use App\Models\ResidencyType;
 use App\Models\SchoolClass;
 use App\Models\Section;
 use App\Models\Student;
+use App\Support\AcademicAccess;
 use BackedEnum;
 use Filament\Support\Icons\Heroicon;
 use Illuminate\Support\Collection;
@@ -31,6 +32,12 @@ class EnrolmentReport extends ReportPage
 
     /** One section of the school (O-Level, A-Level...), or all. */
     public ?int $levelId = null;
+
+    /** School-wide figures: not for a teacher, who sees their own learners under Students. */
+    public static function canAccess(): bool
+    {
+        return parent::canAccess() && ! AcademicAccess::seesOnlyOwnLearners();
+    }
 
     public static function about(): string
     {

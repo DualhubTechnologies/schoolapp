@@ -31,6 +31,7 @@ class ManageSyllabusTopics extends ManageRecords
                 ->url(fn (): string => AssessTopics::getUrl()),
             Action::make('addMany')
                 ->label('Add several topics')
+                ->visible(fn (): bool => SyllabusTopicResource::canCreate())
                 ->icon('heroicon-o-queue-list')
                 ->color('gray')
                 ->schema([
@@ -58,6 +59,7 @@ class ManageSyllabusTopics extends ManageRecords
                 }),
             CreateAction::make()
                 ->label('Add topic')
+                ->visible(fn (): bool => SyllabusTopicResource::canCreate())
                 ->mutateDataUsing(fn (array $data): array => $data + ['school_id' => auth()->user()?->school_id]),
         ];
     }

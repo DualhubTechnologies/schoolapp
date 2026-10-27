@@ -10,6 +10,7 @@ use App\Models\Student;
 use App\Models\Term;
 use App\Services\Attendance\AttendanceSummary;
 use App\Services\Attendance\LearnerAttendance;
+use App\Support\AcademicAccess;
 use App\Support\Modules;
 use BackedEnum;
 use Carbon\CarbonImmutable;
@@ -66,7 +67,7 @@ class AttendanceReport extends Page
     /** @return Collection<int, string> */
     public function classOptions(): Collection
     {
-        return SchoolClass::where('school_id', auth()->user()?->school_id)->orderBy('level')->orderBy('name')->pluck('name', 'id');
+        return AcademicAccess::limitToOwnClasses(SchoolClass::where('school_id', auth()->user()?->school_id))->orderBy('level')->orderBy('name')->pluck('name', 'id');
     }
 
     /** @return Collection<int, string> */
@@ -110,7 +111,7 @@ class AttendanceReport extends Page
         $records = AttendanceRecord::where('school_id', $schoolId)->whereDate('date', today()->toDateString())
             ->selectRaw('school_class_id, status, count(*) as total')->groupBy('school_class_id', 'status')->get();
 
-        return SchoolClass::where('school_id', $schoolId)->orderBy('level')->orderBy('name')->get(['id', 'name'])
+        return AcademicAccess::limitToOwnClasses(SchoolClass::where('school_id', $schoolId))->orderBy('level')->orderBy('name')->get(['id', 'name'])
             ->filter(fn (SchoolClass $c) => ($learners[$c->id] ?? 0) > 0)
             ->map(function (SchoolClass $class) use ($learners, $records): array {
                 $mine = $records->where('school_class_id', $class->id)->pluck('total', 'status')->map(fn ($n) => (int) $n);

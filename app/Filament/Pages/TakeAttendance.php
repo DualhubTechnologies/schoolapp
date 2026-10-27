@@ -25,8 +25,9 @@ use Livewire\Attributes\Computed;
  * learner present, absent, late or excused, and save. Parents of the
  * absent can be texted straight from here.
  *
- * Class teachers see only their own streams; everyone else with the
- * Attendance module (and School Admins) can take any class's register.
+ * Class teachers see only their own streams; a teacher who is not a
+ * class teacher has none; everyone else with the Attendance module (and
+ * School Admins) can take any class's register.
  *
  * @property-read Collection<int, Student> $students
  */
@@ -54,9 +55,14 @@ class TakeAttendance extends Page
 
     public bool $alreadyTaken = false;
 
+    /**
+     * The register is the class teacher's: a teacher who is not class
+     * teacher of any class or stream has no register to take.
+     */
     public static function canAccess(): bool
     {
-        return Modules::allows('attendance');
+        return Modules::allows('attendance')
+            && (! AcademicAccess::seesOnlyOwnLearners() || AcademicAccess::classTeacherClassIds() !== []);
     }
 
     public function mount(): void

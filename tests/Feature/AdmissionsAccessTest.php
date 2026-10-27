@@ -7,11 +7,14 @@ use App\Filament\Pages\EnterMarks;
 use App\Filament\Pages\ReceivePayment;
 use App\Models\School;
 use App\Models\SchoolClass;
+use App\Models\Staff;
 use App\Models\Student;
+use App\Models\Subject;
 use App\Models\User;
 use App\Services\Subscriptions\SubscriptionManager;
 use Database\Seeders\RoleSeeder;
 use Filament\Facades\Filament;
+use Illuminate\Support\Facades\DB;
 use Livewire\Livewire;
 
 beforeEach(function () {
@@ -26,7 +29,11 @@ beforeEach(function () {
 });
 
 it('lets a teacher look learners up but not admit, change or remove them', function () {
-    $this->actingAs(User::factory()->create(['school_id' => $this->school->id])->assignRole('Teacher'));
+    $teacher = User::factory()->create(['school_id' => $this->school->id])->assignRole('Teacher');
+    $staff = Staff::create(['school_id' => $this->school->id, 'user_id' => $teacher->id, 'name' => $teacher->name, 'staff_no' => 'ST-1', 'position' => 'Teacher', 'employment_date' => '2024-01-01']);
+    $subject = Subject::create(['school_id' => $this->school->id, 'name' => 'Geography', 'curriculum' => 'o_level']);
+    DB::table('class_subject')->insert(['school_class_id' => $this->student->school_class_id, 'subject_id' => $subject->id, 'teacher_id' => $staff->id]);
+    $this->actingAs($teacher);
 
     expect(StudentResource::canAccess())->toBeTrue()
         ->and(StudentResource::canCreate())->toBeFalse()

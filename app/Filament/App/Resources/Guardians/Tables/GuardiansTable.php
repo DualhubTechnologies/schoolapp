@@ -74,12 +74,12 @@ class GuardiansTable
                 static::giveLoginAction(),
                 static::newPinAction(),
                 ViewAction::make(),
-                EditAction::make(),
+                EditAction::make()->visible(fn (Guardian $record): bool => GuardianResource::canEdit($record)),
             ])
             ->toolbarActions([
                 BulkActionGroup::make([
                     static::giveLoginsBulkAction(),
-                    ConfirmWithPassword::on(DeleteBulkAction::make()),
+                    ConfirmWithPassword::on(DeleteBulkAction::make())->visible(fn (): bool => GuardianResource::canDeleteAny()),
                 ]),
             ])
             ->paginationPageOptions([5, 10, 25, 50])

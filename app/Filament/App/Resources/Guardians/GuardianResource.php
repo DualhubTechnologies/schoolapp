@@ -11,6 +11,7 @@ use App\Filament\App\Resources\Guardians\Tables\GuardiansTable;
 use App\Filament\Concerns\GatedByModule;
 use App\Filament\Concerns\PlacedInMenu;
 use App\Models\Guardian;
+use App\Support\AcademicAccess;
 use App\Support\Modules;
 use BackedEnum;
 use Filament\Resources\Resource;
@@ -74,6 +75,11 @@ class GuardianResource extends Resource
 
         if ($user && ! $user->hasRole('Super Admin')) {
             $query->where('school_id', $user->school_id);
+        }
+
+        // A teacher sees only the parents of the learners they teach.
+        if (AcademicAccess::seesOnlyOwnLearners()) {
+            $query->whereHas('students', fn (Builder $learners) => AcademicAccess::limitToOwnLearners($learners));
         }
 
         return $query;

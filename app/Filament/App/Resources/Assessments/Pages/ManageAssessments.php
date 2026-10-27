@@ -50,6 +50,7 @@ class ManageAssessments extends ManageRecords
         return [
             CreateAction::make()
                 ->label('New exam')
+                ->visible(fn (): bool => AssessmentResource::canCreate())
                 ->mutateDataUsing(fn (array $data) => $data + ['school_id' => auth()->user()->school_id, 'status' => 'open']),
         ];
     }

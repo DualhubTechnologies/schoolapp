@@ -22,6 +22,7 @@ use Filament\Tables\Filters\SelectFilter;
 use Filament\Tables\Grouping\Group;
 use Filament\Tables\Table;
 use Illuminate\Database\Eloquent\Builder;
+use Illuminate\Database\Eloquent\Model;
 
 /**
  * The NCDC syllabus topics of each O-Level subject, per class. Teachers
@@ -40,9 +41,11 @@ class SyllabusTopicResource extends Resource
 
     public const CLASSES = [1 => 'S.1', 2 => 'S.2', 3 => 'S.3', 4 => 'S.4'];
 
+    /** A teacher sees (and keeps) the topics of the subjects they teach; the head and DOS, all. */
     public static function getEloquentQuery(): Builder
     {
-        return parent::getEloquentQuery()->where('school_id', auth()->user()?->school_id)->with('subject');
+        return parent::getEloquentQuery()->where('school_id', auth()->user()?->school_id)->with('subject')
+            ->when(! AcademicAccess::manages(), fn (Builder $query) => $query->whereIn('subject_id', AcademicAccess::taughtSubjectIds() ?: [0]));
     }
 
     /**
@@ -52,7 +55,10 @@ class SyllabusTopicResource extends Resource
     {
         $options = [];
 
-        foreach (Subject::where('school_id', auth()->user()?->school_id)->where('curriculum', 'o_level')->orderBy('sort_order')->orderBy('name')->get() as $subject) {
+        $query = Subject::where('school_id', auth()->user()?->school_id)->where('curriculum', 'o_level')
+            ->when(! AcademicAccess::manages(), fn ($q) => $q->whereIn('id', AcademicAccess::taughtSubjectIds() ?: [0]));
+
+        foreach ($query->orderBy('sort_order')->orderBy('name')->get() as $subject) {
             $options[(int) $subject->id] = (string) $subject->name;
         }
 
@@ -109,8 +115,9 @@ class SyllabusTopicResource extends Resource
                 SelectFilter::make('class_number')->label('Class')->options(self::CLASSES),
             ])
             ->recordActions([
-                EditAction::make(),
+                EditAction::make()->visible(fn (SyllabusTopic $record): bool => static::canEdit($record)),
                 DeleteAction::make()
+                    ->visible(fn (SyllabusTopic $record): bool => static::canDelete($record))
                     ->modalDescription('Learners\' levels for this topic are deleted with it.'),
             ])
             ->emptyStateHeading('No syllabus topics yet')
@@ -126,7 +133,17 @@ class SyllabusTopicResource extends Resource
 
     public static function canCreate(): bool
     {
-        return AcademicAccess::teaches();
+        return AcademicAccess::manages() || (AcademicAccess::teaches() && AcademicAccess::taughtSubjectIds() !== []);
+    }
+
+    public static function canEdit(Model $record): bool
+    {
+        return AcademicAccess::manages() || in_array((int) $record->getAttribute('subject_id'), AcademicAccess::taughtSubjectIds(), true);
+    }
+
+    public static function canDelete(Model $record): bool
+    {
+        return static::canEdit($record);
     }
 
     public static function getPages(): array

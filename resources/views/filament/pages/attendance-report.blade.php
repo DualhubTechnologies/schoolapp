@@ -14,7 +14,9 @@
                     registers taken in {{ $today->count() - $notTaken->count() }} of {{ $today->count() }} classes
                 </div>
             </div>
-            <x-filament::button tag="a" size="sm" icon="heroicon-o-check-circle" :href="\App\Filament\Pages\TakeAttendance::getUrl()">Take a register</x-filament::button>
+            @if (\App\Filament\Pages\TakeAttendance::canAccess())
+                <x-filament::button tag="a" size="sm" icon="heroicon-o-check-circle" :href="\App\Filament\Pages\TakeAttendance::getUrl()">Take a register</x-filament::button>
+            @endif
         </div>
         @if ($today->isEmpty())
             <div class="ar-empty">No classes with learners yet.</div>

@@ -6,6 +6,8 @@ folded into the change they belong to. Add an entry with every release.
 
 ## 27 October 2026
 
+- **The Windows download is back on the website**, offering SchoolHub
+  for Windows 1.2.0 (short licence codes, sync with the online account).
 - **The Windows app syncs with the school's online account, both ways.**
   Online, a School Admin makes a one-hour link code under Settings ->
   Windows app; in the Windows app, Settings -> Sync with online takes the

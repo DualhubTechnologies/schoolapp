@@ -6,9 +6,10 @@
                 <div class="show-copy">
                     <div class="eyebrow">SchoolHub for Windows</div>
                     <h3>No internet? Run SchoolHub on your school computer</h3>
-                    <p>The same SchoolHub - fees, exams and report cards, ID cards, payroll - installed on one Windows computer and working without internet. Your records stay on the computer, with backups to a flash disk.</p>
+                    <p>The same SchoolHub - fees, exams and report cards, ID cards, payroll - installed on a Windows computer and working without internet. Link it to your online account and it syncs both ways whenever there is internet.</p>
                     <ul class="ticks">
                         <li>{!! $check !!} Works fully offline: no data bundles needed</li>
+                        <li>{!! $check !!} Syncs with your online account when connected</li>
                         <li>{!! $check !!} Free for {{ $trialLabel }}, then a licence per term or per year</li>
                         <li>{!! $check !!} Windows 10 or 11 (64-bit) · 134 MB download</li>
                     </ul>

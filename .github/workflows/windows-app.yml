@@ -1,0 +1,118 @@
+name: windows-app
+
+# Builds the SchoolHub for Windows installer on GitHub's Windows machines
+# (desktop/build-windows.ps1) and publishes it as a GitHub release, so no
+# Windows computer is needed. Started by hand: Actions -> windows-app ->
+# Run workflow.
+#
+#   test     builds and publishes a pre-release to install and try first.
+#            The website keeps offering the current version: its link
+#            (releases/latest) never points at a pre-release.
+#   latest   builds and publishes the release the website offers.
+#   promote  makes a tested pre-release the one the website offers,
+#            without building again.
+on:
+  workflow_dispatch:
+    inputs:
+      version:
+        description: 'Version, e.g. 1.1.0 (higher than the last one)'
+        required: true
+        type: string
+      publish:
+        description: 'What to do'
+        required: true
+        default: test
+        type: choice
+        options:
+          - test
+          - latest
+          - promote
+
+concurrency:
+  group: windows-app
+  cancel-in-progress: false
+
+permissions:
+  contents: read
+
+jobs:
+  build:
+    if: inputs.publish != 'promote'
+    runs-on: windows-latest
+    timeout-minutes: 60
+
+    permissions:
+      contents: write
+
+    env:
+      VERSION: ${{ inputs.version }}
+
+    steps:
+      - name: Check the version
+        shell: pwsh
+        run: |
+          if ($env:VERSION -notmatch '^\d+\.\d+\.\d+$') { throw "Version must look like 1.1.0, not '$env:VERSION'." }
+
+      - name: Checkout code
+        uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+        with:
+          persist-credentials: false
+
+      - name: Setup PHP
+        uses: shivammathur/setup-php@f3e473d116dcccaddc5834248c87452386958240 # v2
+        with:
+          php-version: '8.4'
+          extensions: pdo_sqlite, sqlite3, intl, gd, zip, fileinfo, bcmath, mbstring
+          tools: composer:v2
+          coverage: none
+
+      - name: Setup Node
+        uses: actions/setup-node@820762786026740c76f36085b0efc47a31fe5020 # v7.0.0
+        with:
+          node-version: '22'
+
+      - name: Build the installer
+        shell: pwsh
+        run: desktop\build-windows.ps1 -Version $env:VERSION -BuildDir "$env:RUNNER_TEMP\schoolhub-windows"
+
+      # The website links to releases/latest/download/SchoolHub-Setup.exe.
+      - name: Name the installer
+        shell: pwsh
+        run: |
+          $exe = Get-ChildItem "$env:RUNNER_TEMP\schoolhub-windows\nativephp\electron\dist" -Filter "*$env:VERSION-setup.exe" | Select-Object -First 1
+          if (-not $exe) { throw 'The build made no installer.' }
+          New-Item -ItemType Directory -Force -Path out | Out-Null
+          Copy-Item $exe.FullName out\SchoolHub-Setup.exe
+          Write-Host "SchoolHub-Setup.exe: $([math]::Round($exe.Length / 1MB)) MB"
+
+      - name: Keep the installer with this run
+        uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02 # v4.6.2
+        with:
+          name: SchoolHub-Setup-${{ inputs.version }}
+          path: out/SchoolHub-Setup.exe
+          retention-days: 30
+
+      - name: Publish the release
+        shell: pwsh
+        env:
+          GH_TOKEN: ${{ github.token }}
+          PUBLISH: ${{ inputs.publish }}
+        run: |
+          $notes = "SchoolHub for Windows $env:VERSION. Windows 10 or 11 (64-bit). Works without internet; a licence code from SchoolHub is needed, including for the free trial."
+          $flags = if ($env:PUBLISH -eq 'latest') { @('--latest') } else { @('--prerelease', '--latest=false') }
+          gh release create "v$env:VERSION" out\SchoolHub-Setup.exe --repo $env:GITHUB_REPOSITORY --target $env:GITHUB_SHA --title "SchoolHub for Windows $env:VERSION" --notes $notes @flags
+          if ($LASTEXITCODE -ne 0) { throw 'Could not publish the release (does this version exist already?).' }
+
+  promote:
+    if: inputs.publish == 'promote'
+    runs-on: ubuntu-latest
+
+    permissions:
+      contents: write
+
+    steps:
+      - name: Make the pre-release the one the website offers
+        env:
+          GH_TOKEN: ${{ github.token }}
+          VERSION: ${{ inputs.version }}
+        run: gh release edit "v$VERSION" --repo "$GITHUB_REPOSITORY" --prerelease=false --latest

@@ -4,6 +4,16 @@ What changed in SchoolHub, newest first, in terms of what schools and the
 platform owner notice. Housekeeping commits (formatting, type fixes) are
 folded into the change they belong to. Add an entry with every release.
 
+## 27 October 2026
+
+- **The Windows installer is built on GitHub.** Actions -> windows-app ->
+  Run workflow, with a version (e.g. 1.1.0): GitHub's Windows machines run
+  `desktop/build-windows.ps1` and publish `SchoolHub-Setup.exe` as a
+  release. "test" publishes a pre-release to install and try (the
+  website keeps offering the current version), "promote" then makes it
+  the one the website offers, and "latest" does both in one go. No
+  Windows computer is needed any more.
+
 ## 13 October 2026
 
 - **Google lists each public page once, and only the public pages.**

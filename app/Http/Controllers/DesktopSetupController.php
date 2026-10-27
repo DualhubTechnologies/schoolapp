@@ -2,7 +2,6 @@
 
 namespace App\Http\Controllers;
 
-use App\Filament\Pages\OnlineSync;
 use App\Http\Middleware\RequireDesktopSetup;
 use App\Models\School;
 use App\Models\User;
@@ -11,6 +10,7 @@ use App\Services\Sync\HttpSyncTransport;
 use App\Services\Sync\SyncClient;
 use App\Services\Sync\SyncServer;
 use App\Support\Edition;
+use App\Support\Licensing\DesktopLicence;
 use App\Support\PasswordStrength;
 use Database\Seeders\RoleSeeder;
 use Illuminate\Contracts\View\View;
@@ -64,8 +64,8 @@ class DesktopSetupController extends Controller
      * email and password and a link code (from Settings → Windows app
      * online, or from SchoolHub). The school gets the same details and
      * licence code as online, every staff account its online sign-in and
-     * roles, and the first sync brings everything else (SyncClient), with
-     * the licence from the online subscription.
+     * roles and the licence from the online subscription; the person is
+     * signed in at once while the first sync brings everything else.
      */
     public function connect(Request $request, SyncClient $client): RedirectResponse
     {
@@ -110,20 +110,17 @@ class DesktopSetupController extends Controller
             return $user;
         });
 
-        // The first sync: everything from online, and the licence. A big
-        // school may take a while; if it stops, the next sync carries on.
-        set_time_limit(0);
-
-        try {
-            $client->run();
-        } catch (ConnectionException|RuntimeException) {
-            // Picked up again by Sync now or the sync every few minutes.
+        // The licence from the online subscription came with the answer, so
+        // the person goes straight in; the first sync then runs from the
+        // banner at the top of the page (FirstSyncBanner).
+        if ($online['licence'] !== null) {
+            DesktopLicence::keepFromOnline(School::sole(), $online['licence']);
         }
 
         Auth::login($user);
         $request->session()->regenerate();
 
-        return redirect()->to(OnlineSync::getUrl(panel: 'app'));
+        return redirect()->to(filament()->getPanel('app')->getUrl());
     }
 
     public function store(Request $request): RedirectResponse

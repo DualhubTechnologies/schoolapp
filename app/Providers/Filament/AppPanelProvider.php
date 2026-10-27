@@ -46,6 +46,7 @@ use App\Http\Middleware\EnsureSchoolSubscribed;
 use App\Http\Middleware\RecordLastSeen;
 use App\Http\Middleware\RequireDesktopSetup;
 use App\Http\Middleware\ServerEditionOnly;
+use App\Livewire\FirstSyncBanner;
 use App\Support\DashboardProfile;
 use App\Support\Edition;
 use App\Support\Menu;
@@ -70,6 +71,7 @@ use Illuminate\Cookie\Middleware\EncryptCookies;
 use Illuminate\Foundation\Http\Middleware\PreventRequestForgery;
 use Illuminate\Routing\Middleware\SubstituteBindings;
 use Illuminate\Session\Middleware\StartSession;
+use Illuminate\Support\Facades\Blade;
 use Illuminate\Support\Facades\Route;
 use Illuminate\Support\Facades\Storage;
 use Illuminate\View\Middleware\ShareErrorsFromSession;
@@ -298,6 +300,11 @@ class AppPanelProvider extends PanelProvider
             ->renderHook(
                 PanelsRenderHook::PAGE_START,
                 fn () => view('filament.partials.topbar')
+            )
+            // Windows app just set up from online: the first sync, with a banner.
+            ->renderHook(
+                PanelsRenderHook::PAGE_START,
+                fn () => FirstSyncBanner::pending() ? Blade::render('@livewire(\\App\\Livewire\\FirstSyncBanner::class)') : '',
             )
             // Subscription warnings for School Admins (after the topbar).
             ->renderHook(

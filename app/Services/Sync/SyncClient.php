@@ -44,6 +44,9 @@ class SyncClient
 
     public const RESULT = 'sync.result';
 
+    /** Set up from online, first sync not finished yet (FirstSyncBanner). */
+    public const FIRST = 'sync.first';
+
     /** Changes sent per request. */
     protected const BATCH = 300;
 
@@ -100,7 +103,7 @@ class SyncClient
      * (DesktopSetupController::connect): links it and returns the school's
      * details and the administrator's name and email.
      *
-     * @return array{school: array<string, mixed>, user: array{name: string, email: string}, accounts: list<array<string, mixed>>}
+     * @return array{school: array<string, mixed>, user: array{name: string, email: string}, accounts: list<array<string, mixed>>, licence: string|null}
      */
     public function connect(string $code, string $email, string $password): array
     {
@@ -113,11 +116,13 @@ class SyncClient
         $this->put(self::TOKEN, Crypt::encryptString((string) $answer['token']));
         $this->put(self::SCHOOL, (string) ($answer['school']['name'] ?? ''));
         $this->put(self::CURSOR, '0');
+        $this->put(self::FIRST, now()->toIso8601String());
 
         return [
             'school' => $answer['school'],
             'user' => ['name' => (string) ($answer['user']['name'] ?? 'Administrator'), 'email' => (string) ($answer['user']['email'] ?? $email)],
             'accounts' => array_values((array) ($answer['accounts'] ?? [])),
+            'licence' => is_string($answer['licence'] ?? null) ? $answer['licence'] : null,
         ];
     }
 

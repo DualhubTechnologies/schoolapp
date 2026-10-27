@@ -2,6 +2,7 @@
 
 use App\Filament\Pages\OnlineSync;
 use App\Filament\Pages\WindowsApp;
+use App\Livewire\FirstSyncBanner;
 use App\Models\School;
 use App\Models\SyncDevice;
 use App\Models\User;
@@ -10,6 +11,7 @@ use App\Services\Sync\SyncClient;
 use App\Services\Sync\SyncReviews;
 use App\Services\Sync\SyncServer;
 use App\Services\Sync\SyncTransport;
+use App\Support\Licensing\LicenceIssuer;
 use App\Support\Licensing\LicenceKey;
 use Database\Seeders\RoleSeeder;
 use Illuminate\Database\Connection;
@@ -447,8 +449,31 @@ it('sets up a new Windows app from the school\'s online account, on first run', 
     expect($this->here->table('schools')->count())->toBe(0);
 
     // Any staff member with the code: here the bursar.
+    // The online free term comes with the answer, as the computer's licence.
+    $pair = sodium_crypto_sign_keypair();
+    config(['licence.private_key' => base64_encode(sodium_crypto_sign_secretkey($pair)), 'licence.public_key' => base64_encode(sodium_crypto_sign_publickey($pair))]);
+    $issuer = Mockery::mock(LicenceIssuer::class)->makePartial();
+    $issuer->shouldReceive('forOnlineAccount')->andReturnUsing(fn ($school, string $name, string $code): string => LicenceKey::sign([
+        'id' => 'ONLINE-1-1-2027-01-31', 'school' => $name, 'code' => $code, 'plan' => 'Free Trial', 'students' => null, 'users' => null,
+        'cycle' => 'trial', 'starts' => '2026-10-01', 'ends' => '2027-01-31', 'issued' => now()->toIso8601String(),
+    ], config('licence.private_key')));
+    app()->instance(LicenceIssuer::class, $issuer);
+
+    // Signed in straight away, unlocked; the first sync runs from the banner.
     $this->post(route('desktop.setup.connect.store'), ['code' => strtolower($code), 'email' => 'bursar@hope.ac.ug', 'password' => 'Bursar-Pass-2026'])
-        ->assertRedirect(OnlineSync::getUrl(panel: 'app'));
+        ->assertRedirect(filament()->getPanel('app')->getUrl());
+
+    expect(SubscriptionManager::isLocked(School::sole()))->toBeFalse()
+        ->and(FirstSyncBanner::pending())->toBeTrue()
+        ->and($this->here->table('students')->count())->toBe(0);
+
+    Livewire\Livewire::test(FirstSyncBanner::class)
+        ->assertSee('records from online')
+        ->call('runSync')
+        ->assertSet('state', 'done')
+        ->assertSee('records are here');
+
+    expect(FirstSyncBanner::pending())->toBeFalse();
 
     expect(auth()->user()->email)->toBe('bursar@hope.ac.ug')
         ->and(auth()->user()->hasRole('Bursar'))->toBeTrue()

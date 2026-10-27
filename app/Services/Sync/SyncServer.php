@@ -74,7 +74,7 @@ class SyncServer
      * the token, the school's details (to set the school up the same,
      * licence code included), who signed in, and the staff accounts.
      *
-     * @return array{token: string, school: array<string, mixed>, user: array{name: string, email: string}, accounts: list<array<string, mixed>>}
+     * @return array{token: string, school: array<string, mixed>, user: array{name: string, email: string}, accounts: list<array<string, mixed>>, licence: string|null}
      */
     public function connect(string $code, string $email, string $password, ?string $name): array
     {
@@ -108,6 +108,10 @@ class SyncServer
             'school' => Arr::only($school, self::SCHOOL_DETAILS),
             'user' => ['name' => (string) $user->name, 'email' => (string) $user->email],
             'accounts' => $accounts,
+            // The licence straight away, so the computer opens unlocked.
+            'licence' => ($online = $device->school) !== null && filled($school['unique_code'] ?? null)
+                ? app(LicenceIssuer::class)->forOnlineAccount($online, (string) $school['name'], (string) $school['unique_code'])
+                : null,
         ];
     }
 

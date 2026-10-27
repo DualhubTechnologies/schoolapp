@@ -6,6 +6,11 @@ folded into the change they belong to. Add an entry with every release.
 
 ## 27 October 2026
 
+- **Windows app set up from online opens at once.** Once the online
+  account is confirmed, the person is signed in and on the dashboard,
+  unlocked (the licence comes with the answer); the first sync then runs
+  from a banner at the top of the page (FirstSyncBanner) that says when
+  all records are here, or that it waits for the internet.
 - **Windows app setup, "Already on SchoolHub online":** checks the
   internet as soon as the tab opens and every few seconds
   (`/setup/online/check`), says plainly when there is none, and keeps

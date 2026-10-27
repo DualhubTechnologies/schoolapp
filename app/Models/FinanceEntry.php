@@ -2,6 +2,7 @@
 
 namespace App\Models;
 
+use App\Services\Sync\SyncClient;
 use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
@@ -68,7 +69,7 @@ class FinanceEntry extends Model
                     ->max('voucher_seq');
 
                 $entry->voucher_seq = ((int) $last) + 1;
-                $entry->voucher_no = ($entry->type === 'income' ? 'INC-' : 'EXP-').str_pad((string) $entry->voucher_seq, 6, '0', STR_PAD_LEFT);
+                $entry->voucher_no = ($entry->type === 'income' ? 'INC-' : 'EXP-').SyncClient::numberMark().str_pad((string) $entry->voucher_seq, 6, '0', STR_PAD_LEFT);
             });
         });
     }

@@ -22,7 +22,7 @@ return Application::configure(basePath: dirname(__DIR__))
 
         // Called by the Windows app and by SchoolPay, not browser forms
         // (rate limited and signed instead).
-        $middleware->validateCsrfTokens(except: ['licence/activate', 'webhooks/schoolpay/*', 'webhooks/momo/*']);
+        $middleware->validateCsrfTokens(except: ['licence/activate', 'sync/*', 'webhooks/schoolpay/*', 'webhooks/momo/*']);
 
         // Search engines read these during a deploy too: a 503 robots.txt
         // makes Google pause crawling and skip the site's icon.

@@ -53,6 +53,7 @@ use App\Filament\Pages\FeeStructureSheet;
 use App\Filament\Pages\IncomeExpenditure;
 use App\Filament\Pages\Licence;
 use App\Filament\Pages\MarksProgress;
+use App\Filament\Pages\OnlineSync;
 use App\Filament\Pages\PromoteStudents;
 use App\Filament\Pages\ReceivePayment;
 use App\Filament\Pages\ReportCards;
@@ -71,6 +72,7 @@ use App\Filament\Pages\StudentIdCards;
 use App\Filament\Pages\SubjectChoices;
 use App\Filament\Pages\TakeAttendance;
 use App\Filament\Pages\TermBudget;
+use App\Filament\Pages\WindowsApp;
 
 /**
  * The school menu (sidebar), in one place: every page's group, position
@@ -180,6 +182,8 @@ class Menu
         Backups::class => ['Settings', 5, 'Backups'],
         SchoolSubscription::class => ['Settings', 6, 'Subscription'],
         Licence::class => ['Settings', 7, 'Licence'],
+        OnlineSync::class => ['Settings', 8, 'Sync with online'],
+        WindowsApp::class => ['Settings', 8, 'Windows app'],
     ];
 
     /** @return array{0: string, 1: int, 2: string}|null */

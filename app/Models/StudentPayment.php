@@ -3,6 +3,7 @@
 namespace App\Models;
 
 use App\Concerns\Auditable;
+use App\Services\Sync\SyncClient;
 use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
@@ -79,7 +80,7 @@ class StudentPayment extends Model
                     ->max('receipt_seq');
 
                 $payment->receipt_seq = ((int) $last) + 1;
-                $payment->receipt_no = sprintf('RCT-%06d', $payment->receipt_seq);
+                $payment->receipt_no = sprintf('RCT-%s%06d', SyncClient::numberMark(), $payment->receipt_seq);
             });
         });
 

@@ -6,6 +6,20 @@ folded into the change they belong to. Add an entry with every release.
 
 ## 27 October 2026
 
+- **The Windows app syncs with the school's online account, both ways.**
+  Online, a School Admin makes a one-hour link code under Settings ->
+  Windows app; in the Windows app, Settings -> Sync with online takes the
+  code. It then syncs every 10 minutes while online (`sync:run`), or with
+  Sync now. Release 1 covers the school's structure, learners and
+  parents, staff, fees, payments, income and expenses, marks and report
+  cards (`App\Services\Sync\SyncTables`). A record changed on both sides
+  keeps the latest edit; one added on both sides with the same name
+  (a class, a subject, a mark) becomes one record. A possible duplicate
+  learner or staff member, the same admission number on two learners, a
+  payment or expense of the same amount on the same date (whatever the
+  receipt numbers) and a payment or expense deleted on one side are listed
+  on the Sync page to decide, and wait until then. Receipts and vouchers
+  made on a linked computer carry a W (RCT-W000016).
 - **The Windows installer is built on GitHub.** Actions -> windows-app ->
   Run workflow, with a version (e.g. 1.1.0): GitHub's Windows machines run
   `desktop/build-windows.ps1` and publish `SchoolHub-Setup.exe` as a

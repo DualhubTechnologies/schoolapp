@@ -7,6 +7,7 @@ use App\Http\Controllers\NssfScheduleController;
 use App\Http\Controllers\ParentPageController;
 use App\Http\Controllers\PayslipController;
 use App\Http\Controllers\SchoolPayWebhookController;
+use App\Http\Controllers\SyncController;
 use App\Http\Controllers\VerifyDocumentController;
 use App\Http\Middleware\ServerEditionOnly;
 use App\Support\PublicSite;
@@ -38,6 +39,14 @@ Route::post('/setup', [DesktopSetupController::class, 'store'])->middleware('thr
 Route::post('/licence/activate', LicenceActivationController::class)
     ->middleware(['throttle:10,1', ServerEditionOnly::class])
     ->name('licence.activate');
+
+// A linked Windows app syncs with the school's online account here
+// (SyncController). Not a browser form: no CSRF token (bootstrap/app.php).
+Route::middleware(['throttle:600,1', ServerEditionOnly::class])->prefix('sync')->group(function () {
+    Route::post('/link', [SyncController::class, 'link'])->middleware('throttle:10,1')->name('sync.link');
+    Route::post('/pull', [SyncController::class, 'pull'])->name('sync.pull');
+    Route::post('/push', [SyncController::class, 'push'])->name('sync.push');
+});
 
 // SchoolPay posts each payment to a school's learners here (the school
 // sets this address in its SchoolPay portal). Signed per school; no CSRF

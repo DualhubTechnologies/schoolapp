@@ -57,6 +57,13 @@ Schedule::command('sms:send-queued')
     ->withoutOverlapping()
     ->onOneServer();
 
+// Windows app linked to an online account: sync both ways while online.
+Schedule::command('sync:run')
+    ->cron('*/'.config('sync.every_minutes', 10).' * * * *')
+    ->when(fn (): bool => Edition::isDesktop())
+    ->withoutOverlapping(30)
+    ->onOneServer();
+
 // "Pay now" payments MTN has not called back about (see MomoCheckout).
 Schedule::command('momo:check-pending')
     ->everyTwoMinutes()

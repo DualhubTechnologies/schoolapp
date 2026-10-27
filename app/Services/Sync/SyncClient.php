@@ -93,6 +93,28 @@ class SyncClient
         return (string) ($answer['school'] ?? '');
     }
 
+    /**
+     * A new Windows app joining its school's online account on first run
+     * (DesktopSetupController::connect): links it and returns the school's
+     * details and the administrator's name and email.
+     *
+     * @return array{school: array<string, mixed>, user: array{name: string, email: string}}
+     */
+    public function connect(string $code, string $email, string $password): array
+    {
+        $answer = $this->transport->post('connect', ['code' => $code, 'email' => $email, 'password' => $password, 'name' => gethostname() ?: 'Windows computer']);
+
+        if (blank($answer['token'] ?? null) || ! is_array($answer['school'] ?? null)) {
+            throw new RuntimeException('Online SchoolHub did not accept these details.');
+        }
+
+        $this->put(self::TOKEN, Crypt::encryptString((string) $answer['token']));
+        $this->put(self::SCHOOL, (string) ($answer['school']['name'] ?? ''));
+        $this->put(self::CURSOR, '0');
+
+        return ['school' => $answer['school'], 'user' => ['name' => (string) ($answer['user']['name'] ?? 'Administrator'), 'email' => (string) ($answer['user']['email'] ?? $email)]];
+    }
+
     /** Unlinks this computer. Its records stay; the sync records go. */
     public function unlink(): void
     {

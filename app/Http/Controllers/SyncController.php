@@ -32,6 +32,22 @@ class SyncController extends Controller
         }
     }
 
+    public function connect(Request $request): JsonResponse
+    {
+        $data = $request->validate([
+            'code' => ['required', 'string', 'max:20'],
+            'email' => ['required', 'string', 'max:255'],
+            'password' => ['required', 'string', 'max:255'],
+            'name' => ['nullable', 'string', 'max:100'],
+        ]);
+
+        try {
+            return response()->json($this->server->connect($data['code'], $data['email'], $data['password'], $data['name'] ?? null));
+        } catch (RuntimeException $e) {
+            return response()->json(['message' => $e->getMessage()], 422);
+        }
+    }
+
     public function pull(Request $request): JsonResponse
     {
         $device = $this->device($request);

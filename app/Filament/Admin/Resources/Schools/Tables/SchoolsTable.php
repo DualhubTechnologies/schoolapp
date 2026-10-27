@@ -7,6 +7,7 @@ use App\Filament\Support\ConfirmWithPassword;
 use App\Models\School;
 use App\Models\User;
 use App\Services\Subscriptions\SubscriptionManager;
+use App\Services\Sync\SyncServer;
 use App\Support\EmailVerificationCode;
 use Filament\Actions\Action;
 use Filament\Actions\ActionGroup;
@@ -156,6 +157,7 @@ class SchoolsTable
                     SubscriptionActions::extend(),
                     SubscriptionActions::suspend(),
                     self::confirmAdminEmail(),
+                    self::windowsLinkCode(),
                 ]),
             ])
             ->toolbarActions([
@@ -163,6 +165,32 @@ class SchoolsTable
                     ConfirmWithPassword::on(DeleteBulkAction::make()),
                 ]),
             ]);
+    }
+
+    /**
+     * A code for the school's Windows app, to set it up from its online
+     * account on first run (with the administrator's online email and
+     * password) or link it later. Valid a week, to send by WhatsApp.
+     */
+    public static function windowsLinkCode(): Action
+    {
+        return Action::make('windowsLinkCode')
+            ->label('Windows app link code')
+            ->icon('heroicon-o-computer-desktop')
+            ->requiresConfirmation()
+            ->modalHeading(fn (School $record): string => "Windows app link code - {$record->name}")
+            ->modalDescription('For the school\'s Windows app: on first run they choose "Already on SchoolHub online" and enter this code with the administrator\'s online email and password. Their online subscription then covers the computer. Valid 7 days; a new code replaces an unused one.')
+            ->modalSubmitActionLabel('Make code')
+            ->action(function (School $record): void {
+                $code = app(SyncServer::class)->makeLinkCode($record, auth()->user()?->name, hours: 24 * 7);
+
+                Notification::make()
+                    ->title('Windows app link code')
+                    ->body("Send {$record->name} this code (valid 7 days):\n\n{$code}")
+                    ->success()
+                    ->persistent()
+                    ->send();
+            });
     }
 
     /**

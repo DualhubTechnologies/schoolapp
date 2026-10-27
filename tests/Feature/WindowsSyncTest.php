@@ -16,6 +16,7 @@ use Illuminate\Database\Connection;
 use Illuminate\Support\Facades\Artisan;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\File;
+use Illuminate\Support\Facades\Hash;
 
 /*
  * The Windows app (this test's database) syncing with the online server
@@ -61,6 +62,7 @@ beforeEach(function () {
 
             $result = match ($action) {
                 'link' => $this->server->link($payload['code'], $payload['name'] ?? null),
+                'connect' => $this->server->connect($payload['code'], $payload['email'], $payload['password'], $payload['name'] ?? null),
                 'pull' => $this->server->pull($device(), (int) $payload['cursor'], (bool) $payload['scan'], $payload['fetch'] ?? []),
                 'push' => ['results' => $this->server->push($device(), (int) $payload['cursor'], $payload['changes'])],
             };
@@ -413,4 +415,44 @@ it('makes a link code online, and links and syncs over the internet with it', fu
 
     $page->call('$refresh')->assertSee('BURSAR-PC')->call('remove', $device->id);
     $this->withToken($token)->postJson('/sync/pull', ['cursor' => 0])->assertUnauthorized();
+});
+
+it('sets up a new Windows app from the school\'s online account, on first run', function () {
+    config(['app.edition' => 'desktop']);
+    $this->withoutVite();
+    $this->client->unlink();
+    $this->here->table('schools')->delete();
+    app()->instance(SyncClient::class, $this->client);
+
+    $online = onlineBasics();
+    $this->online->table('schools')->where('id', $this->onlineSchool)->update(['unique_code' => 'SH55501', 'motto' => 'Hope and light', 'school_type' => 'secondary']);
+    $admin = add($this->online, 'users', ['name' => 'Kato Head', 'email' => 'head@hope.ac.ug', 'password' => Hash::make('Online-Pass-2026')]);
+    $role = $this->online->table('roles')->insertGetId(['name' => 'School Admin', 'guard_name' => 'web', 'created_at' => now(), 'updated_at' => now()]);
+    $this->online->table('model_has_roles')->insert(['role_id' => $role, 'model_type' => (new User)->getMorphClass(), 'model_id' => $admin]);
+    $bursar = add($this->online, 'users', ['name' => 'Bursar', 'email' => 'bursar@hope.ac.ug', 'password' => Hash::make('Online-Pass-2026')]);
+
+    $this->get(route('desktop.setup'))->assertOk()->assertSee('Already on SchoolHub online');
+    $this->get(route('desktop.setup.connect'))->assertOk()->assertSee('Link code');
+
+    $code = $this->server->makeLinkCode(School::on('server')->findOrFail($this->onlineSchool), hours: 168);
+
+    // Wrong password, or not the administrator: refused, nothing set up.
+    $this->post(route('desktop.setup.connect.store'), ['code' => $code, 'email' => 'head@hope.ac.ug', 'password' => 'wrong'])->assertSessionHasErrors('code');
+    $this->post(route('desktop.setup.connect.store'), ['code' => $code, 'email' => 'bursar@hope.ac.ug', 'password' => 'Online-Pass-2026'])->assertSessionHasErrors('code');
+    expect($this->here->table('schools')->count())->toBe(0);
+
+    $this->post(route('desktop.setup.connect.store'), ['code' => strtolower($code), 'email' => 'head@hope.ac.ug', 'password' => 'Online-Pass-2026'])
+        ->assertRedirect(OnlineSync::getUrl(panel: 'app'));
+
+    $school = School::sole();
+    expect($school->name)->toBe('Hope Secondary')
+        ->and($school->unique_code)->toBe('SH55501')
+        ->and($school->motto)->toBe('Hope and light')
+        ->and(auth()->user()->email)->toBe('head@hope.ac.ug')
+        ->and(auth()->user()->hasRole('School Admin'))->toBeTrue()
+        ->and(Hash::check('Online-Pass-2026', auth()->user()->password))->toBeTrue()
+        ->and($this->client->isLinked())->toBeTrue()
+        // The first sync brought the school's records.
+        ->and($this->here->table('students')->value('name'))->toBe('Nakato Sarah')
+        ->and($this->here->table('school_classes')->where('name', 'S.1')->count())->toBe(1);
 });

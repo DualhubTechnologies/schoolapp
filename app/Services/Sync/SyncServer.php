@@ -4,11 +4,15 @@ namespace App\Services\Sync;
 
 use App\Models\School;
 use App\Models\SyncDevice;
+use App\Models\User;
 use App\Support\Licensing\LicenceIssuer;
+use App\Support\Modules;
 use Carbon\CarbonImmutable;
 use Illuminate\Database\QueryException;
 use Illuminate\Database\UniqueConstraintViolationException;
+use Illuminate\Support\Arr;
 use Illuminate\Support\Facades\Cache;
+use Illuminate\Support\Facades\Hash;
 use Illuminate\Support\Str;
 use RuntimeException;
 use stdClass;
@@ -32,8 +36,11 @@ class SyncServer
 
     public function __construct(protected ?string $connection = null) {}
 
-    /** A one-hour code for linking a Windows computer to the school. */
-    public function makeLinkCode(School $school, ?string $by = null): string
+    /**
+     * A code for linking a Windows computer to the school: an hour when a
+     * School Admin makes it online, longer when SchoolHub sends it.
+     */
+    public function makeLinkCode(School $school, ?string $by = null, int $hours = 1): string
     {
         $code = collect(range(1, 8))->map(fn (): string => self::CODE_LETTERS[random_int(0, strlen(self::CODE_LETTERS) - 1)])->implode('');
         $code = substr($code, 0, 4).'-'.substr($code, 4);
@@ -42,7 +49,7 @@ class SyncServer
         SyncDevice::on($this->connection)->create([
             'school_id' => $school->id,
             'link_code' => $code,
-            'link_expires_at' => now()->addHour(),
+            'link_expires_at' => now()->addHours($hours),
             'created_by' => $by,
         ]);
 
@@ -56,15 +63,73 @@ class SyncServer
      */
     public function link(string $code, ?string $name): array
     {
+        $device = $this->waitingDevice($code);
+
+        return ['token' => $this->issueToken($device, $name), 'school' => (string) $device->getConnection()->table('schools')->where('id', $device->school_id)->value('name')];
+    }
+
+    /**
+     * A new Windows app joining an existing online school on its first run:
+     * the school administrator's online email and password, and a link
+     * code. Gives the token, the school's details (to set the school up the
+     * same, licence code included) and the administrator's name.
+     *
+     * @return array{token: string, school: array<string, mixed>, user: array{name: string, email: string}}
+     */
+    public function connect(string $code, string $email, string $password, ?string $name): array
+    {
+        $device = $this->waitingDevice($code);
+
+        $user = User::on($this->connection)->where('email', trim($email))->where('school_id', $device->school_id)->first();
+
+        if (! $user || ! Hash::check($password, (string) $user->password)) {
+            throw new RuntimeException('That email and password do not match an account of this school online.');
+        }
+
+        $roles = $device->getConnection()->table('model_has_roles')
+            ->join('roles', 'roles.id', '=', 'model_has_roles.role_id')
+            ->where('model_has_roles.model_type', $user->getMorphClass())
+            ->where('model_has_roles.model_id', $user->getKey())
+            ->pluck('roles.name')
+            ->all();
+
+        if (array_intersect($roles, Modules::FULL_ACCESS_ROLES) === []) {
+            throw new RuntimeException('Only the school administrator can set up the Windows app with the online account.');
+        }
+
+        $school = (array) $device->getConnection()->table('schools')->where('id', $device->school_id)->first();
+
+        return [
+            'token' => $this->issueToken($device, $name),
+            'school' => Arr::only($school, self::SCHOOL_DETAILS),
+            'user' => ['name' => (string) $user->name, 'email' => (string) $user->email],
+        ];
+    }
+
+    /** The school's details a new Windows app copies (no online-only settings or secrets). */
+    public const SCHOOL_DETAILS = [
+        'name', 'email', 'phone', 'address', 'city', 'country', 'timezone', 'currency', 'nssf_employer_number', 'tin_number',
+        'motto', 'description', 'unique_code', 'website', 'school_type', 'boarding_type', 'ownership', 'contact_person', 'contact_title',
+        'fee_payment_bank', 'fee_payment_mobile_money', 'fee_payment_instructions', 'parent_sms_language',
+        'admission_no_style', 'admission_no_initials', 'admission_no_start', 'fee_sheet_notes',
+    ];
+
+    protected function waitingDevice(string $code): SyncDevice
+    {
         $code = strtoupper(preg_replace('/[^A-Za-z0-9]/', '', $code) ?? '');
         $code = substr($code, 0, 4).'-'.substr($code, 4);
 
         $device = SyncDevice::on($this->connection)->where('link_code', $code)->whereNull('token')->first();
 
         if (! $device || $device->link_expires_at?->isPast()) {
-            throw new RuntimeException('That link code is wrong or has expired. Make a new one online under Settings → Windows app.');
+            throw new RuntimeException('That link code is wrong or has expired. Make a new one online under Settings → Windows app, or ask SchoolHub for one.');
         }
 
+        return $device;
+    }
+
+    protected function issueToken(SyncDevice $device, ?string $name): string
+    {
         $token = Str::random(48);
         $device->update([
             'name' => $name ? Str::limit($name, 100, '') : 'Windows computer',
@@ -74,7 +139,7 @@ class SyncServer
             'linked_at' => now(),
         ]);
 
-        return ['token' => $token, 'school' => (string) $device->getConnection()->table('schools')->where('id', $device->school_id)->value('name')];
+        return $token;
     }
 
     public function device(?string $token): ?SyncDevice

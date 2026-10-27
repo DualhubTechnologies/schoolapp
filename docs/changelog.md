@@ -6,6 +6,14 @@ folded into the change they belong to. Add an entry with every release.
 
 ## 27 October 2026
 
+- **Windows app first run: "Already on SchoolHub online".** Besides
+  setting up a new school, the first-run page takes the school
+  administrator's online email and password and a link code (from
+  Settings -> Windows app online, or from the platform owner: Schools ->
+  Windows app link code, valid 7 days). The school is set up with its
+  online details and licence code, the administrator signs in with the
+  same password, and the first sync brings everything, licence included.
+  The page fits the app's window without scrolling.
 - **One payment covers both.** A Windows app linked to the school's online
   account follows the online subscription: each sync brings it a signed
   licence with the online plan, limits and paid-until date (free first

@@ -32,6 +32,8 @@ Route::get('/payslips/{period}/all', [PayslipController::class, 'downloadAll'])
 // The Windows app's first run: the school and its administrator.
 Route::get('/setup', [DesktopSetupController::class, 'show'])->name('desktop.setup');
 Route::post('/setup', [DesktopSetupController::class, 'store'])->middleware('throttle:10,1')->name('desktop.setup.store');
+Route::get('/setup/online', [DesktopSetupController::class, 'showConnect'])->name('desktop.setup.connect');
+Route::post('/setup/online', [DesktopSetupController::class, 'connect'])->middleware('throttle:10,1')->name('desktop.setup.connect.store');
 
 // The Windows app swaps a short licence code for its signed licence here,
 // once (LicenceActivationController). Not a browser form: no CSRF token
@@ -44,6 +46,7 @@ Route::post('/licence/activate', LicenceActivationController::class)
 // (SyncController). Not a browser form: no CSRF token (bootstrap/app.php).
 Route::middleware(['throttle:600,1', ServerEditionOnly::class])->prefix('sync')->group(function () {
     Route::post('/link', [SyncController::class, 'link'])->middleware('throttle:10,1')->name('sync.link');
+    Route::post('/connect', [SyncController::class, 'connect'])->middleware('throttle:10,1')->name('sync.connect');
     Route::post('/pull', [SyncController::class, 'pull'])->name('sync.pull');
     Route::post('/push', [SyncController::class, 'push'])->name('sync.push');
 });

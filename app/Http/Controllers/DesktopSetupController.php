@@ -2,19 +2,25 @@
 
 namespace App\Http\Controllers;
 
+use App\Filament\Pages\OnlineSync;
 use App\Http\Middleware\RequireDesktopSetup;
 use App\Models\School;
 use App\Models\User;
 use App\Services\Subscriptions\SubscriptionManager;
+use App\Services\Sync\SyncClient;
+use App\Services\Sync\SyncServer;
 use App\Support\Edition;
 use App\Support\PasswordStrength;
 use Database\Seeders\RoleSeeder;
 use Illuminate\Contracts\View\View;
+use Illuminate\Http\Client\ConnectionException;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
+use Illuminate\Support\Arr;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Str;
+use RuntimeException;
 
 /**
  * First run of the Windows app: the school and its administrator, in one
@@ -30,7 +36,88 @@ class DesktopSetupController extends Controller
             return $redirect;
         }
 
-        return view('desktop.setup', ['types' => School::TYPES]);
+        return view('desktop.setup', ['types' => School::TYPES, 'mode' => 'new']);
+    }
+
+    /** For a school already on SchoolHub online: its account comes to this computer. */
+    public function showConnect(): View|RedirectResponse
+    {
+        if ($redirect = $this->unavailable()) {
+            return $redirect;
+        }
+
+        return view('desktop.setup', ['types' => School::TYPES, 'mode' => 'online']);
+    }
+
+    /**
+     * Sets the school up from its online account: the administrator's
+     * online email and password and a link code (from Settings → Windows
+     * app online, or from SchoolHub). The school gets the same details and
+     * licence code as online, the administrator the same sign-in, and the
+     * first sync brings everything else (SyncClient), with the licence
+     * from the online subscription.
+     */
+    public function connect(Request $request, SyncClient $client): RedirectResponse
+    {
+        if ($redirect = $this->unavailable()) {
+            return $redirect;
+        }
+
+        $data = $request->validate([
+            'code' => ['required', 'string', 'max:20'],
+            'email' => ['required', 'email', 'max:255'],
+            'password' => ['required', 'string', 'max:255'],
+        ], [], ['code' => 'link code']);
+
+        try {
+            $online = $client->connect($data['code'], $data['email'], $data['password']);
+        } catch (ConnectionException) {
+            return back()->withInput($request->except('password'))->withErrors(['code' => 'No internet connection. Connect this computer (phone data is enough) and try again.']);
+        } catch (RuntimeException $e) {
+            return back()->withInput($request->except('password'))->withErrors(['code' => $e->getMessage()]);
+        }
+
+        $user = DB::transaction(function () use ($online, $data): User {
+            (new RoleSeeder)->run();
+
+            $details = Arr::only((array) $online['school'], SyncServer::SCHOOL_DETAILS);
+            $school = School::create([
+                ...$details,
+                'slug' => Str::slug((string) ($details['name'] ?? 'school')) ?: 'school',
+                'unique_code' => $details['unique_code'] ?? 'SH'.random_int(10000, 99999),
+                'country' => $details['country'] ?? 'Uganda',
+                'currency' => $details['currency'] ?? 'UGX',
+                'timezone' => $details['timezone'] ?? 'Africa/Kampala',
+                'status' => 'active',
+            ]);
+            SubscriptionManager::startTrial($school);
+
+            $user = User::create([
+                'name' => $online['user']['name'],
+                'email' => $online['user']['email'],
+                'password' => $data['password'],
+                'school_id' => $school->getKey(),
+            ]);
+            $user->forceFill(['email_verified_at' => now()])->save();
+            $user->assignRole('School Admin');
+
+            return $user;
+        });
+
+        // The first sync: everything from online, and the licence. A big
+        // school may take a while; if it stops, the next sync carries on.
+        set_time_limit(0);
+
+        try {
+            $client->run();
+        } catch (ConnectionException|RuntimeException) {
+            // Picked up again by Sync now or the sync every few minutes.
+        }
+
+        Auth::login($user);
+        $request->session()->regenerate();
+
+        return redirect()->to(OnlineSync::getUrl(panel: 'app'));
     }
 
     public function store(Request $request): RedirectResponse

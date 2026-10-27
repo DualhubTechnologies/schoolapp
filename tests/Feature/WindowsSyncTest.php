@@ -5,10 +5,12 @@ use App\Filament\Pages\WindowsApp;
 use App\Models\School;
 use App\Models\SyncDevice;
 use App\Models\User;
+use App\Services\Subscriptions\SubscriptionManager;
 use App\Services\Sync\SyncClient;
 use App\Services\Sync\SyncReviews;
 use App\Services\Sync\SyncServer;
 use App\Services\Sync\SyncTransport;
+use App\Support\Licensing\LicenceKey;
 use Database\Seeders\RoleSeeder;
 use Illuminate\Database\Connection;
 use Illuminate\Support\Facades\Artisan;
@@ -396,6 +398,13 @@ it('makes a link code online, and links and syncs over the internet with it', fu
 
     $this->postJson('/sync/pull', ['cursor' => 0])->assertUnauthorized();
     $this->withToken($token)->postJson('/sync/pull', ['cursor' => 0])->assertOk()->assertJsonStructure(['cursor', 'more', 'changes']);
+
+    // The online subscription comes with it, as the computer's licence.
+    $pair = sodium_crypto_sign_keypair();
+    config(['licence.private_key' => base64_encode(sodium_crypto_sign_secretkey($pair)), 'licence.public_key' => base64_encode(sodium_crypto_sign_publickey($pair))]);
+    SubscriptionManager::startTrial(School::findOrFail($this->hereSchool));
+    $licence = $this->withToken($token)->postJson('/sync/pull', ['cursor' => 0, 'school' => ['name' => 'Light School', 'code' => 'SH123']])->assertOk()->json('licence');
+    expect(LicenceKey::verify($licence, config('licence.public_key'))?->details)->toMatchArray(['school' => 'Light School', 'code' => 'SH123', 'cycle' => 'trial']);
     $this->withToken($token)->postJson('/sync/push', ['cursor' => 0, 'changes' => []])->assertOk()->assertJson(['results' => []]);
 
     $device = SyncDevice::sole();

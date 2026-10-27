@@ -43,6 +43,21 @@
         @endif
     </div>
 
+    @if ($this->linkedOnline())
+        <div class="lc-card lc-online">
+            <h3>Paid through your online account</h3>
+            <p>This computer is linked to {{ app(\App\Services\Sync\SyncClient::class)->linkedSchool() }} online, so the online subscription covers it: there is nothing to pay or enter here.
+                @if ($this->paidOnline()) The dates above come from it. @endif
+                To renew, pay online (Settings → Subscription); this computer picks it up at its next sync.</p>
+        </div>
+    @else
+        <div class="lc-card lc-online">
+            <h3>Already using SchoolHub online?</h3>
+            <p>Link this computer to your online account instead of entering a licence code: your online subscription (or free first term) then covers this computer too, and records sync both ways.</p>
+            <a href="{{ \App\Filament\Pages\OnlineSync::getUrl() }}" class="lc-link">Link this computer →</a>
+        </div>
+    @endif
+
     <div class="lc-grid">
         <div class="lc-card">
             <h3>1. Get a licence code</h3>
@@ -112,5 +127,7 @@
         .lc-muted { color: #64748b !important; font-size: .78rem !important; }
         .lc-row { display: flex; justify-content: space-between; padding: .45rem 0; border-bottom: 1px solid #f1f5f9; font-size: .875rem; color: #334155; }
         .lc-row:last-child { border-bottom: 0; }
+        .lc-online { border-left: 4px solid #1d4ed8; }
+        .lc-link { display: inline-block; font-weight: 700; font-size: .875rem; color: #1d4ed8; }
     </style>
 </x-filament-panels::page>

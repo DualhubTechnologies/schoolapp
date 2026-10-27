@@ -2,6 +2,7 @@
 
 use App\Filament\Admin\Resources\WindowsLicences\Pages\ManageWindowsLicences;
 use App\Filament\Pages\Licence;
+use App\Filament\Pages\OnlineSync;
 use App\Models\IssuedLicence;
 use App\Models\LicenceKeyRecord;
 use App\Models\Plan;
@@ -365,4 +366,61 @@ it('explains when the code cannot be checked: no internet, or refused', function
     $online = true;
     expect(fn () => DesktopLicence::enter($school, 'ABCD-EFGH-2345-JKLM'))->toThrow(RuntimeException::class, 'already been used by another school')
         ->and(fn () => DesktopLicence::enter($school, 'ABCD-1234'))->toThrow(RuntimeException::class, '16 letters and numbers');
+});
+
+it('covers a linked computer with the online subscription, sent at each sync', function () {
+    config(['app.edition' => 'server']);
+    $online = School::create(['name' => 'Light Secondary School', 'slug' => 'light-online', 'unique_code' => 'SH70001', 'email' => 'light-online@example.com', 'school_type' => 'secondary', 'status' => 'active']);
+    SubscriptionManager::startTrial($online);
+    $trialKey = app(LicenceIssuer::class)->forOnlineAccount($online, 'Light Secondary School', 'SH48213');
+
+    $desk = desktopSchool();
+    expect(SubscriptionManager::isLocked($desk))->toBeTrue();
+
+    DesktopLicence::keepFromOnline($desk, $trialKey);
+    $status = SubscriptionManager::status($desk);
+    expect($status['state'])->toBe('trial')
+        ->and(SubscriptionManager::isLocked($desk))->toBeFalse()
+        ->and(DesktopLicence::paidOnline($desk))->toBeTrue();
+
+    // Paid online: the next sync brings the new paid-until date and plan.
+    config(['app.edition' => 'server']);
+    SubscriptionManager::renew($online, $this->standard, 'term', 330000, afterTrial: true);
+    $paid = SubscriptionManager::status($online)['ends_on'];
+    $paidKey = app(LicenceIssuer::class)->forOnlineAccount($online, 'Light Secondary School', 'SH48213');
+
+    config(['app.edition' => 'desktop']);
+    DesktopLicence::keepFromOnline($desk, $paidKey);
+    DesktopLicence::keepFromOnline($desk, $paidKey); // every sync: kept once
+
+    expect(SubscriptionManager::status($desk)['ends_on']->toDateString())->toBe($paid->toDateString())
+        ->and(LicenceKeyRecord::count())->toBe(2);
+
+    // Once the paid term starts, the plan follows it too.
+    $this->travelTo($paid->subDays(5));
+    config(['app.edition' => 'server']);
+    $termKey = app(LicenceIssuer::class)->forOnlineAccount($online, 'Light Secondary School', 'SH48213');
+    config(['app.edition' => 'desktop']);
+    DesktopLicence::keepFromOnline($desk, $termKey);
+    expect(SubscriptionManager::status($desk)['plan']->name)->toBe('Standard')
+        ->and(SubscriptionManager::status($desk)['state'])->toBe('active');
+
+    // Not for this computer's school, or nothing in force online: nothing.
+    config(['app.edition' => 'server']);
+    $otherKey = app(LicenceIssuer::class)->forOnlineAccount($online, 'Other School', 'SH1');
+    config(['app.edition' => 'desktop']);
+    expect(DesktopLicence::keepFromOnline($desk, $otherKey))->toBeNull();
+
+    config(['app.edition' => 'server']);
+    $this->travelTo($paid->addMonths(3));
+    expect(app(LicenceIssuer::class)->forOnlineAccount($online, 'Light Secondary School', 'SH48213'))->toBeNull();
+});
+
+it('lets a locked Windows app open the page to link with the online account', function () {
+    $school = desktopSchool();
+    Filament::setCurrentPanel('app');
+    $this->actingAs(User::factory()->create(['school_id' => $school->id])->assignRole('School Admin'));
+
+    $this->get(OnlineSync::getUrl())->assertOk()->assertSee('Link this computer');
+    $this->get(Licence::getUrl())->assertOk()->assertSee('Already using SchoolHub online?');
 });

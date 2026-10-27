@@ -4,6 +4,7 @@ namespace App\Http\Middleware;
 
 use App\Filament\Pages\AwaitingApproval;
 use App\Filament\Pages\Licence;
+use App\Filament\Pages\OnlineSync;
 use App\Filament\Pages\SchoolSubscription;
 use App\Models\User;
 use App\Services\Subscriptions\SubscriptionManager;
@@ -39,7 +40,11 @@ class EnsureSchoolSubscribed
 
         $route = $request->route()?->getName() ?? '';
 
-        if (str_ends_with($route, '.auth.logout') || $route === $page::getRouteName()) {
+        // A locked Windows app can still be linked to (or sync with) the
+        // online account, whose subscription then covers it.
+        $allowed = Edition::isDesktop() ? [$page::getRouteName(), OnlineSync::getRouteName()] : [$page::getRouteName()];
+
+        if (str_ends_with($route, '.auth.logout') || in_array($route, $allowed, true)) {
             return $next($request);
         }
 

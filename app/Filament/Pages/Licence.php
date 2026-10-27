@@ -6,6 +6,7 @@ use App\Filament\Concerns\PlacedInMenu;
 use App\Models\LicenceKeyRecord;
 use App\Models\School;
 use App\Services\Subscriptions\SubscriptionManager;
+use App\Services\Sync\SyncClient;
 use App\Support\Edition;
 use App\Support\Licensing\DesktopLicence;
 use App\Support\Modules;
@@ -54,6 +55,17 @@ class Licence extends Page
     public function status(): array
     {
         return SubscriptionManager::status($this->school());
+    }
+
+    /** Linked to the online account, whose subscription then covers this computer. */
+    public function linkedOnline(): bool
+    {
+        return app(SyncClient::class)->isLinked();
+    }
+
+    public function paidOnline(): bool
+    {
+        return DesktopLicence::paidOnline($this->school());
     }
 
     public function canEnterKey(): bool

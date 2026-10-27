@@ -6,6 +6,12 @@ folded into the change they belong to. Add an entry with every release.
 
 ## 27 October 2026
 
+- **One payment covers both.** A Windows app linked to the school's online
+  account follows the online subscription: each sync brings it a signed
+  licence with the online plan, limits and paid-until date (free first
+  term included; `LicenceIssuer::forOnlineAccount`), so no licence code is
+  needed. A locked Windows app can still open Sync with online to link.
+  Schools that only use the Windows app keep using licence codes.
 - **Sign-in page:** the free-trial poster says "First term free" (it
   still said 30 days). In the Windows app the page leaves out what only
   works online (Back to home, the free-trial poster, emailed password

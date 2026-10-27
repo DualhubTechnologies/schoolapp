@@ -4,6 +4,7 @@ namespace App\Services\Sync;
 
 use App\Models\School;
 use App\Models\SyncDevice;
+use App\Support\Licensing\LicenceIssuer;
 use Carbon\CarbonImmutable;
 use Illuminate\Database\QueryException;
 use Illuminate\Database\UniqueConstraintViolationException;
@@ -84,14 +85,17 @@ class SyncServer
     /**
      * The changes made online after `cursor`, a page at a time. The first
      * page (scan) first records what changed online since the last time.
-     * `fetch` asks again for particular records (by uuid).
+     * `fetch` asks again for particular records (by uuid). With the
+     * computer's own school name and code (`computer`), the first page also
+     * carries its licence from the online subscription (LicenceIssuer).
      *
      * @param  list<string>  $fetch
-     * @return array{cursor: int, more: bool, changes: list<array<string, mixed>>}
+     * @param  array{name?: string, code?: string}  $computer
+     * @return array{cursor: int, more: bool, changes: list<array<string, mixed>>, licence?: string|null}
      */
-    public function pull(SyncDevice $device, int $cursor, bool $scan = true, array $fetch = []): array
+    public function pull(SyncDevice $device, int $cursor, bool $scan = true, array $fetch = [], array $computer = []): array
     {
-        return $this->locked($device, function () use ($device, $cursor, $scan, $fetch): array {
+        return $this->locked($device, function () use ($device, $cursor, $scan, $fetch, $computer): array {
             $db = new SyncDatabase($device->school_id, $this->connection);
 
             if ($scan) {
@@ -119,7 +123,13 @@ class SyncServer
 
             $device->update(['last_synced_at' => now()]);
 
-            return ['cursor' => max($cursor, $next), 'more' => $more, 'changes' => $this->describe($db, $entries->all())];
+            $page = ['cursor' => max($cursor, $next), 'more' => $more, 'changes' => $this->describe($db, $entries->all())];
+
+            if ($scan && filled($computer['name'] ?? null) && filled($computer['code'] ?? null) && ($school = $device->school) !== null) {
+                $page['licence'] = app(LicenceIssuer::class)->forOnlineAccount($school, (string) $computer['name'], (string) $computer['code']);
+            }
+
+            return $page;
         });
     }
 

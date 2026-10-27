@@ -2,7 +2,9 @@
 
 namespace App\Services\Sync;
 
+use App\Models\School;
 use App\Support\Edition;
+use App\Support\Licensing\DesktopLicence;
 use Illuminate\Database\QueryException;
 use Illuminate\Database\UniqueConstraintViolationException;
 use Illuminate\Support\Facades\Cache;
@@ -142,8 +144,17 @@ class SyncClient
         // Finance records deleted here: their online copy, to show on the review list.
         $fetch = $db->db()->table('sync_reviews')->where('status', 'open')->where('kind', 'deleted_here')->whereNull('remote_data')->pluck('remote_uuid')->filter()->values()->all();
 
+        $school = School::on($this->connection)->find($db->schoolId);
+        $computer = ['name' => (string) $school?->name, 'code' => (string) $school?->unique_code];
+
         do {
-            $page = $this->transport->post('pull', ['cursor' => $cursor, 'scan' => $scan, 'fetch' => $fetch], $this->token());
+            $page = $this->transport->post('pull', ['cursor' => $cursor, 'scan' => $scan, 'fetch' => $fetch, 'school' => $computer], $this->token());
+
+            // Paid online: the licence for this computer comes with the first page.
+            if ($scan && $school !== null && is_string($page['licence'] ?? null)) {
+                DesktopLicence::keepFromOnline($school, $page['licence']);
+            }
+
             $scan = false;
             $fetch = [];
 

@@ -4,6 +4,7 @@ namespace App\Support\Licensing;
 
 use App\Models\IssuedLicence;
 use App\Models\Plan;
+use App\Models\School;
 use App\Models\User;
 use App\Services\Subscriptions\SubscriptionManager;
 use Carbon\CarbonImmutable;
@@ -133,6 +134,39 @@ class LicenceIssuer
 
             return (string) $licence->key;
         });
+    }
+
+    /**
+     * A linked Windows app's licence from its school's online subscription
+     * (sent at every sync), so one payment online covers the computer too:
+     * the same plan, limits and paid-until date, trial included. Made for
+     * the computer's own school name and code. Null when nothing is in
+     * force online, or licences cannot be signed on this server.
+     */
+    public function forOnlineAccount(School $school, string $schoolName, string $schoolCode): ?string
+    {
+        $status = SubscriptionManager::status($school);
+        $subscription = $status['subscription'];
+
+        if (! in_array($status['state'], ['trial', 'active', 'grace'], true) || ! $subscription || ! $status['ends_on'] || blank(config('licence.private_key'))) {
+            return null;
+        }
+
+        $plan = $status['plan'];
+        $ends = $status['ends_on']->toDateString();
+
+        return LicenceKey::sign([
+            'id' => 'ONLINE-'.$school->getKey().'-'.($plan?->getKey() ?? 0).'-'.$ends,
+            'school' => trim($schoolName),
+            'code' => strtoupper(trim($schoolCode)),
+            'plan' => (string) ($plan->name ?? 'Online'),
+            'students' => $plan?->max_students,
+            'users' => $plan?->max_users,
+            'cycle' => $subscription->isTrial() ? 'trial' : (string) $subscription->cycle,
+            'starts' => $subscription->starts_on->toDateString(),
+            'ends' => $ends,
+            'issued' => now()->toIso8601String(),
+        ], $this->privateKey());
     }
 
     protected function sign(IssuedLicence $licence): string

@@ -40,9 +40,12 @@ class SyncController extends Controller
             'scan' => ['boolean'],
             'fetch' => ['array', 'max:500'],
             'fetch.*' => ['uuid'],
+            'school' => ['array'],
+            'school.name' => ['nullable', 'string', 'max:150'],
+            'school.code' => ['nullable', 'string', 'max:20'],
         ]);
 
-        return response()->json($this->server->pull($device, (int) $data['cursor'], (bool) ($data['scan'] ?? true), array_values($data['fetch'] ?? [])));
+        return response()->json($this->server->pull($device, (int) $data['cursor'], (bool) ($data['scan'] ?? true), array_values($data['fetch'] ?? []), (array) ($data['school'] ?? [])));
     }
 
     public function push(Request $request): JsonResponse

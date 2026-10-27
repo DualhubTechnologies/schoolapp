@@ -4,6 +4,7 @@
             <h3>Work offline on a school computer, kept in step with this account</h3>
             <p>Install SchoolHub for Windows on a school computer and link it here. Staff can then work on that computer without internet, and everything syncs both ways whenever it is online: learners, fees and payments, expenses and marks.</p>
             <ul class="wa-list">
+                <li>One payment covers both: this account's subscription (or free first term) also covers linked computers, with no licence code to enter.</li>
                 <li>If a record was changed in both places, the latest change is kept.</li>
                 <li>Possible duplicate learners, similar payments (same amount, same day) and deleted payments are listed on the computer for someone to decide.</li>
             </ul>

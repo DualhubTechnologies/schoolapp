@@ -126,6 +126,35 @@ class DesktopLicence
     }
 
     /**
+     * Keeps the licence the online account sent at a sync (a linked
+     * computer follows the online subscription). Replaces the copy of the
+     * same period, so a changed plan or limit takes effect. Ignores a key
+     * that is not valid or not for this school.
+     */
+    public static function keepFromOnline(School $school, string $key): ?LicenceKey
+    {
+        $licence = LicenceKey::verify($key, (string) config('licence.public_key'));
+
+        if (! $licence || ! $licence->isFor((string) $school->name, (string) $school->unique_code)) {
+            return null;
+        }
+
+        LicenceKeyRecord::updateOrCreate(['licence_no' => $licence->details['id']], [
+            'key' => trim($key),
+            'starts_on' => $licence->startsOn()->toDateString(),
+            'ends_on' => $licence->endsOn()->toDateString(),
+        ]);
+
+        return $licence;
+    }
+
+    /** Whether the licence in force came from the online account (ONLINE-…). */
+    public static function paidOnline(School $school): bool
+    {
+        return str_starts_with((string) static::currentPeriod($school)?->notes, 'Licence ONLINE-');
+    }
+
+    /**
      * The same shape as SubscriptionManager::status(), worked out from the keys.
      *
      * @return array{state: string, subscription: ?Subscription, plan: ?Plan, ends_on: ?CarbonImmutable, days_left: ?int, grace_ends_on: ?CarbonImmutable, expiring: bool}

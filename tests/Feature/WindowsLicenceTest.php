@@ -177,6 +177,15 @@ it('locks when the computer\'s clock is set back', function () {
     expect(SubscriptionManager::status($school)['state'])->toBe('clock')
         ->and(SubscriptionManager::isLocked($school))->toBeTrue();
 
+    // A pop-up over the page: both dates, how to correct the clock, and Check again.
+    Filament::setCurrentPanel('app');
+    $this->actingAs(User::factory()->create(['school_id' => $school->id])->assignRole('School Admin'));
+    $this->get(Licence::getUrl())->assertOk()
+        ->assertSee('date is wrong')
+        ->assertSee(now()->format('D j M Y'))
+        ->assertSee('Set time automatically')
+        ->assertSee('Check again');
+
     $this->travelBack();
     expect(SubscriptionManager::status($school)['state'])->toBe('active');
 });

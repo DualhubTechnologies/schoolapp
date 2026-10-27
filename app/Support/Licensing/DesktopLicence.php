@@ -258,7 +258,7 @@ class DesktopLicence
         return false;
     }
 
-    protected static function lastSeen(): ?CarbonImmutable
+    public static function lastSeen(): ?CarbonImmutable
     {
         $noted = DB::table('app_state')->where('key', self::LAST_SEEN)->value('value');
         $logged = Schema::hasTable('activity_log') ? DB::table('activity_log')->max('created_at') : null;

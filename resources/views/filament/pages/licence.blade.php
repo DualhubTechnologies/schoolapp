@@ -19,7 +19,7 @@
         <div>
             <div class="lc-label" style="color: {{ $color }}">{{ $label }}</div>
             @if ($st['state'] === 'clock')
-                <p>This computer's date and time are earlier than SchoolHub has already seen, so the licence cannot be checked. Correct the date and time in Windows (Settings → Time &amp; language), then reopen SchoolHub. If the date is right, call SchoolHub on {{ config('contact.phone') }}.</p>
+                <p>This computer's date is earlier than SchoolHub has already seen. Correct it as shown, then press Check again.</p>
             @elseif ($st['state'] === 'none')
                 <p>Every school needs a licence code, even for the free trial. Ask SchoolHub for one, then type it below.</p>
             @elseif ($st['ends_on'])
@@ -106,6 +106,37 @@
         </div>
     @endif
 
+
+    @if ($st['state'] === 'clock')
+        @php($seen = \App\Support\Licensing\DesktopLicence::lastSeen())
+        {{-- Locked by the computer's clock: everything behind waits until the date is right. --}}
+        <div class="lc-clock" role="dialog" aria-modal="true" aria-labelledby="lc-clock-title">
+            <div class="lc-clock-card">
+                <div class="lc-clock-icon" aria-hidden="true">
+                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><circle cx="12" cy="12" r="9"/><path stroke-linecap="round" d="M12 7v5l3 2"/></svg>
+                </div>
+                <h2 id="lc-clock-title">This computer's date is wrong</h2>
+                <p class="lc-clock-lead">SchoolHub is locked until the date and time are correct, so licences and records stay right. Nothing has been lost.</p>
+
+                <div class="lc-clock-dates">
+                    <div><span>This computer says</span><b class="lc-bad">{{ now()->format('D j M Y, H:i') }}</b></div>
+                    <div><span>SchoolHub has already seen</span><b>{{ $seen?->format('D j M Y, H:i') ?? '-' }}</b></div>
+                </div>
+
+                <ol class="lc-clock-steps">
+                    <li><b>Right-click the clock</b> at the bottom-right corner of the screen and choose <b>Adjust date and time</b> (or open Settings → Time &amp; language → Date &amp; time).</li>
+                    <li>Turn on <b>Set time automatically</b> and <b>Set time zone automatically</b>, then click <b>Sync now</b> (needs internet; phone data is enough).</li>
+                    <li>No internet? Turn <b>Set time automatically</b> off, click <b>Change</b> next to "Set the date and time manually" and enter today's date and time.</li>
+                    <li>Check the time zone is <b>(UTC+03:00) Nairobi</b>.</li>
+                    <li>Come back here and press <b>Check again</b>.</li>
+                </ol>
+
+                <button type="button" class="lc-clock-btn" onclick="this.disabled = true; this.textContent = 'Checking…'; window.location.reload();">Check again</button>
+                <p class="lc-clock-help">The date is right and it still shows this? Call or WhatsApp SchoolHub on {{ config('contact.phone') }}.</p>
+            </div>
+        </div>
+    @endif
+
     <style>
         .lc-status { display: flex; flex-wrap: wrap; justify-content: space-between; gap: 1rem; border: 1px solid; border-left-width: 5px; border-radius: 12px; padding: 1rem 1.2rem; }
         .lc-status p { margin: .35rem 0 0; color: #334155; font-size: .9rem; max-width: 40rem; }
@@ -128,6 +159,26 @@
         .lc-row { display: flex; justify-content: space-between; padding: .45rem 0; border-bottom: 1px solid #f1f5f9; font-size: .875rem; color: #334155; }
         .lc-row:last-child { border-bottom: 0; }
         .lc-online { border-left: 4px solid #1d4ed8; }
+        .lc-clock { position: fixed; inset: 0; z-index: 60; display: grid; place-items: center; padding: 1rem; background: rgba(15, 23, 42, .6); backdrop-filter: blur(4px); animation: lc-fade .25s ease-out; }
+        .lc-clock-card { width: min(36rem, 100%); max-height: 100%; overflow: auto; background: #fff; border-radius: 16px; padding: 1.5rem 1.6rem; box-shadow: 0 30px 60px -20px rgba(15, 23, 42, .5); text-align: left; }
+        .lc-clock-icon { width: 2.75rem; height: 2.75rem; border-radius: 50%; display: grid; place-items: center; background: #fef2f2; color: #dc2626; margin-bottom: .6rem; }
+        .lc-clock-icon svg { width: 1.6rem; height: 1.6rem; }
+        .lc-clock-card h2 { margin: 0; font-size: 1.25rem; font-weight: 800; color: #16233a; }
+        .lc-clock-lead { margin: .35rem 0 .9rem; color: #475569; font-size: .9rem; }
+        .lc-clock-dates { display: grid; grid-template-columns: 1fr 1fr; gap: .6rem; margin-bottom: .9rem; }
+        .lc-clock-dates div { background: #f8fafc; border: 1px solid #e2e8f0; border-radius: 10px; padding: .55rem .7rem; }
+        .lc-clock-dates span { display: block; font-size: .7rem; font-weight: 700; text-transform: uppercase; letter-spacing: .04em; color: #64748b; }
+        .lc-clock-dates b { color: #16233a; font-size: .95rem; }
+        .lc-clock-dates b.lc-bad { color: #dc2626; }
+        .lc-clock-steps { margin: 0 0 1rem 1.15rem; padding: 0; list-style: decimal; color: #334155; font-size: .875rem; line-height: 1.5; }
+        .lc-clock-steps li { margin: .3rem 0; }
+        .lc-clock-btn { width: 100%; border: 0; border-radius: 10px; padding: .75rem 1rem; background: #1d4ed8; color: #fff; font-weight: 700; font-size: .95rem; cursor: pointer; }
+        .lc-clock-btn:hover { background: #1e40af; }
+        .lc-clock-btn:disabled { background: #60a5fa; cursor: wait; }
+        .lc-clock-help { margin: .7rem 0 0; text-align: center; color: #64748b; font-size: .78rem; }
+        @keyframes lc-fade { from { opacity: 0; } to { opacity: 1; } }
+        @media (prefers-reduced-motion: reduce) { .lc-clock { animation: none; } }
+        @media (max-width: 480px) { .lc-clock-dates { grid-template-columns: 1fr; } }
         .lc-link { display: inline-block; font-weight: 700; font-size: .875rem; color: #1d4ed8; }
     </style>
 </x-filament-panels::page>

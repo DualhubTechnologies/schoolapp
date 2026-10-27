@@ -6,6 +6,9 @@ folded into the change they belong to. Add an entry with every release.
 
 ## 27 October 2026
 
+- **Windows app locked by a wrong computer date:** a pop-up over the faded
+  page shows the computer's date beside the latest SchoolHub has seen,
+  step-by-step how to correct the clock in Windows, and Check again.
 - **A learner with fees records is never deleted.** Receipts (voided ones
   too) or bills: the learner's Delete button is greyed out with the
   reason, deleting several from the list keeps them and says who, and the

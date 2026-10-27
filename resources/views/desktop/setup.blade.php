@@ -43,6 +43,12 @@
         @media (prefers-reduced-motion: reduce) { .spin { animation-duration: 2.4s; } }
         .busy { display: none; margin-top: .6rem; text-align: center; color: #1e3a8a; font-size: .85rem; }
         form.is-busy .busy { display: block; }
+        .net { display: flex; align-items: center; gap: .5rem; border-radius: 8px; padding: .55rem .8rem; margin-bottom: .9rem; font-size: .85rem; font-weight: 600; border: 1px solid #e2e8f0; color: #475569; background: #f8fafc; }
+        .net::before { content: ""; width: .6rem; height: .6rem; border-radius: 50%; background: #94a3b8; flex: none; }
+        .net[data-state="online"] { color: #166534; background: #f0fdf4; border-color: #bbf7d0; }
+        .net[data-state="online"]::before { background: #16a34a; }
+        .net[data-state="offline"] { color: #991b1b; background: #fef2f2; border-color: #fecaca; }
+        .net[data-state="offline"]::before { background: #dc2626; }
         .note { margin: .7rem 0 0; text-align: center; color: #64748b; font-size: .78rem; }
         .code { font-family: ui-monospace, Consolas, monospace; letter-spacing: .1em; text-transform: uppercase; }
         @media (max-width: 720px) { .grid { grid-template-columns: 1fr 1fr; } .span2 { grid-column: 1 / -1; } }
@@ -69,7 +75,9 @@
         @if ($mode === 'online')
             <div class="info">Sign in with <b>your SchoolHub online email and password</b> and the <b>link code</b> from SchoolHub (or from Settings → Windows app online). Everything comes to this computer and stays in sync, staff sign in here with their online passwords, and your online subscription covers it. Needs internet for this step.</div>
 
-            <form method="POST" action="{{ route('desktop.setup.connect.store') }}" novalidate data-busy="Connecting… bringing your school here">
+            <div class="net" id="net" data-state="checking" role="status" data-check="{{ route('desktop.setup.connect.check') }}">Checking the internet connection…</div>
+
+            <form method="POST" action="{{ route('desktop.setup.connect.store') }}" novalidate data-busy="Connecting… bringing your school here" data-needs-internet>
                 @csrf
                 <div class="grid">
                     <div @class(['has-error' => $errors->has('code')])>
@@ -159,6 +167,47 @@
     </div>
 </div>
 <script>
+    // The online tab: checks the internet straight away and every few
+    // seconds, and keeps Connect off until online SchoolHub can be reached.
+    (function () {
+        var net = document.getElementById('net');
+        if (!net) { return; }
+        var form = document.querySelector('form[data-needs-internet]');
+        var button = form.querySelector('button[type=submit]');
+        var label = button.innerHTML;
+        var online = false;
+
+        function show(state) {
+            online = state === 'online';
+            net.dataset.state = state;
+            net.textContent = state === 'online'
+                ? 'Connected to the internet: ready to connect to SchoolHub online.'
+                : state === 'offline'
+                    ? 'No internet. Connect this computer (Wi-Fi or phone data is enough); this page checks again by itself.'
+                    : 'Checking the internet connection…';
+            if (!form.classList.contains('is-busy')) {
+                button.disabled = !online;
+                button.innerHTML = online ? label : 'Waiting for internet…';
+            }
+        }
+
+        function check() {
+            if (!navigator.onLine) { show('offline'); return; }
+            fetch(net.dataset.check, { headers: { 'Accept': 'application/json' } })
+                .then(function (r) { return r.json(); })
+                .then(function (d) { show(d.online ? 'online' : 'offline'); })
+                .catch(function () { show('offline'); });
+        }
+
+        form.addEventListener('submit', function (e) {
+            if (!online) { e.preventDefault(); e.stopImmediatePropagation(); check(); }
+        });
+        window.addEventListener('online', check);
+        window.addEventListener('offline', function () { show('offline'); });
+        check();
+        setInterval(check, 5000);
+    })();
+
     // While the form is being sent: a spinner on the button, which cannot be pressed twice.
     document.querySelectorAll('form[data-busy]').forEach(function (form) {
         form.addEventListener('submit', function () {

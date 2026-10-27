@@ -33,6 +33,7 @@ Route::get('/payslips/{period}/all', [PayslipController::class, 'downloadAll'])
 Route::get('/setup', [DesktopSetupController::class, 'show'])->name('desktop.setup');
 Route::post('/setup', [DesktopSetupController::class, 'store'])->middleware('throttle:10,1')->name('desktop.setup.store');
 Route::get('/setup/online', [DesktopSetupController::class, 'showConnect'])->name('desktop.setup.connect');
+Route::get('/setup/online/check', [DesktopSetupController::class, 'checkOnline'])->middleware('throttle:60,1')->name('desktop.setup.connect.check');
 Route::post('/setup/online', [DesktopSetupController::class, 'connect'])->middleware('throttle:10,1')->name('desktop.setup.connect.store');
 
 // The Windows app swaps a short licence code for its signed licence here,

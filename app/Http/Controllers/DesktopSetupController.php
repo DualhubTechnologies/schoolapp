@@ -7,6 +7,7 @@ use App\Http\Middleware\RequireDesktopSetup;
 use App\Models\School;
 use App\Models\User;
 use App\Services\Subscriptions\SubscriptionManager;
+use App\Services\Sync\HttpSyncTransport;
 use App\Services\Sync\SyncClient;
 use App\Services\Sync\SyncServer;
 use App\Support\Edition;
@@ -14,6 +15,7 @@ use App\Support\PasswordStrength;
 use Database\Seeders\RoleSeeder;
 use Illuminate\Contracts\View\View;
 use Illuminate\Http\Client\ConnectionException;
+use Illuminate\Http\JsonResponse;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
 use Illuminate\Support\Arr;
@@ -47,6 +49,14 @@ class DesktopSetupController extends Controller
         }
 
         return view('desktop.setup', ['types' => School::TYPES, 'mode' => 'online']);
+    }
+
+    /** For the setup page: can this computer reach online SchoolHub now? */
+    public function checkOnline(): JsonResponse
+    {
+        abort_unless(Edition::isDesktop(), 404);
+
+        return response()->json(['online' => HttpSyncTransport::reachable()]);
     }
 
     /**

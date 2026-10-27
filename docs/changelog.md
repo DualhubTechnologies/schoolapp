@@ -6,6 +6,10 @@ folded into the change they belong to. Add an entry with every release.
 
 ## 27 October 2026
 
+- **Windows app setup, "Already on SchoolHub online":** checks the
+  internet as soon as the tab opens and every few seconds
+  (`/setup/online/check`), says plainly when there is none, and keeps
+  Connect off until online SchoolHub can be reached.
 - **Windows app setup:** pressing Connect or Set up shows a spinner and a
   "please wait" note (and cannot be pressed twice); a refused connect
   says why: no account with that email, an account of another school

@@ -181,3 +181,13 @@ it('lets the school make and download backups, only in the Windows app', functio
     config(['app.edition' => 'server']);
     expect(Backups::canAccess())->toBeFalse();
 });
+
+it('tells the online setup tab straight away whether online SchoolHub can be reached', function () {
+    Http::fake(['*/up' => Http::response('ok')]);
+    $this->getJson(route('desktop.setup.connect.check'))->assertOk()->assertJson(['online' => true]);
+
+    Http::fake(fn () => throw new ConnectionException('offline'));
+    $this->getJson(route('desktop.setup.connect.check'))->assertOk()->assertJson(['online' => false]);
+
+    $this->get(route('desktop.setup.connect'))->assertOk()->assertSee('Checking the internet connection');
+});

@@ -7,6 +7,7 @@ use App\Models\User;
 use App\Support\Edition;
 use App\Support\Licensing\DesktopLicence;
 use App\Support\Licensing\Machine;
+use Illuminate\Contracts\Encryption\DecryptException;
 use Illuminate\Database\QueryException;
 use Illuminate\Database\UniqueConstraintViolationException;
 use Illuminate\Support\Facades\Cache;
@@ -601,9 +602,20 @@ class SyncClient
         $db->db()->table('sync_inbox')->where('id', $item->id)->delete();
     }
 
+    /**
+     * The link's token. One this computer can no longer read (saved by a
+     * version before DesktopKey, under the installer's key) is dropped, so
+     * the Sync page asks for a new link code.
+     */
     protected function token(): string
     {
-        return Crypt::decryptString((string) $this->state(self::TOKEN));
+        try {
+            return Crypt::decryptString((string) $this->state(self::TOKEN));
+        } catch (DecryptException) {
+            DB::connection($this->connection)->table('app_state')->where('key', self::TOKEN)->delete();
+
+            throw new RuntimeException('This computer needs linking again after the update. Online, open Windows app and make a new link code, then type it in below. Nothing on this computer is lost.');
+        }
     }
 
     public function state(string $key, ?string $default = null): ?string

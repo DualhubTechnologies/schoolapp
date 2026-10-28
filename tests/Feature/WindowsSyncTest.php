@@ -11,10 +11,12 @@ use App\Services\Sync\SyncClient;
 use App\Services\Sync\SyncReviews;
 use App\Services\Sync\SyncServer;
 use App\Services\Sync\SyncTransport;
+use App\Support\DesktopKey;
 use App\Support\Licensing\LicenceIssuer;
 use App\Support\Licensing\LicenceKey;
 use Database\Seeders\RoleSeeder;
 use Illuminate\Database\Connection;
+use Illuminate\Encryption\Encrypter;
 use Illuminate\Support\Facades\Artisan;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\File;
@@ -515,4 +517,39 @@ it('keeps a learner with fees records when the learner is deleted on the other s
         // ...and it went back online, with its payment.
         ->and($this->online->table('students')->where('name', 'Nakato Sarah')->exists())->toBeTrue()
         ->and((float) $this->online->table('student_payments')->value('amount'))->toBe(90000.0);
+});
+
+it('asks for a new link code, not "The MAC is invalid", when an update cannot read the link', function () {
+    // The token saved under another key, as versions before DesktopKey did with each build's own.
+    $other = new Encrypter(Encrypter::generateKey('aes-256-cbc'), 'aes-256-cbc');
+    $this->here->table('app_state')->where('key', SyncClient::TOKEN)->update(['value' => $other->encryptString('old-token')]);
+
+    expect(fn () => $this->client->run())->toThrow(RuntimeException::class, 'needs linking again after the update')
+        ->and($this->client->isLinked())->toBeFalse()
+        ->and($this->client->linkedSchool())->toBe('Hope Secondary');
+
+    // A new code links it again, and it syncs.
+    $code = $this->server->makeLinkCode(School::on('server')->findOrFail($this->onlineSchool), 'Head teacher');
+    $this->client->link($code);
+    expect($this->client->run())->toHaveKey('received');
+});
+
+it('gives the Windows app its own key, kept through updates', function () {
+    File::delete(DesktopKey::file());
+    $installerKey = config('app.key');
+
+    DesktopKey::apply();
+    $key = config('app.key');
+    $secret = encrypt('kept');
+
+    // The next version comes with another installer key: this computer's key stays.
+    config(['app.key' => 'base64:'.base64_encode(Encrypter::generateKey('aes-256-cbc'))]);
+    DesktopKey::apply();
+
+    expect($key)->not->toBe($installerKey)
+        ->and(config('app.key'))->toBe($key)
+        ->and(decrypt($secret))->toBe('kept')
+        ->and(trim(File::get(DesktopKey::file())))->toBe($key);
+
+    File::delete(DesktopKey::file());
 });

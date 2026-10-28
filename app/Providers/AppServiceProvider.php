@@ -5,6 +5,8 @@ namespace App\Providers;
 use App\Exceptions\PlanLimitReached;
 use App\Models\School;
 use App\Observers\SchoolObserver;
+use App\Support\DesktopKey;
+use App\Support\Edition;
 use App\Support\ErrorRecorder;
 use App\Support\PasswordStrength;
 use App\Support\SqliteDates;
@@ -50,6 +52,11 @@ class AppServiceProvider extends ServiceProvider
      */
     public function boot(): void
     {
+        // Windows app: its own key, the same through updates.
+        if (Edition::isDesktop()) {
+            DesktopKey::apply();
+        }
+
         $this->configureDefaults();
         // Date-only values saved as "2026-10-01" on SQLite (the Windows app), as MySQL does.
         SqliteDates::register();

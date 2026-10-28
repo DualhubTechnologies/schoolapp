@@ -111,6 +111,16 @@ it('names learners with no parent or phone number, and links to them on Students
         ->assertCanNotSeeTableRecords(Student::whereIn('name', ['Reachable Child', 'Own Phone'])->get());
 });
 
+it('gives a bursar, who cannot open Learners, no dead link for learners with no parent', function () {
+    ($this->learner)('No Parent');
+    $this->actingAs(User::factory()->create(['school_id' => $this->school->id])->assignRole('Bursar'));
+
+    $finding = findings()['no-contact'];
+
+    expect($finding['url'])->toBeNull()
+        ->and($finding['detail'])->toEndWith('The admissions office can add their parents.');
+});
+
 it('names the learners billed this term who have paid nothing', function () {
     $paid = ($this->learner)('Brian Okello');
     $unpaid = ($this->learner)('Carol Auma');

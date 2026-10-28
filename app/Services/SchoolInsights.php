@@ -305,8 +305,11 @@ class SchoolInsights
 
         return [$this->item('no-contact', 'warning', 'heroicon-o-phone-x-mark',
             $ids->count().' '.($ids->count() === 1 ? 'learner has' : 'learners have').' no parent or phone number',
-            'Fee reminders, messages and parent logins cannot reach them: '.$this->names($ids).'.',
-            StudentResource::getUrl('index', ['filters' => ['status' => ['value' => 'active'], 'parent_contact' => ['value' => '0']]]))];
+            'Fee reminders, messages and parent logins cannot reach them: '.$this->names($ids).'.'
+                .(StudentResource::canAccess() ? '' : ' The admissions office can add their parents.'),
+            StudentResource::canAccess()
+                ? StudentResource::getUrl('index', ['filters' => ['status' => ['value' => 'active'], 'parent_contact' => ['value' => '0']]])
+                : null)];
     }
 
     // ── Library and sick bay ──

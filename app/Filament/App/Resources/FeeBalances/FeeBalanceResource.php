@@ -4,14 +4,20 @@ namespace App\Filament\App\Resources\FeeBalances;
 
 use App\Filament\App\Resources\FeeBalances\Pages\ListFeeBalances;
 use App\Filament\App\Resources\FeeBalances\Tables\FeeBalancesTable;
+use App\Filament\App\Resources\Students\StudentResource;
 use App\Filament\Concerns\GatedByModule;
 use App\Filament\Concerns\PlacedInMenu;
+use App\Filament\Pages\ReceivePayment;
+use App\Filament\Pages\StudentAccount;
 use App\Models\Student;
 use BackedEnum;
+use Filament\Actions\Action;
 use Filament\Resources\Resource;
 use Filament\Support\Icons\Heroicon;
 use Filament\Tables\Table;
+use Illuminate\Contracts\Support\Htmlable;
 use Illuminate\Database\Eloquent\Builder;
+use Illuminate\Database\Eloquent\Model;
 
 /**
  * "Who has paid, who has not."
@@ -25,8 +31,50 @@ class FeeBalanceResource extends Resource
     use GatedByModule;
     use PlacedInMenu;
 
-    /** A learner's account is reached from their search result ("Fees account"); listing them again would repeat every name. */
-    protected static bool $isGloballySearchable = false;
+    /**
+     * A learner's account is reached from their Learners search result
+     * ("Fees account"). Only those who cannot open Learners (a bursar)
+     * find learners here instead, straight to their account.
+     */
+    public static function canGloballySearch(): bool
+    {
+        return parent::canGloballySearch() && ! StudentResource::canAccess();
+    }
+
+    /** @return list<string> */
+    public static function getGloballySearchableAttributes(): array
+    {
+        return ['name', 'admission_no', 'schoolpay_code'];
+    }
+
+    public static function getGlobalSearchResultTitle(Model $record): string|Htmlable
+    {
+        return StudentResource::getRecordTitle($record) ?? '';
+    }
+
+    /** @return array<string, string> */
+    public static function getGlobalSearchResultDetails(Model $record): array
+    {
+        if (! $record instanceof Student) {
+            return [];
+        }
+
+        return array_filter([
+            'Class' => $record->schoolClass?->name,
+            'Balance' => 'UGX '.number_format((float) $record->getAttribute('balance_owing')),
+        ]);
+    }
+
+    public static function getGlobalSearchResultUrl(Model $record): string
+    {
+        return StudentAccount::getUrl(['student' => $record->getKey()]);
+    }
+
+    /** @return array<Action> */
+    public static function getGlobalSearchResultActions(Model $record): array
+    {
+        return [Action::make('pay')->label('Receive payment')->url(ReceivePayment::getUrl(['student' => $record->getKey()]))];
+    }
 
     protected static ?string $model = Student::class;
 

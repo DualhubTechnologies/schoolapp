@@ -255,9 +255,10 @@ class ListBilling extends ListRecords
                         ->where(fn (Builder $q) => $q
                             ->where('name', 'like', "%{$search}%")
                             ->orWhere('admission_no', 'like', "%{$search}%"))
+                        ->with('schoolClass')
                         ->limit(30)
                         ->get()
-                        ->mapWithKeys(fn (Student $s) => [$s->id => "{$s->name} ({$s->admission_no})"])
+                        ->mapWithKeys(fn (Student $s) => [$s->id => trim("{$s->name} ({$s->admission_no}) {$s->schoolClass?->name}")])
                         ->toArray())
                     ->getOptionLabelUsing(fn ($value): ?string => Student::find($value)?->name)
                     ->searchable()

@@ -1,5 +1,6 @@
 <?php
 
+use App\Filament\App\Resources\FeeBalances\FeeBalanceResource;
 use App\Filament\App\Resources\Payments\PaymentResource;
 use App\Filament\App\Resources\Students\StudentResource;
 use App\Models\School;
@@ -42,4 +43,19 @@ it('finds a receipt by its number and opens the receipt', function () {
 
     expect($result->title)->toContain('UGX 150,000')
         ->and($result->url)->toBe(route('filament.app.fees.receipt', ['payment' => $payment->id]));
+});
+
+it('lets a bursar, who cannot open Learners, find a learner and go straight to their fees account', function () {
+    expect(FeeBalanceResource::canGloballySearch())->toBeFalse();
+
+    $this->actingAs(User::factory()->create(['school_id' => $this->school->id])->assignRole('Bursar'));
+
+    expect(StudentResource::canGloballySearch())->toBeFalse();
+
+    $result = FeeBalanceResource::getGlobalSearchResults('Aisha')->sole();
+
+    expect($result->title)->toBe('Aisha Nakato (ADM-001)')
+        ->and($result->details)->toMatchArray(['Class' => 'P.4', 'Balance' => 'UGX 0'])
+        ->and($result->url)->toContain('/student-account?student='.$this->student->id)
+        ->and(collect($result->actions)->map->getLabel()->all())->toBe(['Receive payment']);
 });

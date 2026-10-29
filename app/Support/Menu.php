@@ -68,6 +68,7 @@ use App\Filament\Pages\SchoolPaySettings;
 use App\Filament\Pages\SchoolProfile;
 use App\Filament\Pages\SchoolSubscription;
 use App\Filament\Pages\SendMessages;
+use App\Filament\Pages\SpeedCheck;
 use App\Filament\Pages\StaffIdCards;
 use App\Filament\Pages\StudentIdCards;
 use App\Filament\Pages\SubjectChoices;
@@ -186,6 +187,7 @@ class Menu
         Licence::class => ['Settings', 7, 'Licence'],
         OnlineSync::class => ['Settings', 8, 'Sync with online'],
         WindowsApp::class => ['Settings', 8, 'Windows app'],
+        SpeedCheck::class => ['Settings', 9, 'Speed check'],
     ];
 
     /** @return array{0: string, 1: int, 2: string}|null */

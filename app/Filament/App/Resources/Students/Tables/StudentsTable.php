@@ -2,6 +2,7 @@
 
 namespace App\Filament\App\Resources\Students\Tables;
 
+use App\Filament\App\Resources\Students\StudentResource;
 use App\Filament\Pages\ReceivePayment;
 use App\Filament\Pages\StudentAccount;
 use App\Filament\Pages\StudentIdCards;
@@ -248,7 +249,8 @@ class StudentsTable
                         }),
 
                     ViewAction::make(),
-                    EditAction::make(),
+                    // Only the admissions office changes learners (StudentResource::canEdit).
+                    EditAction::make()->visible(fn (Student $record): bool => StudentResource::canEdit($record)),
 
                 ]),
             ])
@@ -282,6 +284,7 @@ class StudentsTable
                         ->action(fn (Collection $records) => static::markNewLearners($records, false))
                         ->deselectRecordsAfterCompletion(),
                     ConfirmWithPassword::on(DeleteBulkAction::make())
+                        ->visible(fn (): bool => StudentResource::canDeleteAny())
                         ->modalDescription('Learners with fees records (receipts or bills) are kept: change their status to Withdrawn, Transferred or Completed instead.')
                         ->action(function (Collection $records): void {
                             [$kept, $deleted] = $records->partition(fn (Student $student): bool => $student->hasFeesRecords());

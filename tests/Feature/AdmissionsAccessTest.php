@@ -5,6 +5,8 @@ use App\Filament\App\Resources\Students\Pages\ListStudents;
 use App\Filament\App\Resources\Students\StudentResource;
 use App\Filament\Pages\EnterMarks;
 use App\Filament\Pages\ReceivePayment;
+use App\Filament\Pages\StaffIdCards;
+use App\Filament\Pages\StudentIdCards;
 use App\Models\School;
 use App\Models\SchoolClass;
 use App\Models\Staff;
@@ -48,7 +50,18 @@ it('lets a teacher look learners up but not admit, change or remove them', funct
 
     Livewire::test(ListStudents::class)
         ->assertActionHidden('create')
-        ->assertActionHidden('importStudents');
+        ->assertActionHidden('importStudents')
+        ->assertTableActionVisible('view', $this->student)
+        ->assertTableActionHidden('edit', $this->student)
+        ->assertTableBulkActionHidden('delete');
+});
+
+it('sends the admissions office to HR for a staff card\'s missing details, not to a page it cannot open', function () {
+    $this->actingAs(User::factory()->create(['school_id' => $this->school->id])->assignRole('Admissions'));
+    $staff = Staff::create(['school_id' => $this->school->id, 'name' => 'Okello James', 'staff_no' => 'ST-9', 'position' => 'Teacher', 'employment_date' => '2024-01-01', 'status' => 'active']);
+
+    expect((new StaffIdCards)->editUrl($staff))->toBeNull()
+        ->and((new StudentIdCards)->editUrl($this->student))->toBe(StudentResource::getUrl('edit', ['record' => $this->student]));
 });
 
 it('lets the admissions office admit and change learners', function () {

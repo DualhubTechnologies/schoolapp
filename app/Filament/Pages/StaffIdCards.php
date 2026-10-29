@@ -105,9 +105,9 @@ class StaffIdCards extends IdCardsPage
             ->get();
     }
 
-    public function editUrl(Student|Staff $holder): string
+    public function editUrl(Student|Staff $holder): ?string
     {
-        return StaffResource::getUrl('edit', ['record' => $holder]);
+        return StaffResource::canAccess() && StaffResource::canEdit($holder) ? StaffResource::getUrl('edit', ['record' => $holder]) : null;
     }
 
     public function filtersView(): string

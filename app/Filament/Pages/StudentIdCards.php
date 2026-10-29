@@ -160,9 +160,9 @@ class StudentIdCards extends IdCardsPage
             ->get();
     }
 
-    public function editUrl(Student|Staff $holder): string
+    public function editUrl(Student|Staff $holder): ?string
     {
-        return StudentResource::getUrl('edit', ['record' => $holder]);
+        return StudentResource::canEdit($holder) ? StudentResource::getUrl('edit', ['record' => $holder]) : null;
     }
 
     public function filtersView(): string

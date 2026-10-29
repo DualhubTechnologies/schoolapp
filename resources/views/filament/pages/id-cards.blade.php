@@ -106,7 +106,11 @@
                         @if (! $card['ready'])
                             <div class="idc-missing-note">
                                 Missing: {{ implode(', ', $card['missing']) }}.
-                                <a href="{{ $this->editUrl($card['holder']) }}" target="_blank" class="idc-link">Add it</a>
+                                @if ($editUrl = $this->editUrl($card['holder']))
+                                    <a href="{{ $editUrl }}" target="_blank" class="idc-link">Add it</a>
+                                @else
+                                    {{ $card['holder'] instanceof \App\Models\Staff ? 'Ask HR to add it.' : 'Ask the admissions office to add it.' }}
+                                @endif
                             </div>
                         @endif
                     </div>

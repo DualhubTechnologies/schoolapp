@@ -80,7 +80,8 @@ abstract class IdCardsPage extends Page
     abstract protected function holdersById(array $ids): Collection;
 
     /** Where to fill in what a card is missing. */
-    abstract public function editUrl(Student|Staff $holder): string;
+    /** Where to add a missing detail, or null for someone who may not change the record. */
+    abstract public function editUrl(Student|Staff $holder): ?string;
 
     /** The Blade partial with this page's filters. */
     abstract public function filtersView(): string;

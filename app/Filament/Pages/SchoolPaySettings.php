@@ -37,7 +37,7 @@ class SchoolPaySettings extends Page
 
     public static function canAccess(): bool
     {
-        return ! Edition::isDesktop() && filled(auth()->user()?->school_id) && Modules::allows('settings');
+        return ! Edition::isDesktop() && filled(auth()->user()?->school_id) && Modules::allows('settings') && Modules::allows('fees');
     }
 
     public function mount(): void

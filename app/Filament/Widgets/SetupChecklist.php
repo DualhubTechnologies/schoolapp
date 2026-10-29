@@ -19,6 +19,7 @@ use App\Models\Staff;
 use App\Models\Student;
 use App\Models\Term;
 use App\Models\User;
+use App\Support\Modules;
 use Filament\Widgets\Widget;
 
 /**
@@ -67,7 +68,7 @@ class SetupChecklist extends Widget
             $id = $this->schoolId();
             $school = School::find($id);
 
-            return [
+            return array_values(array_filter([
                 [
                     'title' => 'Complete your school profile',
                     'text' => 'Logo, motto, address and the head teacher\'s signature - they appear on receipts and report cards.',
@@ -86,12 +87,13 @@ class SetupChecklist extends Widget
                     'url' => SchoolClassResource::getUrl(),
                     'done' => SchoolClass::where('school_id', $id)->exists(),
                 ],
-                [
+                // Not for a school that switched fees off (Settings → Modules).
+                Modules::allows('fees') ? [
                     'title' => 'Set up fees',
                     'text' => 'What each class pays this term, so balances and receipts work.',
                     'url' => FeeStructureResource::getUrl(),
                     'done' => FeeStructure::where('school_id', $id)->exists(),
-                ],
+                ] : null,
                 [
                     'title' => 'Add your learners',
                     'text' => 'Admit each learner with a parent\'s phone number, or import a whole class from Excel.',
@@ -101,10 +103,10 @@ class SetupChecklist extends Widget
                 [
                     'title' => 'Add staff and give them logins',
                     'text' => 'Start with your bursar, so fees can be received from day one, then your teachers. Each sees only their own work: a bursar sees fees, a teacher sees marks.',
-                    'url' => Staff::where('school_id', $id)->exists() ? UserResource::getUrl('create') : StaffResource::getUrl('create'),
+                    'url' => Staff::where('school_id', $id)->exists() || ! Modules::allows('hr') ? UserResource::getUrl('create') : StaffResource::getUrl('create'),
                     'done' => User::where('school_id', $id)->count() > 1,
                 ],
-            ];
+            ]));
         });
     }
 }

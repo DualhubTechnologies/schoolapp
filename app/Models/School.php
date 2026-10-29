@@ -21,6 +21,7 @@ use Illuminate\Support\Str;
  * @property string|null $schoolpay_webhook_token
  * @property CarbonImmutable|null $schoolpay_synced_at
  * @property string|null $schoolpay_sync_error
+ * @property list<string>|null $modules_off modules switched off for the whole school (Settings → Modules)
  */
 class School extends Model
 {
@@ -110,6 +111,7 @@ class School extends Model
             'schoolpay_enabled' => 'boolean',
             'schoolpay_api_password' => 'encrypted',
             'schoolpay_synced_at' => 'datetime',
+            'modules_off' => 'array',
         ];
     }
 

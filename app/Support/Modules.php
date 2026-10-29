@@ -10,7 +10,8 @@ use App\Models\User;
  *
  * The school administrator ticks modules per user (Settings → Users). A
  * user with nothing ticked gets their role's defaults. School Admins (and
- * Super Admins) always have everything.
+ * Super Admins) always have everything the school has switched on
+ * (Settings → Modules).
  *
  * Every page and resource is mapped to a module below; the same check
  * hides it from the menu and blocks its URL.
@@ -61,6 +62,13 @@ class Modules
 
     /** Modules only primary schools have: the school van is a primary thing. */
     public const PRIMARY_ONLY = ['transport'];
+
+    /**
+     * What a school may switch off for everyone (Settings → Modules). The
+     * rest (learners, admissions, academics set-up, settings) is the core
+     * every school needs.
+     */
+    public const SWITCHABLE = ['fees', 'finance', 'transport', 'exams', 'attendance', 'messages', 'id_cards', 'promotion', 'hr', 'library', 'sickbay', 'stores'];
 
     /** Roles that always have every module. */
     public const FULL_ACCESS_ROLES = ['Super Admin', 'School Admin'];
@@ -228,7 +236,7 @@ class Modules
 
     /**
      * The modules a school can use: all of them, except the primary-only
-     * ones (transport) for a secondary school.
+     * ones (transport) for a secondary school and those it switched off.
      *
      * @return list<string>
      */
@@ -240,7 +248,40 @@ class Modules
             $keys = array_values(array_diff($keys, self::PRIMARY_ONLY));
         }
 
-        return $keys;
+        return array_values(array_diff($keys, static::switchedOff($school)));
+    }
+
+    /**
+     * The modules the school switched off; marks for all subjects go with
+     * exams.
+     *
+     * @return list<string>
+     */
+    public static function switchedOff(?School $school): array
+    {
+        $off = array_values(array_intersect((array) ($school->modules_off ?? []), self::SWITCHABLE));
+
+        if (in_array('exams', $off, true)) {
+            $off[] = 'exams_all';
+        }
+
+        return $off;
+    }
+
+    /**
+     * The modules this school can switch on or off.
+     *
+     * @return array<string, string> key => label
+     */
+    public static function switchable(?School $school = null): array
+    {
+        $keys = self::SWITCHABLE;
+
+        if ($school && $school->school_type === School::TYPE_SECONDARY) {
+            $keys = array_diff($keys, self::PRIMARY_ONLY);
+        }
+
+        return collect(self::LIST)->only($keys)->map(fn (array $module): string => $module[0])->all();
     }
 
     public static function allows(string $module): bool

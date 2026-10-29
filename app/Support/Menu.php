@@ -63,6 +63,7 @@ use App\Filament\Pages\Reports\EnrolmentReport;
 use App\Filament\Pages\Reports\FeeCollectionsReport;
 use App\Filament\Pages\Reports\FeesByClassReport;
 use App\Filament\Pages\Reports\StockReport;
+use App\Filament\Pages\SchoolModules;
 use App\Filament\Pages\SchoolPaySettings;
 use App\Filament\Pages\SchoolProfile;
 use App\Filament\Pages\SchoolSubscription;
@@ -177,6 +178,7 @@ class Menu
         DeductionTypeResource::class => ['School Setup', 13, 'Deduction Types'],
 
         SchoolProfile::class => ['Settings', 1, 'School Profile'],
+        SchoolModules::class => ['Settings', 2, 'Modules'],
         SchoolPaySettings::class => ['Settings', 3, 'SchoolPay'],
         AuditTrailResource::class => ['Settings', 4, 'Audit Trail'],
         Backups::class => ['Settings', 5, 'Backups'],

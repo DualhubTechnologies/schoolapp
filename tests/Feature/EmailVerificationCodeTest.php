@@ -195,3 +195,14 @@ it('lets the platform owner confirm an administrator by hand', function () {
     expect(EmailVerificationCode::isPending($user->refresh()))->toBeFalse()
         ->and($user->email_verified_at)->not->toBeNull();
 });
+
+it('forgets a field\'s error once the person changes that field', function () {
+    $user = User::factory()->create(['password' => 'Abc123']);
+
+    Livewire::test(Login::class)
+        ->fillForm(['email' => $user->email, 'password' => 'not-the-password'])
+        ->call('authenticate')
+        ->assertHasFormErrors(['email'])
+        ->set('data.email', $user->email.'x')
+        ->assertHasNoFormErrors(['email']);
+});

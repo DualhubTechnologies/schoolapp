@@ -3,7 +3,8 @@
  *   1. registers the service worker, so the app can be installed;
  *   2. the "add to home screen" tip (Android install prompt, or iPhone steps);
  *   3. calmer handling of failed background requests, and a clear notice
- *      when the phone loses its internet connection (see below).
+ *      when the phone loses its internet connection (see below);
+ *   4. a field's error message goes as soon as the person types in it.
  */
 (function () {
     /*
@@ -190,4 +191,27 @@
             },
         }));
     });
+})();
+
+/*
+ * 4. A field's error message ("That link code is wrong…", "The email field
+ * is required") goes as soon as the person starts correcting it, rather
+ * than staying until the form is sent again. The server forgets it too
+ * when the field is next sent (AppServiceProvider), so it does not come
+ * back. Filament fields, and any field wrapped in [data-field] on our own
+ * pages.
+ */
+(function () {
+    const clear = (event) => {
+        const field = event.target instanceof Element && event.target.closest('.fi-fo-field, [data-field]');
+
+        if (!field) return;
+
+        field.querySelectorAll('[data-validation-error]').forEach((error) => error.remove());
+        field.querySelectorAll('.fi-invalid').forEach((input) => input.classList.remove('fi-invalid'));
+        field.querySelectorAll('[aria-invalid="true"]').forEach((input) => input.removeAttribute('aria-invalid'));
+    };
+
+    document.addEventListener('input', clear, true);
+    document.addEventListener('change', clear, true);
 })();

@@ -33,7 +33,10 @@ use Illuminate\Support\Facades\Event;
 use Illuminate\Support\Facades\URL;
 use Illuminate\Support\ServiceProvider;
 use Illuminate\Validation\Rules\Password;
+use Livewire\Component;
 use Spatie\Activitylog\Facades\Activity;
+
+use function Livewire\on;
 
 class AppServiceProvider extends ServiceProvider
 {
@@ -58,6 +61,7 @@ class AppServiceProvider extends ServiceProvider
         }
 
         $this->configureDefaults();
+        $this->clearErrorsOnChange();
         // Date-only values saved as "2026-10-01" on SQLite (the Windows app), as MySQL does.
         SqliteDates::register();
         $this->configureAuthLogging();
@@ -226,6 +230,18 @@ class AppServiceProvider extends ServiceProvider
      * Log login, logout, and failed login attempts to the audit trail,
      * including the requesting IP address and device (user agent).
      */
+    /**
+     * A field's error goes once the field is changed (the page already hid
+     * it as the person typed: public/js/schoolhub-mobile.js). Cleared before
+     * the change is applied, so a check made on the new value still shows.
+     */
+    protected function clearErrorsOnChange(): void
+    {
+        on('update', function (Component $component, string $path): void {
+            $component->resetErrorBag($path);
+        });
+    }
+
     protected function configureAuthLogging(): void
     {
         Event::listen(Login::class, function (Login $event) {

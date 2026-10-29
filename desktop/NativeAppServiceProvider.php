@@ -29,7 +29,8 @@ class NativeAppServiceProvider implements ProvidesPhpIni
     }
 
     /**
-     * Room for report cards, ID card PDFs and imports of a whole school.
+     * Room for report cards, ID card PDFs and imports of a whole school,
+     * and OPcache for quicker pages (ignored if the PHP build lacks it).
      *
      * @return array<string, string>
      */
@@ -40,6 +41,12 @@ class NativeAppServiceProvider implements ProvidesPhpIni
             'max_execution_time' => '300',
             'upload_max_filesize' => '20M',
             'post_max_size' => '25M',
+            // Keep compiled PHP in memory: the app's one PHP server otherwise
+            // reads and compiles every file again on each page.
+            'opcache.enable' => '1',
+            'opcache.enable_cli' => '1',
+            'opcache.memory_consumption' => '128',
+            'opcache.max_accelerated_files' => '20000',
         ];
     }
 }

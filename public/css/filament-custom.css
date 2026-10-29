@@ -4270,3 +4270,21 @@ a.sh-sync[href]:hover { border-color: #cbd5e1; background: #fff; }
 @media (prefers-reduced-motion: reduce) { .sh-sync-dot.is-pulsing { animation: none; } }
 @media (max-width: 640px) { .sh-sync-label { display: none; } .sh-sync { padding: 0.45rem; } }
 .dark .sh-sync { background: rgba(255, 255, 255, 0.04); }
+
+/* Windows app: a new version is ready to install (DesktopUpdates). */
+.sh-update button {
+    display: inline-flex;
+    align-items: center;
+    gap: 0.4rem;
+    padding: 0.38rem 0.75rem;
+    border-radius: 999px;
+    border: 1px solid #1d4ed8;
+    background: #1d4ed8;
+    color: #fff;
+    font-size: 0.78rem;
+    font-weight: 600;
+    white-space: nowrap;
+    cursor: pointer;
+}
+.sh-update button:hover { background: #1e40af; }
+@media (max-width: 640px) { .sh-update span { display: none; } .sh-update button { padding: 0.45rem; } }

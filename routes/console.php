@@ -3,6 +3,7 @@
 use App\Models\ErrorOccurrence;
 use App\Models\SiteVisit;
 use App\Services\Sync\SyncClient;
+use App\Support\DesktopUpdates;
 use App\Support\Edition;
 use App\Support\SystemHealth;
 use Illuminate\Foundation\Inspiring;
@@ -64,6 +65,14 @@ Schedule::command('sync:run')
     ->everyMinute()
     ->when(fn (): bool => Edition::isDesktop() && app(SyncClient::class)->isDue())
     ->withoutOverlapping(30)
+    ->onOneServer();
+
+// Windows app: look for a new version every few hours (it also looks when
+// it starts); one found downloads in the background (DesktopUpdates).
+Schedule::call(fn () => DesktopUpdates::check())
+    ->name('desktop-updates')
+    ->everyFourHours()
+    ->when(fn (): bool => Edition::isDesktop())
     ->onOneServer();
 
 // "Pay now" payments MTN has not called back about (see MomoCheckout).

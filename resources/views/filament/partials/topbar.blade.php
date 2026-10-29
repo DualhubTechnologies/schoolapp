@@ -120,6 +120,18 @@
             </a>
         @endif
 
+        {{-- Windows app: a new version downloaded in the background (DesktopUpdates). --}}
+        @if ($user?->school_id && ($newVersion = \App\Support\DesktopUpdates::ready()))
+            <form method="POST" action="{{ route('desktop.update.install') }}" class="sh-update"
+                  onsubmit="return confirm('SchoolHub closes for about a minute to install version {{ $newVersion }}, then opens again. Everything saved stays. Update now?')">
+                @csrf
+                <button type="submit" title="Version {{ $newVersion }} is downloaded and ready to install.">
+                    <svg width="16" height="16" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24" aria-hidden="true"><path stroke-linecap="round" stroke-linejoin="round" d="M3 16.5v2.25A2.25 2.25 0 005.25 21h13.5A2.25 2.25 0 0021 18.75V16.5M16.5 12L12 16.5m0 0L7.5 12m4.5 4.5V3"/></svg>
+                    <span>Update ready · Restart</span>
+                </button>
+            </form>
+        @endif
+
         {{-- Subscribed plan --}}
         @if ($plan)
             @php $tag = $canManageSub ? 'a' : 'div'; @endphp

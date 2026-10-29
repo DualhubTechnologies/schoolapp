@@ -6,6 +6,7 @@ use App\Exceptions\PlanLimitReached;
 use App\Models\School;
 use App\Observers\SchoolObserver;
 use App\Support\DesktopKey;
+use App\Support\DesktopUpdates;
 use App\Support\Edition;
 use App\Support\ErrorRecorder;
 use App\Support\PasswordStrength;
@@ -55,9 +56,10 @@ class AppServiceProvider extends ServiceProvider
      */
     public function boot(): void
     {
-        // Windows app: its own key, the same through updates.
+        // Windows app: its own key, the same through updates, and new versions as they come out.
         if (Edition::isDesktop()) {
             DesktopKey::apply();
+            DesktopUpdates::listen();
         }
 
         $this->configureDefaults();

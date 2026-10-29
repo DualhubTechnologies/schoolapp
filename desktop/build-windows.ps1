@@ -84,6 +84,8 @@ try {
     if ($LASTEXITCODE -ne 0) { throw 'npm run build failed.' }
 
     Step "Building the Windows installer (version $Version)"
+    # With the updater on, the build also makes latest.yml for the release (see .env.desktop.example).
+    $env:NATIVEPHP_UPDATER_ENABLED = 'true'
     php -d memory_limit=1G artisan native:build win x64 --no-interaction
     if ($LASTEXITCODE -ne 0) { throw 'native:build failed.' }
 

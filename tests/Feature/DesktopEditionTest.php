@@ -1,11 +1,15 @@
 <?php
 
 use App\Filament\Pages\Backups;
+use App\Filament\Pages\Licence;
+use App\Filament\Pages\SpeedCheck;
 use App\Models\School;
 use App\Models\SmsOutbox;
 use App\Models\User;
 use App\Providers\Filament\AppPanelProvider;
 use App\Services\SmsSender;
+use App\Support\DesktopUpdates;
+use App\Support\PageTimings;
 use Database\Seeders\RoleSeeder;
 use Filament\Facades\Filament;
 use Filament\Panel;
@@ -199,4 +203,51 @@ it('does not warn "You are offline" in the Windows app, which works offline', fu
 
     config(['app.edition' => 'server']);
     $this->followingRedirects()->get('/login')->assertDontSee('dataset.edition = "desktop"', false);
+});
+
+it('offers a new version downloaded in the background, in the top bar', function () {
+    $this->seed(RoleSeeder::class);
+    Filament::setCurrentPanel('app');
+    $this->actingAs(setUpSchool());
+    config(['nativephp.version' => '1.3.6']);
+
+    // Nothing downloaded yet.
+    $this->followingRedirects()->get('/')->assertDontSee('Update ready');
+
+    // NativePHP's updater says a new version is downloaded.
+    DesktopUpdates::listen();
+    event('Native\Desktop\Events\AutoUpdater\UpdateDownloaded', [(object) ['version' => '1.3.7']]);
+
+    expect(DesktopUpdates::ready())->toBe('1.3.7');
+    $this->followingRedirects()->get('/')->assertSee('Update ready · Restart')->assertSee(route('desktop.update.install'), false);
+    $this->post(route('desktop.update.install'))->assertRedirect();
+
+    // Once this computer runs it, there is nothing left to offer.
+    config(['nativephp.version' => '1.3.7']);
+    expect(DesktopUpdates::ready())->toBeNull();
+    $this->post(route('desktop.update.install'))->assertNotFound();
+});
+
+it('measures how long pages take on this computer, to send to SchoolHub', function () {
+    $this->seed(RoleSeeder::class);
+    Filament::setCurrentPanel('app');
+    PageTimings::clear();
+    $this->actingAs(setUpSchool());
+
+    $this->get(Licence::getUrl())->assertOk();
+    $this->get(Licence::getUrl())->assertOk();
+
+    $rows = collect(PageTimings::slowest());
+    expect($rows->firstWhere('page', '/licence'))->toMatchArray(['count' => 2]);
+
+    Livewire::test(SpeedCheck::class)
+        ->assertSee('/licence')
+        ->assertSee('Send to SchoolHub on WhatsApp')
+        ->call('clear');
+
+    expect(PageTimings::slowest())->toBe([]);
+
+    // Not online.
+    config(['app.edition' => 'server']);
+    expect(SpeedCheck::canAccess())->toBeFalse();
 });

@@ -1,13 +1,13 @@
 <div>
     @if ($state === 'running')
-        <div class="sh-first-sync" wire:init="runSync" role="status">
+        <div class="sh-first-sync" wire:init="start" wire:poll.10s="check" role="status">
             <span class="sh-first-spin" aria-hidden="true"></span>
             <span><b>Bringing your school's records from online…</b> You are signed in and can start working; records appear as they arrive. Keep SchoolHub open and the internet on.</span>
         </div>
     @elseif ($state === 'waiting')
-        <div class="sh-first-sync sh-first-wait" wire:poll.15s="runSync" role="status">
+        <div class="sh-first-sync sh-first-wait" wire:poll.15s="check" role="status">
             <span class="sh-first-spin" aria-hidden="true"></span>
-            <span><b>Still bringing your school's records…</b> Waiting for the internet (or a sync already running); it carries on by itself.</span>
+            <span><b>Still bringing your school's records…</b> Waiting for the internet; it carries on by itself.</span>
         </div>
     @else
         <div class="sh-first-sync sh-first-done" role="status">

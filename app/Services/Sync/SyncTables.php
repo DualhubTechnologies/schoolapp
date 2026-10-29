@@ -17,6 +17,10 @@ namespace App\Services\Sync;
  *             and the latest edit wins. [] means one per school.
  *   review    how possible duplicates are spotted (DuplicateFinder) and
  *             listed for someone to decide on, instead of `same`.
+ *   key       for a `review` table: columns that, all filled in and all
+ *             equal, mean it is one record already on both sides (a
+ *             computer linked again, or the same receipt), joined up
+ *             quietly instead of listed as a possible duplicate.
  *   numbers   a running number that may clash when both sides add
  *             records: the incoming record takes the next free one; the
  *             printed number (receipt_no, voucher_no) never changes.
@@ -24,7 +28,7 @@ namespace App\Services\Sync;
  *             side deletes it too.
  *   id_lists  JSON columns holding lists of ids, e.g. an exam's classes.
  *
- * @phpstan-type TableRules array{via?: array{0: string, 1: string}, same?: list<string>, review?: string, numbers?: array{column: string, group: list<string>}, finance?: bool, id_lists?: array<string, string>}
+ * @phpstan-type TableRules array{via?: array{0: string, 1: string}, same?: list<string>, review?: string, key?: list<string>, numbers?: array{column: string, group: list<string>}, finance?: bool, id_lists?: array<string, string>}
  */
 class SyncTables
 {
@@ -36,7 +40,7 @@ class SyncTables
         'residency_types' => ['same' => ['name']],
         'houses' => ['same' => ['name']],
         'transport_routes' => ['same' => ['name']],
-        'staff' => ['review' => 'staff'],
+        'staff' => ['review' => 'staff', 'key' => ['name', 'staff_no']],
         'school_classes' => ['same' => ['name']],
         'sections' => ['same' => ['school_class_id', 'name']],
         'subjects' => ['same' => ['curriculum', 'name']],
@@ -44,15 +48,15 @@ class SyncTables
         'combinations' => ['same' => ['name']],
         'combination_subject' => ['via' => ['combinations', 'combination_id'], 'same' => ['combination_id', 'subject_id']],
         'guardians' => ['same' => ['phone', 'name']],
-        'students' => ['review' => 'learner'],
+        'students' => ['review' => 'learner', 'key' => ['name', 'admission_no']],
         'student_subject' => ['via' => ['students', 'student_id'], 'same' => ['student_id', 'subject_id']],
         'fee_structures' => ['same' => ['name', 'school_class_id', 'term_id', 'residency_type_id', 'frequency', 'applies_to']],
         'bank_accounts' => ['same' => ['name', 'account_number']],
         'student_charges' => ['same' => ['student_id', 'term_id', 'fee_structure_id', 'description']],
         'student_discounts' => ['same' => ['student_id', 'fee_structure_id', 'term_id', 'academic_year_id', 'scope']],
-        'student_payments' => ['review' => 'payment', 'numbers' => ['column' => 'receipt_seq', 'group' => []], 'finance' => true],
+        'student_payments' => ['review' => 'payment', 'key' => ['student_id', 'receipt_no', 'amount', 'paid_on'], 'numbers' => ['column' => 'receipt_seq', 'group' => []], 'finance' => true],
         'finance_categories' => ['same' => ['type', 'name']],
-        'finance_entries' => ['review' => 'entry', 'numbers' => ['column' => 'voucher_seq', 'group' => ['type']], 'finance' => true],
+        'finance_entries' => ['review' => 'entry', 'key' => ['type', 'voucher_no', 'amount', 'entry_date'], 'numbers' => ['column' => 'voucher_seq', 'group' => ['type']], 'finance' => true],
         'grading_scales' => ['same' => ['curriculum', 'purpose']],
         'grading_bands' => ['via' => ['grading_scales', 'grading_scale_id'], 'same' => ['grading_scale_id', 'grade']],
         'assessments' => ['same' => ['term_id', 'name'], 'id_lists' => ['class_ids' => 'school_classes', 'subject_ids' => 'subjects']],

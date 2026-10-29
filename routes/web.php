@@ -8,6 +8,7 @@ use App\Http\Controllers\ParentPageController;
 use App\Http\Controllers\PayslipController;
 use App\Http\Controllers\SchoolPayWebhookController;
 use App\Http\Controllers\SyncController;
+use App\Http\Controllers\SyncStatusController;
 use App\Http\Controllers\VerifyDocumentController;
 use App\Http\Middleware\ServerEditionOnly;
 use App\Support\PublicSite;
@@ -35,6 +36,9 @@ Route::post('/setup', [DesktopSetupController::class, 'store'])->middleware('thr
 Route::get('/setup/online', [DesktopSetupController::class, 'showConnect'])->name('desktop.setup.connect');
 Route::get('/setup/online/check', [DesktopSetupController::class, 'checkOnline'])->middleware('throttle:60,1')->name('desktop.setup.connect.check');
 Route::post('/setup/online', [DesktopSetupController::class, 'connect'])->middleware('throttle:10,1')->name('desktop.setup.connect.store');
+
+// The Windows app's top bar: how syncing with online is going.
+Route::get('/sync-status', SyncStatusController::class)->middleware('auth')->name('desktop.sync.status');
 
 // The Windows app swaps a short licence code for its signed licence here,
 // once (LicenceActivationController). Not a browser form: no CSRF token

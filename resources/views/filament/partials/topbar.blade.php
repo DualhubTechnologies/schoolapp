@@ -92,6 +92,34 @@
             <b x-text="time"></b>
         </div>
 
+        {{-- Windows app: online/offline and sync, as a dot (App\Support\SyncIndicator). --}}
+        @if ($user?->school_id && \App\Support\Edition::isDesktop())
+            @php $sync = \App\Support\SyncIndicator::now(); @endphp
+            <a class="sh-sync sh-sync-{{ $sync['tone'] }}"
+               x-data="{
+                    tone: @js($sync['tone']), label: @js($sync['label']), title: @js($sync['title']), syncing: @js($sync['syncing']), net: navigator.onLine,
+                    async refresh() {
+                        try {
+                            const r = await fetch(@js(route('desktop.sync.status')), { headers: { Accept: 'application/json' } });
+                            if (r.ok) { const s = await r.json(); this.tone = s.tone; this.label = s.label; this.title = s.title; this.syncing = s.syncing; }
+                        } catch (e) {}
+                        setTimeout(() => this.refresh(), this.syncing ? 5000 : 30000);
+                    },
+                    init() {
+                        window.addEventListener('online', () => { this.net = true; this.refresh(); });
+                        window.addEventListener('offline', () => { this.net = false; });
+                        setTimeout(() => this.refresh(), this.syncing ? 5000 : 30000);
+                    },
+               }"
+               :class="net ? 'sh-sync-' + tone : 'sh-sync-grey'"
+               @if ($sync['url']) href="{{ $sync['url'] }}" @endif
+               :title="net ? title : 'No internet: everything is saved on this computer and syncs when it is back online.'"
+               role="status">
+                <span class="sh-sync-dot" :class="net && syncing && 'is-pulsing'"></span>
+                <span class="sh-sync-label" x-text="net ? label : 'Offline'">{{ $sync['label'] }}</span>
+            </a>
+        @endif
+
         {{-- Subscribed plan --}}
         @if ($plan)
             @php $tag = $canManageSub ? 'a' : 'div'; @endphp

@@ -21,7 +21,8 @@ use stdClass;
  * The Windows app's link with the school's online account: link it with a
  * code made online, sync now (it also syncs on its own every few minutes
  * while online, sync:run), and decide on possible duplicates, similar
- * payments and deleted finance records (SyncReviews).
+ * payments and deleted finance records (SyncReviews). Syncing always runs
+ * in the background (SyncClient::requestSync): nobody waits on this page.
  */
 class OnlineSync extends Page
 {
@@ -69,17 +70,19 @@ class OnlineSync extends Page
         return Modules::hasFullAccess(auth()->user());
     }
 
-    /** @return array{linked: bool, school: string|null, last: CarbonImmutable|null, result: array<string, int>} */
+    /** @return array{linked: bool, school: string|null, last: CarbonImmutable|null, result: array<string, int>, state: string, error: string|null} */
     public function status(): array
     {
         $client = $this->client();
-        $last = $client->state(SyncClient::LAST);
+        $sync = $client->status();
 
         return [
-            'linked' => $client->isLinked(),
+            'linked' => $sync['linked'],
             'school' => $client->linkedSchool(),
-            'last' => $last ? CarbonImmutable::parse($last) : null,
+            'last' => $sync['last'],
             'result' => (array) json_decode((string) $client->state(SyncClient::RESULT, '{}'), true),
+            'state' => $sync['state'],
+            'error' => $sync['error'],
         ];
     }
 
@@ -123,32 +126,15 @@ class OnlineSync extends Page
 
         $this->code = '';
         $this->resetErrorBag();
-        Notification::make()->title("Linked to {$school} online")->body('Now syncing for the first time…')->success()->send();
-
-        $this->syncNow();
+        $this->client()->requestSync();
+        Notification::make()->title("Linked to {$school} online")->body('The first sync runs in the background: keep working. The dot at the top shows when it is done.')->success()->send();
     }
 
+    /** Syncs in the background: the page shows how it goes, and the person can carry on working. */
     public function syncNow(): void
     {
-        try {
-            $result = $this->client()->run();
-        } catch (ConnectionException) {
-            Notification::make()->title('No internet connection')->body('SchoolHub syncs on its own as soon as this computer is online.')->warning()->send();
-
-            return;
-        } catch (RuntimeException $e) {
-            Notification::make()->title('Could not sync')->body($e->getMessage())->danger()->send();
-
-            return;
-        }
-
-        $body = "{$result['received']} received from online, {$result['sent']} sent online.";
-
-        if ($result['review'] > 0) {
-            $body .= " {$result['review']} need your decision below.";
-        }
-
-        Notification::make()->title('Synced')->body($body)->success()->send();
+        $this->client()->requestSync();
+        Notification::make()->title('Syncing in the background')->body('Keep working. The dot at the top turns green when it is done.')->info()->send();
     }
 
     public function decide(int $review, string $decision): void

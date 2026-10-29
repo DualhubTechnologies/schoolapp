@@ -21,6 +21,7 @@
                 @if ($this->canManage())
                     <p>Online, open <b>Settings → Windows app</b> and click <b>Make a link code</b>. Type the code here:</p>
                     <form wire:submit="link">
+                        <div data-field>
                         <input type="text" wire:model="code" class="os-code" placeholder="XXXX-XXXX" aria-label="Link code"
                             autocomplete="off" spellcheck="false" autocapitalize="characters"
                             x-data
@@ -29,24 +30,27 @@
                                 $el.value = (plain.match(/.{1,4}/g) || []).join('-');
                                 $el.dispatchEvent(new Event('change'));
                             ">
-                        @error('code')<div class="os-error">{{ $message }}</div>@enderror
+                        @error('code')<div class="os-error" data-validation-error>{{ $message }}</div>@enderror
+                        </div>
                         <x-filament::button type="submit" icon="heroicon-m-link" class="os-submit">
-                            <span wire:loading.remove wire:target="link">Link and sync</span>
-                            <span wire:loading wire:target="link">Linking and syncing…</span>
+                            <span wire:loading.remove wire:target="link">Link this computer</span>
+                            <span wire:loading wire:target="link">Linking…</span>
                         </x-filament::button>
                     </form>
-                    <p class="os-muted">Needs the internet (phone data is enough). The first sync can take a few minutes for a big school.</p>
+                    <p class="os-muted">Needs the internet (phone data is enough). Linking takes a few seconds; the first sync then runs in the background while you work.</p>
                 @else
                     <p>Ask the school administrator to link this computer.</p>
                 @endif
             </div>
         </div>
     @else
-        <div class="os-status">
+        <div class="os-status" @if ($st['state'] === 'syncing') wire:poll.4s @endif>
             <div>
                 <div class="os-label">Linked to {{ $st['school'] }} online</div>
                 <p>
-                    @if ($st['last'])
+                    @if ($st['state'] === 'syncing')
+                        <span class="os-syncing" role="status"><span class="os-spin" aria-hidden="true"></span> Syncing in the background… you can keep working.</span>
+                    @elseif ($st['last'])
                         Last synced {{ $st['last']->diffForHumans() }}
                         ({{ $st['result']['received'] ?? 0 }} received, {{ $st['result']['sent'] ?? 0 }} sent).
                     @else
@@ -54,11 +58,15 @@
                     @endif
                     Syncs on its own every {{ config('sync.every_minutes') }} minutes while there is internet.
                 </p>
+                @if ($st['state'] === 'offline')
+                    <p class="os-note">No internet right now: it syncs by itself as soon as this computer is online.</p>
+                @elseif ($st['state'] === 'error')
+                    <p class="os-note os-bad">The last sync did not finish: {{ $st['error'] }}</p>
+                @endif
             </div>
             <div class="os-actions">
-                <x-filament::button wire:click="syncNow" icon="heroicon-m-arrow-path">
-                    <span wire:loading.remove wire:target="syncNow">Sync now</span>
-                    <span wire:loading wire:target="syncNow">Syncing…</span>
+                <x-filament::button wire:click="syncNow" icon="heroicon-m-arrow-path" :disabled="$st['state'] === 'syncing'">
+                    {{ $st['state'] === 'syncing' ? 'Syncing…' : 'Sync now' }}
                 </x-filament::button>
                 @if ($this->canManage())
                     <x-filament::button color="gray" wire:click="unlink" wire:confirm="Unlink this computer? It stops syncing; everything on it stays. You can link it again later with a new code.">
@@ -117,6 +125,11 @@
     @endif
 
     <style>
+        .os-syncing { display: inline-flex; align-items: center; gap: .4rem; font-weight: 600; color: #1d4ed8; }
+        .os-spin { width: .85rem; height: .85rem; border: 2px solid currentColor; border-top-color: transparent; border-radius: 50%; animation: os-spin .8s linear infinite; }
+        @keyframes os-spin { to { transform: rotate(360deg); } }
+        .os-note { margin-top: .35rem; font-size: .85rem; color: #92400e; }
+        .os-bad { color: #b91c1c; }
         .os-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(20rem, 1fr)); gap: 1rem; }
         .os-card, .os-review { background: #fff; border: 1px solid #e4e8f0; border-radius: 12px; padding: 1rem 1.2rem; }
         .os-card h3, .os-review h3 { font-weight: 700; color: #16233a; margin: 0 0 .4rem; }

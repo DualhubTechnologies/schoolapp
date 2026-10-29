@@ -4,22 +4,20 @@ namespace App\Livewire;
 
 use App\Services\Sync\SyncClient;
 use App\Support\Edition;
-use Illuminate\Contracts\Cache\LockTimeoutException;
 use Illuminate\Contracts\View\View;
-use Illuminate\Http\Client\ConnectionException;
 use Illuminate\Support\Facades\DB;
 use Livewire\Component;
-use RuntimeException;
 
 /**
  * A Windows app just set up from its online account: the person is
  * already signed in and working while the first sync brings the school's
- * records. A banner at the top of every page says so, runs that sync and
- * says when everything is here (or that it waits for the internet).
+ * records. A banner at the top of every page says so and when everything
+ * is here (or that it waits for the internet). The sync itself runs in the
+ * background (SyncClient::requestSync), never in the page.
  */
 class FirstSyncBanner extends Component
 {
-    /** running, waiting (no internet or another sync running) or done. */
+    /** running, waiting (no internet) or done. */
     public string $state = 'running';
 
     public static function pending(): bool
@@ -27,7 +25,17 @@ class FirstSyncBanner extends Component
         return Edition::isDesktop() && DB::table('app_state')->where('key', SyncClient::FIRST)->exists();
     }
 
-    public function runSync(SyncClient $client): void
+    /** On the first page: asks for the sync, unless one is already on its way. */
+    public function start(SyncClient $client): void
+    {
+        if ($client->status()['state'] !== 'syncing') {
+            $client->requestSync();
+        }
+
+        $this->check($client);
+    }
+
+    public function check(SyncClient $client): void
     {
         if (! static::pending()) {
             $this->state = 'done';
@@ -35,20 +43,7 @@ class FirstSyncBanner extends Component
             return;
         }
 
-        try {
-            $client->run();
-        } catch (LockTimeoutException) {
-            $this->state = 'waiting'; // another page is running it; check again shortly
-
-            return;
-        } catch (ConnectionException|RuntimeException) {
-            $this->state = 'waiting';
-
-            return;
-        }
-
-        DB::table('app_state')->where('key', SyncClient::FIRST)->delete();
-        $this->state = 'done';
+        $this->state = $client->status()['state'] === 'offline' ? 'waiting' : 'running';
     }
 
     public function render(): View

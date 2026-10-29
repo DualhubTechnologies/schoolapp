@@ -7,6 +7,7 @@ use App\Models\User;
 use App\Support\Edition;
 use App\Support\Licensing\DesktopLicence;
 use App\Support\Licensing\Machine;
+use Carbon\CarbonImmutable;
 use Illuminate\Contracts\Encryption\DecryptException;
 use Illuminate\Database\QueryException;
 use Illuminate\Database\UniqueConstraintViolationException;
@@ -46,11 +47,29 @@ class SyncClient
 
     public const RESULT = 'sync.result';
 
+    /** "Sync now" or a new link: sync at once, in the background. */
+    public const WANTED = 'sync.wanted';
+
+    /** A sync running in the background since then. */
+    public const RUNNING = 'sync.running';
+
+    /** Why the last sync failed (not for want of internet). */
+    public const ERROR = 'sync.error';
+
+    /** Since when online SchoolHub could not be reached. */
+    public const OFFLINE = 'sync.offline';
+
+    /** The online school this computer's sync history (sync_rows) belongs to: kept when unlinked. */
+    public const HISTORY = 'history.school';
+
     /** Set up from online, first sync not finished yet (FirstSyncBanner). */
     public const FIRST = 'sync.first';
 
     /** Changes sent per request. */
     protected const BATCH = 300;
+
+    /** Records saved per transaction. */
+    protected const APPLY_BATCH = 100;
 
     protected SyncTransport $transport;
 
@@ -93,6 +112,7 @@ class SyncClient
             throw new RuntimeException('Online SchoolHub did not accept the link code.');
         }
 
+        $this->linkedTo((string) ($answer['school'] ?? ''));
         $this->put(self::TOKEN, Crypt::encryptString((string) $answer['token']));
         $this->put(self::SCHOOL, (string) ($answer['school'] ?? ''));
         $this->put(self::CURSOR, '0');
@@ -115,6 +135,7 @@ class SyncClient
             throw new RuntimeException('Online SchoolHub did not accept these details.');
         }
 
+        $this->linkedTo((string) ($answer['school']['name'] ?? ''));
         $this->put(self::TOKEN, Crypt::encryptString((string) $answer['token']));
         $this->put(self::SCHOOL, (string) ($answer['school']['name'] ?? ''));
         $this->put(self::CURSOR, '0');
@@ -169,13 +190,33 @@ class SyncClient
     }
 
     /** Unlinks this computer. Its records stay; the sync records go. */
+    /**
+     * Stops syncing. Like a git clone that keeps its history, the computer
+     * remembers which records it has synced (sync_rows), so linking it
+     * again to the same school sends and asks about nothing twice.
+     */
     public function unlink(): void
     {
         $db = DB::connection($this->connection);
         $db->table('app_state')->where('key', 'like', 'sync.%')->delete();
-        $db->table('sync_rows')->delete();
         $db->table('sync_inbox')->delete();
         $db->table('sync_reviews')->where('status', 'open')->delete();
+    }
+
+    /**
+     * Linked to a school: the history is kept for the same school, and
+     * started afresh for another one (whose records it has never seen).
+     */
+    protected function linkedTo(string $school): void
+    {
+        $db = DB::connection($this->connection);
+        $before = $db->table('app_state')->where('key', self::HISTORY)->value('value');
+
+        if ($before !== null && $before !== $school) {
+            $db->table('sync_rows')->delete();
+        }
+
+        $db->table('app_state')->updateOrInsert(['key' => self::HISTORY], ['value' => $school, 'updated_at' => now()]);
     }
 
     /**
@@ -190,29 +231,125 @@ class SyncClient
         }
 
         return Cache::lock('sync-run', 600)->block(5, function (): array {
-            $db = $this->database();
-            $received = $this->fetch($db);
-            $this->applyInbox($db);
-            $sent = $this->send($db);
+            $this->put(self::RUNNING, now()->toIso8601String());
+            $this->forget(self::WANTED);
 
-            // A payment or expense deleted here: fetch its online copy now,
-            // so the review list shows exactly what was deleted.
-            if ($db->db()->table('sync_reviews')->where('status', 'open')->where('kind', 'deleted_here')->whereNull('remote_data')->exists()) {
-                $this->fetch($db);
+            try {
+                return $this->runNow();
+            } finally {
+                $this->forget(self::RUNNING);
+            }
+        });
+    }
+
+    /** @return array{received: int, sent: int, review: int, waiting: int} */
+    protected function runNow(): array
+    {
+        $db = $this->database();
+        $received = $this->fetch($db);
+        $this->settleSameRecords($db);
+        $this->applyInbox($db);
+        $sent = $this->send($db);
+        $this->settleSameRecords($db);
+
+        // A payment or expense deleted here: fetch its online copy now,
+        // so the review list shows exactly what was deleted.
+        if ($db->db()->table('sync_reviews')->where('status', 'open')->where('kind', 'deleted_here')->whereNull('remote_data')->exists()) {
+            $this->fetch($db);
+        }
+
+        $result = [
+            'received' => $received,
+            'sent' => $sent,
+            'review' => $db->db()->table('sync_reviews')->where('status', 'open')->count(),
+            'waiting' => $db->db()->table('sync_inbox')->count(),
+        ];
+
+        $this->put(self::LAST, now()->toIso8601String());
+        $this->put(self::RESULT, (string) json_encode($result));
+        $this->forget(self::ERROR);
+        $this->forget(self::OFFLINE);
+        $this->forget(self::FIRST);
+
+        return $result;
+    }
+
+    /**
+     * Sync as soon as possible without making anyone wait: in the Windows
+     * app's background process (NativePHP), or by the scheduler within a
+     * minute (sync:run). The screen is never held up by a sync.
+     */
+    public function requestSync(): void
+    {
+        $this->put(self::WANTED, now()->toIso8601String());
+
+        $process = 'Native\\Desktop\\Facades\\ChildProcess';
+
+        if (Edition::isDesktop() && class_exists($process)) {
+            try {
+                $process::artisan('sync:run', 'sync-now');
+            } catch (\Throwable) {
+                // The scheduler starts it within a minute.
+            }
+        }
+    }
+
+    /** Whether the background sync (sync:run, every minute) should sync now. */
+    public function isDue(): bool
+    {
+        if (! $this->isLinked()) {
+            return false;
+        }
+
+        $last = $this->state(self::LAST);
+
+        return $this->state(self::WANTED) !== null || $last === null
+            || ! CarbonImmutable::parse($last)->addMinutes((int) config('sync.every_minutes', 5))->isFuture();
+    }
+
+    /**
+     * What the Windows app shows about syncing (top bar dot, Sync page).
+     *
+     * @return array{linked: bool, state: 'off'|'syncing'|'offline'|'error'|'review'|'ok', last: CarbonImmutable|null, error: string|null, reviews: int}
+     */
+    public function status(): array
+    {
+        $states = DB::connection($this->connection)->table('app_state')->where('key', 'like', 'sync.%')->pluck('value', 'key');
+        $linked = $states->has(self::TOKEN);
+        $running = $states->get(self::RUNNING);
+        $reviews = $linked ? DB::connection($this->connection)->table('sync_reviews')->where('status', 'open')->count() : 0;
+
+        $state = match (true) {
+            ! $linked => 'off',
+            // A sync that started over ten minutes ago has stopped (the app was closed).
+            ($running !== null && CarbonImmutable::parse((string) $running)->addMinutes(10)->isFuture()) || $states->has(self::WANTED) => 'syncing',
+            $states->has(self::OFFLINE) => 'offline',
+            $states->has(self::ERROR) => 'error',
+            $reviews > 0 => 'review',
+            default => 'ok',
+        };
+
+        return [
+            'linked' => $linked,
+            'state' => $state,
+            'last' => $states->has(self::LAST) ? CarbonImmutable::parse((string) $states->get(self::LAST)) : null,
+            'error' => $states->get(self::ERROR),
+            'reviews' => $reviews,
+        ];
+    }
+
+    /** Records how a background sync went (sync:run). */
+    public function failed(string $state, ?string $message = null): void
+    {
+        if ($state === self::OFFLINE) {
+            if ($this->state(self::OFFLINE) === null) {
+                $this->put(self::OFFLINE, now()->toIso8601String());
             }
 
-            $result = [
-                'received' => $received,
-                'sent' => $sent,
-                'review' => $db->db()->table('sync_reviews')->where('status', 'open')->count(),
-                'waiting' => $db->db()->table('sync_inbox')->count(),
-            ];
+            return;
+        }
 
-            $this->put(self::LAST, now()->toIso8601String());
-            $this->put(self::RESULT, (string) json_encode($result));
-
-            return $result;
-        });
+        $this->put(self::ERROR, (string) $message);
     }
 
     /** Step 1: what changed online, into the inbox. */
@@ -243,13 +380,17 @@ class SyncClient
             $scan = false;
             $fetch = [];
 
-            foreach ((array) ($page['changes'] ?? []) as $change) {
-                $this->receive($db, (array) $change);
-                $received++;
-            }
+            // A page at a time in one transaction: quick on the disk, and
+            // the app is never kept waiting on a sync for more than a moment.
+            $db->db()->transaction(function () use ($db, $page, &$received, &$cursor): void {
+                foreach ((array) ($page['changes'] ?? []) as $change) {
+                    $this->receive($db, (array) $change);
+                    $received++;
+                }
 
-            $cursor = (int) ($page['cursor'] ?? $cursor);
-            $this->put(self::CURSOR, (string) $cursor);
+                $cursor = (int) ($page['cursor'] ?? $cursor);
+                $this->put(self::CURSOR, (string) $cursor);
+            });
         } while (! empty($page['more']));
 
         return $received;
@@ -297,12 +438,21 @@ class SyncClient
         $upserts = $items->where('deleted', false)->sortBy(fn (stdClass $item): array => [SyncTables::position($item->table), $item->id]);
         $deletes = $items->where('deleted', true)->sortByDesc(fn (stdClass $item): int => SyncTables::position($item->table));
 
-        foreach ($upserts as $item) {
-            $this->applyUpsert($db, $item);
+        // In batches, each in one transaction (see fetch).
+        foreach ($upserts->chunk(self::APPLY_BATCH) as $batch) {
+            $db->db()->transaction(function () use ($db, $batch): void {
+                foreach ($batch as $item) {
+                    $this->applyUpsert($db, $item);
+                }
+            });
         }
 
-        foreach ($deletes as $item) {
-            $this->applyDelete($db, $item);
+        foreach ($deletes->chunk(self::APPLY_BATCH) as $batch) {
+            $db->db()->transaction(function () use ($db, $batch): void {
+                foreach ($batch as $item) {
+                    $this->applyDelete($db, $item);
+                }
+            });
         }
     }
 
@@ -527,7 +677,7 @@ class SyncClient
      */
     protected function sameRecordHere(SyncDatabase $db, string $table, array $row): ?int
     {
-        $same = SyncTables::rules($table)['same'] ?? null;
+        $same = SyncTables::rules($table)['same'] ?? static::key($table, $row);
 
         if ($same === null) {
             return null;
@@ -548,6 +698,95 @@ class SyncClient
         }
 
         return null;
+    }
+
+    /**
+     * A review table's key columns, when the record has them all filled in
+     * (SyncTables `key`): equal on both sides, it is one record already.
+     *
+     * @param  array<string, mixed>  $row
+     * @return list<string>|null
+     */
+    protected static function key(string $table, array $row): ?array
+    {
+        $key = SyncTables::rules($table)['key'] ?? null;
+
+        if ($key === null) {
+            return null;
+        }
+
+        foreach ($key as $column) {
+            if (blank($row[$column] ?? null)) {
+                return null;
+            }
+        }
+
+        return $key;
+    }
+
+    /**
+     * @param  array<string, mixed>  $a
+     * @param  array<string, mixed>  $b
+     */
+    protected static function sameKey(string $table, array $a, array $b): bool
+    {
+        $key = static::key($table, $a);
+
+        if ($key === null || static::key($table, $b) === null) {
+            return false;
+        }
+
+        $plain = fn (mixed $value): string => is_numeric($value)
+            ? (string) (float) $value
+            : mb_strtolower(trim(substr((string) $value, 0, preg_match('/^\d{4}-\d{2}-\d{2}/', (string) $value) ? 10 : null)));
+
+        foreach ($key as $column) {
+            if ($plain($a[$column]) !== $plain($b[$column])) {
+                return false;
+            }
+        }
+
+        return true;
+    }
+
+    /**
+     * Possible duplicates that are in fact one record on both sides (same
+     * key: a computer linked again after it forgot what it had synced, as
+     * versions before 1.3.5 did when unlinked): joined up without asking,
+     * keeping the latest edit.
+     */
+    protected function settleSameRecords(SyncDatabase $db): void
+    {
+        $reviews = $db->db()->table('sync_reviews')->where('status', 'open')
+            ->whereIn('kind', ['duplicate', 'number', 'payment', 'entry'])
+            ->whereIn('table', array_keys(array_filter(SyncTables::TABLES, fn (array $rules): bool => isset($rules['key']))))
+            ->whereNotNull('local_id')
+            ->get();
+
+        foreach ($reviews as $review) {
+            $table = (string) $review->table;
+            $here = $db->find($table, (int) $review->local_id);
+
+            if ($review->remote_data !== null) {
+                [$other, $waiting] = $db->decode($table, (array) json_decode((string) $review->remote_data, true));
+                $other = $waiting === null ? $other : null;
+            } else {
+                $otherId = $review->remote_uuid !== null ? $db->idOf($table, (string) $review->remote_uuid) : null;
+                $other = $otherId !== null ? $db->find($table, $otherId) : null;
+            }
+
+            if ($here === null || $other === null || ! static::sameKey($table, $here, (array) $other)) {
+                continue;
+            }
+
+            $newerOnline = SyncServer::isNewer(((array) $other)['updated_at'] ?? null, $here['updated_at'] ?? null);
+
+            try {
+                app(SyncReviews::class)->decide((int) $review->id, $newerOnline ? 'online' : 'offline', 'Sync: same record on both sides');
+            } catch (RuntimeException) {
+                // Left on the list for someone to decide.
+            }
+        }
     }
 
     /** @param  array<string, mixed>  $row */
@@ -628,5 +867,10 @@ class SyncClient
     protected function put(string $key, string $value): void
     {
         DB::connection($this->connection)->table('app_state')->updateOrInsert(['key' => $key], ['value' => $value, 'updated_at' => now()]);
+    }
+
+    protected function forget(string $key): void
+    {
+        DB::connection($this->connection)->table('app_state')->where('key', $key)->delete();
     }
 }

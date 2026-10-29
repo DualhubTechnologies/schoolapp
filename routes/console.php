@@ -2,6 +2,7 @@
 
 use App\Models\ErrorOccurrence;
 use App\Models\SiteVisit;
+use App\Services\Sync\SyncClient;
 use App\Support\Edition;
 use App\Support\SystemHealth;
 use Illuminate\Foundation\Inspiring;
@@ -57,10 +58,11 @@ Schedule::command('sms:send-queued')
     ->withoutOverlapping()
     ->onOneServer();
 
-// Windows app linked to an online account: sync both ways while online.
+// Windows app linked to an online account: sync both ways while online,
+// every few minutes or straight after "Sync now", in the background.
 Schedule::command('sync:run')
-    ->cron('*/'.config('sync.every_minutes', 10).' * * * *')
-    ->when(fn (): bool => Edition::isDesktop())
+    ->everyMinute()
+    ->when(fn (): bool => Edition::isDesktop() && app(SyncClient::class)->isDue())
     ->withoutOverlapping(30)
     ->onOneServer();
 

@@ -4,13 +4,16 @@ namespace App\Console\Commands;
 
 use App\Services\Sync\SyncClient;
 use Illuminate\Console\Command;
+use Illuminate\Contracts\Cache\LockTimeoutException;
 use Illuminate\Http\Client\ConnectionException;
 use RuntimeException;
 
 /**
- * The Windows app syncing with the school's online account on its own,
- * every few minutes (routes/console.php). Offline, or not linked: does
- * nothing and tries again next time.
+ * The Windows app syncing with the school's online account in the
+ * background: every few minutes, or straight after "Sync now" or linking
+ * (routes/console.php, SyncClient::requestSync). Offline, or not linked:
+ * does nothing and tries again next time. How it went shows on the top
+ * bar's sync dot and the Sync page.
  */
 class SyncRun extends Command
 {
@@ -28,11 +31,17 @@ class SyncRun extends Command
 
         try {
             $result = $client->run();
+        } catch (LockTimeoutException) {
+            $this->line('Already syncing.');
+
+            return self::SUCCESS;
         } catch (ConnectionException) {
+            $client->failed(SyncClient::OFFLINE);
             $this->line('Offline; trying again next time.');
 
             return self::SUCCESS;
         } catch (RuntimeException $e) {
+            $client->failed(SyncClient::ERROR, $e->getMessage());
             $this->error($e->getMessage());
 
             return self::FAILURE;

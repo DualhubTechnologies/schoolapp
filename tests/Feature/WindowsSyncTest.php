@@ -366,10 +366,16 @@ it('shows the review list in the Windows app and decides from it', function () {
 
     expect(OnlineSync::canAccess())->toBeTrue();
 
+    // "Sync now" asks for a sync in the background; the page shows it running, then the result.
     $page = Livewire\Livewire::test(OnlineSync::class)
         ->assertSee('Linked to Hope Secondary online')
         ->call('syncNow')
-        ->assertNotified('Synced')
+        ->assertNotified('Syncing in the background')
+        ->assertSee('Syncing in the background');
+
+    $this->artisan('sync:run')->assertSuccessful();
+
+    $page->call('$refresh')
         ->assertSee('A similar payment was recorded on both sides')
         ->assertSee('RCT-000009')
         ->assertSee('RCT-W00009')
@@ -384,9 +390,10 @@ it('shows the review list in the Windows app and decides from it', function () {
     // Receipts made on a linked computer carry a W.
     expect(SyncClient::numberMark())->toBe('W');
 
+    // Unlinked, it still remembers what it synced (linked again, nothing is sent or asked about twice).
     $page->call('unlink');
     expect($this->client->isLinked())->toBeFalse()
-        ->and($this->here->table('sync_rows')->count())->toBe(0);
+        ->and($this->here->table('sync_rows')->count())->toBeGreaterThan(0);
 });
 
 it('makes a link code online, and links and syncs over the internet with it', function () {
@@ -469,9 +476,16 @@ it('sets up a new Windows app from the school\'s online account, on first run', 
         ->and(FirstSyncBanner::pending())->toBeTrue()
         ->and($this->here->table('students')->count())->toBe(0);
 
-    Livewire\Livewire::test(FirstSyncBanner::class)
+    // The banner asks for the sync, which runs in the background (sync:run), not in the page.
+    $banner = Livewire\Livewire::test(FirstSyncBanner::class)
         ->assertSee('records from online')
-        ->call('runSync')
+        ->call('start')
+        ->assertSet('state', 'running');
+
+    expect($this->client->isDue())->toBeTrue();
+    $this->client->run();
+
+    $banner->call('check')
         ->assertSet('state', 'done')
         ->assertSee('records are here');
 
@@ -552,4 +566,131 @@ it('gives the Windows app its own key, kept through updates', function () {
         ->and(trim(File::get(DesktopKey::file())))->toBe($key);
 
     File::delete(DesktopKey::file());
+});
+
+/** What both sides hold after records went both ways: a payment from online, a learner and a payment from here. */
+function syncedBothWays(): array
+{
+    $online = onlineBasics();
+    add(test()->online, 'student_payments', ['student_id' => $online['learner'], 'term_id' => $online['term'], 'amount' => 350000, 'paid_on' => '2026-10-20', 'receipt_seq' => 1, 'receipt_no' => 'RCT-000001', 'method' => 'cash']);
+    test()->client->run();
+
+    $class = test()->here->table('school_classes')->value('id');
+    $learner = add(test()->here, 'students', ['name' => 'Okello Brian', 'admission_no' => 'HS/2026/0002', 'school_class_id' => $class]);
+    add(test()->here, 'student_payments', ['student_id' => $learner, 'amount' => 90000, 'paid_on' => '2026-10-26', 'receipt_seq' => 2, 'receipt_no' => 'RCT-W00002', 'method' => 'cash']);
+    test()->client->run();
+
+    return ['students' => 2, 'payments' => 2];
+}
+
+function linkAgain(): void
+{
+    $code = test()->server->makeLinkCode(School::on('server')->findOrFail(test()->onlineSchool), 'Head teacher');
+    test()->client->link($code);
+}
+
+it('remembers what it synced, like git: unlinked and linked again, nothing is a duplicate', function () {
+    $counts = syncedBothWays();
+
+    $this->client->unlink();
+    linkAgain();
+    $result = $this->client->run();
+
+    expect($result['review'])->toBe(0)
+        ->and($result['sent'])->toBe(0)
+        ->and($this->here->table('students')->count())->toBe($counts['students'])
+        ->and($this->here->table('student_payments')->count())->toBe($counts['payments'])
+        ->and($this->online->table('students')->count())->toBe($counts['students'])
+        ->and($this->online->table('student_payments')->count())->toBe($counts['payments']);
+});
+
+it('joins records already on both sides when a computer had forgotten what it synced', function () {
+    $counts = syncedBothWays();
+
+    // As versions before 1.3.5 did when unlinked: the history is gone.
+    $this->client->unlink();
+    $this->here->table('sync_rows')->delete();
+    linkAgain();
+    $result = $this->client->run();
+
+    expect($result['review'])->toBe(0)
+        ->and($this->here->table('students')->count())->toBe($counts['students'])
+        ->and($this->here->table('student_payments')->count())->toBe($counts['payments'])
+        ->and($this->online->table('students')->count())->toBe($counts['students'])
+        ->and($this->online->table('student_payments')->count())->toBe($counts['payments']);
+
+    // And it carries on as before.
+    add($this->here, 'students', ['name' => 'Auma Grace', 'admission_no' => 'HS/2026/0003', 'school_class_id' => $this->here->table('school_classes')->value('id')]);
+    expect($this->client->run()['sent'])->toBe(1)
+        ->and($this->online->table('students')->count())->toBe(3);
+});
+
+it('settles possible duplicates already listed that are one record on both sides', function () {
+    syncedBothWays();
+    $this->client->unlink();
+    $this->here->table('sync_rows')->delete();
+
+    // Listed by an earlier version as "Is this the same learner?".
+    $local = (int) $this->here->table('students')->where('admission_no', 'HS/2026/0001')->value('id');
+    $uuid = (string) $this->online->table('sync_rows')->where('table', 'students')->where('row_id', $this->online->table('students')->where('admission_no', 'HS/2026/0001')->value('id'))->value('uuid');
+    $data = (array) $this->online->table('students')->where('admission_no', 'HS/2026/0001')->first();
+    $this->here->table('sync_reviews')->insert(['kind' => 'duplicate', 'table' => 'students', 'local_id' => $local, 'remote_uuid' => $uuid, 'remote_data' => json_encode(['name' => $data['name'], 'admission_no' => $data['admission_no']]), 'status' => 'open', 'created_at' => now(), 'updated_at' => now()]);
+
+    linkAgain();
+    $this->client->run();
+
+    expect($this->here->table('sync_reviews')->where('status', 'open')->count())->toBe(0)
+        ->and($this->here->table('students')->count())->toBe(2);
+});
+
+it('syncs in the background every five minutes, and says when it is offline or failed', function () {
+    expect($this->client->isDue())->toBeTrue();
+    $this->client->run();
+
+    expect($this->client->isDue())->toBeFalse()
+        ->and($this->client->status()['state'])->toBe('ok');
+
+    $this->travel(5)->minutes();
+    expect($this->client->isDue())->toBeTrue();
+    $this->client->run();
+
+    // "Sync now": due at once, and shown as syncing until it has run.
+    $this->client->requestSync();
+    expect($this->client->isDue())->toBeTrue()
+        ->and($this->client->status()['state'])->toBe('syncing');
+    $this->client->run();
+
+    $this->client->failed(SyncClient::OFFLINE);
+    expect($this->client->status()['state'])->toBe('offline');
+
+    $this->client->failed(SyncClient::ERROR, 'Online SchoolHub could not sync.');
+    expect($this->client->status())->toMatchArray(['state' => 'offline', 'error' => 'Online SchoolHub could not sync.']);
+
+    // A good sync clears both.
+    $this->client->run();
+    expect($this->client->status())->toMatchArray(['state' => 'ok', 'error' => null]);
+});
+
+it('shows a dot in the Windows app\'s top bar: online, syncing, offline or something to check', function () {
+    config(['app.edition' => 'desktop']);
+    $this->seed(RoleSeeder::class);
+    Filament\Facades\Filament::setCurrentPanel('app');
+    $this->withoutVite();
+    app()->instance(SyncClient::class, $this->client);
+    $this->actingAs(User::factory()->create(['school_id' => $this->hereSchool])->assignRole('School Admin'));
+
+    $this->client->requestSync();
+    $this->getJson(route('desktop.sync.status'))->assertOk()->assertJson(['tone' => 'blue', 'label' => 'Syncing', 'syncing' => true]);
+
+    $this->client->run();
+    $this->getJson(route('desktop.sync.status'))->assertJson(['tone' => 'green', 'label' => 'Online']);
+
+    $this->client->failed(SyncClient::OFFLINE);
+    $this->getJson(route('desktop.sync.status'))->assertJson(['tone' => 'grey', 'label' => 'Offline']);
+
+    $this->followingRedirects()->get(OnlineSync::getUrl())->assertSee('sh-sync-grey', false)->assertSee('Offline');
+
+    // Not in the online edition.
+    config(['app.edition' => 'server']);
+    $this->getJson(route('desktop.sync.status'))->assertNotFound();
 });

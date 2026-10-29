@@ -10,6 +10,6 @@ return [
     'url' => env('SYNC_URL', 'https://www.schoolhubug.com'),
 
     // How often a linked Windows app syncs on its own while online.
-    'every_minutes' => 10,
+    'every_minutes' => 5,
 
 ];

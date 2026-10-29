@@ -20,7 +20,7 @@
                 <ul>
                     <li><a href="{{ $registerUrl }}">Register your school</a></li>
                     @if ($contact['windows_download_enabled'] ?? false)
-                        <li><a href="{{ $contact['windows_download'] }}" rel="nofollow">Download for Windows</a></li>
+                        <li><a href="{{ route('download.windows') }}" rel="nofollow">Download for Windows</a></li>
                     @endif
                     <li><a href="{{ $loginUrl }}">Sign in</a></li>
                     <li><a href="{{ filament()->getRequestPasswordResetUrl() }}">Reset password</a></li>

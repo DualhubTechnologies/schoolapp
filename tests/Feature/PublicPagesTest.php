@@ -144,15 +144,20 @@ it('offers SchoolHub for Windows on the home, Features and Pricing pages', funct
 
     $this->get($path)->assertOk()
         ->assertSee('SchoolHub for Windows')
-        ->assertSee('href="https://github.com/DualhubTechnologies/schoolapp/releases/latest/download/SchoolHub-Setup.exe"', false)
+        ->assertSee('href="'.route('download.windows').'"', false)
         ->assertSee('Download for Windows');
 })->with(['/', '/features', '/pricing']);
+
+it('downloads the Windows app from SchoolHub\'s own address, served by the newest GitHub release', function () {
+    $this->get('/download/windows')
+        ->assertRedirect('https://github.com/DualhubTechnologies/schoolapp/releases/latest/download/SchoolHub-Setup.exe');
+});
 
 it('hides the Windows download everywhere while it is switched off', function (string $path) {
     config(['contact.windows_download_enabled' => false]);
 
     $this->get($path)->assertOk()
-        ->assertDontSee('SchoolHub-Setup.exe')
+        ->assertDontSee('download/windows')
         ->assertDontSee('Download for Windows')
         ->assertDontSee('Get SchoolHub for Windows');
 })->with(['/', '/features', '/pricing', '/contact']);

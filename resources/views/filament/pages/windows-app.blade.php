@@ -8,6 +8,8 @@
                 <li>If a record was changed in both places, the latest change is kept.</li>
                 <li>Possible duplicate learners, similar payments (same amount, same day) and deleted payments are listed on the computer for someone to decide.</li>
             </ul>
+            <x-filament::button tag="a" :href="route('download.windows')" icon="heroicon-m-arrow-down-tray" color="gray">Download SchoolHub for Windows</x-filament::button>
+            <p class="wa-muted">Windows 10 or 11. If Windows says "Windows protected your PC", click <b>More info → Run anyway</b>. Installing a new version over the old one keeps the school's records.</p>
         </div>
 
         <div class="wa-card">
@@ -15,7 +17,7 @@
             @if ($linkCode)
                 <p>In SchoolHub for Windows, open <b>Settings → Sync with online</b> and type this code within the next hour:</p>
                 <div class="wa-code">{{ $linkCode }}</div>
-                <p class="wa-muted">The code works once, for {{ auth()->user()->school?->name }}.</p>
+                <p class="wa-muted">The code works once, for {{ auth()->user()->school?->name }}. Making another code cancels this one.</p>
             @else
                 <p>Make a code, then type it into SchoolHub for Windows under <b>Settings → Sync with online</b>.</p>
                 <x-filament::button wire:click="makeCode" icon="heroicon-m-link">Make a link code</x-filament::button>

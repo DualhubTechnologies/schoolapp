@@ -14,7 +14,7 @@
                         <li>{!! $check !!} Windows 10 or 11 (64-bit) · 134 MB download</li>
                     </ul>
                     <div class="hero-actions" style="margin-top: 1.5rem">
-                        <a href="{{ $contact['windows_download'] }}" class="btn btn-primary btn-lg" rel="nofollow">Download for Windows {!! $arrow !!}</a>
+                        <a href="{{ route('download.windows') }}" class="btn btn-primary btn-lg" rel="nofollow">Download for Windows {!! $arrow !!}</a>
                         <a href="{{ $demoUrl }}" class="btn btn-secondary btn-lg">Ask about a licence</a>
                     </div>
                     <p class="pricing-note" style="text-align: left; margin-top: .75rem">If Windows says "Windows protected your PC", click <strong>More info → Run anyway</strong>.</p>

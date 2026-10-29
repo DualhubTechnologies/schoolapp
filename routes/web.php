@@ -11,6 +11,7 @@ use App\Http\Controllers\SyncController;
 use App\Http\Controllers\SyncStatusController;
 use App\Http\Controllers\VerifyDocumentController;
 use App\Http\Middleware\ServerEditionOnly;
+use App\Support\DesktopUpdates;
 use App\Support\PublicSite;
 use Illuminate\Support\Facades\Route;
 
@@ -36,6 +37,20 @@ Route::post('/setup', [DesktopSetupController::class, 'store'])->middleware('thr
 Route::get('/setup/online', [DesktopSetupController::class, 'showConnect'])->name('desktop.setup.connect');
 Route::get('/setup/online/check', [DesktopSetupController::class, 'checkOnline'])->middleware('throttle:60,1')->name('desktop.setup.connect.check');
 Route::post('/setup/online', [DesktopSetupController::class, 'connect'])->middleware('throttle:10,1')->name('desktop.setup.connect.store');
+
+// The Windows app installer under SchoolHub's own address: forwards to the
+// newest release on GitHub, which serves the file (contact.windows_download).
+Route::get('/download/windows', fn () => redirect()->away((string) config('contact.windows_download')))
+    ->middleware(ServerEditionOnly::class)
+    ->name('download.windows');
+
+// The Windows app's top bar: install a downloaded new version (DesktopUpdates).
+Route::post('/update/install', function () {
+    abort_unless(DesktopUpdates::ready() !== null, 404);
+    DesktopUpdates::install();
+
+    return back();
+})->middleware('auth')->name('desktop.update.install');
 
 // The Windows app's top bar: how syncing with online is going.
 Route::get('/sync-status', SyncStatusController::class)->middleware('auth')->name('desktop.sync.status');

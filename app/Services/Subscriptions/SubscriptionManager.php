@@ -230,8 +230,8 @@ class SubscriptionManager
                 return;
             }
 
-            $days = (int) $trial->starts_on->diffInDays($trial->ends_on);
-            $trial->update(['starts_on' => today(), 'ends_on' => today()->addDays($days)]);
+            // The full trial from today, in months as when it was made (counting days would drift with month lengths).
+            $trial->update(['starts_on' => today(), 'ends_on' => static::trialEndsOn(CarbonImmutable::today())]);
         });
     }
 

@@ -24,8 +24,8 @@ return [
     // Who builds and supports SchoolHub, and who founded it: on the About
     // page's team section, the footer and the terms.
     'company' => env('CONTACT_COMPANY', 'Dualhub Technologies Uganda'),
-    // The short name shown to the public: "A product of FERO TECH".
-    'brand' => env('CONTACT_BRAND', 'FERO TECH'),
+    // The short name shown to the public: "A product of DUALHUB".
+    'brand' => env('CONTACT_BRAND', 'DUALHUB'),
     'founder' => env('CONTACT_FOUNDER', 'Adrian Mugizi'),
 
     // The Team page, in order. 'photo' is a file in public/images/team, e.g. a background-free WebP

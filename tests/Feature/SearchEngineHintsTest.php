@@ -42,7 +42,7 @@ it('tells Google the old SaccoSys pages are gone', function () {
     $this->get('https://www.schoolhubug.com/features')->assertOk();
 });
 
-it('tells search engines FERO TECH made SchoolHub', function () {
+it('tells search engines DUALHUB made SchoolHub', function () {
     $html = $this->get('https://www.schoolhubug.com/')->assertOk()->getContent();
 
     preg_match_all('#<script type="application/ld\+json">(.*?)</script>#s', $html, $blocks);

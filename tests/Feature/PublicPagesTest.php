@@ -180,8 +180,8 @@ it('lets the platform owner email a demo request from the Demo requests page', f
         ->and($demo->fresh()->notes)->toContain('Emailed');
 });
 
-it('says SchoolHub is a product of FERO TECH', function () {
-    $this->get('/')->assertOk()->assertSee('A product of <strong>FERO TECH</strong>', false);
+it('says SchoolHub is a product of DUALHUB', function () {
+    $this->get('/')->assertOk()->assertSee('A product of <strong>DUALHUB</strong>', false);
 });
 
 it('lists the modules schools get, and promises no student portal yet', function () {

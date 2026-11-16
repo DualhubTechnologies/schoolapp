@@ -42,8 +42,8 @@ class PayrollsTable
                     ->badge()
                     ->color(fn (string $state): string => match ($state) {
                         'pending' => 'warning',
-                        'paid'    => 'success',
-                        default   => 'gray',
+                        'paid' => 'success',
+                        default => 'gray',
                     }),
                 TextColumn::make('paid_on')
                     ->date()
@@ -61,7 +61,7 @@ class PayrollsTable
                 SelectFilter::make('status')
                     ->options([
                         'pending' => 'Pending',
-                        'paid'    => 'Paid',
+                        'paid' => 'Paid',
                     ]),
             ])
             ->recordActions([

@@ -32,6 +32,8 @@ class Payroll extends Model
 
     /**
      * The school this payroll record belongs to.
+     *
+     * @return BelongsTo<School, $this>
      */
     public function school(): BelongsTo
     {
@@ -40,6 +42,8 @@ class Payroll extends Model
 
     /**
      * The staff member this payroll record is for.
+     *
+     * @return BelongsTo<Staff, $this>
      */
     public function staff(): BelongsTo
     {

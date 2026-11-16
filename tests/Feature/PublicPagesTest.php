@@ -49,7 +49,7 @@ it('gives the founder their own address on the team page, and sends system email
 it('shows the team: the founder, the company and a card to join', function () {
     $this->get('/team')->assertOk()
         ->assertSee('Adrian Mugizi')
-        ->assertSee('Founder, FERO TECH SMC LIMITED &amp; SchoolHub.', false)
+        ->assertSee('Founder, Dualhub Technologies Uganda &amp; SchoolHub.', false)
         ->assertSee('You - Join us');
 
     $this->get('/about')->assertOk()->assertSee('/team');
@@ -57,9 +57,9 @@ it('shows the team: the founder, the company and a card to join', function () {
 
 it('says in the terms who owns SchoolHub and that it may not be copied', function () {
     $this->get(route('filament.app.legal.terms'))->assertOk()
-        ->assertSee('SchoolHub is owned and operated by <b>FERO TECH SMC LIMITED</b>', false)
+        ->assertSee('SchoolHub is owned and operated by <b>Dualhub Technologies Uganda</b>', false)
         ->assertSee('Ownership of SchoolHub')
-        ->assertSee('Address: FERO TECH SMC LIMITED, Wakiso, Uganda');
+        ->assertSee('Address: Dualhub Technologies Uganda, Wakiso, Uganda');
 });
 
 it('tells Google the business phone, place and hours', function () {

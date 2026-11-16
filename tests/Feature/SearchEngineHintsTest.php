@@ -49,6 +49,6 @@ it('tells search engines FERO TECH made SchoolHub', function () {
     $software = collect($blocks[1])->map(fn (string $json) => json_decode($json, true))->firstWhere('@type', 'SoftwareApplication');
 
     expect($software['name'])->toBe('SchoolHub')
-        ->and($software['creator']['name'])->toBe('FERO TECH SMC LIMITED')
-        ->and($software['publisher']['name'])->toBe('FERO TECH SMC LIMITED');
+        ->and($software['creator']['name'])->toBe('Dualhub Technologies Uganda')
+        ->and($software['publisher']['name'])->toBe('Dualhub Technologies Uganda');
 });

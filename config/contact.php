@@ -23,7 +23,7 @@ return [
 
     // Who builds and supports SchoolHub, and who founded it: on the About
     // page's team section, the footer and the terms.
-    'company' => env('CONTACT_COMPANY', 'FERO TECH SMC LIMITED'),
+    'company' => env('CONTACT_COMPANY', 'Dualhub Technologies Uganda'),
     // The short name shown to the public: "A product of FERO TECH".
     'brand' => env('CONTACT_BRAND', 'FERO TECH'),
     'founder' => env('CONTACT_FOUNDER', 'Adrian Mugizi'),
@@ -34,7 +34,7 @@ return [
     'team' => [
         [
             'name' => env('CONTACT_FOUNDER', 'Adrian Mugizi'),
-            'role' => 'Founder, FERO TECH SMC LIMITED & SchoolHub.',
+            'role' => 'Founder, Dualhub Technologies Uganda & SchoolHub.',
             'photo' => 'adrian-mugizi.webp',
             'linkedin' => 'https://www.linkedin.com/in/adrian-mugizi-1a0854152',
             'facebook' => null,
